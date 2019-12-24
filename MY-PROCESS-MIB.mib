@@ -1,0 +1,184 @@
+-- *****************************************************************
+-- MY-PROCESS-MIB.mib:  My Process MIB file
+--
+-- $Copyright$
+-- 
+-- *****************************************************************
+--
+
+MY-PROCESS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE,
+        Integer32,
+        Counter32
+                FROM SNMPv2-SMI
+        TruthValue,
+        DisplayString,
+        RowStatus
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        myMgmt
+                FROM MY-SMI;
+
+myProcessMIB MODULE-IDENTITY
+        LAST-UPDATED "200310140000Z"
+        ORGANIZATION "$Company$"
+        CONTACT-INFO
+                " 
+                Tel: $Telephone$ 
+
+                E-mail: $E-mail$"
+        DESCRIPTION
+                "This module defines my system mibs."
+        REVISION      "200310140000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { myMgmt 36}
+
+-- Percentage for statistic, etc.
+--
+Percent ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "An integer that is in the range of a percent value."
+    SYNTAX INTEGER (0..100)
+    
+myCPUMIBObjects OBJECT IDENTIFIER ::= { myProcessMIB 1 }
+
+-- general mib
+myCpuGeneralMibsGroup OBJECT IDENTIFIER ::= { myCPUMIBObjects 1 }
+
+myCPUUtilization5Sec OBJECT-TYPE
+    SYNTAX        Percent
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "This is the CPU utilization for 5 seconds."
+    ::= { myCpuGeneralMibsGroup 1 }
+
+myCPUUtilization1Min OBJECT-TYPE
+    SYNTAX        Percent
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "This is the CPU utilization for 1 minutes."
+    ::= { myCpuGeneralMibsGroup 2 }
+
+myCPUUtilization5Min OBJECT-TYPE
+    SYNTAX        Percent
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "This is the CPU utilization for 5 minutes."
+    ::= { myCpuGeneralMibsGroup 3 }
+
+---Line Cards' CPU utilization table
+myLineCardsCpuMibsTable OBJECT-TYPE
+  SYNTAX      SEQUENCE OF MyLineCardsCpuMibsEntry
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+    "A table of line cards's CPU utilization entries. Each of the
+     objects provides a general idea of how much of the CPU resource
+     of a line card has been used over a given period of time."
+  ::= { myCPUMIBObjects 2 }
+
+myLineCardsCpuMibsEntry OBJECT-TYPE
+  SYNTAX      MyLineCardsCpuMibsEntry
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+    "An entry in the line cards's CPU utilization table."
+  INDEX { myLineCardsIndex }
+  ::= { myLineCardsCpuMibsTable 1 }
+
+MyLineCardsCpuMibsEntry ::=
+  SEQUENCE {
+    myLineCardsIndex  Integer32,
+    myLineCardsCpuUtilization5Sec  Percent,
+    myLineCardsCpuUtilization1Min  Percent,
+    myLineCardsCpuUUtilization5Min Percent
+  }
+    
+myLineCardsIndex OBJECT-TYPE
+    SYNTAX        Integer32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "An index that uniquely represents a Memory Pool."
+    ::= { myLineCardsCpuMibsEntry 1 }
+   
+myLineCardsCpuUtilization5Sec OBJECT-TYPE
+    SYNTAX        Percent
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "This is the CPU utilization of a line card for 5 seconds."
+    ::= { myLineCardsCpuMibsEntry 2 }
+
+myLineCardsCpuUtilization1Min OBJECT-TYPE
+    SYNTAX        Percent
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "This is the CPU utilization of a line card for 1 minutes."
+    ::= { myLineCardsCpuMibsEntry 3 }
+
+myLineCardsCpuUUtilization5Min OBJECT-TYPE
+    SYNTAX        Percent
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "This is the CPU utilization of a line card for 5 minutes."
+    ::= { myLineCardsCpuMibsEntry 4 }
+
+
+
+        
+myProcessMIBConformance OBJECT IDENTIFIER ::= { myProcessMIB 2 }
+myProcessMIBCompliances OBJECT IDENTIFIER ::= { myProcessMIBConformance 1 }
+myProcessMIBGroups      OBJECT IDENTIFIER ::= { myProcessMIBConformance 2 }
+
+-- compliance statements
+
+myProcessMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the My Process MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { myCPUUtilizationMIBGroup
+                 }
+        ::= { myProcessMIBCompliances 1 }
+                
+-- units of conformance
+
+myCPUUtilizationMIBGroup OBJECT-GROUP
+        OBJECTS {
+          myCPUUtilization5Sec,
+          myCPUUtilization1Min,
+          myCPUUtilization5Min
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing CPU utilization to a My agent."
+        ::= { myProcessMIBGroups 1 } 
+
+myProcessLineCardsMIBGroups OBJECT-GROUP
+        OBJECTS {
+          myLineCardsIndex,
+          myLineCardsCpuUtilization5Sec,
+          myLineCardsCpuUtilization1Min,
+          myLineCardsCpuUUtilization5Min
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing line cards' CPU utilization to a My agent."
+        ::= { myProcessMIBGroups 2 } 
+  
+END
