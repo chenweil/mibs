@@ -1,0 +1,377 @@
+-- ==================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: LAN Switch Multicast Port Management MIB
+-- Reference:
+-- Version: V1.2
+-- History:
+-- V1.0 2005-03-22 Created by Wang Xiaodong
+-- V1.1 2005-08-11 updated by Wang Xiaodong
+--      Add unisMPortGroupLimitReplace
+-- V1.2 2006-02-06 updated by Lv Jianning
+--      Add unisHostStaticJoinTable
+-- ==================================================================
+-- ==================================================================
+-- ==================================================================
+--
+-- Variables and types be imported
+--
+-- ==================================================================
+UNIS-MPM-MIB DEFINITIONS ::= BEGIN
+
+
+IMPORTS
+
+    Integer32,MODULE-IDENTITY,OBJECT-TYPE,Unsigned32,mib-2
+        FROM SNMPv2-SMI
+
+    TEXTUAL-CONVENTION,RowStatus
+        FROM SNMPv2-TC
+
+    unisCommon
+        FROM UNIS-OID-MIB
+
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB
+
+    ifIndex
+        FROM IF-MIB;
+
+    unisMpm MODULE-IDENTITY
+        LAST-UPDATED "200503220000Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "The MPM (Multicast Port Management) MIB."
+        REVISION "200503220000Z"
+        DESCRIPTION
+            "The initial version of this MIB file."
+        ::= { unisCommon 51 }
+
+    EnabledStatus ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "A simple status value for the object."
+        SYNTAX     INTEGER { enabled(1), disabled(2) }
+
+
+
+-- ==================================================================
+--
+-- ======================= definition begin =========================
+--
+-- ==================================================================
+
+    unisMPMObject OBJECT IDENTIFIER ::= {  unisMpm 1  }
+
+    unisMPortGroupLimitMinNumber OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The lower limit of group-limit number."
+        ::= { unisMPMObject 1 }
+
+    unisMPortGroupLimitMaxNumber OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The upper limit of group-limit number."
+        ::= { unisMPMObject 2 }
+
+
+    unisMPMTable OBJECT IDENTIFIER ::= {  unisMpm 2  }
+
+    unisMPortGroupJoinTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF UnisMPortGroupJoinEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "A table which is used for configuring a port in a specified VLAN to join
+            a multicast group."
+        ::= { unisMPMTable 1 }
+
+    unisMPortGroupJoinEntry OBJECT-TYPE
+        SYNTAX     UnisMPortGroupJoinEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "An entry which is used for configuring a port in a specified VLAN to join
+            a multicast group."
+        INDEX      {
+                      ifIndex,
+                      unisMPortGroupJoinVlanID,
+                      unisMPortGroupJoinAddressType,
+                      unisMPortGroupJoinAddress
+                      }
+        ::= { unisMPortGroupJoinTable 1 }
+
+    UnisMPortGroupJoinEntry ::= SEQUENCE {
+        unisMPortGroupJoinVlanID          Integer32,
+        unisMPortGroupJoinAddressType     InetAddressType,
+        unisMPortGroupJoinAddress         InetAddress,
+        unisMPortGroupJoinStatus          RowStatus
+        }
+
+    unisMPortGroupJoinVlanID OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "An index uniquely identifying a port in a specified
+            VLAN which joined the multicast group."
+        ::= { unisMPortGroupJoinEntry 1 }
+
+    unisMPortGroupJoinAddressType OBJECT-TYPE
+        SYNTAX     InetAddressType
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "Type of the multicast IP address."
+        ::= { unisMPortGroupJoinEntry 2 }
+
+    unisMPortGroupJoinAddress OBJECT-TYPE
+        SYNTAX     InetAddress
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "IP address of the group which the port belongs to,
+            and it must be a valid multicast IP address."
+        ::= { unisMPortGroupJoinEntry 3 }
+
+    unisMPortGroupJoinStatus OBJECT-TYPE
+        SYNTAX     RowStatus
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "This object is responsible for managing the creation and
+             deletion of rows, which supports 'active', 'notReady',
+             'createAndGo', 'destroy'.
+
+             Until instances of all corresponding columns are
+             appropriately configured, the value of the
+             corresponding instance of the unisMPortGroupJoinStatus
+             column is 'notReady'.
+
+             In particular, a newly created row cannot be actived
+             until the port belongs to the corresponding VLAN and
+             IGMP or IGMP snooping is enabled on that VLAN."
+        ::= { unisMPortGroupJoinEntry 4 }
+
+    unisMPortGroupTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF UnisMPortGroupEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "A table containing information about the status of a port
+             which joined a multicast group in the VLAN."
+         ::= { unisMPMTable 2 }
+
+    unisMPortGroupEntry OBJECT-TYPE
+        SYNTAX     UnisMPortGroupEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "An entry containing information about the status of a port
+             which joined a multicast group in the VLAN."
+        INDEX      {  ifIndex,
+                      unisMPortGroupVlanID,
+                      unisMPortGroupAddressType,
+                      unisMPortGroupAddress
+                   }
+        ::= { unisMPortGroupTable 1 }
+
+    UnisMPortGroupEntry ::= SEQUENCE {
+        unisMPortGroupVlanID          Integer32,
+        unisMPortGroupAddressType     InetAddressType,
+        unisMPortGroupAddress         InetAddress
+        }
+
+    unisMPortGroupVlanID OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "An index uniquely identifies that a port belongs to a specified
+            VLAN."
+        ::= { unisMPortGroupEntry 1 }
+
+    unisMPortGroupAddressType OBJECT-TYPE
+        SYNTAX     InetAddressType
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "Type of multicast IP address."
+        ::= { unisMPortGroupEntry 2 }
+
+    unisMPortGroupAddress OBJECT-TYPE
+        SYNTAX     InetAddress
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "IP address of the group which the port joined, and it must be a
+             valid multicast IP address."
+        ::= { unisMPortGroupEntry 3 }
+
+    unisMPortConfigTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF UnisMPortConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table configuring the fast leave status, group limit number and
+             group policy parameter on a port in the specified VLAN."
+        ::= { unisMPMTable 3 }
+
+    unisMPortConfigEntry OBJECT-TYPE
+        SYNTAX  UnisMPortConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry containing information about the fast leave status, group
+             limit number and group policy parameter of a port in the specified
+             VLAN."
+        INDEX  { ifIndex,
+                 unisMPortConfigVlanID }
+        ::= { unisMPortConfigTable 1 }
+
+    UnisMPortConfigEntry ::= SEQUENCE {
+        unisMPortConfigVlanID          Integer32,
+        unisMPortGroupLimitNumber      Unsigned32,
+        unisMPortFastLeaveStatus       EnabledStatus,
+        unisMPortGroupPolicyParameter  Integer32,
+        unisMPortConfigRowStatus       RowStatus,
+        unisMPortGroupLimitReplace     EnabledStatus
+        }
+
+    unisMPortConfigVlanID OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "The VLAN index."
+        ::= { unisMPortConfigEntry 1 }
+
+    unisMPortGroupLimitNumber OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The group limit number of the port."
+        ::= { unisMPortConfigEntry 2 }
+
+    unisMPortFastLeaveStatus OBJECT-TYPE
+        SYNTAX  EnabledStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The fast leave status of the port."
+        DEFVAL  { 2 }
+        ::= { unisMPortConfigEntry 3 }
+
+    unisMPortGroupPolicyParameter OBJECT-TYPE
+        SYNTAX  Integer32(0|2000..2999)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The ACL number which is used as the group policy parameter
+             of the port."
+        DEFVAL  { 0 }
+        ::= { unisMPortConfigEntry 4 }
+
+    unisMPortConfigRowStatus OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The object is responsible for managing the creation and
+             deletion of rows, which supports 'active', 'notReady',
+             'createAndGo' and 'destroy'."
+        ::= { unisMPortConfigEntry 5 }
+
+    unisMPortGroupLimitReplace OBJECT-TYPE
+        SYNTAX  EnabledStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "This object is related to the object unisMPortGroupLimitNumber.
+             If the current IGMP group number is less than the value of
+             unisMPortGroupLimitNumber, any new IGMP group is permitted.
+             If the current IGMP group number equals to the value of
+             unisMPortGroupLimitNumber and the value of this object is enabled,
+             the group with the minimum multicast address will be replaced by
+             the new group.
+             If the current IGMP group number equals to the value of
+             unisMPortGroupLimitNumber and the value of this object is disabled,
+             none of new group will be permitted."
+        DEFVAL  { disabled }
+        ::= { unisMPortConfigEntry 6 }
+
+    unisHostStaticJoinTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF UnisHostStaticJoinEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "A table used to configure a host on a port in a specified VLAN
+            statically to join a multicast group."
+        ::= { unisMPMTable 4 }
+
+    unisHostStaticJoinEntry OBJECT-TYPE
+        SYNTAX     UnisHostStaticJoinEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "An entry used to configure a host on a port in a specified VLAN
+            statically to join a multicast group."
+        INDEX      {
+                      ifIndex,
+                      unisHostStaticJoinVlanID,
+                      unisHostStaticJoinAddressType,
+                      unisHostStaticJoinAddress
+                      }
+        ::= { unisHostStaticJoinTable 1 }
+
+    UnisHostStaticJoinEntry ::= SEQUENCE {
+        unisHostStaticJoinVlanID          Integer32,
+        unisHostStaticJoinAddressType     InetAddressType,
+        unisHostStaticJoinAddress         InetAddress,
+        unisHostStaticJoinStatus          RowStatus
+        }
+
+    unisHostStaticJoinVlanID OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "An index uniquely identify the specified VLAN in which a host
+            on a port statically joined the multicast group."
+        ::= { unisHostStaticJoinEntry 1 }
+
+    unisHostStaticJoinAddressType OBJECT-TYPE
+        SYNTAX     InetAddressType
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "Type of the multicast IP address."
+        ::= { unisHostStaticJoinEntry 2 }
+
+    unisHostStaticJoinAddress OBJECT-TYPE
+        SYNTAX     InetAddress
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "IP address of the group which the host belongs to, and it must be
+            a valid multicast IP address."
+        ::= { unisHostStaticJoinEntry 3 }
+
+    unisHostStaticJoinStatus OBJECT-TYPE
+        SYNTAX     RowStatus
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "This object is responsible for managing rows, which supports
+            'active', 'createAndGo' and 'destroy'."
+        ::= { unisHostStaticJoinEntry 4 }
+END

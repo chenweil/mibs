@@ -1,0 +1,949 @@
+-- =================================================================
+-- Copyright (c) 2024 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB is designed to configure the Precision Time Protocol.
+-- Reference:
+-- Version: V1.6
+-- History:
+-- V1.0 2022-06-28, Du Wei, Initial version
+-- V1.1 2022-08-23, Du Wei, Add unisPTPTimeOffsetSumSec
+-- V1.2 2022-09-01, Du Wei,
+--    Add unisPTPInstanceID,unisPTPChassisID, unisPTPPortAttrMismatchReason
+--    Add unisPTPPortAttrMismatch, unisPTPPortAttrMismatchRecover for trap
+--    Add unisPTPInstanceID to trap objects for PTP instance.
+-- V1.3 2022-09-01, Du Wei,
+--    Add unisPTPSyncSuppress and unisPTPSyncSupressResume for trap
+--    Add unisPTPTimestampChange and unisPTPTimestampUnchange for trap
+--    Adds nodes unisPTPSyncTimeOffset and unisPTPSyncTimeOffsetThreshold
+-- V1.4 2023-02-20, Du Wei,
+--    Add unisPTPPortNonSupport and unisPTPPortNonSupportRecover for trap.
+--    Add node unisPTPPacketDomain.
+-- V1.5 2023-07-11, Du Wei,
+--    Add unisPTPSyncTimeOffsetCurrent object.
+-- V1.6 2023-11-30, Du Wei,
+--    Add objects related to clock attributes and clock status.
+-- =================================================================
+UNIS-PTP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    Unsigned32, Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString, TruthValue
+        FROM SNMPv2-TC
+    CounterBasedGauge64
+        FROM HCNUM-TC
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisPTP MODULE-IDENTITY
+    LAST-UPDATED "202311300000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The private MIB file includes the time information of the
+        device. It is to configure the Precision Time Protocol."
+    REVISION "202311300000Z"
+    DESCRIPTION
+        "Add objects related to clock attributes and clock status."
+    REVISION "202307110000Z"
+    DESCRIPTION
+        "Add unisPTPSyncTimeOffsetCurrent object."
+    REVISION "202302200000Z"
+    DESCRIPTION
+        "Add unisPTPPortNonSupport and unisPTPPortNonSupportRecover for trap.
+         Add node unisPTPPacketDomain."
+    REVISION "202212010000Z"
+    DESCRIPTION
+        "Add unisPTPSyncSuppress and unisPTPSyncSupressResume for trap
+         Add unisPTPTimestampChange and unisPTPTimestampUnchange for trap
+         Add nodes unisPTPSyncTimeOffset and unisPTPSyncTimeOffsetThreshold"
+    REVISION "202209010000Z"
+    DESCRIPTION
+        "Add unisPTPChassisID, unisPTPPortAttrMismatchReason.
+         Add unisPTPPortAttrMismatch, unisPTPPortAttrMismatchRecover for trap
+         Add unisPTPInstanceID to trap objects for PTP instance."
+    REVISION "202208230000Z"
+    DESCRIPTION
+        "Add unisPTPTimeOffsetSumSec."
+    REVISION "202206280000Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 235 }
+
+unisPTPNotifications OBJECT IDENTIFIER ::= { unisPTP 1 }
+
+unisPTPNotification OBJECT IDENTIFIER ::= { unisPTPNotifications 0 }
+
+unisPTPPortStateChange NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisPTPPortName,
+            unisPTPPortState,
+            unisPTPOldPortState,
+            unisPTPInstanceID
+        }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the PTP port status changes."
+    ::= { unisPTPNotification 1 }
+
+unisPTPClockSourceChange NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisPTPOldMasterClockId,
+            unisPTPMasterClockId,
+            unisPTPOldSourcePortNum,
+            unisPTPSourcePortNum,
+            unisPTPPortName,
+            unisPTPOldPortName,
+            unisPTPInstanceID
+        }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the PTP clock source property changes."
+    ::= { unisPTPNotification 2 }
+
+unisPTPTimeSyncFaulty NOTIFICATION-TYPE
+    OBJECTS { unisPTPTimeSyncStatus, unisPTPInstanceID }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the PTP clock loses synchronization."
+    ::= { unisPTPNotification 3 }
+
+unisPTPTimeSyncFaultyRecover NOTIFICATION-TYPE
+    OBJECTS { unisPTPTimeSyncStatus, unisPTPInstanceID }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the PTP clock recover synchronization."
+    ::= { unisPTPNotification 4 }
+
+unisPTPTimeLockFail NOTIFICATION-TYPE
+    OBJECTS { unisPTPTimeLockStatus }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the PTP time not in locked state."
+    ::= { unisPTPNotification 5 }
+
+unisPTPTimeLockFailRecover NOTIFICATION-TYPE
+    OBJECTS { unisPTPTimeLockStatus }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the PTP time recovered to locked state."
+    ::= { unisPTPNotification 6 }
+
+unisPTPExtTimePortLost NOTIFICATION-TYPE
+    OBJECTS { unisPTPExtTimePortStatus, unisPTPExtTimePortType }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the external time port became lost."
+    ::= { unisPTPNotification 7 }
+
+unisPTPExtTimePortLostRecover NOTIFICATION-TYPE
+    OBJECTS { unisPTPExtTimePortStatus, unisPTPExtTimePortType }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the external time port recovered."
+    ::= { unisPTPNotification 8 }
+
+unisPTPPortBmcInfoChange NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisPTPPortName,
+            unisPTPSourcePortClockId,
+            unisPTPSourcePortNum,
+            unisPTPSourceStepsRemoved,
+            unisPTPMasterClockId,
+            unisPTPInstanceID
+        }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the bmc information changed."
+    ::= { unisPTPNotification 9 }
+
+unisPTPSourceClockClassDecline NOTIFICATION-TYPE
+    OBJECTS { unisPTPInstanceID }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the clock source class fell below the threshold"
+    ::= { unisPTPNotification 10 }
+
+unisPTPSourceClockClassRecover NOTIFICATION-TYPE
+    OBJECTS { unisPTPInstanceID }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the clock source class crossed the threshold."
+    ::= { unisPTPNotification 11 }
+
+unisPTPPacketLoss NOTIFICATION-TYPE
+    OBJECTS { unisPTPPacketType, unisPTPInstanceID }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when PTP packets were lost. "
+    ::= { unisPTPNotification 12 }
+
+unisPTPPacketLossRecover NOTIFICATION-TYPE
+    OBJECTS { unisPTPPacketType, unisPTPInstanceID }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when PTP packets lost were recovered."
+    ::= { unisPTPNotification 13 }
+
+unisPTPTimeOffsetExceed NOTIFICATION-TYPE
+    OBJECTS { unisPTPTimeOffset, unisPTPTimeOffsetThreshold }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the ptp standard time offset is abnormal."
+    ::= { unisPTPNotification 14 }
+
+unisPTPTimeOffsetRecover NOTIFICATION-TYPE
+    OBJECTS { unisPTPTimeOffset, unisPTPTimeOffsetThreshold }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the ptp standard time offset is normal."
+    ::= { unisPTPNotification 15 }
+
+unisPTPTimeOffsetSumExceed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisPTPTimeOffsetSum,
+            unisPTPTimeOffsetSumThrehold,
+            unisPTPTimeOffsetSumSec
+        }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the ptp time offset sum is abnormal."
+    ::= { unisPTPNotification 16 }
+
+unisPTPTimeOffsetSumRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisPTPTimeOffsetSum,
+            unisPTPTimeOffsetSumThrehold,
+            unisPTPTimeOffsetSumSec
+        }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the ptp time offset sum is normal."
+    ::= { unisPTPNotification 17 }
+
+unisPTPFrequencyLockFail NOTIFICATION-TYPE
+    OBJECTS { unisPTPFreqLockStatus }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the PTP frequency not in locked state."
+    ::= { unisPTPNotification 18 }
+
+unisPTPFrequencyLockRecover NOTIFICATION-TYPE
+    OBJECTS { unisPTPFreqLockStatus }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the PTP frequency recovered to locked state."
+    ::= { unisPTPNotification 19 }
+
+unisPTPPortAttrMismatch NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisPTPChassisID,
+            unisPTPPortName,
+            unisPTPPortAttrMismatchReason,
+            unisPTPInstanceID,
+            unisPTPPacketDomain
+        }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the peer PTP ports mismatch in attributes."
+    ::= { unisPTPNotification 20 }
+
+unisPTPPortAttrMismatchRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisPTPChassisID,
+            unisPTPPortName,
+            unisPTPPortAttrMismatchReason,
+            unisPTPInstanceID,
+            unisPTPPacketDomain
+        }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the peer PTP ports mismatch in attributes."
+    ::= { unisPTPNotification 21 }
+
+unisPTPSyncSuppress NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisPTPSyncTimeOffset,
+        unisPTPSyncTimeOffsetThreshold,
+        unisPTPInstanceID
+    }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when PTP time synchronization was suppressed because
+        the PTP time offset between the instance and the master exceeded the threshold."
+    ::= { unisPTPNotification 22 }
+
+unisPTPSyncSupressResume NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisPTPSyncTimeOffset,
+        unisPTPSyncTimeOffsetThreshold,
+        unisPTPInstanceID
+    }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when PTP time synchronization resumed
+        because the PTP time offset between the instance and the master
+        fell below the threshold or the maximum suppression counts were reached."
+    ::= { unisPTPNotification 23 }
+
+unisPTPTimestampUnchange NOTIFICATION-TYPE
+    OBJECTS { unisPTPInstanceID }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the timestamp carried in the received message
+         does not change, and the status of the timestamp is abnormal."
+    ::= { unisPTPNotification 24 }
+
+unisPTPTimestampChange NOTIFICATION-TYPE
+    OBJECTS { unisPTPInstanceID }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the timestamp carried in the received message
+        returns to continuous change, and the timestamp status is normal."
+    ::= { unisPTPNotification 25 }
+
+unisPTPPortNonSupport NOTIFICATION-TYPE
+    OBJECTS { unisPTPChassisID, unisPTPPortName }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the port does not support ptp clock synchronization."
+    ::= { unisPTPNotification 26 }
+
+unisPTPPortNonSupportRecover NOTIFICATION-TYPE
+    OBJECTS { unisPTPChassisID, unisPTPPortName }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the port does not support ptp clock synchronization is recovered."
+    ::= { unisPTPNotification 27 }
+
+unisPTPNotificationObjects OBJECT IDENTIFIER ::= { unisPTPNotifications 1 }
+
+unisPTPPortName OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP port name."
+    ::= { unisPTPNotificationObjects 1 }
+
+unisPTPOldPortName OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The history PTP port name."
+    ::= { unisPTPNotificationObjects 2 }
+
+unisPTPPortState OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        initializing(1),
+        faulty(2),
+        disabled(3),
+        listening(4),
+        premaster(5),
+        master(6),
+        passive(7),
+        uncalibrated(8),
+        slave(9)
+        }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP port state."
+    ::= { unisPTPNotificationObjects 3 }
+
+unisPTPOldPortState OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        initializing(1),
+        faulty(2),
+        disabled(3),
+        listening(4),
+        premaster(5),
+        master(6),
+        passive(7),
+        uncalibrated(8),
+        slave(9)
+        }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The history PTP port state."
+    ::= { unisPTPNotificationObjects 4 }
+
+unisPTPMasterClockId OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP master clock id."
+    ::= { unisPTPNotificationObjects 5 }
+
+unisPTPOldMasterClockId OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The history PTP master clock id."
+    ::= { unisPTPNotificationObjects 6 }
+
+unisPTPSourcePortNum OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP source port number."
+    ::= { unisPTPNotificationObjects 7 }
+
+unisPTPOldSourcePortNum OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The history PTP source port number."
+    ::= { unisPTPNotificationObjects 8 }
+
+unisPTPTimeSyncStatus OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP time synchronization status."
+    ::= { unisPTPNotificationObjects 9 }
+
+unisPTPTimeLockStatus OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP time lock status."
+    ::= { unisPTPNotificationObjects 10 }
+
+unisPTPExtTimePortStatus OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        up(1),
+        down(2)
+        }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The external time port status."
+    ::= { unisPTPNotificationObjects 11 }
+
+unisPTPExtTimePortType OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        tod0(1),
+        tod1(2)
+        }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The external time port type."
+    ::= { unisPTPNotificationObjects 12 }
+
+unisPTPSourcePortClockId OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP source port clock id."
+    ::= { unisPTPNotificationObjects 13 }
+
+unisPTPSourceStepsRemoved OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Hops from the GM to the device."
+    ::= { unisPTPNotificationObjects 14 }
+
+unisPTPPacketType OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        sync(1),
+        pDelayResp(3),
+        delayResp(9),
+        announce(11)
+        }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP packet type."
+    ::= { unisPTPNotificationObjects 15 }
+
+unisPTPTimeOffset OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP standard time offset."
+    ::= { unisPTPNotificationObjects 16 }
+
+unisPTPTimeOffsetThreshold OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP standard time offset threhold."
+    ::= { unisPTPNotificationObjects 17 }
+
+unisPTPTimeOffsetSum OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Nanosecond part of PTP standard time offset sum."
+    ::= { unisPTPNotificationObjects 18 }
+
+unisPTPTimeOffsetSumThrehold OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP standard time offset sum threhold."
+    ::= { unisPTPNotificationObjects 19 }
+
+unisPTPFreqLockStatus OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP frequency lock status."
+    ::= { unisPTPNotificationObjects 20 }
+
+unisPTPTimeOffsetSumSec OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Second part of PTP standard time offset sum."
+    ::= { unisPTPNotificationObjects 21 }
+
+unisPTPInstanceID OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP instance ID."
+    ::= { unisPTPNotificationObjects 22 }
+
+unisPTPChassisID OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Chassis ID. If the value is 65535, the device is
+        not a device in an IRF fabric."
+    ::= { unisPTPNotificationObjects 23 }
+
+unisPTPPortAttrMismatchReason OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Attribute in which the peer PTP ports mismatch. The values include:
+          0, unspecified
+          1, delay mechanism
+          2, packet encapsulation
+          3, domain number
+          4, source port ID"
+    ::= { unisPTPNotificationObjects 24 }
+
+unisPTPSyncTimeOffset OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "PTP time offset between the instance and the master."
+    ::= { unisPTPNotificationObjects 25 }
+
+
+unisPTPSyncTimeOffsetThreshold OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Threshold of PTP time offset between instance and the master."
+    ::= { unisPTPNotificationObjects 26 }
+
+unisPTPPacketDomain OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Domain number in the received ptp packet."
+    ::= { unisPTPNotificationObjects 27 }
+
+unisPTPObjects OBJECT IDENTIFIER ::= { unisPTP 2 }
+
+unisPTPSyncTimeOffsetCurrent OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..128))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The current value of the clock offset. The default value is 0, in ns."
+    ::= { unisPTPObjects 1 }
+
+unisPTPProfile OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        invalid(0),
+        ieee1588v2(1),
+        ieee802dot1as(2),
+        g8275dot1(3),
+        smpte2059(4),
+        aes67(5),
+        g8275dot2(6)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The PTP profile."
+    ::= { unisPTPObjects 2 }
+
+unisPTPMode OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        invalid(0),
+        bc(1),
+        oc(2),
+        p2ptc(3),
+        e2etc(4),
+        p2ptcoc(5),
+        e2etcoc(6),
+        tbc(7),
+        ttc(8),
+        ttsc(9),
+        tbcp(10),
+        ttscp(11)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The PTP clock node type.
+        Only BC, OC, P2PTC, E2ETC, P2PTC-OC, or E2ETC-OC can be configured when the profile is IEEE 1588 version2.
+        Only BC, OC, P2PTC, or P2PTC-OC can be configured when the profile is IEEE 802.1AS.
+        Only T-BC, T-TC, or T-TSC can be configured when the profile is ITU-T G.8275.1.
+        Only BC, OC, P2PTC, or E2ETC can be configured when the profile is SMPTE ST 2059-2.
+        "
+    ::= { unisPTPObjects 3 }
+
+unisPTPDomain OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The PTP domain for the devic.
+        When the PTP profile is IEEE 1588 version 2 or IEEE 802.1AS, the value range for this field is 0 to 255.
+        When the PTP rofile is ITU-T G.8275.1, the value range for this field is 24 to 43.
+        When the PTP rofile is ITU-T G.8275.2, the value range for this field is 44 to 63.
+        When the PTP rofile is ISMPTE ST 2059-2, the value range for this field is 0 to 127."
+    ::= { unisPTPObjects 4 }
+
+unisPTPSlaveOnly OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Whether the OC operates in Slave only mode."
+    ::= { unisPTPObjects 5 }
+
+unisPTPSyncUncertain OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Whether the upstream clock is not reliable."
+    ::= { unisPTPObjects 6 }
+
+unisPTPCurrentTimeLockStatus OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "PTP time lock status."
+    ::= { unisPTPObjects 7 }
+
+unisPTPCurrentTimeSyncStatus OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "PTP time synchronization status."
+    ::= { unisPTPObjects 8 }
+
+unisPTPCurrentFreqLockStatus OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "PTP frequency lock status."
+    ::= { unisPTPObjects 9 }
+
+unisPTPClockType OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        invalid(0),
+        local(1),
+        tod0(2),
+        tod1(3)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Clock type of the device."
+    ::= { unisPTPObjects 10 }
+
+unisPTPClockId OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Clock ID for the device, which uniquely identifies a PTP device."
+    ::= { unisPTPObjects 11 }
+
+unisPTPClockPriority1 OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Priority 1 value for the device."
+    ::= { unisPTPObjects 12 }
+
+unisPTPClockPriority2 OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Priority 2 value for the device."
+    ::= { unisPTPObjects 13 }
+
+unisPTPClockClass OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Time class of the device."
+    ::= { unisPTPObjects 14 }
+
+unisPTPClockAccuracy OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Time accuracy of the device. The values include:
+        32, 25ns.
+        33, 100ns.
+        34, 250ns.
+        35, 1us.
+        36, 2.5us.
+        37, 10us.
+        38, 25us.
+        39, 100us.
+        40, 250us.
+        41, 1ms.
+        42, 2.5ms.
+        43, 10ms.
+        44, 25ms.
+        45, 100ms.
+        46, 250ms.
+        47, 1S.
+        48, 10s.
+        49, GT10s.
+        254, Unknown."
+    ::= { unisPTPObjects 15 }
+
+unisPTPClockTimeSource OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Time source of the device. The values include:
+        16, Atomic clock.
+        32, GPS.
+        48, Terrestrial radio.
+        64, PTP.
+        80, NTP.
+        96, Handset.
+        144, Other.
+        160, Internal oscillator.
+        255, Unknown."
+    ::= { unisPTPObjects 16 }
+
+unisPTPClockLocalPriority OBJECT-TYPE
+    SYNTAX Integer32 (1..255)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Local priority of the PTP clock. (This field is available only for the ITU-T G.8275.1 and ITU-T G.8275.2 PTP profiles.)"
+    ::= { unisPTPObjects 17 }
+
+unisPTPParentClockId OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Parent clock identification."
+    ::= { unisPTPObjects 18 }
+
+unisPTPParentPortNumber OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Outgoing interface number of the parent clock."
+    ::= { unisPTPObjects 19 }
+
+unisPTPGrandMasterClockId OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Grandmaster clock identification."
+    ::= { unisPTPObjects 20 }
+
+unisPTPGrandMasterClockPriority1 OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Priority 1 value of the grandmaster clock."
+    ::= { unisPTPObjects 21 }
+
+unisPTPGrandMasterClockPriority2 OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Priority 2 value of the grandmaster clock."
+    ::= { unisPTPObjects 22 }
+
+unisPTPGrandMasterClockClass OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Time class of the grandmaster clock."
+    ::= { unisPTPObjects 23 }
+
+unisPTPGrandMasterClockAccuracy OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Time accuracy of the grandmaster clock. The values include:
+        32, 25ns.
+        33, 100ns.
+        34, 250ns.
+        35, 1us.
+        36, 2.5us.
+        37, 10us.
+        38, 25us.
+        39, 100us.
+        40, 250us.
+        41, 1ms.
+        42, 2.5ms.
+        43, 10ms.
+        44, 25ms.
+        45, 100ms.
+        46, 250ms.
+        47, 1S.
+        48, 10s.
+        49, GT10s.
+        254, Unknown."
+    ::= { unisPTPObjects 24 }
+
+unisPTPCurrentUtcOffset OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Cumulative offset (in seconds) between the UTC of the grandmaster clock and the International Atomic Time (TAI)."
+    ::= { unisPTPObjects 25 }
+
+unisPTPCurrentUtcOffsetValid OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Whether the Coordinated Universal Time (UTC) offset is valid."
+    ::= { unisPTPObjects 26 }
+
+unisPTPTimeTraceable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Whether the PTP time is traceable."
+    ::= { unisPTPObjects 27 }
+
+unisPTPFrequencyTraceable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Whether the PTP frequency is traceable."
+    ::= { unisPTPObjects 28 }
+
+unisPTPTimeScale OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        unknown(0),
+        ptp(1)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The possible timescales available for use by the grandmaster clock."
+    ::= { unisPTPObjects 29 }
+
+unisPTPTimeSource OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Time source of the grandmaster clock. The values include:
+        16, Atomic clock.
+        32, GPS.
+        48, Terrestrial radio.
+        64, PTP.
+        80, NTP.
+        96, Handset.
+        144, Other.
+        160, Internal oscillator.
+        255, Unknown."
+    ::= { unisPTPObjects 30 }
+
+unisPTPStepsRemoved OBJECT-TYPE
+    SYNTAX Integer32 (0..255 | 65535)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Hops from the grandmaster to the local clock node.
+        The value 65535 is invalid. If the device is a TC node
+        or is in Force state, this column takes this value."
+    ::= { unisPTPObjects 31 }
+
+unisPTPReceivePortName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (2..47))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "From which port the grandmaster clock was received."
+    ::= { unisPTPObjects 32 }
+
+END

@@ -1,0 +1,320 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: 802.1ah MAC-in-MAC MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2009-08-08 Initial version Created by Jianyong Song
+--        2010-08-05 Add 'unisMinmBmac' by Wei Zhang
+-- =============================================================================
+UNIS-MINM-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+        RowStatus,
+        TEXTUAL-CONVENTION,
+        MacAddress
+    FROM SNMPv2-TC
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        Unsigned32
+    FROM SNMPv2-SMI
+        ifIndex
+    FROM RFC1213-MIB
+        unisCommon
+    FROM UNIS-OID-MIB
+        unisVsiIndex
+    FROM UNIS-VSI-MIB;
+
+-- =============================================================================
+-- module identity part
+-- =============================================================================
+unisMinm MODULE-IDENTITY
+    LAST-UPDATED
+        "200908081000Z"        -- Aug 08, 2009 at 10:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "802.1ah MAC-in-MAC MIB"
+    REVISION
+        "200908081000Z"   -- Aug 08, 2009 at 10:00 GMT
+    DESCRIPTION
+        "The initial version of this MIB."
+    ::= { unisCommon 107 }
+
+-- =============================================================================
+-- Textual Conventions
+-- =============================================================================
+UnisMinmEnabledStatus ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "A enumerated value which indicates the state of object."
+    SYNTAX  INTEGER
+    {
+        enabled(1),
+        disabled(2)
+    }
+
+-- =============================================================================
+-- object definition begin
+-- =============================================================================
+
+unisMinmObjects      OBJECT IDENTIFIER ::= { unisMinm 1 }
+
+unisMinmScalarGroup OBJECT IDENTIFIER ::= { unisMinmObjects 1 }
+
+unisMinmCapabilities    OBJECT-TYPE
+    SYNTAX      BITS
+    {
+        reEncapsulation(0),
+        uplink(1),
+        vsiShareConnection(2)
+    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object displays the MAC-in-MAC capabilities with respect to
+         certain fields. The following values may be supported:
+         reEncapsulation:     Support for configuring re-encapsulation (denoted
+                              by unisMinmVsiReEncapsulation).
+         uplink:              Support for configuring uplink (denoted
+                              by unisMinmUplinkTable).
+         vsiShareConnection:  It indicates that connection entry is shared in
+                              all VSIs. unisVsiIndex is meaningless and must
+                              be value 1 in unisMinmConnectionTable."
+    ::= { unisMinmScalarGroup 1 }
+
+unisMinmBmac  OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A MAC address used in creating the MAC header of I-tagged frames
+        transmitted across a Provider Backbone Bridged Network. The invalid
+        value FF:FF:FF:FF:FF:FF indicates that this node is not supported by
+        the device."
+    ::= { unisMinmScalarGroup 2 }
+
+-- =============================================================================
+-- unisMinmVsiTable Definition
+-- =============================================================================
+unisMinmVsiTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMinmVsiEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for configuring MAC-in-MAC service instance parameter."
+    ::= { unisMinmObjects 2 }
+
+unisMinmVsiEntry  OBJECT-TYPE
+    SYNTAX      UnisMinmVsiEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for configuring MAC-in-MAC service instance parameter."
+    INDEX
+    {
+        unisVsiIndex
+    }
+    ::= { unisMinmVsiTable 1 }
+
+UnisMinmVsiEntry ::=
+    SEQUENCE
+    {
+        unisMinmVsiBvlan               Integer32,
+        unisMinmVsiReEncapsulation     UnisMinmEnabledStatus,
+        unisMinmVsiNextAvailableLinkId Unsigned32
+    }
+
+unisMinmVsiBvlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..4094 | 65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "BVLAN ID. The value 65535 indicates the BVLAN has not been configured
+        for get operation, and it indicates deleting the BVLAN configration
+        for set operation."
+    ::= { unisMinmVsiEntry 1 }
+
+unisMinmVsiReEncapsulation    OBJECT-TYPE
+    SYNTAX      UnisMinmEnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Whether the re-encapsulation is enabled. The reEncapsulation field of
+        unisMinmCapabilities denotes whether this node is supported."
+    ::= { unisMinmVsiEntry 2 }
+
+unisMinmVsiNextAvailableLinkId    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Next available connection entry index for creating a connection entry.
+        Its value ranges from 0x1 to 0xFFFFFFFF.The invalid value 0xFFFFFFFF
+        indicates that connection entry can not be created. When the
+        vsiShareConnection field of unisMinmCapabilities is set, this node
+        returns an invalid value if the value of unisVsiIndex is not 1."
+    ::= { unisMinmVsiEntry 3 }
+
+-- =============================================================================
+-- End of unisMinmVsiTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisMinmUplinkTable Definition
+-- =============================================================================
+unisMinmUplinkTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMinmUplinkEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for uplink ports of the VSI in MAC-in-MAC. The uplink field of
+        unisMinmCapabilities denotes whether this table is supported."
+    ::= { unisMinmObjects 3 }
+
+unisMinmUplinkEntry  OBJECT-TYPE
+    SYNTAX      UnisMinmUplinkEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for uplink ports of the VSI in MAC-in-MAC."
+    INDEX
+    {
+        unisVsiIndex,
+        ifIndex
+    }
+    ::= { unisMinmUplinkTable 1 }
+
+UnisMinmUplinkEntry ::=
+    SEQUENCE
+    {
+        unisMinmUplinkRowStatus      RowStatus
+    }
+
+unisMinmUplinkRowStatus     OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisMinmUplinkEntry 1 }
+-- =============================================================================
+-- End of unisMinmUplinkTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisMinmConnectionTable Definition
+-- =============================================================================
+unisMinmConnectionTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMinmConnectionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for the connection information of BMAC."
+    ::= { unisMinmObjects 4 }
+
+unisMinmConnectionEntry  OBJECT-TYPE
+    SYNTAX      UnisMinmConnectionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for the connection information of BMAC.
+        When the vsiShareConnection field of unisMinmCapabilities is set,
+        connection entry is shared in all VSIs. unisVsiIndex is meaningless
+        and must be value 1 in unisMinmConnectionTable."
+    INDEX
+    {
+        unisVsiIndex,
+        unisMinmConnectionLinkId
+    }
+    ::= { unisMinmConnectionTable 1 }
+
+UnisMinmConnectionEntry ::=
+    SEQUENCE
+    {
+        unisMinmConnectionLinkId       Unsigned32,
+        unisMinmConnectionBmac         MacAddress,
+        unisMinmConnectionBvlan        Integer32,
+        unisMinmConnectionPort         Integer32,
+        unisMinmConnectionStatus       INTEGER,
+        unisMinmConnectionAgingStatus  INTEGER,
+        unisMinmConnectionRowStatus    RowStatus
+    }
+
+unisMinmConnectionLinkId    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Entry index when the vsiShareConnection bit of unisMinmCapabilities
+        is set(unisVsiIndex is meaningless and must be value 1),
+        else entry index in the VSI of unisVsiIndex.Its value ranges
+        from 0x1 to 0xFFFFFFFE. It should be obtained from
+        unisMinmVsiNextAvailableLinkId for create operation."
+    ::= { unisMinmConnectionEntry 1 }
+
+unisMinmConnectionBmac    OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "BMAC of an connection entry."
+    ::= { unisMinmConnectionEntry 2 }
+
+unisMinmConnectionBvlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "BVLAN of an connection entry."
+    ::= { unisMinmConnectionEntry 3 }
+
+unisMinmConnectionPort   OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Port ifindex of an connection entry."
+    ::= { unisMinmConnectionEntry 4 }
+
+unisMinmConnectionStatus   OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        learned(1),
+        configDynamic(2),
+        configStatic(3),
+        blackhole(4)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "State of an connection entry."
+    ::= { unisMinmConnectionEntry 5 }
+
+unisMinmConnectionAgingStatus   OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        aging(1),
+        noAged(2)
+    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Aging time of an connection entry."
+    ::= { unisMinmConnectionEntry 6 }
+
+unisMinmConnectionRowStatus  OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisMinmConnectionEntry 7 }
+-- =============================================================================
+-- End of unisMinmConnectionTable Definition
+-- =============================================================================
+
+END

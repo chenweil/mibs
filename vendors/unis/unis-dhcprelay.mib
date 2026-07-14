@@ -1,0 +1,670 @@
+-- =====================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: DHCP Relay MIB.
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 2005-4-11 created by wumingyu
+-- V1.1 2006-01-10 modified by xuyufei
+--      Add unisDHCPRConfigOption82IfTable
+-- =====================================================================
+UNIS-DHCPRELAY-MIB DEFINITIONS ::= BEGIN
+        IMPORTS
+                TruthValue, RowStatus, MacAddress
+                        FROM SNMPv2-TC
+                MODULE-IDENTITY, OBJECT-TYPE, Integer32, Unsigned32
+                        FROM SNMPv2-SMI
+                ifIndex
+                        FROM RFC1213-MIB
+                InetAddress, InetAddressType
+                        FROM INET-ADDRESS-MIB
+                unisCommon
+                        FROM UNIS-OID-MIB;
+
+-- ==================================================================
+--
+-- module identity part
+--
+-- ==================================================================
+        unisDhcpRelay MODULE-IDENTITY
+                LAST-UPDATED
+                        "200506080000Z"
+                ORGANIZATION
+                    "Unisyue Technologies Co., Ltd."
+                CONTACT-INFO
+                    ""
+                DESCRIPTION "DHCPR MIB"
+                REVISION
+                        "200506080000Z"
+                DESCRIPTION
+                        "The initial version of this MIB module."
+                ::= { unisCommon 58 }
+
+-- ==================================================================
+--
+-- =====================object definition begin======================
+--
+-- ==================================================================
+        unisDHCPRMibObject      OBJECT IDENTIFIER ::= { unisDhcpRelay 1 }
+
+--unisDHCPRIfSelectTable--
+        unisDHCPRIfSelectTable  OBJECT-TYPE
+                SYNTAX      SEQUENCE OF UnisDHCPRIfSelectEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "A table for configuring relay mode
+                            for interfaces.
+                            "
+                ::= { unisDHCPRMibObject 1 }
+
+        unisDHCPRIfSelectEntry  OBJECT-TYPE
+                SYNTAX      UnisDHCPRIfSelectEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "An entry for configuring relay mode for an
+                            interface.
+                            "
+                INDEX
+                {
+                        ifIndex
+                }
+                ::= { unisDHCPRIfSelectTable 1 }
+
+        UnisDHCPRIfSelectEntry ::=
+                SEQUENCE
+                {
+                        unisDHCPRIfSelectRelayMode INTEGER
+                }
+
+        unisDHCPRIfSelectRelayMode    OBJECT-TYPE
+                SYNTAX      INTEGER
+                {
+                            on(1),
+                            off(2)
+                }
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION "If the value is on, the DHCP relay function
+                            would be enabled on this interface.
+                            "
+                DEFVAL      { off }
+
+                ::= { unisDHCPRIfSelectEntry 1 }
+
+--unisDHCPRIpToGroupTable--
+        unisDHCPRIpToGroupTable  OBJECT-TYPE
+                SYNTAX      SEQUENCE OF UnisDHCPRIpToGroupEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "A table for configuring ip addresses for DHCP
+                            server groups.
+                            "
+                ::= { unisDHCPRMibObject 2 }
+
+        unisDHCPRIpToGroupEntry  OBJECT-TYPE
+                SYNTAX      UnisDHCPRIpToGroupEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "An entry for configuring ip addresses for a DHCP
+                            server group.
+                            "
+                INDEX
+                {
+                        unisDHCPRIpToGroupGroupId,
+                        unisDHCPRIpToGroupServerIpType,
+                        unisDHCPRIpToGroupServerIp
+                }
+                ::= { unisDHCPRIpToGroupTable 1 }
+
+        UnisDHCPRIpToGroupEntry ::=
+                SEQUENCE
+                {
+                        unisDHCPRIpToGroupGroupId        Integer32,
+                        unisDHCPRIpToGroupServerIpType   InetAddressType,
+                        unisDHCPRIpToGroupServerIp       InetAddress,
+                        unisDHCPRIpToGroupRowStatus      RowStatus
+                }
+
+        unisDHCPRIpToGroupGroupId    OBJECT-TYPE
+                SYNTAX      Integer32 (0..19)
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "Group identifier of DHCP server group. "
+                ::= { unisDHCPRIpToGroupEntry 1 }
+
+        unisDHCPRIpToGroupServerIpType   OBJECT-TYPE
+                SYNTAX      InetAddressType
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "Ip address type of DHCP server. "
+                ::= { unisDHCPRIpToGroupEntry 2 }
+
+        unisDHCPRIpToGroupServerIp   OBJECT-TYPE
+                SYNTAX      InetAddress (SIZE (1..64))
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "Ip address of DHCP server. "
+                ::= { unisDHCPRIpToGroupEntry 3 }
+
+        unisDHCPRIpToGroupRowStatus  OBJECT-TYPE
+                SYNTAX      RowStatus
+                MAX-ACCESS  read-create
+                STATUS      current
+                DESCRIPTION
+                        "Operation status of this table entry.
+                        Three actions are used: active,
+                        createAndGo, destroy.
+                        "
+                ::= { unisDHCPRIpToGroupEntry 4 }
+
+--unisDHCPRIfToGroupTable--
+        unisDHCPRIfToGroupTable      OBJECT-TYPE
+                SYNTAX      SEQUENCE OF UnisDHCPRIfToGroupEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "A table for configuring DHCP server groups
+                            for interfaces.
+                            "
+                ::= { unisDHCPRMibObject 3 }
+
+        unisDHCPRIfToGroupEntry  OBJECT-TYPE
+                SYNTAX      UnisDHCPRIfToGroupEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "An entry for configuring DHCP server group for
+                            an interface.
+                            "
+                INDEX
+                {
+                        ifIndex
+                }
+                ::= { unisDHCPRIfToGroupTable 1 }
+
+        UnisDHCPRIfToGroupEntry  ::=
+                SEQUENCE
+                {
+                        unisDHCPRIfToGroupGroupId        Integer32,
+                        unisDHCPRIfToGroupRowStatus      RowStatus
+                }
+
+        unisDHCPRIfToGroupGroupId    OBJECT-TYPE
+                SYNTAX      Integer32 (0..19)
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION "The DHCP server group for this interface. "
+                ::= { unisDHCPRIfToGroupEntry 1 }
+
+        unisDHCPRIfToGroupRowStatus  OBJECT-TYPE
+                SYNTAX      RowStatus
+                MAX-ACCESS  read-create
+                STATUS      current
+                DESCRIPTION
+                        "Operation status of this table entry.
+                        Three actions are used: active,
+                        createAndGo, destroy"
+                ::= { unisDHCPRIfToGroupEntry 2 }
+
+--unisDHCPRAddrCheckTable--
+        unisDHCPRAddrCheckTable   OBJECT-TYPE
+                SYNTAX      SEQUENCE OF UnisDHCPRAddrCheckEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION
+                        "A table containing the states of dhcp security address
+                        check switchs for interfaces.
+                        "
+                ::= { unisDHCPRMibObject 4 }
+
+        unisDHCPRAddrCheckEntry   OBJECT-TYPE
+                SYNTAX      UnisDHCPRAddrCheckEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION
+                        "An entry containing the state of dhcp security address
+                        check switch for an interface.
+                        "
+                INDEX
+                {
+                        ifIndex
+                }
+                ::= { unisDHCPRAddrCheckTable 1 }
+
+        UnisDHCPRAddrCheckEntry   ::=
+                SEQUENCE
+                {
+                        unisDHCPRAddrCheckSwitch  INTEGER
+                }
+
+        unisDHCPRAddrCheckSwitch  OBJECT-TYPE
+                SYNTAX  INTEGER
+                {
+                        enabled(1),
+                        disabled(2)
+                }
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                        "The state of dhcp security address check switch for
+                        this interface.
+                        It has two defined values: enabled and disabled.
+                        If the value is enabled, the address check function
+                        would be enabled. The default value is disabled.
+                        "
+                DEFVAL      { disabled }
+                ::= { unisDHCPRAddrCheckEntry 1 }
+
+--unisDHCPRSecurityTable--
+        unisDHCPRSecurityTable   OBJECT-TYPE
+                SYNTAX      SEQUENCE OF UnisDHCPRSecurityEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "A table containing the information of
+                            DHCP security.
+                            "
+                ::= { unisDHCPRMibObject 5 }
+
+        unisDHCPRSecurityEntry  OBJECT-TYPE
+                SYNTAX      UnisDHCPRSecurityEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "An entry containing the information of
+                            DHCP security.
+                            "
+                INDEX
+                {
+                        unisDHCPRSecurityClientIpAddrType,
+                        unisDHCPRSecurityClientIpAddr
+                }
+                ::= { unisDHCPRSecurityTable 1 }
+
+        UnisDHCPRSecurityEntry   ::=
+                SEQUENCE
+                {
+                        unisDHCPRSecurityClientIpAddrType    InetAddressType,
+                        unisDHCPRSecurityClientIpAddr    InetAddress,
+                        unisDHCPRSecurityClientMacAddr    MacAddress,
+                        unisDHCPRSecurityClientProperty     INTEGER,
+                        unisDHCPRSecurityClientRowStatus     RowStatus
+                }
+
+        unisDHCPRSecurityClientIpAddrType OBJECT-TYPE
+                SYNTAX      InetAddressType
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "DHCP client's net ip address type"
+                ::= { unisDHCPRSecurityEntry 1 }
+
+        unisDHCPRSecurityClientIpAddr     OBJECT-TYPE
+                SYNTAX      InetAddress (SIZE (1..64))
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "DHCP client's net ip address"
+                ::= { unisDHCPRSecurityEntry 2 }
+
+        unisDHCPRSecurityClientMacAddr    OBJECT-TYPE
+                SYNTAX      MacAddress
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION "DHCP client's mac address"
+                ::= { unisDHCPRSecurityEntry 3 }
+
+        unisDHCPRSecurityClientProperty      OBJECT-TYPE
+                SYNTAX  INTEGER
+                {
+                        static(1),
+                        dynamic(2)
+                }
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION "Property of client address"
+                ::= { unisDHCPRSecurityEntry 4 }
+
+        unisDHCPRSecurityClientRowStatus     OBJECT-TYPE
+                SYNTAX      RowStatus
+                MAX-ACCESS  read-create
+                STATUS      current
+                DESCRIPTION
+                        "Operation status of this table entry.
+                        Three actions are used: active,
+                        createAndGo, destroy"
+                ::= { unisDHCPRSecurityEntry 5 }
+
+--unisDHCPRStatisticsGroup--
+        unisDHCPRStatisticsGroup     OBJECT IDENTIFIER ::= { unisDHCPRMibObject 6 }
+
+        unisDHCPRRxClientPktNum OBJECT-TYPE
+                SYNTAX      Unsigned32
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                        "The total number of the packets received from DHCP
+                        clients by DHCP relay.
+                        "
+                ::= { unisDHCPRStatisticsGroup 1 }
+
+        unisDHCPRTxClientPktNum OBJECT-TYPE
+                SYNTAX      Unsigned32
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                        "The total number of the brodcast packets transmitted
+                        to DHCP clients by DHCP relay.
+                        "
+                ::= { unisDHCPRStatisticsGroup 2 }
+
+        unisDHCPRRxServerPktNum OBJECT-TYPE
+                SYNTAX      Unsigned32
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                        "The total number of the packets received from
+                        DHCP Servers by DHCP relay.
+                        "
+                ::= { unisDHCPRStatisticsGroup 3 }
+
+        unisDHCPRTxServerPktNum OBJECT-TYPE
+                SYNTAX      Unsigned32
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                        "The total number of the packets transmitted to
+                        DHCP Servers by DHCP relay.
+                        "
+                ::= { unisDHCPRStatisticsGroup 4 }
+
+        unisDHCPRDiscoverPktNum OBJECT-TYPE
+                SYNTAX      Unsigned32
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                        "The total number of the DHCP Discover packets handled
+                        by DHCP relay.
+                        "
+                ::= { unisDHCPRStatisticsGroup 5 }
+
+        unisDHCPRRequestPktNum OBJECT-TYPE
+                SYNTAX      Unsigned32
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                        "The total number of the DHCP Request packets handled
+                        by DHCP relay.
+                        "
+                ::= { unisDHCPRStatisticsGroup 6 }
+
+        unisDHCPRDeclinePktNum OBJECT-TYPE
+                SYNTAX      Unsigned32
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                        "The total number of the DHCP Decline packets handled
+                        by DHCP relay.
+                        "
+                ::= { unisDHCPRStatisticsGroup 7 }
+
+        unisDHCPRReleasePktNum OBJECT-TYPE
+                SYNTAX      Unsigned32
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                        "The total number of the DHCP Release packets handled
+                        by DHCP relay.
+                        "
+                ::= { unisDHCPRStatisticsGroup 8 }
+
+        unisDHCPRInformPktNum OBJECT-TYPE
+                SYNTAX      Unsigned32
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                        "The total number of the DHCP Inform packets handled
+                        by DHCP relay.
+                        "
+                ::= { unisDHCPRStatisticsGroup 9 }
+
+        unisDHCPROfferPktNum OBJECT-TYPE
+                SYNTAX      Unsigned32
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                        "The total number of the DHCP Offer packets handled
+                        by DHCP relay.
+                        "
+                ::= { unisDHCPRStatisticsGroup 10 }
+
+        unisDHCPRAckPktNum OBJECT-TYPE
+                SYNTAX      Unsigned32
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                        "The total number of the DHCP Ack packets handled
+                        by DHCP relay.
+                        "
+                ::= { unisDHCPRStatisticsGroup 11 }
+
+        unisDHCPRNakPktNum OBJECT-TYPE
+                SYNTAX      Unsigned32
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                        "The total number of the DHCP Nak packets handled
+                        by DHCP relay.
+                        "
+                ::= { unisDHCPRStatisticsGroup 12 }
+
+        unisDHCPRStatisticsReset     OBJECT-TYPE
+                SYNTAX      TruthValue
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                        "This node only supports set operation.
+                        If the value is true,it will clear all of the packet
+                        statistics.
+                        "
+                ::= { unisDHCPRStatisticsGroup 13 }
+
+--unisDHCPRCycleGroup--
+        unisDHCPRCycleGroup  OBJECT IDENTIFIER ::= { unisDHCPRMibObject 7 }
+
+        unisDHCPRCycleStatus OBJECT-TYPE
+                SYNTAX INTEGER
+                {
+                        on(1),
+                        off(2)
+                }
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION "If the value is on, the cycle function
+                            would be enabled.
+                            "
+                DEFVAL      { off }
+                ::= { unisDHCPRCycleGroup 1 }
+
+--unisDHCPRConfigOption82Group--
+        unisDHCPRConfigOption82Group OBJECT IDENTIFIER ::= { unisDHCPRMibObject 8 }
+
+        unisDHCPROption82Switch  OBJECT-TYPE
+                SYNTAX INTEGER
+                {
+                        enabled(1),
+                        disabled(2)
+                }
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION "If the value is enabled,
+                            DHCP relay supporting option 82 function
+                            would be enabled.
+                            "
+                DEFVAL      { disabled }
+                ::= { unisDHCPRConfigOption82Group 1 }
+
+        unisDHCPROption82HandleStrategy  OBJECT-TYPE
+                SYNTAX INTEGER
+                {
+                        drop(1),
+                        keep(2),
+                        replace(3)
+                }
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION "The strategies of DHCP relay handling option 82.
+
+                            'drop' indicates DHCP relay discarding the request
+                            packet including option 82.
+
+                            'keep' indicates DHCP relay accepting the request
+                            packet without any change of the option 82.
+
+                            'replace' indicates DHCP relay accepting the
+                            request packet on condition that it generates a new
+                            option 82 to replace the original one.
+                            "
+                DEFVAL      { replace }
+                ::= { unisDHCPRConfigOption82Group 2 }
+
+        unisDHCPRConfigOption82IfTable   OBJECT-TYPE
+                SYNTAX      SEQUENCE OF UnisDHCPRConfigOption82IfEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "A table containing the information of DHCP
+                            option 82.
+                            This table depends on unisDHCPRIfToGroupTable.
+                            An entry of this table will be created when
+                            an entry of unisDHCPRIfToGroupTable is created.
+                            "
+                ::= { unisDHCPRConfigOption82Group 3 }
+
+        unisDHCPRConfigOption82IfEntry  OBJECT-TYPE
+                SYNTAX      UnisDHCPRConfigOption82IfEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION "An entry containing the information of
+                            DHCP option 82.
+                            "
+                INDEX
+                {
+                        ifIndex
+                }
+                ::= { unisDHCPRConfigOption82IfTable 1 }
+
+        UnisDHCPRConfigOption82IfEntry   ::=
+                SEQUENCE
+                {
+                        unisDHCPROption82IfSwitch    INTEGER,
+                        unisDHCPROption82IfStrategy    INTEGER,
+                        unisDHCPROption82IfFormat    INTEGER,
+                        unisDHCPROption82IfNodeType     INTEGER,
+                        unisDHCPROption82IfUsrDefString     OCTET STRING
+                }
+
+        unisDHCPROption82IfSwitch OBJECT-TYPE
+                SYNTAX      INTEGER
+                {
+                        enabled(1),
+                        disabled(2)
+                }
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION "If DHCP relay supports option 82 functions, the
+                            value is 'enabled'.
+                            If DHCP relay does not support option 82 functions,
+                            the value is 'disabled'.
+                            "
+                DEFVAL      { disabled }
+                ::= { unisDHCPRConfigOption82IfEntry 1 }
+
+        unisDHCPROption82IfStrategy     OBJECT-TYPE
+                SYNTAX      INTEGER
+                {
+                        drop(1),
+                        keep(2),
+                        replace(3)
+                }
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION "The strategies of DHCP relay handling option 82.
+
+                            'drop' indicates DHCP relay discarding the request
+                            packet including option 82.
+
+                            'keep' indicates DHCP relay accepting the request
+                            packet without any change of the option 82.
+
+                            'replace' indicates DHCP relay accepting the
+                            request packet on condition that it generates a new
+                            option 82 to replace the original one.
+                            "
+                DEFVAL      { replace }
+                ::= { unisDHCPRConfigOption82IfEntry 2 }
+
+        unisDHCPROption82IfFormat    OBJECT-TYPE
+                SYNTAX      INTEGER
+                {
+                        normal(1),
+                        verbose(2)
+                }
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION "The format of DHCP relay option 82.
+
+                            'normal' is the standard format.
+
+                            'verbose' is the detailed format.
+                            "
+                DEFVAL      { normal }
+                ::= { unisDHCPRConfigOption82IfEntry 3 }
+
+        unisDHCPROption82IfNodeType      OBJECT-TYPE
+                SYNTAX  INTEGER
+                {
+                        invalid(1),
+                        mac(2),
+                        sysname(3),
+                        userdefine(4)
+                }
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION "Property of DHCP relay option 82 verbose format.
+                            The value can be set by user only when the value
+                            of unisDHCPROption82IfFormat is set with 'verbose'.
+
+                            If the value of unisDHCPROption82IfFormat is
+                            'normal', the value is automatically set with
+                            'invalid'. the value can not be set with 'invalid'
+                            by user.
+
+                            'mac' indicates the option 82 verbose format is
+                            filled in with the mac of DHCP relay input
+                            interface. If the value of unisDHCPROption82IfFormat
+                            is set with 'verbose', the value is automatically
+                            set with 'mac'.
+
+                            'sysname' indicates the option 82 verbose format
+                            is filled in with the name of the DHCP relay.
+
+                            'userdefine' indicates the option 82 verbose format
+                            is filled in with the string defined by user.
+                            If the value is set with 'userdefine', the value of
+                            unisDHCPROption82IfUsrDefString must be set
+                            simultaneously.
+                            "
+                DEFVAL      { invalid }
+                ::= { unisDHCPRConfigOption82IfEntry 4 }
+
+        unisDHCPROption82IfUsrDefString      OBJECT-TYPE
+                SYNTAX      OCTET STRING (SIZE (0..256))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION "The string defined by user to fill in the
+                            option 82 verbose format. If the value of
+                            unisDHCPROption82IfFormat is 'normal', or the
+                            value of unisDHCPROption82IfNodeType is 'mac'
+                            or 'sysname', it is set with a null string
+                            automatically and can not be modified by user.
+                            It must be set with a non-zero length string
+                            when the value of unisDHCPROption82IfNodeType
+                            is set with 'userdefine'.
+                            "
+                ::= { unisDHCPRConfigOption82IfEntry 5 }
+END

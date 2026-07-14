@@ -1,0 +1,801 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:This MIB file is used for management of userlog
+--             information.
+-- Reference:
+-- Version: V1.1
+-- History:
+--   V1.0
+--   31st Mar 2003
+--   tianli, initial version
+--   V1.1 2005-07-05
+--     Modify value range of unisUserlogNatAclNumber and unisUserlogFlowAclNumber
+--     by tanbo02122.
+--     Update file format by gaolong.
+-- =================================================================
+UNIS-USERLOG-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+            unisRhw
+                    FROM UNIS-OID-MIB
+            OBJECT-GROUP, MODULE-COMPLIANCE
+                    FROM SNMPv2-CONF
+            IpAddress, Integer32, Counter32, OBJECT-TYPE,
+            MODULE-IDENTITY
+                    FROM SNMPv2-SMI;
+
+
+    unisUserLogMIB MODULE-IDENTITY
+            LAST-UPDATED "200304100000Z"          -- April 10, 2003 at 00:00 GMT
+            ORGANIZATION
+                "Unisyue Technologies Co., Ltd."
+            CONTACT-INFO
+                ""
+            DESCRIPTION
+                    "The UNIS-USERLOG-MIB contains objects to
+                    Manage configuration and Monitor running state
+                    for userlog feature."
+            ::= { unisRhw 18 }
+
+
+    unisUserlogObjects OBJECT IDENTIFIER ::= { unisUserLogMIB 1 }
+
+
+    unisUserlogNatObjects OBJECT IDENTIFIER ::= { unisUserlogObjects 1 }
+
+
+    unisUserlogNatVersion OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "NAT LOG version. Currently only version 1 is developed."
+            ::= { unisUserlogNatObjects 1 }
+
+
+    unisUserlogNatSyslog OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    NAT LOG format.
+                    If 1, LOG format is sysLog.
+                    If 0, LOG format is UDP packet.
+                    UDP packet is the default format, and is recommended.
+                    "
+            ::= { unisUserlogNatObjects 2 }
+
+
+    unisUserlogNatSourceIP OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "The Source IP address of NAT LOG UDP packet."
+            ::= { unisUserlogNatObjects 3 }
+
+
+    unisUserlogNatFlowBegin OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    Log the NAT flow when it is created.
+                    If 1, this function is enabled.
+                    If 0, this function is disabled.
+                    This function will be used when real-time monitor required.
+                    "
+            ::= { unisUserlogNatObjects 4 }
+
+
+    unisUserlogNatActiveTime OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    The active time for long-time existed NAT flow.
+                    Unit: minute. Range: 10 minutes ~ 120 minutes.
+                    When setting it, NAT flow can be logged after an interval of
+                    active time.
+                    This function will be used when real-time monitor required.
+                    The default value 0 means real-time monitor function is disabled.
+                    "
+            ::= { unisUserlogNatObjects 5 }
+
+
+    unisUserlogNatSlotCfgInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisUserlogNatSlotCfgInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "A table of NAT LOG configuration information for the
+                    specified slot."
+            ::= { unisUserlogNatObjects 6 }
+
+
+    unisUserlogNatSlotCfgInfoEntry OBJECT-TYPE
+            SYNTAX UnisUserlogNatSlotCfgInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "NAT LOG Configuration Information Entry for a slot."
+            INDEX { unisUserlogNatCfgSlotNumber }
+            ::= { unisUserlogNatSlotCfgInfoTable 1 }
+
+
+    UnisUserlogNatSlotCfgInfoEntry ::=
+            SEQUENCE {
+                    unisUserlogNatCfgSlotNumber
+                            Integer32,
+                    unisUserlogNatEnable
+                            Integer32,
+                    unisUserlogNatAclNumber
+                            Integer32,
+                    unisUserlogNatHostAddress
+                            IpAddress,
+                    unisUserlogNatUdpPort
+                            Integer32
+             }
+
+    unisUserlogNatCfgSlotNumber OBJECT-TYPE
+            SYNTAX Integer32 (0..15)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "Slot number. Specify which slot is configured with NAT LOG. "
+            ::= { unisUserlogNatSlotCfgInfoEntry 1 }
+
+
+    unisUserlogNatEnable OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    The NAT LOG feature Enable status.
+                    If 1, NAT LOG is enbled.
+                    If 0, NAT LOG is disabled.
+                    "
+            ::= { unisUserlogNatSlotCfgInfoEntry 2 }
+
+
+    unisUserlogNatAclNumber OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    Access-list number.
+                    The value 0 means no ACL is specified.
+                    Only when NAT LOG is enabled, can ACL be configured.
+                    Only NAT flow which match the ACL will be logged.
+                    "
+            ::= { unisUserlogNatSlotCfgInfoEntry 3 }
+
+
+    unisUserlogNatHostAddress OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "The IP address of NAT LOG server. "
+            ::= { unisUserlogNatSlotCfgInfoEntry 4 }
+
+
+    unisUserlogNatUdpPort OBJECT-TYPE
+            SYNTAX Integer32 (0..65535)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "The UDP Port Number of NAT LOG UDP packet."
+            ::= { unisUserlogNatSlotCfgInfoEntry 5 }
+
+
+    unisUserlogNatSlotRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisUserlogNatSlotRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "A table of NAT LOG running information for the specified slot."
+            ::= { unisUserlogNatObjects 7 }
+
+
+    unisUserlogNatSlotRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisUserlogNatSlotRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "NAT LOG Running Information Entry for a slot."
+            INDEX { unisUserlogNatRunSlotNumber }
+            ::= { unisUserlogNatSlotRunInfoTable 1 }
+
+
+    UnisUserlogNatSlotRunInfoEntry ::=
+            SEQUENCE {
+                    unisUserlogNatRunSlotNumber
+                            Integer32,
+                    unisUserlogNatTotalEntries
+                            Counter32,
+                    unisUserlogNatTotalPackets
+                            Counter32,
+                    unisUserlogNatFailedEntries
+                            Counter32,
+                    unisUserlogNatFailedPackets
+                            Counter32,
+                    unisUserlogNatClearRunStat
+                            Integer32
+             }
+
+    unisUserlogNatRunSlotNumber OBJECT-TYPE
+            SYNTAX Integer32 (0..15)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "Slot number. Specify on which slot the NAT LOG statistics
+                    displayed."
+            ::= { unisUserlogNatSlotRunInfoEntry 1 }
+
+
+    unisUserlogNatTotalEntries OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "The total number of NAT flow entries which are logged."
+            ::= { unisUserlogNatSlotRunInfoEntry 2 }
+
+
+    unisUserlogNatTotalPackets OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "The total number of NAT LOG UDP packets generated by the router."
+            ::= { unisUserlogNatSlotRunInfoEntry 3 }
+
+
+    unisUserlogNatFailedEntries OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "The total number of NAT flow entries failed in outputting."
+            ::= { unisUserlogNatSlotRunInfoEntry 4 }
+
+
+    unisUserlogNatFailedPackets OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "The total number of NAT LOG UDP packets failed in outputting."
+            ::= { unisUserlogNatSlotRunInfoEntry 5 }
+
+
+    unisUserlogNatClearRunStat OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    Clear the running statistics for NAT LOG. Write-only.
+                    If 1, the running statistics for NAT LOG is resetted.
+                    Other value is invalid.
+                    "
+            ::= { unisUserlogNatSlotRunInfoEntry 6 }
+
+
+    unisUserlogFlowObjects OBJECT IDENTIFIER ::= { unisUserlogObjects 2 }
+
+
+    unisUserlogFlowVersion OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "BAS FLOW LOG version. Currently only version 1 is developed."
+            ::= { unisUserlogFlowObjects 1 }
+
+
+    unisUserlogFlowSyslog OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    BAS FLOW LOG format.
+                    If 1, LOG format is sysLog.
+                    If 0, LOG format is UDP packet.
+                    UDP packet is the default format, and is recommended.
+                    "
+            ::= { unisUserlogFlowObjects 2 }
+
+
+    unisUserlogFlowSourceIP OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "The Source IP address of BAS FLOW LOG UDP packet."
+            ::= { unisUserlogFlowObjects 3 }
+
+
+    unisUserlogFlowFlowBegin OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    Log the BAS flow when it is created.
+                    If 1, this function is enabled.
+                    If 0, this function is disabled.
+                    This function will be used when real-time monitor required.
+                    "
+            ::= { unisUserlogFlowObjects 4 }
+
+
+    unisUserlogFlowActiveTime OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    The active time for long-time existed BAS flow.
+                    Unit: minute. Range: 10 minutes ~ 120 minutes.
+                    When setting it, BAS flow can be logged after an internal of
+                    active time.
+                    This function will be used when real-time monitor required.
+                    The default value 0 means real-time monitor function is disabled.
+                    "
+            ::= { unisUserlogFlowObjects 5 }
+
+
+    unisUserlogFlowSlotCfgInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisUserlogFlowSlotCfgInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "A table of BAS FLOW LOG configuration information for the
+                    specified slot."
+            ::= { unisUserlogFlowObjects 6 }
+
+
+    unisUserlogFlowSlotCfgInfoEntry OBJECT-TYPE
+            SYNTAX UnisUserlogFlowSlotCfgInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "BAS FLOW LOG Configuration Information Entry for a slot."
+            INDEX { unisUserlogFlowCfgSlotNumber }
+            ::= { unisUserlogFlowSlotCfgInfoTable 1 }
+
+
+    UnisUserlogFlowSlotCfgInfoEntry ::=
+            SEQUENCE {
+                    unisUserlogFlowCfgSlotNumber
+                            Integer32,
+                    unisUserlogFlowEnable
+                            Integer32,
+                    unisUserlogFlowAclNumber
+                            Integer32,
+                    unisUserlogFlowHostAddress
+                            IpAddress,
+                    unisUserlogFlowUdpPort
+                            Integer32
+             }
+
+    unisUserlogFlowCfgSlotNumber OBJECT-TYPE
+            SYNTAX Integer32 (0..15)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "Slot number. Specify which slot is configured with BAS FLOW LOG."
+            ::= { unisUserlogFlowSlotCfgInfoEntry 1 }
+
+
+    unisUserlogFlowEnable OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    The BAS FLOW LOG feature Enable status.
+                    If 1, BAS FLOW LOG is enbled.
+                    If 0, BAS FLOW LOG is disabled.
+                    "
+            ::= { unisUserlogFlowSlotCfgInfoEntry 2 }
+
+
+    unisUserlogFlowAclNumber OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    Access-list number.
+                    The value 0 means no ACL is specified.
+                    Only when BAS FLOW LOG is enabled, can ACL be configured.
+                    Only BAS flow which match the ACL will be logged.
+                    "
+            ::= { unisUserlogFlowSlotCfgInfoEntry 3 }
+
+
+    unisUserlogFlowHostAddress OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "The IP address of BAS FLOW LOG server. "
+            ::= { unisUserlogFlowSlotCfgInfoEntry 4 }
+
+
+    unisUserlogFlowUdpPort OBJECT-TYPE
+            SYNTAX Integer32 (0..65535)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "The UDP Port Number of BAS FLOW LOG UDP packet."
+            ::= { unisUserlogFlowSlotCfgInfoEntry 5 }
+
+
+    unisUserlogFlowSlotRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisUserlogFlowSlotRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "A table of BAS FLOW LOG running information for the specified slot."
+            ::= { unisUserlogFlowObjects 7 }
+
+
+    unisUserlogFlowSlotRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisUserlogFlowSlotRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "Running Information Entry for a slot."
+            INDEX { unisUserlogFlowRunSlotNumber }
+            ::= { unisUserlogFlowSlotRunInfoTable 1 }
+
+
+    UnisUserlogFlowSlotRunInfoEntry ::=
+            SEQUENCE {
+                    unisUserlogFlowRunSlotNumber
+                            Integer32,
+                    unisUserlogFlowTotalEntries
+                            Counter32,
+                    unisUserlogFlowTotalPackets
+                            Counter32,
+                    unisUserlogFlowFailedEntries
+                            Counter32,
+                    unisUserlogFlowFailedPackets
+                            Counter32,
+                    unisUserlogFlowClearRunStat
+                            Integer32
+             }
+
+    unisUserlogFlowRunSlotNumber OBJECT-TYPE
+            SYNTAX Integer32 (0..15)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "Slot number. Specify on which slot the BAS FLOW LOG
+                    statistics displayed."
+            ::= { unisUserlogFlowSlotRunInfoEntry 1 }
+
+
+    unisUserlogFlowTotalEntries OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "The total number of BAS FLOW Entries which are logged."
+            ::= { unisUserlogFlowSlotRunInfoEntry 2 }
+
+
+    unisUserlogFlowTotalPackets OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "The total number of FLOW LOG UDP packet generated by the router."
+            ::= { unisUserlogFlowSlotRunInfoEntry 3 }
+
+
+    unisUserlogFlowFailedEntries OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "The total number of BAS FLOW  entries failed in outputting. "
+            ::= { unisUserlogFlowSlotRunInfoEntry 4 }
+
+
+    unisUserlogFlowFailedPackets OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "The total number of BAS FLOW LOG UDP packet failed in outputting."
+            ::= { unisUserlogFlowSlotRunInfoEntry 5 }
+
+
+    unisUserlogFlowClearRunStat OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    Clear the running statistics for FLOW LOG. Write-only.
+                    If 1, the running statistics for FLOW LOG is resetted.
+                    Other value is invalid.
+                    "
+            ::= { unisUserlogFlowSlotRunInfoEntry 6 }
+
+
+    unisUserlogAccessObjects OBJECT IDENTIFIER ::= { unisUserlogObjects 3 }
+
+
+    unisUserlogAccessVersion OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "BAS ACCESS LOG version. Currently only version 1 is developed."
+            ::= { unisUserlogAccessObjects 1 }
+
+
+    unisUserlogAccessSyslog OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    BAS ACCESS LOG format.
+                    If 1, LOG format is sysLog;
+                    If 0, LOG format is UDP packet.
+                    UDP packet is the default format, and is recommended.
+                    "
+            ::= { unisUserlogAccessObjects 2 }
+
+
+    unisUserlogAccessSourceIP OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "The Source IP address of BAS ACCESS LOG UDP packet."
+            ::= { unisUserlogAccessObjects 3 }
+
+
+    unisUserlogAccessSlotCfgInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisUserlogAccessSlotCfgInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "A table of BAS ACCESS LOG configuration information for the specified slot."
+            ::= { unisUserlogAccessObjects 4 }
+
+
+    unisUserlogAccessSlotCfgInfoEntry OBJECT-TYPE
+            SYNTAX UnisUserlogAccessSlotCfgInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "BAS ACCESS LOG Configuration Information Entry for a slot."
+            INDEX { unisUserlogAccessCfgSlotNumber }
+            ::= { unisUserlogAccessSlotCfgInfoTable 1 }
+
+
+    UnisUserlogAccessSlotCfgInfoEntry ::=
+            SEQUENCE {
+                    unisUserlogAccessCfgSlotNumber
+                            Integer32,
+                    unisUserlogAccessEnable
+                            Integer32,
+                    unisUserlogAccessHostAddress
+                            IpAddress,
+                    unisUserlogAccessUdpPort
+                            Integer32
+             }
+
+    unisUserlogAccessCfgSlotNumber OBJECT-TYPE
+            SYNTAX Integer32 (0..15)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "Slot number. Specify which slot is configured with BAS ACCESS LOG."
+            ::= { unisUserlogAccessSlotCfgInfoEntry 1 }
+
+
+    unisUserlogAccessEnable OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    The BAS ACCESS LOG feature Enable status.
+                    If 1, BAS ACCESS LOG is enbled.
+                    If 0, BAS ACCESS LOG is disabled.
+                    "
+            ::= { unisUserlogAccessSlotCfgInfoEntry 2 }
+
+
+    unisUserlogAccessHostAddress OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "The IP address of BAS ACCESS LOG server."
+            ::= { unisUserlogAccessSlotCfgInfoEntry 3 }
+
+
+    unisUserlogAccessUdpPort OBJECT-TYPE
+            SYNTAX Integer32 (0..65535)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "The UDP Port Number of BAS ACCESS LOG UDP packet."
+            ::= { unisUserlogAccessSlotCfgInfoEntry 4 }
+
+
+    unisUserlogAccessSlotRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisUserlogAccessSlotRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "A table of BAS ACCESS LOG running information for the specified slot."
+            ::= { unisUserlogAccessObjects 5 }
+
+
+    unisUserlogAccessSlotRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisUserlogAccessSlotRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "Running Information Entry for a slot."
+            INDEX { unisUserlogAccessRunSlotNumber }
+            ::= { unisUserlogAccessSlotRunInfoTable 1 }
+
+
+    UnisUserlogAccessSlotRunInfoEntry ::=
+            SEQUENCE {
+                    unisUserlogAccessRunSlotNumber
+                            Integer32,
+                    unisUserlogAccessTotalEntries
+                            Counter32,
+                    unisUserlogAccessTotalPackets
+                            Counter32,
+                    unisUserlogAccessFailedEntries
+                            Counter32,
+                    unisUserlogAccessFailedPackets
+                            Counter32,
+                    unisUserlogAccessClearRunStat
+                            Integer32
+             }
+
+    unisUserlogAccessRunSlotNumber OBJECT-TYPE
+            SYNTAX Integer32 (0..15)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "Slot number. Specify on which slot the BAS ACCESS LOG statistics displayed."
+            ::= { unisUserlogAccessSlotRunInfoEntry 1 }
+
+
+    unisUserlogAccessTotalEntries OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "The total number of BAS ACCESS Records which are logged."
+            ::= { unisUserlogAccessSlotRunInfoEntry 2 }
+
+
+    unisUserlogAccessTotalPackets OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "The total number of ACCESS LOG UDP packet generated by the router."
+            ::= { unisUserlogAccessSlotRunInfoEntry 3 }
+
+
+    unisUserlogAccessFailedEntries OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "The total number of BAS ACCESS entries failed in outputting."
+            ::= { unisUserlogAccessSlotRunInfoEntry 4 }
+
+
+    unisUserlogAccessFailedPackets OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                    "The total number of BAS ACCESS LOG UDP packet failed in outputting."
+            ::= { unisUserlogAccessSlotRunInfoEntry 5 }
+
+
+    unisUserlogAccessClearRunStat OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                    "
+                    Clear the running statistics for ACCESS LOG. Write-only.
+                    If 1, the running statistics for ACCESS LOG is resetted.
+                    Other value is invalid.
+                    "
+            ::= { unisUserlogAccessSlotRunInfoEntry 6 }
+
+
+    unisUserlogNotifications OBJECT IDENTIFIER ::= { unisUserLogMIB 2 }
+
+
+    unisUserlogConformance OBJECT IDENTIFIER ::= { unisUserLogMIB 3 }
+
+
+    unisUserlogCompliances OBJECT IDENTIFIER ::= { unisUserlogConformance 1 }
+
+
+    unisUserlogCompliance MODULE-COMPLIANCE
+            STATUS current
+            DESCRIPTION
+                    "The compliance statement for entities which implement the
+                    Userlog mib."
+            MODULE -- this module
+                    MANDATORY-GROUPS { unisUserlogMandatoryGroup }
+            ::= { unisUserlogCompliances 1 }
+
+
+    unisUserlogGroups OBJECT IDENTIFIER ::= { unisUserlogConformance 2 }
+
+
+    unisUserlogMandatoryGroup OBJECT-GROUP
+            OBJECTS { unisUserlogNatEnable, unisUserlogNatHostAddress, unisUserlogNatUdpPort,
+                      unisUserlogFlowEnable, unisUserlogFlowHostAddress, unisUserlogFlowUdpPort,
+                      unisUserlogAccessEnable, unisUserlogAccessHostAddress, unisUserlogAccessUdpPort
+                    }
+            STATUS current
+            DESCRIPTION
+                    "A collection of objects providing mandatory Userlog information."
+            ::= { unisUserlogGroups 1 }
+
+
+    unisUserlogConfigGroup OBJECT-GROUP
+            OBJECTS { unisUserlogNatVersion, unisUserlogNatSyslog, unisUserlogNatSourceIP,
+                      unisUserlogNatFlowBegin, unisUserlogNatActiveTime, unisUserlogNatCfgSlotNumber,
+                      unisUserlogNatEnable, unisUserlogNatAclNumber, unisUserlogNatHostAddress,
+                      unisUserlogNatUdpPort, unisUserlogFlowVersion, unisUserlogFlowSyslog,
+                      unisUserlogFlowSourceIP, unisUserlogFlowFlowBegin, unisUserlogFlowActiveTime,
+                      unisUserlogFlowCfgSlotNumber, unisUserlogFlowEnable, unisUserlogFlowAclNumber,
+                      unisUserlogFlowHostAddress, unisUserlogFlowUdpPort, unisUserlogAccessVersion,
+                      unisUserlogAccessSyslog, unisUserlogAccessSourceIP, unisUserlogAccessCfgSlotNumber,
+                      unisUserlogAccessEnable, unisUserlogAccessHostAddress, unisUserlogAccessUdpPort
+                    }
+            STATUS current
+            DESCRIPTION
+                    "All configurable parameters of Userlog feature."
+            ::= { unisUserlogGroups 2 }
+
+
+    unisUserlogInfoGroup OBJECT-GROUP
+            OBJECTS { unisUserlogNatTotalEntries, unisUserlogNatTotalPackets,
+                      unisUserlogNatFailedEntries, unisUserlogNatFailedPackets,
+                      unisUserlogFlowTotalEntries, unisUserlogFlowTotalPackets,
+                      unisUserlogFlowFailedEntries, unisUserlogFlowFailedPackets,
+                      unisUserlogAccessTotalEntries, unisUserlogAccessTotalPackets,
+                      unisUserlogAccessFailedEntries, unisUserlogAccessFailedPackets
+                    }
+            STATUS current
+            DESCRIPTION
+                    "All running information of Userlog feature."
+            ::= { unisUserlogGroups 3 }
+
+END

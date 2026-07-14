@@ -1,0 +1,1028 @@
+-- ==================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Lan Switch trap MIB
+-- Reference:
+-- Version: V1.9
+-- History:
+-- V1.0 Created by Zhangshilin, 2001.06.29
+-- V1.1 Modified by lifengguang 2008.11.10, add trap node unisBootImageUpdated
+-- V1.2 2011-11-26 updated by duyanbing
+--      Add unisDevMFirstTrapTime to powerfailure and unisPowerNormal.
+-- V1.3 2012-04-26 updated by wangcong
+--      Added unisNetworkHealthMonitorFailure, unisNetworkHealthMonitorNormal for reserving.
+-- V1.4 2013-03-08 updated by fangliwen
+--      Added unisCpuRemoved, unisCpuFailure, unisCpuNormal.
+--      2014-08-02 updated by fangliwen
+--      Added unisPowerIncompatible.
+-- V1.5 2016-12-21 updated by yanfang
+--      Add unisCpuUsageSevereNotification
+--          unisCpuUsageSevereRecoverNotification
+--          unisCpuUsageMinorNotification
+--          unisCpuUsageMinorRecoverNotification.
+--          unisMemoryUsageEarlyWarningNotification
+--          unisMemoryUsageEarlyWarningRecoverNotification
+--          unisMemoryUsageMinorNotification
+--          unisMemoryUsageMinorRecoverNotification
+--          unisMemoryUsageSevereNotification
+--          unisMemoryUsageSevereRecoverNotification
+--          unisMemoryUsageCriticalNotification
+--          unisMemoryUsageCriticalRecoverNotification.
+--      2017-06-23 updated by wangweihui
+--      Add unisCoreUsageNotification
+--      2017-07-17 updated by fangliwen
+--      Add unisBoardPowerNotEnough, unisAvailablePower and unisRequiredPower.
+--      2017-12-5 updated by yuhaiyan
+--      Add unisAlarmInPortIn
+--          unisAlarmInPortRecover
+-- V1.6 2018-04-13 updated by wangweihui
+--      Add unisLswAlarmInPortInNum
+-- V1.7 2019-01-11 updated by wangweihui
+--      Add unisCoreUsageSevereRecoveryNotification
+--          unisCoreUsageMinorNotification
+--          unisCoreUsageMinorRecoveryNotification
+-- V1.8 2019-11-22 updated by xuyuanqiang
+--      Add unisDMAMemoryUsageCriticalNotification
+--          unisDMAMemoryUsageRecoverNotification
+-- V1.9 2020-10-15 updated by caohao
+--      Add unisRemainingPowerNotEnough
+--          unisFrameRemainingPower
+-- ==================================================================
+
+-- ==================================================================
+--
+-- Variables and types be imported
+--
+-- ==================================================================
+UNIS-LswTRAP-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY, NOTIFICATION-TYPE, OBJECT-TYPE, Unsigned32, Integer32
+        FROM SNMPv2-SMI
+    unislswCommon
+        FROM UNIS-OID-MIB
+    CounterBasedGauge64
+        FROM HCNUM-TC
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB
+    unisDevMPowerNum, unisDevMFanNum, unisDevMFirstTrapTime
+        FROM UNIS-LswDEVM-MIB
+    unisLswFrameIndex, unisLswSlotIndex, unisLswSubslotIndex, unisLswCpuIndex, unisLswCoreIndex, unisLswCoreThreshold,
+    unisLswCoreMinorThreshold, unisLswCoreRecoveryThreshold,unisLswCpuRatio,unisLswCpuUsageMinorThreshold,unisLswCpuUsageSevereThreshold,
+    unisLswCpuUsageRecoverThreshold,unisLswCpuMemory,unisLswCpuMemoryFree,unisLswCpuMemoryFreeRatio,unisLswCpuMemoryHighTotal,unisLswCpuMemoryHighFree,
+    unisLswCpuMemoryLowTotal,unisLswCpuMemoryLowFree,unisLswCpuMemorySecureThreshold,unisLswCpuMemoryEarlyWarningThreshold,unisLswCpuMemoryNormalThreshold,
+    unisLswCpuMemoryMinorThreshold,unisLswCpuMemorySevereThreshold,unisLswCpuMemoryCriticalThreshold,unisLswCpuMemoryCurrentState
+        FROM UNIS-LSW-DEV-ADM-MIB;
+
+-- ==================================================================
+--
+-- ======================= definition begin =========================
+--
+-- ==================================================================
+
+    unisLswTrapMib MODULE-IDENTITY
+            LAST-UPDATED "202010150000Z"
+            ORGANIZATION
+                "Unisyue Technologies Co., Ltd."
+            CONTACT-INFO
+                ""
+            DESCRIPTION
+            ""
+            REVISION "202010150000Z"
+            DESCRIPTION
+            "Add unisRemainingPowerNotEnough
+             unisFrameRemainingPower."
+            REVISION "201911220000Z"
+            DESCRIPTION
+            "Add unisDMAMemoryUsageCriticalNotification
+             unisDMAMemoryUsageRecoverNotification."
+            REVISION "201901110000Z"
+            DESCRIPTION
+            "Added unisCoreUsageSevereRecoveryNotification
+            unisCoreUsageMinorNotification
+            unisCoreUsageMinorRecoveryNotificationm."
+            REVISION "201804130000Z"
+            DESCRIPTION
+            "Added unisLswAlarmInPortInNum."
+            REVISION "201712050000Z"
+            DESCRIPTION
+            "Added unisAlarmInPortIn,  unisAlarmInPortRecover."
+            REVISION "201707170000Z"
+            DESCRIPTION
+            "Added unisBoardPowerNotEnough, unisAvailablePower and unisRequiredPower."
+            REVISION "201706240000Z"
+            DESCRIPTION
+            "unisCoreUsageNotification.
+             Add unissLswTRAPMibObjectV2Prefix for bindings of notification."
+            REVISION "201701120000Z"
+            DESCRIPTION
+            "Add unisCpuUsageSevereNotification
+             unisCpuUsageSevereRecoverNotification
+             unisCpuUsageMinorNotification
+             unisCpuUsageMinorRecoverNotification.
+             unisMemoryUsageEarlyWarningNotification
+             unisMemoryUsageEarlyWarningRecoverNotification
+             unisMemoryUsageMinorNotification
+             unisMemoryUsageMinorRecoverNotification
+             unisMemoryUsageSevereNotification
+             unisMemoryUsageSevereRecoverNotification
+             unisMemoryUsageCriticalNotification
+             unisMemoryUsageCriticalRecoverNotification.
+             Add unissLswTRAPMibInfor for bindings of notification."
+            REVISION "201111260000Z"
+            DESCRIPTION
+            "Initial revision"
+            ::= { unislswCommon 12 }
+
+-- ==================================================================
+--
+-- lsw trap object
+--
+-- ==================================================================
+    unissLswTRAPMibObject OBJECT IDENTIFIER ::= { unisLswTrapMib 1 }
+
+    unispowerfailure NOTIFICATION-TYPE
+      OBJECTS { unisDevMPowerNum, unisDevMFirstTrapTime }
+      STATUS  current
+      DESCRIPTION
+              "Power supply failure"
+      ::= { unissLswTRAPMibObject 1 }
+
+    unisPowerNormal NOTIFICATION-TYPE
+      OBJECTS { unisDevMPowerNum, unisDevMFirstTrapTime }
+      STATUS  current
+      DESCRIPTION
+              "Power supply normal"
+      ::= { unissLswTRAPMibObject 2 }
+
+    unisMasterPowerNormal NOTIFICATION-TYPE
+      OBJECTS { unisDevMPowerNum }
+      STATUS  current
+      DESCRIPTION
+              "Master power supply normal"
+      ::= { unissLswTRAPMibObject 3 }
+
+    unisSlavePowerNormal NOTIFICATION-TYPE
+      OBJECTS { unisDevMPowerNum }
+      STATUS  current
+      DESCRIPTION
+              "Slave power supply normal"
+      ::= { unissLswTRAPMibObject 4 }
+
+    unisPowerRemoved NOTIFICATION-TYPE
+      OBJECTS { unisDevMPowerNum }
+      STATUS  current
+      DESCRIPTION
+              "Power removed"
+      ::= { unissLswTRAPMibObject 5 }
+
+    unisfanfailure NOTIFICATION-TYPE
+      OBJECTS { unisDevMFanNum }
+      STATUS  current
+      DESCRIPTION
+              "Fan failure"
+      ::= { unissLswTRAPMibObject 6 }
+
+    unisFanNormal NOTIFICATION-TYPE
+      OBJECTS { unisDevMFanNum }
+      STATUS  current
+      DESCRIPTION
+              "Fan normal"
+      ::= { unissLswTRAPMibObject 7 }
+
+    unisBoardRemoved NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex }
+      STATUS  current
+      DESCRIPTION
+              "Board removed"
+      ::= { unissLswTRAPMibObject 8 }
+
+    unisBoardInserted NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex,unisLswSlotIndex }
+      STATUS  current
+      DESCRIPTION
+              "Board inserted"
+      ::= { unissLswTRAPMibObject 9 }
+
+    unisBoardFailure NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex }
+      STATUS  current
+      DESCRIPTION
+              "Board failed"
+      ::= { unissLswTRAPMibObject 10 }
+
+    unisBoardNormal NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex }
+      STATUS  current
+      DESCRIPTION
+              "Board normal"
+      ::= { unissLswTRAPMibObject 11 }
+
+    unisSubcardRemove NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex, unisLswSubslotIndex }
+      STATUS  current
+      DESCRIPTION
+              "Sub card removed"
+      ::= { unissLswTRAPMibObject 12 }
+
+    unisSubcardInsert NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex, unisLswSubslotIndex }
+      STATUS  current
+      DESCRIPTION
+              "Sub card inserted"
+      ::= { unissLswTRAPMibObject 13 }
+
+    unisBoardTemperatureLower NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex }
+      STATUS  current
+      DESCRIPTION
+              "Board temperature low"
+      ::= { unissLswTRAPMibObject 14 }
+
+    unisBoardTemperatureFromLowerToNormal NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex }
+      STATUS  current
+      DESCRIPTION
+              "Board temperature form lower to normal"
+      ::= { unissLswTRAPMibObject 15 }
+
+    unisBoardTemperatureHigher NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex }
+      STATUS  current
+      DESCRIPTION
+              "Board temperature high"
+      ::= { unissLswTRAPMibObject 16 }
+
+    unisBoardTemperatureFormHigherToNormal NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex }
+      STATUS  current
+      DESCRIPTION
+              "Board temperature from higher to normal"
+      ::= { unissLswTRAPMibObject 17 }
+
+    unisRequestLoading NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex }
+      STATUS  current
+      DESCRIPTION
+              "Board request load"
+      ::= { unissLswTRAPMibObject 18 }
+
+    unisLoadFailure NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex }
+      STATUS  current
+      DESCRIPTION
+              "Board load failure"
+      ::= { unissLswTRAPMibObject 19 }
+
+    unisLoadFinished NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex }
+      STATUS  current
+      DESCRIPTION
+              "Board load finished"
+      ::= { unissLswTRAPMibObject 20 }
+
+    unisBackBoardModeSetFuilure NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex }
+      STATUS  current
+      DESCRIPTION
+              "Back board mode set failure"
+      ::= { unissLswTRAPMibObject 21 }
+
+    unisBackBoardModeSetOK NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex }
+      STATUS  current
+      DESCRIPTION
+              "Back board mode set OK"
+      ::= { unissLswTRAPMibObject 22 }
+
+    unisPowerInserted NOTIFICATION-TYPE
+      OBJECTS { unisDevMPowerNum }
+      STATUS  current
+      DESCRIPTION
+              "Power inserted"
+      ::= { unissLswTRAPMibObject 23 }
+
+    unisBootImageUpdated NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex }
+      STATUS  current
+      DESCRIPTION
+              "This trap node indicates that the boot image of specified board
+              is updated."
+      ::= { unissLswTRAPMibObject 24 }
+
+    unisCpuRemoved NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex, unisLswCpuIndex }
+      STATUS  current
+      DESCRIPTION
+              "Node removed"
+      ::= { unissLswTRAPMibObject 25 }
+
+    unisCpuFailure NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex, unisLswCpuIndex }
+      STATUS  current
+      DESCRIPTION
+              "Node failed"
+      ::= { unissLswTRAPMibObject 26 }
+
+    unisCpuNormal NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex, unisLswCpuIndex }
+      STATUS  current
+      DESCRIPTION
+              "Node normal"
+      ::= { unissLswTRAPMibObject 27 }
+
+      unisPowerIncompatible NOTIFICATION-TYPE
+      OBJECTS { unisDevMPowerNum}
+      STATUS  current
+      DESCRIPTION
+              "Power module is incompatible with the device"
+      ::= { unissLswTRAPMibObject 28 }
+
+      unisCpuUsageSevereNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCpuRatio,
+            unisLswCpuUsageMinorThreshold,
+            unisLswCpuUsageSevereThreshold,
+            unisLswCpuUsageRecoverThreshold,
+            unissLswTrapCpuCoreInfo,
+            unissLswTrapProcessCpuInfo
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the CPU usage increased to or above
+             the unisLswCpuUsageSevereThreshold."
+      ::= { unissLswTRAPMibObject 29 }
+
+      unisCpuUsageSevereRecoverNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCpuRatio,
+            unisLswCpuUsageMinorThreshold,
+            unisLswCpuUsageSevereThreshold,
+            unisLswCpuUsageRecoverThreshold,
+            unissLswTrapCpuCoreInfo,
+            unissLswTrapProcessCpuInfo
+            }
+      STATUS current
+      DESCRIPTION
+            "
+            When the product does not support unisLswCpuUsageRecoverThreshold,
+            the trap indicates that the CPU usage decreased to or below
+            the unisLswCpuUsageSevereThreshold.
+            When the product supports unisLswCpuUsageRecoverThreshold,
+            the trap indicates that the CPU usage decreased to or below
+            the unisLswCpuUsageMinorThreshold.
+            "
+      ::= { unissLswTRAPMibObject 30 }
+
+      unisCpuUsageMinorNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCpuRatio,
+            unisLswCpuUsageMinorThreshold,
+            unisLswCpuUsageSevereThreshold,
+            unisLswCpuUsageRecoverThreshold,
+            unissLswTrapCpuCoreInfo,
+            unissLswTrapProcessCpuInfo
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the CPU usage increased to or above
+             the unisLswCpuUsageMinorThreshold."
+      ::= { unissLswTRAPMibObject 31 }
+
+      unisCpuUsageMinorRecoverNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCpuRatio,
+            unisLswCpuUsageMinorThreshold,
+            unisLswCpuUsageSevereThreshold,
+            unisLswCpuUsageRecoverThreshold,
+            unissLswTrapCpuCoreInfo,
+            unissLswTrapProcessCpuInfo
+            }
+      STATUS current
+      DESCRIPTION
+            "
+            When the product dose not support unisLswCpuUsageRecoverThreshold,
+            the trap indicates that the CPU usage decreased to or below
+            the unisLswCpuUsageMinorThreshold.
+            When the product supports unisLswCpuUsageRecoverThreshold,
+            the trap indicates that the CPU usage decreased to or below
+            the unisLswCpuUsageRecoverThreshold.
+            "
+      ::= { unissLswTRAPMibObject 32 }
+
+      unisMemoryUsageEarlyWarningNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCpuMemory,
+            unisLswCpuMemoryFree,
+            unisLswCpuMemoryFreeRatio,
+            unisLswCpuMemoryHighTotal,
+            unisLswCpuMemoryHighFree,
+            unisLswCpuMemoryLowTotal,
+            unisLswCpuMemoryLowFree,
+            unisLswCpuMemorySecureThreshold,
+            unisLswCpuMemoryEarlyWarningThreshold,
+            unisLswCpuMemoryNormalThreshold,
+            unisLswCpuMemoryMinorThreshold,
+            unisLswCpuMemorySevereThreshold,
+            unisLswCpuMemoryCriticalThreshold,
+            unisLswCpuMemoryCurrentState,
+            unissLswTrapProcessMemoryInfo,
+            unissLswTrapSlubInfo
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the amount of free memory decreased to or below
+            the unisMemoryUsageEarlyWarningThreshold."
+      ::= { unissLswTRAPMibObject 33 }
+
+      unisMemoryUsageEarlyWarningRecoverNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCpuMemory,
+            unisLswCpuMemoryFree,
+            unisLswCpuMemoryFreeRatio,
+            unisLswCpuMemoryHighTotal,
+            unisLswCpuMemoryHighFree,
+            unisLswCpuMemoryLowTotal,
+            unisLswCpuMemoryLowFree,
+            unisLswCpuMemorySecureThreshold,
+            unisLswCpuMemoryEarlyWarningThreshold,
+            unisLswCpuMemoryNormalThreshold,
+            unisLswCpuMemoryMinorThreshold,
+            unisLswCpuMemorySevereThreshold,
+            unisLswCpuMemoryCriticalThreshold,
+            unisLswCpuMemoryCurrentState,
+            unissLswTrapProcessMemoryInfo,
+            unissLswTrapSlubInfo
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the amount of free memory usage increased to or above
+             the unisMemoryUsageSecureThreshold."
+      ::= { unissLswTRAPMibObject 34 }
+
+      unisMemoryUsageMinorNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCpuMemory,
+            unisLswCpuMemoryFree,
+            unisLswCpuMemoryFreeRatio,
+            unisLswCpuMemoryHighTotal,
+            unisLswCpuMemoryHighFree,
+            unisLswCpuMemoryLowTotal,
+            unisLswCpuMemoryLowFree,
+            unisLswCpuMemorySecureThreshold,
+            unisLswCpuMemoryEarlyWarningThreshold,
+            unisLswCpuMemoryNormalThreshold,
+            unisLswCpuMemoryMinorThreshold,
+            unisLswCpuMemorySevereThreshold,
+            unisLswCpuMemoryCriticalThreshold,
+            unisLswCpuMemoryCurrentState,
+            unissLswTrapProcessMemoryInfo,
+            unissLswTrapSlubInfo
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the amount of free memory decreased to or below
+            the unisLswCpuMemoryMinorThreshold."
+      ::= { unissLswTRAPMibObject 35 }
+
+      unisMemoryUsageMinorRecoverNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCpuMemory,
+            unisLswCpuMemoryFree,
+            unisLswCpuMemoryFreeRatio,
+            unisLswCpuMemoryHighTotal,
+            unisLswCpuMemoryHighFree,
+            unisLswCpuMemoryLowTotal,
+            unisLswCpuMemoryLowFree,
+            unisLswCpuMemorySecureThreshold,
+            unisLswCpuMemoryEarlyWarningThreshold,
+            unisLswCpuMemoryNormalThreshold,
+            unisLswCpuMemoryMinorThreshold,
+            unisLswCpuMemorySevereThreshold,
+            unisLswCpuMemoryCriticalThreshold,
+            unisLswCpuMemoryCurrentState,
+            unissLswTrapProcessMemoryInfo,
+            unissLswTrapSlubInfo
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the amount of free memory usage increased to or above
+             the unisLswCpuMemoryNormalThreshold."
+      ::= { unissLswTRAPMibObject 36 }
+
+      unisMemoryUsageSevereNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCpuMemory,
+            unisLswCpuMemoryFree,
+            unisLswCpuMemoryFreeRatio,
+            unisLswCpuMemoryHighTotal,
+            unisLswCpuMemoryHighFree,
+            unisLswCpuMemoryLowTotal,
+            unisLswCpuMemoryLowFree,
+            unisLswCpuMemorySecureThreshold,
+            unisLswCpuMemoryEarlyWarningThreshold,
+            unisLswCpuMemoryNormalThreshold,
+            unisLswCpuMemoryMinorThreshold,
+            unisLswCpuMemorySevereThreshold,
+            unisLswCpuMemoryCriticalThreshold,
+            unisLswCpuMemoryCurrentState,
+            unissLswTrapProcessMemoryInfo,
+            unissLswTrapSlubInfo
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the amount of free memory decreased to or below
+             the unisMemoryUsageSevereThreshold."
+      ::= { unissLswTRAPMibObject 37 }
+
+      unisMemoryUsageSevereRecoverNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCpuMemory,
+            unisLswCpuMemoryFree,
+            unisLswCpuMemoryFreeRatio,
+            unisLswCpuMemoryHighTotal,
+            unisLswCpuMemoryHighFree,
+            unisLswCpuMemoryLowTotal,
+            unisLswCpuMemoryLowFree,
+            unisLswCpuMemorySecureThreshold,
+            unisLswCpuMemoryEarlyWarningThreshold,
+            unisLswCpuMemoryNormalThreshold,
+            unisLswCpuMemoryMinorThreshold,
+            unisLswCpuMemorySevereThreshold,
+            unisLswCpuMemoryCriticalThreshold,
+            unisLswCpuMemoryCurrentState,
+            unissLswTrapProcessMemoryInfo,
+            unissLswTrapSlubInfo
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the amount of free memory usage increased to or above
+            the unisMemoryUsageMinorThreshold."
+      ::= { unissLswTRAPMibObject 38 }
+
+      unisMemoryUsageCriticalNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCpuMemory,
+            unisLswCpuMemoryFree,
+            unisLswCpuMemoryFreeRatio,
+            unisLswCpuMemoryHighTotal,
+            unisLswCpuMemoryHighFree,
+            unisLswCpuMemoryLowTotal,
+            unisLswCpuMemoryLowFree,
+            unisLswCpuMemorySecureThreshold,
+            unisLswCpuMemoryEarlyWarningThreshold,
+            unisLswCpuMemoryNormalThreshold,
+            unisLswCpuMemoryMinorThreshold,
+            unisLswCpuMemorySevereThreshold,
+            unisLswCpuMemoryCriticalThreshold,
+            unisLswCpuMemoryCurrentState,
+            unissLswTrapProcessMemoryInfo,
+            unissLswTrapSlubInfo
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the amount of free memory decreased to or below
+             the unisMemoryUsageCriticalThreshold."
+      ::= { unissLswTRAPMibObject 39 }
+
+      unisMemoryUsageCriticalRecoverNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCpuMemory,
+            unisLswCpuMemoryFree,
+            unisLswCpuMemoryFreeRatio,
+            unisLswCpuMemoryHighTotal,
+            unisLswCpuMemoryHighFree,
+            unisLswCpuMemoryLowTotal,
+            unisLswCpuMemoryLowFree,
+            unisLswCpuMemorySecureThreshold,
+            unisLswCpuMemoryEarlyWarningThreshold,
+            unisLswCpuMemoryNormalThreshold,
+            unisLswCpuMemoryMinorThreshold,
+            unisLswCpuMemorySevereThreshold,
+            unisLswCpuMemoryCriticalThreshold,
+            unisLswCpuMemoryCurrentState,
+            unissLswTrapProcessMemoryInfo,
+            unissLswTrapSlubInfo
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the amount of free memory usage increased to or above
+             the unisMemoryUsageSevereThreshold."
+      ::= { unissLswTRAPMibObject 40 }
+
+    unisNetworkHealthMonitorFailure OBJECT IDENTIFIER ::= { unissLswTRAPMibObject 98 }
+    unisNetworkHealthMonitorNormal OBJECT IDENTIFIER ::= { unissLswTRAPMibObject 99 }
+
+-- For compatibility reasons, DO NOT add notification nodes under unissLswTRAPMibObject.
+-- Please use unissLswTRAPMibObjectV2Prefix instead.
+
+-- ==================================================================
+--
+-- lsw trap info
+--
+-- ==================================================================
+   unissLswTRAPMibInfor OBJECT IDENTIFIER ::= { unisLswTrapMib 2 }
+
+   unissLswTrapCpuCoreInfo OBJECT-TYPE
+        SYNTAX      SnmpAdminString (SIZE (0..255))
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "unisLswCpuCoreIndex,unisLswCpuCoreUsage,unisLswCpuCoreUsr,
+             unisLswCpuCoreSys,unisLswCpuCoreIrq,unisLswCpuCoreIdle.
+
+            Each line contains the following comma-separated values:
+
+            unisLswCpuCoreIndex(Integer32):CPU core index.
+            unisLswCpuCoreUsage(Unsigned32): Percentage of CPU core usage ,0~100
+            unisLswCpuCoreUsr(Unsigned32): Percentage of CPU core user usage ,0~100
+            unisLswCpuCoreSys(Unsigned32): Percentage of CPU core system usage ,0~100
+            unisLswCpuCoreIrq(Unsigned32): Percentage of CPU core interrupt usage ,0~100
+            unisLswCpuCoreIdle(Unsigned32): Percentage of CPU core idle usage ,0~100
+            "
+        ::= { unissLswTRAPMibInfor 1}
+
+   unissLswTrapProcessCpuInfo OBJECT-TYPE
+        SYNTAX      SnmpAdminString (SIZE (0..255))
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "unisLswProcessJobId,unisLswProcessPid,unisLswProcessName,
+            unisLswProcessState,unisLswProcessPriority,unisLswProcessFDs,
+            unisLswProcessRunTime,unisLswProcessCpuRatio5Secs,unisLswProcessCpuRatio1Min,
+            unisLswProcessCpuRatio5Mins.
+
+            Each line contains the following comma-separated values:
+
+            unisLswProcessName: Process name
+            unisLswProcessJobId:Job ID
+            unisLswProcessPid: Process ID
+            unisLswProcessPriority: Process priority
+            unisLswProcessState: Process state
+                {
+                R(1):running,
+                S(2):sleeping,
+                T(3):tracedorStopped,
+                D(4):uninterruptibleSleep,
+                Z(5):zombie
+                }
+            unisLswProcessFDs: Process FDs
+            unisLswProcessRunTime: Process run time
+            unisLswProcessCpuRatio: CPU ratio for the process.
+            "
+        ::= { unissLswTRAPMibInfor 2 }
+
+   unissLswTrapProcessMemoryInfo OBJECT-TYPE
+        SYNTAX      SnmpAdminString (SIZE (0..255))
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "unisLswProcessJobId,unisLswProcessName,unisLswProcessMemoryUsed.
+
+            Each line contains the following comma-separated values:
+
+            unisLswProcessJobId: Job ID
+            unisLswProcessName: Process name
+            unisLswProcessMemoryUsed:
+            Memory be used by the process(text + data + stack + dynamic)in KB.
+            "
+        ::= { unissLswTRAPMibInfor 3 }
+
+   unissLswTrapSlubInfo OBJECT-TYPE
+        SYNTAX      SnmpAdminString (SIZE (0..255))
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "unisLswSlubInfoUsed + unisLswSlubInfoName.
+
+            Each line contains the following comma-separated values:
+
+            unisLswSlubInfoName: Name of slubinfo
+            unisLswSlubInfoUsed: Memory be used by the slub(num*size)
+            "
+        ::= { unissLswTRAPMibInfor 4 }
+
+    unisLswTrapCpuUsage OBJECT-TYPE
+        SYNTAX      SnmpAdminString (SIZE (0..255))
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "Cpu usage in 5sec 1min 5min."
+        ::= { unissLswTRAPMibInfor 5 }
+
+    unisLswTrapCoreProcessInfo OBJECT-TYPE
+        SYNTAX      SnmpAdminString (SIZE (0..255))
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "
+            Each line contains the following values:
+            JID PID PPID CPU State Memory 5Sec 1Min 5Min Name.
+            "
+        ::= { unissLswTRAPMibInfor 6 }
+
+    unisLswCoreTrapUsage   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS     accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+            "Core usage in last 30 minutes."
+        ::= {unissLswTRAPMibInfor 7}
+
+    unisBoardAvailablePower OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "Available power of power supply."
+        ::= { unissLswTRAPMibInfor 8 }
+
+    unisBoardRequiredPower OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "Power required for a single board."
+        ::= { unissLswTRAPMibInfor 9 }
+
+    unisLswAlarmInPortInNum OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "Alarm-in port-in num."
+        ::= { unissLswTRAPMibInfor 10 }
+
+    unisDMAMemoryTotal   OBJECT-TYPE
+        SYNTAX     CounterBasedGauge64
+        UNITS "byte"
+        MAX-ACCESS     accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+            "The total DMA-memory space on the node."
+        ::= { unissLswTRAPMibInfor 11 }
+
+    unisDMAMemoryUsed   OBJECT-TYPE
+        SYNTAX     CounterBasedGauge64
+        UNITS "byte"
+        MAX-ACCESS     accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+            "The used DMA-memory space on the node."
+        ::= { unissLswTRAPMibInfor 12 }
+
+    unisDMAMemoryFree   OBJECT-TYPE
+        SYNTAX     CounterBasedGauge64
+        UNITS "byte"
+        MAX-ACCESS     accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+            "The free memory space on the node."
+        ::= { unissLswTRAPMibInfor 13 }
+
+    unisDMAMemoryFreeRatio   OBJECT-TYPE
+        SYNTAX     Unsigned32 (0..100)
+        MAX-ACCESS     accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+            "The percentage of free DMA-memory space on the node."
+        ::= { unissLswTRAPMibInfor 14 }
+
+    unisDMAMemoryCriticalThreshold   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS     accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+            "The critical alarm threshold for free DMA-memory,
+             MB or percentage."
+        ::= { unissLswTRAPMibInfor 15 }
+
+    unisDMAMemoryRecoverThreshold   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS     accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+            "The normal state threshold for free DMA-memory,
+             MB or percentage.
+
+             When the free DMA-memory space exceeds this threshold, a recovery notification will be sent.
+             The normal state threshold cannot be smaller than the critical alarm threshold."
+        ::= { unissLswTRAPMibInfor 16 }
+
+    unisDMAMemoryCurrentState   OBJECT-TYPE
+        SYNTAX          INTEGER
+        {
+            normal (1),
+            critical (2)
+        }
+        MAX-ACCESS     accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+            "Current status of free DMA-memory.
+
+             Normal
+             Critical"
+        ::= { unissLswTRAPMibInfor 17 }
+
+    unisFrameRemainingPower   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        UNITS "W"
+        MAX-ACCESS     accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+            "Remaining power of the frame."
+        ::= {unissLswTRAPMibInfor 18}
+
+    unissLswTRAPMibObjectV2 OBJECT IDENTIFIER ::= { unisLswTrapMib 3 }
+    unissLswTRAPMibObjectV2Prefix OBJECT IDENTIFIER ::= { unissLswTRAPMibObjectV2 0 }
+
+    unisCoreUsageNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCoreIndex,
+            unisLswCoreTrapUsage,
+            unisLswCoreThreshold,
+            unisLswTrapCpuUsage,
+            unisLswTrapCoreProcessInfo,
+            unisLswCoreMinorThreshold,
+            unisLswCoreRecoveryThreshold
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the amount of core usage increased to or above
+             the unisLswCoreThreshold."
+      ::= { unissLswTRAPMibObjectV2Prefix 1 }
+
+    unisBoardPowerNotEnough NOTIFICATION-TYPE
+      OBJECTS { unisLswFrameIndex, unisLswSlotIndex, unisBoardAvailablePower, unisBoardRequiredPower}
+      STATUS  current
+      DESCRIPTION
+              "Not enough power for the board."
+      ::= { unissLswTRAPMibObjectV2Prefix 2 }
+
+    unisAlarmInPortIn NOTIFICATION-TYPE
+        OBJECTS { unisLswFrameIndex, unisLswSlotIndex, unisLswAlarmInPortInNum }
+        STATUS current
+        DESCRIPTION
+            "Alarm reported on the alarm-in port."
+        ::= { unissLswTRAPMibObjectV2Prefix 3 }
+
+    unisAlarmInPortRecover NOTIFICATION-TYPE
+        OBJECTS { unisLswFrameIndex, unisLswSlotIndex, unisLswAlarmInPortInNum }
+        STATUS current
+        DESCRIPTION
+            "Alarm removed on the alarm-in port."
+        ::= { unissLswTRAPMibObjectV2Prefix 4 }
+
+    unisCoreUsageSevereRecoveryNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCoreIndex,
+            unisLswCoreTrapUsage,
+            unisLswCoreThreshold,
+            unisLswTrapCpuUsage,
+            unisLswTrapCoreProcessInfo,
+            unisLswCoreMinorThreshold,
+            unisLswCoreRecoveryThreshold
+            }
+      STATUS current
+      DESCRIPTION
+            "
+            When the product does not support unisLswCoreRecoveryThreshold,
+            the trap indicates that the core usage decreased to or below
+            the unisLswCoreThreshold.
+            When the product supports unisLswCoreRecoveryThreshold,
+            the trap indicates that the core usage decreased to or below
+            the unisLswCoreMinorThreshold.
+            "
+      ::= { unissLswTRAPMibObjectV2Prefix 10 }
+
+    unisCoreUsageMinorNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCoreIndex,
+            unisLswCoreTrapUsage,
+            unisLswCoreThreshold,
+            unisLswTrapCpuUsage,
+            unisLswTrapCoreProcessInfo,
+            unisLswCoreMinorThreshold,
+            unisLswCoreRecoveryThreshold
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the core usage increased to or above
+             the unisLswCoreMinorThreshold."
+      ::= { unissLswTRAPMibObjectV2Prefix 11 }
+
+    unisCoreUsageMinorRecoveryNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisLswCoreIndex,
+            unisLswCoreTrapUsage,
+            unisLswCoreThreshold,
+            unisLswTrapCpuUsage,
+            unisLswTrapCoreProcessInfo,
+            unisLswCoreMinorThreshold,
+            unisLswCoreRecoveryThreshold
+            }
+      STATUS current
+      DESCRIPTION
+            "
+            When the product does not support unisLswCoreRecoveryThreshold,
+            the trap indicates that the core usage decreased to or below
+            the unisLswCoreMinorThreshold.
+            When the product supports unisLswCoreRecoveryThreshold,
+            the trap indicates that the core usage decreased to or below
+            the unisLswCoreRecoveryThreshold.
+            "
+      ::= { unissLswTRAPMibObjectV2Prefix 12 }
+
+      unisDMAMemoryUsageCriticalNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisDMAMemoryTotal,
+            unisDMAMemoryUsed,
+            unisDMAMemoryFree,
+            unisDMAMemoryCurrentState,
+            unisDMAMemoryFreeRatio,
+            unisDMAMemoryCriticalThreshold
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the free DMA-memory space decreased to or below
+             the critical alarm threshold."
+      ::= { unissLswTRAPMibObjectV2Prefix 41 }
+
+      unisDMAMemoryUsageRecoverNotification NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisLswSlotIndex,
+            unisLswCpuIndex,
+            unisDMAMemoryTotal,
+            unisDMAMemoryUsed,
+            unisDMAMemoryFree,
+            unisDMAMemoryCurrentState,
+            unisDMAMemoryFreeRatio,
+            unisDMAMemoryRecoverThreshold
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the of free DMA-memory space increased to or above
+             the normal state threshold."
+      ::= { unissLswTRAPMibObjectV2Prefix 42 }
+
+      unisRemainingPowerNotEnough NOTIFICATION-TYPE
+      OBJECTS {
+            unisLswFrameIndex,
+            unisFrameRemainingPower
+            }
+      STATUS current
+      DESCRIPTION
+            "The trap indicates that the remaining power of the chassis is not enouth."
+      ::= { unissLswTRAPMibObjectV2Prefix 43 }
+END

@@ -1,0 +1,1379 @@
+-- ====================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: DLSW Specific Features MIB
+-- Reference: RFC2024
+-- Version: V1.0
+-- History:
+--  V1.0  2005-07-20, LiuYingquan
+--    Initial version
+-- ====================================================================
+UNIS-SNA-DLSW-EXT-MIB    DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    TimeTicks,
+    Integer32,
+    Counter32
+        FROM SNMPv2-SMI
+    RowStatus
+        FROM SNMPv2-TC
+    ifIndex
+        FROM RFC1213-MIB
+    InetAddress,
+    InetAddressType
+        FROM INET-ADDRESS-MIB
+    dlswTConnConfigEntry,
+    dlswTConnOperEntry,
+    dlswTConnTcpConfigEntry,
+    MacAddressNC,
+    LFSize,
+    TAddress
+        FROM DLSW-MIB
+
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisDlswExt MODULE-IDENTITY
+    LAST-UPDATED "200507201900Z"        -- Jul 20, 2005 at 19:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module for management of specific Data Link
+         Switching protocol enhancements. DLSw is described in
+         RFC 1795, RFC 2024 and RFC2166."
+    REVISION "200507201900Z"   -- Jul 20, 2005 at 19:00 GMT
+    DESCRIPTION
+            "Initial version of this MIB module."
+    ::= { unisCommon 62 }
+
+unisDlswExtMIBObjects OBJECT IDENTIFIER ::= { unisDlswExt 1 }
+
+unisdeNode           OBJECT IDENTIFIER ::= { unisDlswExtMIBObjects 1 }
+unisdeTConn          OBJECT IDENTIFIER ::= { unisDlswExtMIBObjects 2 }
+unisdeBridge         OBJECT IDENTIFIER ::= { unisDlswExtMIBObjects 3 }
+unisdeQllc           OBJECT IDENTIFIER ::= { unisDlswExtMIBObjects 4 }
+unisdeSdlc           OBJECT IDENTIFIER ::= { unisDlswExtMIBObjects 5 }
+unisdeLlc2           OBJECT IDENTIFIER ::= { unisDlswExtMIBObjects 6 }
+unisdeReachableCache OBJECT IDENTIFIER ::= { unisDlswExtMIBObjects 7 }
+unisdeEthernetBackup OBJECT IDENTIFIER ::= { unisDlswExtMIBObjects 8 }
+
+
+-- ====================================================================
+-- DLSw Extension Node Objects
+-- ====================================================================
+
+unisdeNodeVendorID OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (3))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value identifies the manufacturer's IEEE-assigned
+        Organizationally Unique Identifier (OUI) of this DLSw.
+        This information is reported in DLSw Capabilities
+        Exchange."
+    REFERENCE
+        "DLSW: Switch-to-Switch Protocol RFC 1795."
+    ::= { unisdeNode 1 }
+
+unisdeNodeIpAddrType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The type of ip address: IPv4 or IPv6."
+    ::= { unisdeNode 2 }
+
+unisdeNodeLocalAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Local peer ip address. This ip address must have been
+        configured for a port on the router. If no local peer
+        ip address is configured, then this object will be the
+        empty string."
+    DEFVAL     { ''H }    -- the empty string
+    ::= { unisdeNode 3 }
+
+unisdeNodePriority OBJECT-TYPE
+    SYNTAX      Integer32 (1..5 | 65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Peer priority advertised to remote peers in the DLSw Capabilities
+        Exchange. If an end station can reach through more
+        than one peer, the priority of each peer will be considered when
+        a circuit is established.
+        A lower priority indicates that peer will be the
+        preferred choice if there are more than one path to the
+        destination. A value of 65535 indicates the value is meaningless."
+    DEFVAL      { 3 }
+    ::= { unisdeNode 4 }
+
+unisdeNodeInitPacingWindow OBJECT-TYPE
+    SYNTAX      Integer32 (1..2000 | 65535)
+    UNITS       "packets"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Initial pacing window size. This is the starting size of the
+        pacing window. DLSw uses an adaptive pacing flow control
+        algorithm that automatically adjusts to congestion levels in
+        the network. Pacing windows are used to control how many packets
+        may be sent to a peer before acknowlegement.
+        A value of 65535 indicates the value is meaningless."
+    DEFVAL      { 40 }
+    ::= { unisdeNode 5 }
+
+unisdeNodeMaxPacingWindow OBJECT-TYPE
+    SYNTAX      Integer32 (1..2000 | 65535)
+    UNITS       "packets"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Maximum pacing window size. This is the largest size that
+        the pacing window will grow to. DLSw uses an adaptive pacing
+        flow control algorithm that automatically adjusts to congestion
+        levels in the network. Pacing windows are used to control
+        how many packets may be sent to a peer before acknowlegement."
+    DEFVAL      { 50 }
+    ::= { unisdeNode 6 }
+
+unisdeNodeKeepAliveInterval OBJECT-TYPE
+    SYNTAX      Integer32 (0..2000 | 65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Default remote peer keepalive interval in seconds.
+        The keepalive parameter refers to how often DLSw peers
+        send peer keep alives to each other. These periodic messages
+        allow DLSw to keep track of the state of all peers.
+        If set to zero, no keepalives are sent.
+        A value of 65535 indicates the value is meaningless."
+    DEFVAL      { 30 }
+    ::= { unisdeNode 7 }
+
+unisdeNodePermitDynamic OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                permitDynamic(1),
+                forbidDynamic(2),
+                unknown(65535)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "To accept connections from non-configured remote peer when
+        permitDynamic is specified."
+    DEFVAL      { forbidDynamic }
+    ::= { unisdeNode 8 }
+
+unisdeNodeConnTimeout OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Define connected state timer."
+    DEFVAL      { 300 }
+    ::= { unisdeNode 9 }
+
+unisdeNodeLocalPendTimeout OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Define connected state timer."
+    DEFVAL      { 30 }
+    ::= { unisdeNode 10 }
+
+unisdeNodeRemotePendTimeout OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Define connected state timer."
+    DEFVAL      { 30 }
+    ::= { unisdeNode 11 }
+
+unisdeNodeSnaCacheTimeout OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Define connected state timer."
+    DEFVAL      { 120 }
+    ::= { unisdeNode 12 }
+
+unisdeNodeExplorerTimeout OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Define explorer timer."
+    DEFVAL      { 30 }
+    ::= { unisdeNode 13 }
+
+unisdeNodeExplorerWaitTimeout OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Define explorer waiting timer."
+    DEFVAL      { 30 }
+    ::= { unisdeNode 14 }
+
+unisdeNodeConfigSapList OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (16))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The SAP list indicates which SAPs are allowed.
+        Only SAPs with even numbers are represented,
+        in the form of the most significant bit of the first
+        octet representing the SAP 0, the next most significant
+        bit representing the SAP 2, to the least significant
+        bit of the last octet representing the SAP 254. Data
+        link switching is allowed for those SAPs which have
+        one in its corresponding bit, not allowed otherwise.
+        The whole SAP list has to be changed together. Changing
+        the SAP list affects only new circuit establishments
+        and has no effect on established circuits.
+
+        This list can be used to restrict specific partners
+        from knowing about all the SAPs used by DLSw on all its
+        interfaces (these are represented in unisdeIfSapList for
+        each interface). For instance, one may want to run NetBIOS
+        with some partners but not others.
+
+        If a node supports sending run-time capabilities exchange
+        messages, changes to this object should cause that action.
+        When to start the run-time capabilities exchange is
+        implementation-specific.
+
+        The DEFVAL below indicates support for SAPs 0, 2, 4, 6, 8, A, C and E."
+    DEFVAL      { 'FF000000000000000000000000000000'h }
+    ::= { unisdeNode 15 }
+
+unisdeNodeMaxTransmission OBJECT-TYPE
+    SYNTAX      Integer32 (1..10)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The maximum retry times for TCP packet.
+        Default value is 5."
+    DEFVAL      { 5 }
+    ::= { unisdeNode 16 }
+
+unisdeNodeMulticastStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                enabled(1),
+                disabled(2)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Multicast support status. It is disabled by default."
+    DEFVAL      { disabled }
+    ::= { unisdeNode 17 }
+
+unisdeNodeMulticastAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Multicast address. Default is 224.0.10.0.
+        When the unisdeNodeMulticastStatus is disabled,
+        the multicast address is reset to 0.0.0.0."
+    ::= { unisdeNode 18 }
+
+unisdeNodeResetTcpAll OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                reset(1)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Reset all TCP circuit switch.
+        Any return value is meaningless."
+    ::= { unisdeNode 19 }
+
+unisdeNodeStCapTcpNum OBJECT-TYPE
+    SYNTAX      Integer32 (0..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Tcp number reported in DLSw Capabilities Exchange."
+    ::= { unisdeNode 20 }
+
+unisdeNodeTcpQueueMax OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The max length of TCP queue."
+    DEFVAL      { 200 }
+    ::= { unisdeNode 21 }
+
+
+-- ====================================================================
+-- DLSw Extension Transport Connection Configuration Table
+-- ====================================================================
+unisdeTConnConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisdeTConnConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table defines the peer transport connections
+        that will be initiated or accepted by this DLSw.
+
+        This table augments dlswTConnConfigTable."
+    ::= { unisdeTConn 1 }
+
+unisdeTConnConfigEntry OBJECT-TYPE
+    SYNTAX      UnisdeTConnConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of objects that define specific configuration for
+        a DLSw peer transport connection."
+    AUGMENTS    { dlswTConnConfigEntry }
+    ::= { unisdeTConnConfigTable 1 }
+
+UnisdeTConnConfigEntry ::=
+    SEQUENCE {
+        unisdeTConnConfigVersion              OCTET STRING,
+        unisdeTConnConfigPriority             Integer32,
+        unisdeTConnConfigLfSize               LFSize,
+        unisdeTConnConfigKeepaliveIntval    Integer32,
+        unisdeTConnConfigBackup               INTEGER,
+        unisdeTConnConfigBackupTAddr          TAddress,
+        unisdeTConnConfigBackupLinger         Integer32
+    }
+
+unisdeTConnConfigVersion OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (2))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This value identifies which version (first octet) and release
+        (second octet) of the DLSw standard is supported by this
+        partner DLSw. This information is obtained from a DLSw
+        Capabilities Exchange message received from the partner DLSw.
+        A string of zero length is returned before a Capabilities
+        Exchange message is received, or if one is never received.
+        A conceptual row with a unisdeTConnOperState of 'connected' but
+        a zero length partner version indicates that the partner is
+        a non-standard DLSw partner.
+
+        If an implementation chooses to keep unisdeTConnOperEntrys in
+        the 'disconnected' state, this value should remain unchanged."
+    ::= { unisdeTConnConfigEntry 1 }
+
+unisdeTConnConfigPriority OBJECT-TYPE
+    SYNTAX      Integer32 (1..5)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The priority for remote peer."
+    DEFVAL      { 3 }
+    ::= { unisdeTConnConfigEntry 2 }
+
+unisdeTConnConfigLfSize OBJECT-TYPE
+    SYNTAX      LFSize
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The largest frame size."
+    ::= { unisdeTConnConfigEntry 3 }
+
+unisdeTConnConfigKeepaliveIntval OBJECT-TYPE
+    SYNTAX      Integer32 (1..1200)
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The keepalive interval value."
+    DEFVAL      { 30 }
+    ::= { unisdeTConnConfigEntry 4 }
+
+unisdeTConnConfigBackup OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                yes(1),
+                no(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The current remote peer is configured as the
+        backup of another configured remote peer."
+    DEFVAL      { no }
+    ::= { unisdeTConnConfigEntry 5 }
+
+unisdeTConnConfigBackupTAddr OBJECT-TYPE
+    SYNTAX      TAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "It is the ip address of a configured remote peer of which
+        the current remote peer is configrued as backup."
+    ::= { unisdeTConnConfigEntry 6 }
+
+unisdeTConnConfigBackupLinger OBJECT-TYPE
+    SYNTAX      Integer32 (0..1440)
+    UNITS       "minutes"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Backup peer linger."
+    DEFVAL      { 5 }
+    ::= { unisdeTConnConfigEntry 7 }
+
+-- ====================================================================
+-- DLSw Extension Transport Connection Operation Table
+-- ====================================================================
+unisdeTConnOperTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisdeTConnOperEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of peer transport connections.
+        Each connected peer will create a conceptual row in the table.
+        When the peer disconnects, the row will be deleted from the table.
+
+        This table augments dlswTConnOperTable."
+    ::= { unisdeTConn 2 }
+
+unisdeTConnOperEntry OBJECT-TYPE
+    SYNTAX      UnisdeTConnOperEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of objects that contain spefific operational
+        information for a DLSw peer transport connection."
+    AUGMENTS    { dlswTConnOperEntry }
+    ::= { unisdeTConnOperTable 1 }
+
+UnisdeTConnOperEntry ::=
+    SEQUENCE {
+        unisdeTConnOperPeerType         INTEGER,
+        unisdeTConnOperVendorID         OCTET STRING,
+        unisdeTConnOperVersionString    OCTET STRING,
+        unisdeTConnOperUpTime           TimeTicks,
+        unisdeTConnOperMulticastAddress TAddress,
+        unisdeTConnOperStCapTcpNumber   Integer32,
+        unisdeTConnOperRecvPkts         Counter32,
+        unisdeTConnOperSendPkts         Counter32,
+        unisdeTConnOperDropPkts         Counter32
+    }
+
+unisdeTConnOperPeerType OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                configured(1),
+                learningDynamic(2),
+                other(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current remote peer is configured when the value is 'configured'."
+    ::= { unisdeTConnOperEntry 1 }
+
+unisdeTConnOperVendorID OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value identifies the manufacturer's IEEE-assigned
+        Organizationally Unique Identifier (OUI) of remote peer."
+    ::= { unisdeTConnOperEntry 2 }
+
+unisdeTConnOperVersionString OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Version information of remote peer. The length up to 512 bytes."
+    ::= { unisdeTConnOperEntry 3 }
+
+unisdeTConnOperUpTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The amount of time (in seconds) since this transport
+        connection last entered the 'connected' state."
+    ::= { unisdeTConnOperEntry 4 }
+
+unisdeTConnOperMulticastAddress OBJECT-TYPE
+    SYNTAX      TAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "When remote peer supports DLSw2.0, this node identifies
+        its multicast address."
+    ::= { unisdeTConnOperEntry 5 }
+
+unisdeTConnOperStCapTcpNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of tcp supported when capabilities exchanging."
+    ::= { unisdeTConnOperEntry 6 }
+
+unisdeTConnOperRecvPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of Switch-to-Switch Protocol (SSP) messages
+        received on this tcp transport connection."
+    ::= { unisdeTConnOperEntry 7 }
+
+unisdeTConnOperSendPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of SSP messages
+        sent on this tcp transport connection."
+    ::= { unisdeTConnOperEntry 8 }
+
+unisdeTConnOperDropPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of SSP messages
+        dropped on this tcp transport connection."
+    ::= { unisdeTConnOperEntry 9 }
+
+-- ====================================================================
+-- DLSw Extension TCP Transport Connection Specific Configuration
+-- ====================================================================
+unisdeTConnTcpConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisdeTConnTcpConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This table defines the TCP transport connections that
+        will be either initiated by or accepted by this DSLw.
+        It augments the entries in dlswTConnConfigTable whose
+        domain is dlswTCPDomain. In other words for each conceptual row
+        in the dlswTConnConfigTable, if the dlswTConnConfigTDomain is
+        dlswTCPDomain, that conceptual row will be augmented by this
+        table.
+
+        dlswTCPDomain, dlswTConnConfigTable, and dlswTConnConfigTDomain
+        are all imported from DLSW-MIB (RFC 2024).
+
+        This table augments dlswTConnTcpConfigTable."
+    ::= { unisdeTConn 3 }
+
+unisdeTConnTcpConfigEntry OBJECT-TYPE
+    SYNTAX      UnisdeTConnTcpConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "A list of objects that define specific configuration for
+        a DLSw peer transport connection within the dlswTCPDomain.
+        dlswTCPDomain is imported from DLSW-MIB (RFC 2024)."
+    AUGMENTS    { dlswTConnTcpConfigEntry }
+    ::= { unisdeTConnTcpConfigTable 1 }
+
+UnisdeTConnTcpConfigEntry ::=
+    SEQUENCE {
+        unisdeTConnTcpConfigQueueMax  Integer32
+    }
+
+unisdeTConnTcpConfigQueueMax  OBJECT-TYPE
+    SYNTAX      Integer32 (50..2000)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Maximum output TCP queue size for this remote peer.
+        For DLSw over TCP encapsulation, packets may be queued
+        due to congestion of the TCP network. This variable
+        is used to set the output queue maximum of the underlying
+        TCP connection for the peer represented by the conceptual row."
+    DEFVAL      { 200 }
+    ::= { unisdeTConnTcpConfigEntry 1 }
+
+-- ====================================================================
+-- DLSw Bridge MIB-Group
+-- ====================================================================
+unisdeBridgeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisdeBridgeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of bridge group which is serving for DLSw."
+    ::= { unisdeBridge 1 }
+
+unisdeBridgeEntry OBJECT-TYPE
+    SYNTAX      UnisdeBridgeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of bridge information."
+    INDEX       { unisdeBridgeNumIndex }
+    ::= { unisdeBridgeTable 1 }
+
+UnisdeBridgeEntry ::=
+    SEQUENCE {
+        unisdeBridgeNumIndex   Integer32,
+        unisdeBridgeRowStatus  RowStatus
+    }
+
+unisdeBridgeNumIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..255)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This value identifies the bridge number."
+    ::= { unisdeBridgeEntry 1 }
+
+unisdeBridgeRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus."
+    ::= { unisdeBridgeEntry 2 }
+
+-- ====================================================================
+-- DLSw Bridge group number and interface
+-- ====================================================================
+unisdeBridgeIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisdeBridgeIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The list of interface on which DLSw is active."
+    ::= { unisdeBridge 2 }
+
+unisdeBridgeIfEntry OBJECT-TYPE
+    SYNTAX      UnisdeBridgeIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The list of bridge interface information."
+    INDEX       { ifIndex }
+    ::= { unisdeBridgeIfTable 1 }
+
+UnisdeBridgeIfEntry ::=
+    SEQUENCE {
+        unisdeBridgeIfBrgGrp      Integer32,
+        unisdeBridgeIfRowStatus   RowStatus
+    }
+
+unisdeBridgeIfBrgGrp OBJECT-TYPE
+    SYNTAX      Integer32 (1..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This value identifies the bridge number attached
+        to the interface."
+    ::= { unisdeBridgeIfEntry 1 }
+
+unisdeBridgeIfRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus."
+    ::= { unisdeBridgeIfEntry 2 }
+
+-- ====================================================================
+-- DLSw Extension QLLC Port Configuration Table
+-- ====================================================================
+unisdeQllcTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisdeQllcEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "The table defines attributes related for those
+        QLLC that participate in data link switching."
+    ::= { unisdeQllc 1 }
+
+unisdeQllcEntry  OBJECT-TYPE
+    SYNTAX      UnisdeQllcEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "The ifIndex belongs to the interface which link protocol is x.25."
+    INDEX       { ifIndex }
+    ::= { unisdeQllcTable 1 }
+
+UnisdeQllcEntry ::=
+    SEQUENCE {
+        unisQllcX121Address  Integer32,
+        unisQllcLocalMac     MacAddressNC,
+        unisQllcLocalSap     OCTET STRING,
+        unisQllcRemoteMac    MacAddressNC,
+        unisQllcRemoteSap    OCTET STRING,
+        unisQllcRowStatus    RowStatus
+    }
+
+unisQllcX121Address  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+       "X.121 address."
+    ::= { unisdeQllcEntry 1 }
+
+unisQllcLocalMac  OBJECT-TYPE
+    SYNTAX      MacAddressNC
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+       "The virtual MAC address used to represent the QLLC-attached
+        link station to the rest of the DLSw network."
+    ::= { unisdeQllcEntry 2 }
+
+unisQllcLocalSap  OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(1))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+       "The SAP used to represent this link station."
+    ::= { unisdeQllcEntry 3 }
+
+unisQllcRemoteMac  OBJECT-TYPE
+    SYNTAX      MacAddressNC
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+       "The MAC address to which DLSw should attempt to connect
+        this link station. If this information is not available,
+        a length of zero for this object should be returned."
+    DEFVAL      { ''H }
+    ::= { unisdeQllcEntry 4 }
+
+unisQllcRemoteSap  OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0 | 1))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+       "The SAP of the remote station to which this link
+        station should be connected. If this information
+        is not available, a length of zero for this object
+        should be returned."
+    DEFVAL      { ''H }
+    ::= { unisdeQllcEntry 5 }
+
+unisQllcRowStatus  OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+       "RowStatus."
+    ::= { unisdeQllcEntry 6 }
+
+-- ====================================================================
+-- DLSw Extension SDLC Port Configuration Table
+-- ====================================================================
+unisdeSdlcPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisdeSdlcPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table defines parameters for the interfaces
+        whose link protocol is SDLC."
+    ::= { unisdeSdlc 1 }
+
+unisdeSdlcPortEntry OBJECT-TYPE
+    SYNTAX      UnisdeSdlcPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Sdlc port entry."
+    INDEX       { ifIndex }
+    ::= { unisdeSdlcPortTable 1 }
+
+
+UnisdeSdlcPortEntry ::=
+    SEQUENCE {
+        unisdeSdlcPortRole                INTEGER,
+        unisdeSdlcPortSendWindow          Integer32,
+        unisdeSdlcPortModulo              INTEGER,
+        unisdeSdlcPortMaxPdu              Integer32,
+        unisdeSdlcPortMaxSendQueue        Integer32,
+        unisdeSdlcPortMaxTransmission     Integer32,
+        unisdeSdlcPortSimultaneousEnable  INTEGER,
+        unisdeSdlcPortTimerACK            Integer32,
+        unisdeSdlcPortTimerLifeTime       Integer32,
+        unisdeSdlcPortTimerPollPause      Integer32,
+        unisdeSdlcPortRowStatus           RowStatus
+    }
+
+unisdeSdlcPortRole OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                primary(1),
+                seconday(2),
+                norole(3)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The SDLC role of interface."
+    DEFVAL      { norole }
+    ::= { unisdeSdlcPortEntry 1 }
+
+unisdeSdlcPortSendWindow OBJECT-TYPE
+    SYNTAX      Integer32 (1..7)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Size of local send window."
+    DEFVAL      { 7 }
+    ::= { unisdeSdlcPortEntry 2 }
+
+unisdeSdlcPortModulo OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                m8(8),
+                m128(128)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Size of modulus."
+    DEFVAL      { m8 }
+    ::= { unisdeSdlcPortEntry 3 }
+
+unisdeSdlcPortMaxPdu OBJECT-TYPE
+    SYNTAX      Integer32 (1..17600)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Maximum bytes for incoming frames."
+    DEFVAL      { 265 }
+    ::= { unisdeSdlcPortEntry 4 }
+
+unisdeSdlcPortMaxSendQueue OBJECT-TYPE
+    SYNTAX      Integer32 (20..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Size of hold queue."
+    DEFVAL      { 50 }
+    ::= { unisdeSdlcPortEntry 5 }
+
+unisdeSdlcPortMaxTransmission OBJECT-TYPE
+    SYNTAX      Integer32 (1..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Number of times to retry an operation."
+    DEFVAL      { 20 }
+    ::= { unisdeSdlcPortEntry 6 }
+
+unisdeSdlcPortSimultaneousEnable OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                enabled(1),
+                disabled(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Activate SDLC two-way simultaneous mode."
+    DEFVAL      { 1 }
+    ::= { unisdeSdlcPortEntry 7 }
+
+unisdeSdlcPortTimerACK OBJECT-TYPE
+    SYNTAX      Integer32 (1..60000)
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Time to wait for a reply to a frame."
+    DEFVAL      { 3000 }
+    ::= { unisdeSdlcPortEntry 8 }
+
+unisdeSdlcPortTimerLifeTime OBJECT-TYPE
+    SYNTAX      Integer32 (1..60000)
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Time to wait for a reply used by secondary station."
+    DEFVAL      { 500 }
+    ::= { unisdeSdlcPortEntry 9 }
+
+unisdeSdlcPortTimerPollPause OBJECT-TYPE
+    SYNTAX      Integer32 (1..10000)
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Time between polls for each secondary SDLC station."
+    DEFVAL      { 1000 }
+    ::= { unisdeSdlcPortEntry 10 }
+
+unisdeSdlcPortRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus."
+    ::= { unisdeSdlcPortEntry 11 }
+
+-- ====================================================================
+-- DLSw Extension LLC2 Port Configuration Table
+-- ====================================================================
+unisdeLlc2PortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisdeLlc2PortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table defines parameters for the Ethernet interface."
+    ::= { unisdeLlc2 1 }
+
+unisdeLlc2PortEntry OBJECT-TYPE
+    SYNTAX      UnisdeLlc2PortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "LLC2 port entry."
+    INDEX       { ifIndex }
+    ::= { unisdeLlc2PortTable 1 }
+
+UnisdeLlc2PortEntry ::=
+    SEQUENCE {
+        unisdeLlc2PortMaxAck           Integer32,
+        unisdeLlc2PortMaxPdu           Integer32,
+        unisdeLlc2PortMaxSendQueue     Integer32,
+        unisdeLlc2PortMaxTransmission  Integer32,
+        unisdeLlc2PortModulo           INTEGER,
+        unisdeLlc2PortReceiveWindow    Integer32,
+        unisdeLlc2PortTimerAck         Integer32,
+        unisdeLlc2PortTimerAckDelay    Integer32,
+        unisdeLlc2PortTimerDetect      Integer32,
+        unisdeLlc2PortTimerBusy        Integer32,
+        unisdeLlc2PortTimerPoll        Integer32,
+        unisdeLlc2PortTimerReject      Integer32,
+        unisdeLlc2PortRowStatus        RowStatus
+    }
+
+unisdeLlc2PortMaxAck OBJECT-TYPE
+    SYNTAX      Integer32 (1..127)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Maximum of I-frames received before ACK."
+    DEFVAL      { 3 }
+    ::= { unisdeLlc2PortEntry 1 }
+
+unisdeLlc2PortMaxPdu OBJECT-TYPE
+    SYNTAX      Integer32 (1..1700)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Maximum of LLC2 pdu length."
+    DEFVAL      { 1493 }
+    ::= { unisdeLlc2PortEntry 2 }
+
+unisdeLlc2PortMaxSendQueue OBJECT-TYPE
+    SYNTAX      Integer32 (20..200)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Queue for sending llc2 I-frames."
+    DEFVAL      { 50 }
+    ::= { unisdeLlc2PortEntry 3 }
+
+unisdeLlc2PortMaxTransmission OBJECT-TYPE
+    SYNTAX      Integer32 (1..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Retry times of operations."
+    DEFVAL      { 20 }
+    ::= { unisdeLlc2PortEntry 4 }
+
+unisdeLlc2PortModulo OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                m8(8),
+                m128(128)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Modulus of LLC2."
+    DEFVAL      { m128 }
+    ::= { unisdeLlc2PortEntry 5 }
+
+unisdeLlc2PortReceiveWindow OBJECT-TYPE
+    SYNTAX      Integer32 (1..127)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Maximum number of I-frames to send before received ACK."
+    DEFVAL      { 7 }
+    ::= { unisdeLlc2PortEntry 6 }
+
+unisdeLlc2PortTimerAck OBJECT-TYPE
+    SYNTAX      Integer32 (1..60000)
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Waiting for ACK time after sending an I-frame."
+    DEFVAL      { 200 }
+    ::= { unisdeLlc2PortEntry 7 }
+
+unisdeLlc2PortTimerAckDelay OBJECT-TYPE
+    SYNTAX      Integer32 (1..60000)
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Maximum time allows I-frames incoming without replay ACK."
+    DEFVAL      { 100 }
+    ::= { unisdeLlc2PortEntry 8 }
+
+unisdeLlc2PortTimerDetect OBJECT-TYPE
+    SYNTAX      Integer32 (1..60000)
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Detect the link status."
+    DEFVAL      { 100 }
+    ::= { unisdeLlc2PortEntry 9 }
+
+unisdeLlc2PortTimerBusy OBJECT-TYPE
+    SYNTAX      Integer32 (1..60000)
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Waiting time while other LLC2 station is in busy state."
+    DEFVAL      { 300 }
+    ::= { unisdeLlc2PortEntry 10 }
+
+unisdeLlc2PortTimerPoll OBJECT-TYPE
+    SYNTAX      Integer32 (1..60000)
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Waiting time after a P frame is sent."
+    DEFVAL      { 5000 }
+    ::= { unisdeLlc2PortEntry 11 }
+
+unisdeLlc2PortTimerReject OBJECT-TYPE
+    SYNTAX      Integer32 (1..60000)
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Waiting time after a REJ frame is sent."
+    DEFVAL      { 500 }
+    ::= { unisdeLlc2PortEntry 12 }
+
+unisdeLlc2PortRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus."
+    ::= { unisdeLlc2PortEntry 13 }
+
+-- ====================================================================
+-- DLSw Reachable Cache MIB-Group
+-- ====================================================================
+unisdeRchCacheStat OBJECT IDENTIFIER ::= { unisdeReachableCache 1 }
+
+unisdeRchCacheMaxIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Maximum of unisdeRchCacheIndex."
+    ::= { unisdeRchCacheStat 1 }
+
+unisdeRchCacheNextIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The next value of unisdeRchCacheIndex to be assigned by
+        the agent. A retrieval of this object atomically reserves
+        the returned value for use by the manager to create a row
+        in unisdeRchCacheTable. This makes it possible for the agent
+        to control the index space of the MAC address cache, yet
+        allows the manager to administratively create new rows."
+    ::= { unisdeRchCacheStat 2 }
+
+unisdeRchCacheTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisdeRchCacheEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Reachable cache table."
+    ::= { unisdeReachableCache 3 }
+
+unisdeRchCacheEntry OBJECT-TYPE
+    SYNTAX      UnisdeRchCacheEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Reachable cache entry."
+    INDEX       { unisdeRchCacheIndex }
+    ::= { unisdeRchCacheTable 1 }
+
+UnisdeRchCacheEntry ::=
+    SEQUENCE {
+        unisdeRchCacheIndex            Integer32,
+        unisdeRchCacheStatus           INTEGER,
+        unisdeRchCacheRemainTime       TimeTicks,
+        unisdeRchCacheMac              MacAddressNC,
+        unisdeRchCacheRemoteIpAddrType InetAddressType,
+        unisdeRchCacheRemoteIp         InetAddress,
+        unisdeRchCacheRowStatus        RowStatus
+    }
+
+unisdeRchCacheIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Index of reachable cache entry."
+    ::= { unisdeRchCacheEntry 1 }
+
+unisdeRchCacheStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                found(1),
+                verify(2),
+                noCacheInfo(3),
+                exploring(4),
+                waiting(5)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Current status of reachable cache entry."
+    ::= { unisdeRchCacheEntry 2 }
+
+unisdeRchCacheRemainTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Remain time of reachable cache entry."
+    ::= { unisdeRchCacheEntry 3 }
+
+unisdeRchCacheMac OBJECT-TYPE
+    SYNTAX      MacAddressNC
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "MAC address of reachable cache entry."
+    ::= { unisdeRchCacheEntry 4 }
+
+unisdeRchCacheRemoteIpAddrType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Remote peer ip address type."
+    ::= { unisdeRchCacheEntry 5 }
+
+unisdeRchCacheRemoteIp OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Remote peer ip address of reachable cache entry."
+    ::= { unisdeRchCacheEntry 6 }
+
+unisdeRchCacheRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus."
+    ::= { unisdeRchCacheEntry 7 }
+
+-- ====================================================================
+-- DLSw Ethernet Backup MIB-Group
+-- ====================================================================
+unisdeEBMacMapStat OBJECT IDENTIFIER ::= { unisdeEthernetBackup 1 }
+
+unisdeEBMacMapMaxIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Maximum of unisdeEBMacMapIndex."
+    ::= { unisdeEBMacMapStat 1 }
+
+unisdeEBMacMapNextIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The next value of unisdeEBMacMapIndex to be assigned by
+        the agent. A retrieval of this object atomically reserves
+        the returned value for use by the manager to create a row
+        in unisdeEBMacMapTable. This makes it possible for the agent
+        to control the index space of the MAC mapping tables, yet
+        allows the manager to administratively create new rows."
+    ::= { unisdeEBMacMapStat 2 }
+
+unisdeEBIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisdeEBIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information of interface which works for DLSw Ethernet redundancy."
+    ::= { unisdeEthernetBackup 3 }
+
+unisdeEBIfEntry OBJECT-TYPE
+    SYNTAX      UnisdeEBIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Parameters defined for DLSw Ethernet redundancy interface."
+    INDEX       { ifIndex }
+    ::= { unisdeEBIfTable 1 }
+
+UnisdeEBIfEntry ::=
+    SEQUENCE {
+        unisdeEBMulticastMac    MacAddressNC,
+        unisdeEBPriority        Integer32,
+        unisdeEBtimer           Integer32,
+        unisdeEBRowStatus       RowStatus
+    }
+
+unisdeEBMulticastMac OBJECT-TYPE
+    SYNTAX      MacAddressNC
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Multicast MAC address configured for the Ethernet
+        redundancy of dlsw module. When Ethernet redundancy
+        is inactive, its value is '000000000000'H.
+        To active Ethernet redundancy, give it a valid multicast MAC address."
+    DEFVAL      { '000000000000'h }
+    ::= { unisdeEBIfEntry 1 }
+
+unisdeEBPriority OBJECT-TYPE
+    SYNTAX      Integer32 (1..254)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Priority configured for the Ethernet redundancy of DLSw module."
+    DEFVAL      { 100 }
+    ::= { unisdeEBIfEntry 2 }
+
+unisdeEBtimer OBJECT-TYPE
+    SYNTAX      Integer32 (100..5000)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Timer for the Ethernet redundancy of DLSw module."
+    DEFVAL      { 500 }
+    ::= { unisdeEBIfEntry 3 }
+
+unisdeEBRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus."
+    ::= { unisdeEBIfEntry 4 }
+
+unisdeEBMacMapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisdeEBMacMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "MAC address mapping table."
+    ::= { unisdeEthernetBackup 4 }
+
+unisdeEBMacMapEntry OBJECT-TYPE
+    SYNTAX      UnisdeEBMacMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "MAC address mapping entry."
+    INDEX       { ifIndex, unisdeEBMacMapIndex }
+    ::= { unisdeEBMacMapTable 1 }
+
+UnisdeEBMacMapEntry ::=
+    SEQUENCE {
+        unisdeEBMacMapIndex         Integer32,
+        unisdeEBMacMapLocalMac      MacAddressNC,
+        unisdeEBMacMapRemoteMac     MacAddressNC,
+        unisdeEBMacMapNeighbour     MacAddressNC,
+        unisdeEBMacMapRowStatus     RowStatus
+    }
+
+unisdeEBMacMapIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Index of MAC address mapping entry."
+    ::= { unisdeEBMacMapEntry 1 }
+
+unisdeEBMacMapLocalMac OBJECT-TYPE
+    SYNTAX      MacAddressNC
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Local MAC address in MAC address mapping.
+        When creating a new conceptual row, unisdeEBMacMapLocalMac
+        and unisdeEBMacMapRemoteMac should be set simultaneously."
+    ::= { unisdeEBMacMapEntry 2 }
+
+unisdeEBMacMapRemoteMac OBJECT-TYPE
+    SYNTAX      MacAddressNC
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Remote MAC address of MAC address mapping.
+        When creating a new conceptual row, unisdeEBMacMapLocalMac
+        and unisdeEBMacMapRemoteMac should be set simultaneously."
+    ::= { unisdeEBMacMapEntry 3 }
+
+unisdeEBMacMapNeighbour OBJECT-TYPE
+    SYNTAX      MacAddressNC
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Neighbour of MAC address mapping."
+    ::= { unisdeEBMacMapEntry 4 }
+
+unisdeEBMacMapRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Status of MAC address mapping entry."
+    ::= { unisdeEBMacMapEntry 5 }
+
+
+END

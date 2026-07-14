@@ -1,0 +1,412 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Port Extender (PEX) information MIB
+-- Reference:
+-- Version: V1.2
+-- History:
+--   V1.0 2012-11-12 Initial version by Yang Fan
+--   V1.1 2014-03-31 Changed MIB node name to PEX by zushuzhi
+--   V1.2 2015-10-15 Added unisPexDeviceInfoTable and unisPexTopoTable
+--                   by zushuzhi
+-- ============================================================================
+UNIS-PEX-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    entPhysicalIndex, entPhysicalDescr
+        FROM ENTITY-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    RowStatus, DisplayString
+        FROM SNMPv2-TC;
+
+unisPex MODULE-IDENTITY
+    LAST-UPDATED "201510151129Z"        -- 15th October, 2015 at 11:29 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB is used to manage Port Extender (PEX)
+         information.  This MIB is applicable to products that support PEX."
+    REVISION "201510151129Z"
+    DESCRIPTION
+        "Added unisPexDeviceInfoTable and unisPexTopoTable."
+    REVISION "201211121129Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { unisCommon 129 }
+
+-- PEX Specification Information
+
+unisPexSpecInfo OBJECT IDENTIFIER ::= { unisPex 1 }
+
+unisPexPortMinId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Lowest PEX port ID that can be used to uniquely identify a PEX port."
+    ::= { unisPexSpecInfo 1 }
+
+unisPexPortMaxId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Highest PEX port ID that can be used to uniquely identify a PEX port."
+    ::= { unisPexSpecInfo 2 }
+
+unisPexMinAssociateId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Lowest ID that can be assigned to a port extender (PEX)."
+    ::= { unisPexSpecInfo 3 }
+
+unisPexMaxAssociateId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Highest ID that can be assigned to a PEX."
+    ::= { unisPexSpecInfo 4 }
+
+unisPexMaxPortPerPexPort OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Maximum number of ports that can be bound to a PEX port."
+    ::= { unisPexSpecInfo 5 }
+
+-- PEX Information
+
+unisPexTable OBJECT IDENTIFIER ::= { unisPex 2 }
+
+unisPexPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPexPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects used to configure the PEX ports."
+    ::= { unisPexTable 1 }
+
+unisPexPortEntry OBJECT-TYPE
+    SYNTAX      UnisPexPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information about a PEX."
+    INDEX
+        {
+            unisPexPortId
+        }
+    ::= { unisPexPortTable 1 }
+
+UnisPexPortEntry ::= SEQUENCE
+    {
+        unisPexPortId               Integer32,
+        unisPexPortAssociateId      Integer32,
+        unisPexPortEntPhysicalIndex Integer32,
+        unisPexPortDescr            DisplayString,
+        unisPexPortStatus           INTEGER,
+        unisPexPortRowStatus        RowStatus
+    }
+
+unisPexPortId OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "ID that can be used to uniquely identify a PEX port.  The value range
+        is unisPexPortMinId to unisPexPortMaxId."
+    ::= { unisPexPortEntry 1 }
+
+unisPexPortAssociateId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "ID assigned to a PEX.  The
+        value range is unisPexMinAssociateId to unisPexMaxAssociateId.
+        The value is 0xffff if the PEX is not assigned an ID.
+        For a successful configuration, the ID should not be used by any
+        other PEX."
+    DEFVAL { 65535 }
+    ::= { unisPexPortEntry 2 }
+
+unisPexPortEntPhysicalIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Entity index of a PEX in the IRF.  A value of zero
+         indicates that the PEX is not online."
+    DEFVAL { 0 }
+    ::= { unisPexPortEntry 3 }
+
+unisPexPortDescr OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..79))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Description for the PEX port.  The default value is
+        'pex-port XXXX', where 'XXXX' is unisPexPortId.
+        Writing a zero-length string to this object resets the value to the
+        default."
+    ::= { unisPexPortEntry 4 }
+
+unisPexPortStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            offline(1),
+            loading(2),
+            online(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Status of the PEX.
+        offline: The PEX is absent or its configuration is incomplete.
+        loading: The PEX is loading software.
+        online: The PEX is operating correctly."
+    DEFVAL { offline }
+    ::= { unisPexPortEntry 5 }
+
+unisPexPortRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The control that allows creation and deletion of entries.
+        Values include createAndGo, active, and destroy.
+        If the row to be created or modified already exists,
+        an error message is returned.  If the row to be deleted does not exist,
+        a success message is returned."
+    ::= { unisPexPortEntry 6 }
+
+
+-- PEX PhyPort Information
+
+unisPexPhyPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPexPhyPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects used to manage physical ports
+        that can be bound or are already bound to a PEX port."
+    ::= { unisPexTable 2 }
+
+unisPexPhyPortEntry OBJECT-TYPE
+    SYNTAX      UnisPexPhyPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information about a physical port that can be bound to or
+        has been bound to a PEX port."
+    INDEX
+        {
+            entPhysicalIndex
+        }
+    ::= { unisPexPhyPortTable 1 }
+
+UnisPexPhyPortEntry ::= SEQUENCE
+    {
+        unisPexPhyPortStatus           INTEGER,
+        unisPexPhyPortBelongToPexPort  Integer32,
+        unisPexPhyPortNeighborEntIndex Integer32
+    }
+
+unisPexPhyPortStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            unknown(1),
+            down(2),
+            blocked(3),
+            forwarding(4)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Status of the physical port that is bound to a PEX port.
+        The following are status values:
+        unknown: The physical port is not bound to any PEX port.
+        down: The physical port is link down.
+        blocked: The physical port is blocked and cannot forward traffic.
+        forwarding: The physical port can forwarding traffic."
+    DEFVAL { unknown }
+    ::= { unisPexPhyPortEntry 1 }
+
+unisPexPhyPortBelongToPexPort OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "ID of the PEX port to which the physical port belongs.  The value
+        range is unisPexPortMinId to unisPexPortMaxId.  A value of zero
+        indicates that the port doesn't belong to any PEX port."
+    DEFVAL { 0 }
+    ::= { unisPexPhyPortEntry 2 }
+
+unisPexPhyPortNeighborEntIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Entity index of a physical port that connects the PEX to the parent
+        device.  This value is identical to entPhysicalIndex in ENTITY-MIB.
+        A value of zero indicates that the physical port is not bound to any
+        PEX port or is not up."
+    ::= { unisPexPhyPortEntry 3 }
+
+-- PEX Topology Information
+unisPexDeviceInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPexDeviceInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains online PEXs in the IRF system."
+    ::= { unisPexTable 3 }
+
+unisPexDeviceInfoEntry OBJECT-TYPE
+    SYNTAX      UnisPexDeviceInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information about a PEX in the IRF system.  The index is the PEX
+        entity index."
+    INDEX
+        {
+            entPhysicalIndex
+        }
+    ::= { unisPexDeviceInfoTable 1 }
+
+UnisPexDeviceInfoEntry ::= SEQUENCE
+    {
+        unisPexDeviceStatus           INTEGER,
+        unisPexDeviceAssociateId      Integer32
+    }
+
+unisPexDeviceStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            normal(1),
+            faulty(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Status of the PEX.
+        normal: The PEX is operating correctly.
+        faulty: The PEX is faulty."
+    ::= { unisPexDeviceInfoEntry 1 }
+
+unisPexDeviceAssociateId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "ID assigned to the PEX."
+    ::= { unisPexDeviceInfoEntry 2 }
+
+unisPexTopoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPexTopoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains information about the PEX physical ports and
+        neighbor ports on PEXs."
+    ::= { unisPexTable 4 }
+
+unisPexTopoEntry OBJECT-TYPE
+    SYNTAX      UnisPexTopoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information about a PEX link."
+    INDEX
+        {
+            entPhysicalIndex
+        }
+    ::= { unisPexTopoTable 1 }
+
+UnisPexTopoEntry ::= SEQUENCE
+    {
+        unisPexNeighborEntIndex Integer32
+    }
+
+unisPexNeighborEntIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Entity index of a PEX in the IRF system."
+    ::= { unisPexTopoEntry 1 }
+
+-- PEX Traps
+
+unisPexTraps OBJECT IDENTIFIER ::= { unisPex 3 }
+
+unisPexTrapPrefix OBJECT IDENTIFIER ::= { unisPexTraps 0 }
+
+unisPexPortOnline  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisPexPortId,
+            unisPexPortDescr
+        }
+    STATUS      current
+    DESCRIPTION
+        "An unisPexPortOnline trap is sent when the PEX transitions to
+        online state."
+    ::= { unisPexTrapPrefix 1 }
+
+unisPexPortOffline  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisPexPortId,
+            unisPexPortDescr
+        }
+    STATUS      current
+    DESCRIPTION
+        "An unisPexPortOnline trap is sent when the PEX transitions to
+        offline state."
+    ::= { unisPexTrapPrefix 2 }
+
+unisPexPhyPortForwarding  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisPexEntPhysicalIndexBind,
+            entPhysicalDescr
+        }
+    STATUS      current
+    DESCRIPTION
+        "An unisPexPhyPortForwarding trap is sent when the PEX physical port
+        transitions to forwarding state."
+    ::= { unisPexTrapPrefix 3 }
+
+unisPexPhyPortBlocked  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisPexEntPhysicalIndexBind,
+            entPhysicalDescr
+        }
+    STATUS      current
+    DESCRIPTION
+        "An unisPexPhyPortBlocked trap is sent when the PEX physical port
+        transitions from forwarding state to blocked state."
+    ::= { unisPexTrapPrefix 4 }
+
+unisPexTrapObjects OBJECT IDENTIFIER ::= { unisPex 4 }
+
+unisPexEntPhysicalIndexBind OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "This index is identical to entPhysicalIndex in ENTITY-MIB."
+    ::= { unisPexTrapObjects 1 }
+END

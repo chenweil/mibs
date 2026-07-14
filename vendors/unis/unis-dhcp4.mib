@@ -1,0 +1,3148 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:  DHCPv4 mib for server and relay
+-- Reference:
+-- Version:      V1.6
+-- History:
+-- V1.0 The initial version, created by lilin, 2012.5.24
+-- V1.1 Modified the mib description by lilin, 2013.4.24
+-- V1.2 Added unisDhcpServer2PoolVerifyClass unisDhcpServer2DefOptGrpTable
+--      unisDhcpServer2ValidClassTableby unisDhcpServer2RuleHwAddrTable
+--      unisDhcpServer2OptionGroupTable unisDhcpServer2OptionTable
+--      by yuguoqing, 2014.3.20
+-- V1.3 Add unisDhcpServer2AllocThreshold, unisDhcpServer2ReqCnt,
+--      unisDhcpServer2ReqSuccCnt, unisDhcpServer2PoolThreshold,
+--      unisDhcpServer2PoolUsage, unisDhcpServer2PoolReqCnt,
+--      unisDhcpServer2PoolReqSuccCnt, unisDhcpServer2PoolDiscoverCnt,
+--      unisDhcpServer2PoolOfferCnt, unisDhcpServer2PoolAckCnt,
+--      unisDhcpServer2AddrExhaust, unisDhcpServer2AddrExhaustRecov,
+--      unisDhcpServer2IpUsageOverflow, unisDhcpServer2AllocOverflow
+--      by zhangrenqiang, 2015.8.5
+-- V1.4 Modified unisDhcpServer2RuleNumber by heminhong, 2017.01.13
+-- V1.5 Add unisDhcpServer2IPTotalNum, unisDhcpServer2IPUsedNum,
+--      unisDhcpServer2IPIdleNum, unisDhcpServer2IPExcludeTotalNum,
+--      unisDhcpServer2PoolIPTotalNum, unisDhcpServer2PoolIPUsedNum,
+--      unisDhcpServer2PoolIPIdleNum,unisDhcpServer2PoolIPExcludeNum,
+--      unisDhcpServer2PoolConflictNum,unisDhcpServer2PoolAutoBindNum,
+--      unisDhcpServer2PoolManualBindNum,unisDhcpServer2PoolExpiredBindNum,
+--      unisDhcpServer2IpUsageOverflowRecov, unisDhcpServer2PoolNameInfo
+--      Modified unisDhcpServer2AddrExhaust, unisDhcpServer2AddrExhaustRecov,
+--      unisDhcpServer2IpUsageOverflow
+--      by limeng, 2017.6.3
+-- V1.6 Add unisDhcpServer2IPInUseSecondVlanId
+--      by lvlei, 2019.2.18
+-- =============================================================================
+UNIS-DHCP4-MIB DEFINITIONS ::= BEGIN
+
+-- =============================================================================
+-- Imported variables and types
+-- =============================================================================
+IMPORTS
+    TruthValue, RowStatus, MacAddress
+        FROM SNMPv2-TC
+    OBJECT-TYPE, MODULE-IDENTITY, Integer32,
+    TimeTicks, Counter64, Unsigned32, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    ifIndex, InterfaceIndexOrZero
+        FROM IF-MIB
+    InetAddressIPv4
+        FROM INET-ADDRESS-MIB
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+
+-- =============================================================================
+-- Module identity
+-- =============================================================================
+unisDhcp4 MODULE-IDENTITY
+    LAST-UPDATED "201902180000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION "DHCPv4 MIB"
+    REVISION
+        "201902180000Z"
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION
+        "201706030000Z"
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION
+        "201701130000Z"
+    DESCRIPTION
+        "Modified 'unisDhcpServer2RuleNumber' range."
+    REVISION
+        "201508050000Z"
+    DESCRIPTION
+        "Modified to add new nodes and a new table."
+    REVISION
+        "201304240000Z"
+    DESCRIPTION
+        "The private MIB file includes the DHCPv4 server and relay profile."
+    ::= { unisCommon 122 }
+
+-- =============================================================================
+-- DHCP server scalar objects definition.
+-- =============================================================================
+    unisDhcpServer2ScalarObjects OBJECT IDENTIFIER ::= { unisDhcp4 1 }
+
+-- =============================================================================
+-- unisDhcpServer2ScalarObjects: unisDhcpServer2ConfigGroup
+-- =============================================================================
+unisDhcpServer2ConfigGroup OBJECT IDENTIFIER ::= { unisDhcpServer2ScalarObjects 1 }
+
+unisDhcpServer2Enabled OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "If the value of this object is 'true', the DHCP service is enabled."
+    DEFVAL { false }
+    ::= { unisDhcpServer2ConfigGroup 1 }
+
+unisDhcpServer2AlwaysBroadcast OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When the value of this object is set to 'true',
+         the DHCP server always uses broadcast to reply the client."
+    DEFVAL { false }
+    ::= { unisDhcpServer2ConfigGroup 2 }
+
+unisDhcpServer2IgnoreBootp OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When the value of this object is set to 'true',
+         the DHCP server ignores BOOTP requests."
+    DEFVAL { false }
+    ::= { unisDhcpServer2ConfigGroup 3 }
+
+unisDhcpServer2BootpReplyRfc1048 OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When the value of this object is set to 'true',
+         the DHCP server use RFC 1048 format to reply to
+         BOOTP requests."
+    DEFVAL { false }
+    ::= { unisDhcpServer2ConfigGroup 4 }
+
+unisDhcpServer2Opt82Enabled OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When the value of this object is set to 'true',
+         the DHCP server handles DHCP option 82."
+    DEFVAL { true }
+    ::= { unisDhcpServer2ConfigGroup 5 }
+
+unisDhcpServer2PingNumber OBJECT-TYPE
+    SYNTAX      Unsigned32(0..10)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The number of ping packets sent out."
+    DEFVAL { 1 }
+    ::= { unisDhcpServer2ConfigGroup 6 }
+
+unisDhcpServer2PingTimeout OBJECT-TYPE
+    SYNTAX      Unsigned32(0..10000)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The delay for the reply of a ping packet in
+         milliseconds."
+    DEFVAL { 500 }
+    ::= { unisDhcpServer2ConfigGroup 7 }
+
+unisDhcpServer2AllocThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32(0..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Threshold of success rate of DHCP server IP address allocation
+         in 5 minutes."
+    DEFVAL { 0 }
+    ::= { unisDhcpServer2ConfigGroup 8 }
+
+-- =============================================================================
+-- unisDhcpServer2ScalarObjects: unisDhcpServer2StatGroup
+-- =============================================================================
+unisDhcpServer2StatGroup     OBJECT IDENTIFIER ::= { unisDhcpServer2ScalarObjects 2 }
+
+unisDhcpServer2BadNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the bad packets received."
+    ::= { unisDhcpServer2StatGroup 1 }
+
+unisDhcpServer2BootpRequestNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the BOOTREQUEST packets received."
+    ::= { unisDhcpServer2StatGroup 2 }
+
+unisDhcpServer2DiscoverNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPDISCOVER packets
+         received from the DHCP clients."
+    ::= { unisDhcpServer2StatGroup 3 }
+
+unisDhcpServer2RequestNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPREQUEST packets
+         received from the DHCP clients."
+    ::= { unisDhcpServer2StatGroup 4 }
+
+unisDhcpServer2DeclineNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPDECLINE packets
+         received from the DHCP clients."
+    ::= { unisDhcpServer2StatGroup 5 }
+
+unisDhcpServer2ReleaseNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPRELEASE packets
+         received from the DHCP clients."
+    ::= { unisDhcpServer2StatGroup 6 }
+
+unisDhcpServer2InformNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPINFORM packets
+         received from the DHCP clients."
+    ::= { unisDhcpServer2StatGroup 7 }
+
+unisDhcpServer2BootpReplyNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the BOOTREPLY packets
+         sent by the DHCP server."
+    ::= { unisDhcpServer2StatGroup 8 }
+
+unisDhcpServer2OfferNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPOFFER packets
+         sent by the DHCP server."
+    ::= { unisDhcpServer2StatGroup 9 }
+
+unisDhcpServer2AckNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPACK packets
+         sent by the DHCP server."
+    ::= { unisDhcpServer2StatGroup 10 }
+
+unisDhcpServer2NakNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPNAK packets
+         sent by the DHCP server."
+    ::= { unisDhcpServer2StatGroup 11 }
+
+unisDhcpServer2TotalPoolUsage OBJECT-TYPE
+    SYNTAX      Unsigned32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The percentage of IP addresses in use
+         of all DHCP server pools."
+    ::= { unisDhcpServer2StatGroup 12 }
+
+unisDhcpServer2PoolNumber OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of DHCP server pools."
+    ::= { unisDhcpServer2StatGroup 13 }
+
+unisDhcpServer2ConflictNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of conflict IP in all
+         DHCP server pools."
+    ::= { unisDhcpServer2StatGroup 14 }
+
+unisDhcpServer2AutoBindNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of auto binding IP in
+         DHCP server pools."
+    ::= { unisDhcpServer2StatGroup 15 }
+
+unisDhcpServer2ManualBindNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of manual binding IP in
+         DHCP server pools."
+    ::= { unisDhcpServer2StatGroup 16 }
+
+unisDhcpServer2ExpiredBindNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of expired binding IP in
+         DHCP server pools."
+    ::= { unisDhcpServer2StatGroup 17 }
+
+unisDhcpServer2ReqCnt OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of address allocation
+         requests received by the DHCP server."
+    ::= { unisDhcpServer2StatGroup 18 }
+
+unisDhcpServer2ReqSuccCnt OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of address allocation
+         requests success responses sent by the
+         DHCP server."
+    ::= { unisDhcpServer2StatGroup 19 }
+
+unisDhcpServer2IPTotalNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of addresses."
+    ::= { unisDhcpServer2StatGroup 20 }
+
+unisDhcpServer2IPUsedNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of used addresses."
+    ::= { unisDhcpServer2StatGroup 21 }
+
+unisDhcpServer2IPIdleNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of idle addresses."
+    ::= { unisDhcpServer2StatGroup 22 }
+
+unisDhcpServer2IPExcludeTotalNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of exclude addresses."
+    ::= { unisDhcpServer2StatGroup 23 }
+
+-- =============================================================================
+-- DHCP server table definition.
+-- =============================================================================
+    unisDhcpServer2Tables OBJECT IDENTIFIER ::= { unisDhcp4 2 }
+
+-- =============================================================================
+-- 1st Table of unisDhcpServer2Tables: unisDhcpServer2PoolTable
+-- =============================================================================
+unisDhcpServer2PoolTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2PoolEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing DHCP server pool configurations."
+    ::= { unisDhcpServer2Tables 1 }
+
+unisDhcpServer2PoolEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2PoolEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing DHCP server pool configurations."
+    INDEX { unisDhcpServer2PoolIndex }
+    ::= { unisDhcpServer2PoolTable 1 }
+
+UnisDhcpServer2PoolEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2PoolIndex                    Unsigned32,
+            unisDhcpServer2PoolName                     OCTET STRING,
+            unisDhcpServer2PoolVpnName                  OCTET STRING,
+            unisDhcpServer2PoolNetwork                  InetAddressIPv4,
+            unisDhcpServer2PoolNetworkMask              InetAddressIPv4,
+            unisDhcpServer2PoolStartAddr                InetAddressIPv4,
+            unisDhcpServer2PoolEndAddr                  InetAddressIPv4,
+            unisDhcpServer2PoolLeaseDay                 Integer32,
+            unisDhcpServer2PoolLeaseHour                Integer32,
+            unisDhcpServer2PoolLeaseMinute              Integer32,
+            unisDhcpServer2PoolLeaseSecond              Integer32,
+            unisDhcpServer2PoolLeaseUnlimit             TruthValue,
+            unisDhcpServer2PoolLeaseTime                TimeTicks,
+            unisDhcpServer2PoolDomainName               OCTET STRING,
+            unisDhcpServer2PoolGatewayIP                OCTET STRING,
+            unisDhcpServer2PoolDNSIP                    OCTET STRING,
+            unisDhcpServer2PoolPrimaryDNSIP             InetAddressIPv4,
+            unisDhcpServer2PoolSecondDNSIP              InetAddressIPv4,
+            unisDhcpServer2PoolNetbiosType              INTEGER,
+            unisDhcpServer2PoolNbnsIP                   OCTET STRING,
+            unisDhcpServer2PoolBootFileName             OCTET STRING,
+            unisDhcpServer2PoolBimsIP                   InetAddressIPv4,
+            unisDhcpServer2PoolBimsPort                 Unsigned32,
+            unisDhcpServer2PoolBimsKeyStr               OCTET STRING,
+            unisDhcpServer2PoolNextServer               InetAddressIPv4,
+            unisDhcpServer2PoolTftpDomName              OCTET STRING,
+            unisDhcpServer2PoolTftpIP                   InetAddressIPv4,
+            unisDhcpServer2PoolVoiceAsIP                InetAddressIPv4,
+            unisDhcpServer2PoolVoiceFailIP              InetAddressIPv4,
+            unisDhcpServer2PoolVoiceFailStr             OCTET STRING,
+            unisDhcpServer2PoolVoiceNCPIP               InetAddressIPv4,
+            unisDhcpServer2PoolVoiceVlanId              Unsigned32,
+            unisDhcpServer2PoolVoiceVlanEnbl            TruthValue,
+            unisDhcpServer2PoolRowStatus                RowStatus,
+            unisDhcpServer2PoolVerifyClass              TruthValue,
+            unisDhcpServer2PoolThreshold                Unsigned32
+        }
+
+unisDhcpServer2PoolIndex OBJECT-TYPE
+    SYNTAX      Unsigned32(1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "DHCP server pool index."
+    ::= { unisDhcpServer2PoolEntry 1 }
+
+unisDhcpServer2PoolName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..63))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "DHCP server pool name.
+
+         Once this object is created, the value of this object cannot
+         be modified."
+    ::= { unisDhcpServer2PoolEntry 2 }
+
+unisDhcpServer2PoolVpnName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..31))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Name of the VPN instance that the DHCP pool binds to.
+
+         The value of a zero-length string means the public network.
+
+         Once this object is created, the value of this object cannot
+         be modified."
+    ::= { unisDhcpServer2PoolEntry 3 }
+
+unisDhcpServer2PoolNetwork OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Network address of the primary subnet in a DHCP pool.
+
+         If the value of this object is set to 0.0.0.0,
+         unisDhcpServer2PoolNetworkMask is set with 0.0.0.0
+         automatically."
+    ::= { unisDhcpServer2PoolEntry 4 }
+
+unisDhcpServer2PoolNetworkMask OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Network mask of the primary subnet in a DHCP pool.
+
+         The SET operation to this object ought to be with
+         the SET of unisDhcpServer2PoolNetwork together,
+         and any SET operation alone to this object will be
+         regarded as an invalid operation."
+    ::= { unisDhcpServer2PoolEntry 5 }
+
+unisDhcpServer2PoolStartAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Start IP of an address range of the DHCP pool.
+
+         If the value of this object is set to 0.0.0.0,
+         unisDhcpServer2PoolEndAddr is set with 0.0.0.0 automatically.
+         Otherwise unisDhcpServer2PoolEndAddr must be set with
+         an IP address NOT smaller than the value of this object."
+    ::= { unisDhcpServer2PoolEntry 6 }
+
+unisDhcpServer2PoolEndAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "End IP of an address range of the DHCP pool,
+
+         The SET operation to this object ought to be with
+         the SET of unisDhcpServer2PoolStartAddr together,
+         and any SET operation alone to this object will be
+         regarded as an invalid operation."
+    ::= { unisDhcpServer2PoolEntry 7 }
+
+unisDhcpServer2PoolLeaseDay OBJECT-TYPE
+    SYNTAX      Integer32(0..365)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Number of days of the lease.
+
+         The SET operation to this object ought to be with
+         the SET of unisDhcpServer2PoolLeaseHour,
+         unisDhcpServer2PoolLeaseMinute,
+         unisDhcpServer2PoolLeaseSecond together,
+         and any SET operation alone to any of these objects
+         will be regarded as an invalid operation.
+
+         These objects cannot be set with 0 simultaneously."
+    DEFVAL { 1 }
+    ::= { unisDhcpServer2PoolEntry 8 }
+
+unisDhcpServer2PoolLeaseHour OBJECT-TYPE
+    SYNTAX      Integer32(0..23)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Number of hours of the lease."
+    DEFVAL { 0 }
+    ::= { unisDhcpServer2PoolEntry 9 }
+
+unisDhcpServer2PoolLeaseMinute OBJECT-TYPE
+    SYNTAX      Integer32(0..59)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Number of minutes of the lease."
+    DEFVAL { 0 }
+    ::= { unisDhcpServer2PoolEntry 10 }
+
+unisDhcpServer2PoolLeaseSecond OBJECT-TYPE
+    SYNTAX      Integer32(0..59)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Number of seconds of the lease."
+    DEFVAL { 0 }
+    ::= { unisDhcpServer2PoolEntry 11 }
+
+unisDhcpServer2PoolLeaseUnlimit OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "A flag denoting whether the lease time of
+         a DHCP pool is unlimited."
+    DEFVAL { false }
+    ::= { unisDhcpServer2PoolEntry 12 }
+
+unisDhcpServer2PoolLeaseTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The lease time of a DHCP pool in number of timeticks.
+
+         The value of this object cannot be set to 0
+         and must be set to 4294967295 or a multiple of 100.
+
+         If the object is set with 4294967295, the lease
+         time of a DHCP pool is unlimited."
+    ::= { unisDhcpServer2PoolEntry 13 }
+
+unisDhcpServer2PoolDomainName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..50))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Domain name for DHCP clients.
+
+         If the object is set with a zero-length string, the
+         configuration of the domain name is removed."
+    ::= { unisDhcpServer2PoolEntry 14 }
+
+unisDhcpServer2PoolGatewayIP OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Gateway IP addresses for DHCP clients.
+
+         IP addresses are space separated and the leading
+         or trailing space will be trimmed.
+
+         Since at most 8 gateway addresses can be configured
+         for a pool, a string is defined to get or configure
+         8 IP at a time.
+
+         If the object is set with a zero-length string, the
+         configuration of the gateway address is removed."
+    ::= { unisDhcpServer2PoolEntry 15 }
+
+unisDhcpServer2PoolDNSIP OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "DNS server IP addresses for DHCP clients.
+
+         IP addresses are space separated and the leading
+         or trailing space will be trimmed.
+
+         Since at most 8 DNS server addresses can be configured
+         for a pool, a string is defined to get or configure 8
+         IP at a time.
+
+         If the object is set with a zero-length string, the
+         configuration of the DNS address is removed."
+    ::= { unisDhcpServer2PoolEntry 16 }
+
+unisDhcpServer2PoolPrimaryDNSIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The primary DNS server IP address to be assigned to
+         the client."
+    ::= { unisDhcpServer2PoolEntry 17 }
+
+unisDhcpServer2PoolSecondDNSIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The secondary DNS server IP address to be assigned to
+         the client."
+    ::= { unisDhcpServer2PoolEntry 18 }
+
+unisDhcpServer2PoolNetbiosType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            null(0),
+            bnode(1),
+            pnode(2),
+            mnode(4),
+            hnode(8)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "NetBios node type for DHCP clients."
+    DEFVAL { null }
+    ::= { unisDhcpServer2PoolEntry 19 }
+
+unisDhcpServer2PoolNbnsIP OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "NetBios server IP addresses for DHCP clients.
+
+         IP addresses are space separated and the leading
+         or trailing space will be trimmed.
+
+         Since at most 8 NetBios server addresses can be
+         configured for a pool, a string is defined to get
+         or configure 8 IP at a time.
+
+         If the object is set with a zero-length string, the
+         configuration of the NBNS address is removed."
+    ::= { unisDhcpServer2PoolEntry 20 }
+
+unisDhcpServer2PoolBootFileName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..63))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Boot file name for DHCP clients.
+
+         If the object is set with a zero-length string, the
+         configuration of the boot file name is removed."
+    ::= { unisDhcpServer2PoolEntry 21 }
+
+unisDhcpServer2PoolBimsIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "BIMS server IP address.
+
+         If the object is set with 0.0.0.0, unisDhcpServer2PoolBimsPort
+         is set with 0 and unisDhcpServer2PoolBimsKeyStr is set with
+         a zero-length string automatically.
+         Otherwise unisDhcpServer2PoolBimsPort and unisDhcpServer2PoolBimsKeyStr
+         must be set at the same time while unisDhcpServer2PoolBimsKeyStr
+         must be set with a non-zero length string."
+    ::= { unisDhcpServer2PoolEntry 22 }
+
+unisDhcpServer2PoolBimsPort OBJECT-TYPE
+    SYNTAX      Unsigned32(0..65534)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "BIMS server port number.
+
+         The SET operation to this object ought to be with
+         the SET operation of unisDhcpServer2PoolBimsIP and
+         unisDhcpServer2PoolBimsKeyStr together,
+         and any SET operation alone to this object will be
+         regarded as an invalid operation."
+    ::= { unisDhcpServer2PoolEntry 23 }
+
+unisDhcpServer2PoolBimsKeyStr  OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..16))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "BIMS server key string.
+
+         The SET operation to this object ought to be with
+         the SET of unisDhcpServer2PoolBimsIP and
+         unisDhcpServer2PoolBimsPort together,
+         and any SET operation alone to this object will be
+         regarded as an invalid operation."
+    ::= { unisDhcpServer2PoolEntry 24 }
+
+unisDhcpServer2PoolNextServer OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Next DHCP server IP address for DHCP clients.
+
+         If the object is set with 0.0.0.0, the configuration
+         of the next server address is removed."
+    ::= { unisDhcpServer2PoolEntry 25 }
+
+unisDhcpServer2PoolTftpDomName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..63))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "TFTP server domain name for DHCP clients.
+
+         If the object is set with a zero-length string, the
+         configuration of the TFTP domain name is removed."
+    ::= { unisDhcpServer2PoolEntry 26 }
+
+unisDhcpServer2PoolTftpIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "TFTP server IP address for DHCP clients.
+
+         If the object is set with 0.0.0.0, the configuration
+         of the TFTP server address is removed."
+    ::= { unisDhcpServer2PoolEntry 27 }
+
+unisDhcpServer2PoolVoiceAsIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Voice backup server IP address for DHCP clients.
+
+         If the object is set with 0.0.0.0, the configuration
+         of voice backup server IP address is removed."
+    ::= { unisDhcpServer2PoolEntry 28 }
+
+unisDhcpServer2PoolVoiceFailIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Voice failover IP address for DHCP clients.
+
+         If the object is set with 0.0.0.0,
+         unisDhcpServer2PoolVoiceFailStr is set with a
+         zero-length string automatically.
+         Otherwise unisDhcpServer2PoolVoiceFailStr must be set
+         with a non-zero length string at the same time."
+    ::= { unisDhcpServer2PoolEntry 29 }
+
+unisDhcpServer2PoolVoiceFailStr OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..39))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Voice failover dialer string for DHCP clients.
+
+         The characters in the string must be '0' ~ '9',or '*'.
+         The SET operation to this object ought to be with
+         the SET operation of unisDhcpServer2PoolVoiceFailIP together,
+         and any SET operation alone to this object will be
+         regarded as an invalid operation."
+    ::= { unisDhcpServer2PoolEntry 30 }
+
+unisDhcpServer2PoolVoiceNCPIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Voice network calling processing IP address for DHCP clients.
+
+         If the object is set with 0.0.0.0, the configuration of
+         voice network calling processing IP address is removed."
+    ::= { unisDhcpServer2PoolEntry 31 }
+
+unisDhcpServer2PoolVoiceVlanId OBJECT-TYPE
+    SYNTAX      Unsigned32(2..4094 | 65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Voice VLAN ID for DHCP clients.
+
+         If the value of this object is set to 65535,
+         unisDhcpServer2PoolVoiceVlanEnbl is set with 'false' automatically.
+         Otherwise unisDhcpServer2PoolVoiceVlanEnbl must also be set."
+    ::= { unisDhcpServer2PoolEntry 32 }
+
+unisDhcpServer2PoolVoiceVlanEnbl OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Enable status of the specified voice VLAN for DHCP clients.
+
+         The SET operation to this object ought to be with
+         the SET operation of unisDhcpServer2PoolVoiceVlanId together,
+         and any SET operation alone to this object will be
+         regarded as an invalid operation."
+    DEFVAL { false }
+    ::= { unisDhcpServer2PoolEntry 33 }
+
+unisDhcpServer2PoolRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active,
+         createAndGo, destroy."
+    ::= { unisDhcpServer2PoolEntry 34 }
+
+unisDhcpServer2PoolVerifyClass OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Enable the user class verification.
+
+         When the value of this object is set to 'true', the DHCP server
+         processes packets from DHCP clients in the defined user classes.
+         The user class verification does not apply to packets from DHCP
+         clients with static bindings."
+    DEFVAL { false }
+    ::= { unisDhcpServer2PoolEntry 35 }
+
+unisDhcpServer2PoolThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32(0..100)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Threshold of IP usage of the DHCP server pool."
+    DEFVAL { 100 }
+    ::= { unisDhcpServer2PoolEntry 36 }
+
+-- =============================================================================
+-- 2nd Table of unisDhcpServer2Tables: unisDhcpServer2IfApplyPoolTable
+-- =============================================================================
+unisDhcpServer2IfApplyPoolTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2IfApplyPoolEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for applying a DHCP pool on interfaces."
+    ::= { unisDhcpServer2Tables 2 }
+
+unisDhcpServer2IfApplyPoolEntry  OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2IfApplyPoolEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for applying a DHCP pool on the interface."
+    INDEX { ifIndex }
+    ::= { unisDhcpServer2IfApplyPoolTable 1 }
+
+UnisDhcpServer2IfApplyPoolEntry ::=
+    SEQUENCE
+    {
+        unisDhcpServer2IfApplyPoolName OCTET STRING
+    }
+
+unisDhcpServer2IfApplyPoolName    OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..63))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The name of the DHCP pool that apply to the interface.
+         If the object is set with a zero-length string, the configuration
+         will be deleted."
+    ::= { unisDhcpServer2IfApplyPoolEntry 1 }
+
+-- =============================================================================
+-- 3rd Table of unisDhcpServer2Tables: unisDhcpServer2PoolSecNwTable
+-- =============================================================================
+unisDhcpServer2PoolSecNwTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2PoolSecNwEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing the secondary network configuration of
+         DHCP pools."
+    ::= { unisDhcpServer2Tables 3 }
+
+unisDhcpServer2PoolSecNwEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2PoolSecNwEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing the objects for configuring
+         the secondary network for DHCP pools."
+    INDEX
+        {
+            unisDhcpServer2PoolIndex,
+            unisDhcpServer2PoolSecNw,
+            unisDhcpServer2PoolSecNwMask
+        }
+    ::= { unisDhcpServer2PoolSecNwTable 1 }
+
+UnisDhcpServer2PoolSecNwEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2PoolSecNw                InetAddressIPv4,
+            unisDhcpServer2PoolSecNwMask            InetAddressIPv4,
+            unisDhcpServer2PoolSecNwGwIP            OCTET STRING,
+            unisDhcpServer2PoolSecNwStatus          RowStatus
+        }
+
+unisDhcpServer2PoolSecNw OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Network address of the secondary subnets in a DHCP pool."
+    ::= { unisDhcpServer2PoolSecNwEntry 1 }
+
+unisDhcpServer2PoolSecNwMask OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Network mask of the secondary subnets in a DHCP pool."
+    ::= { unisDhcpServer2PoolSecNwEntry 2 }
+
+unisDhcpServer2PoolSecNwGwIP OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Gateway IP addresses of the secondary subnets in a DHCP pool.
+
+         IP addresses are space separated and the leading
+         or trailing space will be trimmed.
+
+         Since at most 8 gateway addresses can be configured
+         for a secondary network, a string is defined to get
+         or configure 8 IP at a time.
+
+         If the object is set with a zero-length string,
+         the configuration of the gateway address is removed."
+    ::= { unisDhcpServer2PoolSecNwEntry 3 }
+
+unisDhcpServer2PoolSecNwStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active,
+         createAndGo, destroy."
+    ::= { unisDhcpServer2PoolSecNwEntry 4 }
+
+-- =============================================================================
+-- 4th Table of unisDhcpServer2Tables: unisDhcpServer2PoolClassTable
+-- =============================================================================
+unisDhcpServer2PoolClassTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2PoolClassEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing address range of the DHCP
+         server pool for user classes."
+    ::= { unisDhcpServer2Tables 4 }
+
+unisDhcpServer2PoolClassEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2PoolClassEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing address range of DHCP pools
+         for user classes."
+    INDEX { unisDhcpServer2PoolIndex, unisDhcpServer2PoolClassName }
+    ::= { unisDhcpServer2PoolClassTable 1 }
+
+UnisDhcpServer2PoolClassEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2PoolClassName            OCTET STRING,
+            unisDhcpServer2PoolClassStart           InetAddressIPv4,
+            unisDhcpServer2PoolClassEnd             InetAddressIPv4,
+            unisDhcpServer2PoolClassStatus          RowStatus
+        }
+
+unisDhcpServer2PoolClassName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..63))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "User class name."
+    ::= { unisDhcpServer2PoolClassEntry 1 }
+
+unisDhcpServer2PoolClassStart OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Start address of an address range for a DHCP user class.
+
+         The SET operation to this object ought to be with
+         the SET operation of unisDhcpServer2PoolClassEnd together,
+         and any SET operation alone to this object will be
+         regarded as an invalid operation."
+    ::= { unisDhcpServer2PoolClassEntry 2 }
+
+unisDhcpServer2PoolClassEnd OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "End address of an address range for a DHCP user class.
+
+         The SET operation to this object ought to be with
+         the SET of unisDhcpServer2PoolClassStart together,
+         and any SET operation alone to this object will be
+         regarded as an invalid operation.
+
+         This object must be set with an IP address NOT smaller
+         than the value of unisDhcpServer2PoolClassStart."
+    ::= { unisDhcpServer2PoolClassEntry 3 }
+
+unisDhcpServer2PoolClassStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active,
+         createAndGo, destroy.
+
+         If the value of this object is set to 'createAndGo',
+         unisDhcpServer2PoolClassStart and unisDhcpServer2PoolClassEnd
+         must also be set."
+    ::= { unisDhcpServer2PoolClassEntry 4 }
+
+-- =============================================================================
+-- 5th Table of unisDhcpServer2Tables: unisDhcpServer2PoolStaticTable
+-- =============================================================================
+unisDhcpServer2PoolStaticTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2PoolStaticEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing the static binding configurations
+         in DHCP pools."
+    ::= { unisDhcpServer2Tables 5 }
+
+unisDhcpServer2PoolStaticEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2PoolStaticEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing the objects for configuring
+         the static binding in DHCP pools."
+    INDEX { unisDhcpServer2PoolIndex, unisDhcpServer2PoolStaticIP}
+    ::= { unisDhcpServer2PoolStaticTable 1 }
+
+UnisDhcpServer2PoolStaticEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2PoolStaticIP          InetAddressIPv4,
+            unisDhcpServer2PoolStaticMask        InetAddressIPv4,
+            unisDhcpServer2PoolStaticCID         OCTET STRING,
+            unisDhcpServer2PoolStaticHAddr       OCTET STRING,
+            unisDhcpServer2PoolStaticHType       INTEGER,
+            unisDhcpServer2PoolStaticStatus      RowStatus
+        }
+
+unisDhcpServer2PoolStaticIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Ip address of a static binding in a DHCP pool."
+    ::= { unisDhcpServer2PoolStaticEntry 1 }
+
+unisDhcpServer2PoolStaticMask OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Network mask of a static binding in a DHCP pool."
+    ::= { unisDhcpServer2PoolStaticEntry 2 }
+
+unisDhcpServer2PoolStaticCID OBJECT-TYPE
+    SYNTAX     OCTET STRING(SIZE(0|4..254))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Client identifier of a DHCP client that the IP
+         address binds to.
+
+         The structure of the OCTET STRING is
+         H-H-H... while H indicates 4 hexadecimal characters
+         except that the last H indicates 2 or 4 hexadecimal
+         characters."
+    ::= { unisDhcpServer2PoolStaticEntry 3 }
+
+unisDhcpServer2PoolStaticHAddr OBJECT-TYPE
+    SYNTAX     OCTET STRING(SIZE(0|4..39))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Hardware address of a DHCP client that the IP
+         address binds to.
+
+         The structure of the OCTET STRING is
+         H-H-H... while H indicates 4 hexadecimal characters
+         except that the last H indicates 2 or 4 hexadecimal
+         characters."
+    ::= { unisDhcpServer2PoolStaticEntry 4 }
+
+unisDhcpServer2PoolStaticHType OBJECT-TYPE
+    SYNTAX     INTEGER
+        {
+            default(1),
+            ethernet(2),
+            tokenRing(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Hardware type of a DHCP client that the IP address binds to.
+
+         The SET operation to this object ought to be with
+         the SET operation of unisDhcpServer2PoolStaticHAddr,
+         and any SET operation alone to this object will be
+         regarded as an invalid operation.
+
+         'default' indicates that the hardware type is unknown.
+         If the value of unisDhcpServer2PoolStaticCID is set to a non-zero
+         length string, the object is set with 'default' automatically.
+         Otherwise it cannot be set with 'default'.
+
+         'ethernet' indicates that the hardware type is ethernet.
+         If the value of unisDhcpServer2PoolStaticHAddr is set with
+         a non-zero length string, the default value of this object
+         is 'ethernet'.
+
+         'tokenRing' indicates that the hardware type is token-ring."
+    ::= { unisDhcpServer2PoolStaticEntry 5 }
+
+unisDhcpServer2PoolStaticStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active,
+         createAndGo, destroy.
+
+         If the value of this object is set to 'createAndGo',
+         unisDhcpServer2PoolStaticCID or (unisDhcpServer2PoolStaticHardAddr
+         and unisDhcpServer2PoolStaticHardType) must also be set."
+    ::= { unisDhcpServer2PoolStaticEntry 6 }
+
+-- =============================================================================
+-- 6th Table of unisDhcpServer2Tables: unisDhcpServer2PoolOptionTable
+-- =============================================================================
+unisDhcpServer2PoolOptionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2PoolOptionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for configuring user-defined options for DHCP pools."
+    ::= { unisDhcpServer2Tables 6 }
+
+unisDhcpServer2PoolOptionEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2PoolOptionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing the objects for configuring user-defined
+         options for DHCP pools."
+    INDEX { unisDhcpServer2PoolIndex, unisDhcpServer2PoolOptCode }
+    ::= { unisDhcpServer2PoolOptionTable 1 }
+
+UnisDhcpServer2PoolOptionEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2PoolOptCode         Integer32,
+            unisDhcpServer2PoolOptType         INTEGER,
+            unisDhcpServer2PoolOptAscii        OCTET STRING,
+            unisDhcpServer2PoolOptHexStr       OCTET STRING,
+            unisDhcpServer2PoolOptIPStr        OCTET STRING,
+            unisDhcpServer2PoolOptRowStatus    RowStatus
+        }
+
+unisDhcpServer2PoolOptCode OBJECT-TYPE
+    SYNTAX      Integer32(2..254)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Option code."
+    ::= { unisDhcpServer2PoolOptionEntry 1 }
+
+unisDhcpServer2PoolOptType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            ascii(1),
+            hex(2),
+            ip(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Option type.
+
+         'ascii' means using the ascii string that is defined
+         by unisDhcpServer2PoolOptAscii to fill in the option.
+
+         'hex' means using the hex string that is defined by
+         unisDhcpServer2PoolOptHexStr to fill in the option.
+
+         'ip' means using the IP string that is defined by
+         unisDhcpServer2PoolOptIPStr to fill in the option."
+    ::= { unisDhcpServer2PoolOptionEntry 2 }
+
+unisDhcpServer2PoolOptAscii OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Ascii string of an option.
+
+         If unisDhcpServer2PoolOptType is set with 'ascii',
+         this object must be set with a non-zero length
+         string."
+    ::= { unisDhcpServer2PoolOptionEntry 3 }
+
+unisDhcpServer2PoolOptHexStr OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..510))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Hex string of an option.
+
+         The length of the string must be even.
+         If unisDhcpServer2PoolOptType is set with 'hex',
+         this object must be set with a non-zero length
+         string."
+    ::= { unisDhcpServer2PoolOptionEntry 4 }
+
+unisDhcpServer2PoolOptIPStr OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "IP string of an option.
+
+         IP addresses are space separated and the leading
+         or trailing space will be trimmed.
+
+         1 to 8 IP addresses can be configured simultaneously.
+
+         If unisDhcpServer2PoolOptType is set with 'ip',
+         this object must be set with a non-zero length string
+         that must contain at least one IP address."
+    ::= { unisDhcpServer2PoolOptionEntry 5 }
+
+unisDhcpServer2PoolOptRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active, createAndGo,
+         destroy.
+
+         If the value of this object is set to 'createAndGo',
+         unisDhcpServer2PoolOptType must also be set."
+    ::= { unisDhcpServer2PoolOptionEntry 6 }
+
+-- =============================================================================
+-- 7th Table of unisDhcpServer2Tables: unisDhcpServer2PoolForbidTable
+-- =============================================================================
+unisDhcpServer2PoolForbidTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2PoolForbidEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for configuring forbidden IP for a DHCP server pool."
+    ::= { unisDhcpServer2Tables 7 }
+
+unisDhcpServer2PoolForbidEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2PoolForbidEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for configuring forbidden IP for a DHCP server pool."
+    INDEX { unisDhcpServer2PoolIndex, unisDhcpServer2PoolForbidIP }
+    ::= { unisDhcpServer2PoolForbidTable 1 }
+
+UnisDhcpServer2PoolForbidEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2PoolForbidIP             InetAddressIPv4,
+            unisDhcpServer2PoolForbidStatus         RowStatus
+        }
+
+unisDhcpServer2PoolForbidIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Forbidden IP of the DHCP pool."
+    ::= { unisDhcpServer2PoolForbidEntry 1 }
+
+unisDhcpServer2PoolForbidStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active,
+         createAndGo, destroy."
+    ::= { unisDhcpServer2PoolForbidEntry 2 }
+
+-- =============================================================================
+-- 8th Table of unisDhcpServer2Tables: unisDhcpServer2ClassTable
+-- =============================================================================
+unisDhcpServer2ClassTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2ClassEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for configuring user class to DHCP server."
+    ::= { unisDhcpServer2Tables 8 }
+
+unisDhcpServer2ClassEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2ClassEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for configuring user class to DHCP server."
+    INDEX { unisDhcpServer2ClassName }
+    ::= { unisDhcpServer2ClassTable 1 }
+
+UnisDhcpServer2ClassEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2ClassName           OCTET STRING,
+            unisDhcpServer2ClassRowStatus      RowStatus
+        }
+
+unisDhcpServer2ClassName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..63))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "DHCP user class name."
+    ::= { unisDhcpServer2ClassEntry 1 }
+
+unisDhcpServer2ClassRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active,
+         createAndGo, destroy."
+    ::= { unisDhcpServer2ClassEntry 2 }
+
+-- =============================================================================
+-- 9th Table of unisDhcpServer2Tables: unisDhcpServer2RuleTable
+-- =============================================================================
+unisDhcpServer2RuleTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2RuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for configuring option rules used to match DHCP users."
+    ::= { unisDhcpServer2Tables 9 }
+
+unisDhcpServer2RuleEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2RuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for configuring option rules used to match DHCP users."
+    INDEX
+        {
+            unisDhcpServer2ClassName,
+            unisDhcpServer2RuleNumber
+        }
+    ::= { unisDhcpServer2RuleTable 1 }
+
+UnisDhcpServer2RuleEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2RuleNumber           Integer32,
+            unisDhcpServer2RuleOptCode          Integer32,
+            unisDhcpServer2RuleOptHexStr        OCTET STRING,
+            unisDhcpServer2RuleOptMask          OCTET STRING,
+            unisDhcpServer2RuleOptOffset        Integer32,
+            unisDhcpServer2RuleOptLength        Integer32,
+            unisDhcpServer2RuleRowStatus        RowStatus
+        }
+
+unisDhcpServer2RuleNumber OBJECT-TYPE
+    SYNTAX      Integer32(1..128)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Rule number."
+    ::= { unisDhcpServer2RuleEntry 1 }
+
+unisDhcpServer2RuleOptCode OBJECT-TYPE
+    SYNTAX      Integer32(1..254)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Option code."
+    ::= { unisDhcpServer2RuleEntry 2 }
+
+unisDhcpServer2RuleOptHexStr OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..510))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Hex string of an option.
+
+         The length of the string must be even."
+    ::= { unisDhcpServer2RuleEntry 3 }
+
+unisDhcpServer2RuleOptMask OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..510))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The mask used to match options.
+
+         The length of this object must be same with that of
+         unisDhcpServer2RuleOptHexStr.
+
+         The SET operation of this object must be with
+         the SET operation of unisDhcpServer2RuleOptHexStr."
+    ::= { unisDhcpServer2RuleEntry 4 }
+
+unisDhcpServer2RuleOptOffset OBJECT-TYPE
+    SYNTAX      Integer32(0..254)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The option offset used to match users.
+
+         The SET operation of this object must be with
+         the SET operation of unisDhcpServer2RuleOptHexStr,
+         unisDhcpServer2RuleOptLength."
+    ::= { unisDhcpServer2RuleEntry 5 }
+
+unisDhcpServer2RuleOptLength OBJECT-TYPE
+    SYNTAX      Integer32(0..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The option length used to match user options.
+
+         The SET operation of this object must be with
+         the SET operation of unisDhcpServer2RuleOptOffset."
+    ::= { unisDhcpServer2RuleEntry 6 }
+
+unisDhcpServer2RuleRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active,
+         createAndGo, destroy.
+
+         If the value of this object is set to 'createAndGo',
+         unisDhcpServer2RuleOptCode must also be set."
+    ::= { unisDhcpServer2RuleEntry 7 }
+
+-- =============================================================================
+-- 10th Table of unisDhcpServer2Tables: unisDhcpServer2ForbidTable
+-- =============================================================================
+unisDhcpServer2ForbidTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2ForbidEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for configuring forbidden IP range to DHCP server."
+    ::= { unisDhcpServer2Tables 10 }
+
+unisDhcpServer2ForbidEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2ForbidEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for configuring forbidden IP range to DHCP server."
+    INDEX
+        {
+            unisDhcpServer2ForbidVpnName,
+            unisDhcpServer2ForbidStart,
+            unisDhcpServer2ForbidEnd
+        }
+    ::= { unisDhcpServer2ForbidTable 1 }
+
+UnisDhcpServer2ForbidEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2ForbidVpnName      OCTET STRING,
+            unisDhcpServer2ForbidStart        InetAddressIPv4,
+            unisDhcpServer2ForbidEnd          InetAddressIPv4,
+            unisDhcpServer2ForbidRowStatus    RowStatus
+        }
+
+unisDhcpServer2ForbidVpnName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..31))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Name of the VPN instance that the forbidden IP range
+         binds to.
+
+         If the value of this object is 0x1, the network that
+         the forbidden IP range belongs to is the public network."
+    ::= { unisDhcpServer2ForbidEntry 1 }
+
+unisDhcpServer2ForbidStart OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Start IP of forbidden IP range."
+    ::= { unisDhcpServer2ForbidEntry 2 }
+
+unisDhcpServer2ForbidEnd OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "End IP of forbidden IP range."
+    ::= { unisDhcpServer2ForbidEntry 3 }
+
+unisDhcpServer2ForbidRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active,
+         createAndGo, destroy."
+    ::= { unisDhcpServer2ForbidEntry 4 }
+
+-- =============================================================================
+-- 11th Table of unisDhcpServer2Tables: unisDhcpServer2FreeTable
+-- =============================================================================
+unisDhcpServer2FreeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2FreeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for displaying free IP range for DHCP server."
+    ::= { unisDhcpServer2Tables 11 }
+
+unisDhcpServer2FreeEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2FreeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for displaying free IP range for DHCP server."
+    INDEX
+        {
+            unisDhcpServer2PoolIndex,
+            unisDhcpServer2FreeStart
+        }
+    ::= { unisDhcpServer2FreeTable 1 }
+
+UnisDhcpServer2FreeEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2FreeStart             InetAddressIPv4,
+            unisDhcpServer2FreeEnd               InetAddressIPv4
+        }
+
+unisDhcpServer2FreeStart OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Start IP of free IP range."
+    ::= { unisDhcpServer2FreeEntry 1 }
+
+unisDhcpServer2FreeEnd OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "End IP of free IP range."
+    ::= { unisDhcpServer2FreeEntry 2 }
+
+-- =============================================================================
+-- 12th Table of unisDhcpServer2Tables: unisDhcpServer2ConflictTable
+-- =============================================================================
+unisDhcpServer2ConflictTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2ConflictEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for displaying the information of conflict
+         IP for DHCP server."
+    ::= { unisDhcpServer2Tables 12 }
+
+unisDhcpServer2ConflictEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2ConflictEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for displaying the information of
+         conflict IP for DHCP server."
+    INDEX { unisDhcpServer2PoolIndex, unisDhcpServer2ConflictIP }
+    ::= { unisDhcpServer2ConflictTable 1 }
+
+UnisDhcpServer2ConflictEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2ConflictIP            InetAddressIPv4,
+            unisDhcpServer2ConflictType          INTEGER,
+            unisDhcpServer2ConflictTime          OCTET STRING,
+            unisDhcpServer2ConflictRowStatus     RowStatus
+        }
+
+unisDhcpServer2ConflictIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Conflict IP."
+    ::= { unisDhcpServer2ConflictEntry 1 }
+
+unisDhcpServer2ConflictType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            detectByServer(1),
+            detectByClient(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Type of the detection of conflict IP.
+         'detectByServer' denotes that the conflict is detected
+         by DHCP server.
+         'detectByClient' denotes that the conflict is detected
+         by DHCP client."
+    ::= { unisDhcpServer2ConflictEntry 2 }
+
+unisDhcpServer2ConflictTime OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..19))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Time when the conflict is detected.
+         The structure of the OCTET STRING is
+         month/day/year hour:munite:second
+         (MM/DD/YYYY hh:mm:ss)."
+    ::= { unisDhcpServer2ConflictEntry 3 }
+
+unisDhcpServer2ConflictRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Only destroy action is allow to use."
+    ::= { unisDhcpServer2ConflictEntry 4 }
+
+-- =============================================================================
+-- 13th Table of unisDhcpServer2Tables: unisDhcpServer2ExpiredTable
+-- =============================================================================
+unisDhcpServer2ExpiredTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDhcpServer2ExpiredEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table for displaying the information of expired IP
+         for DHCP Server pools. "
+    ::= { unisDhcpServer2Tables 13 }
+
+unisDhcpServer2ExpiredEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2ExpiredEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry of objects for displaying information
+         of expired IP for DHCP server pools."
+    INDEX { unisDhcpServer2PoolIndex, unisDhcpServer2ExpiredIP }
+    ::= { unisDhcpServer2ExpiredTable 1 }
+
+UnisDhcpServer2ExpiredEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2ExpiredIP                  InetAddressIPv4,
+            unisDhcpServer2ExpiredClientId            OCTET STRING,
+            unisDhcpServer2ExpiredTime                OCTET STRING,
+            unisDhcpServer2ExpiredRowStatus           RowStatus
+        }
+
+unisDhcpServer2ExpiredIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Expired IP address."
+    ::= { unisDhcpServer2ExpiredEntry 1 }
+
+unisDhcpServer2ExpiredClientId OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(4..254))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Client identifier or hardware address."
+    ::= { unisDhcpServer2ExpiredEntry 2 }
+
+unisDhcpServer2ExpiredTime OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..19))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Expired time.
+         The structure of the OCTET STRING is
+         month/day/year hour:munite:second
+         (MM/DD/YYYY hh:mm:ss)."
+    ::= { unisDhcpServer2ExpiredEntry 3 }
+
+unisDhcpServer2ExpiredRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Only destroy action is allow to use."
+    ::= { unisDhcpServer2ExpiredEntry 4 }
+
+-- =============================================================================
+-- 14th Table of unisDhcpServer2Tables: unisDhcpServer2IPInUseTable
+-- =============================================================================
+unisDhcpServer2IPInUseTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDhcpServer2IPInUseEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table for displaying the information of IP in use
+         for DHCP Server pools. "
+    ::= { unisDhcpServer2Tables 14 }
+
+unisDhcpServer2IPInUseEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2IPInUseEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry of objects for displaying information
+         of IP in use for DHCP server pools."
+    INDEX { unisDhcpServer2PoolIndex, unisDhcpServer2IPInUseIP }
+    ::= { unisDhcpServer2IPInUseTable 1 }
+
+UnisDhcpServer2IPInUseEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2IPInUseIP                  InetAddressIPv4,
+            unisDhcpServer2IPInUseClientId            OCTET STRING,
+            unisDhcpServer2IPInUseHardAddr            OCTET STRING,
+            unisDhcpServer2IPInUseHardType            INTEGER,
+            unisDhcpServer2IPInUseVlanId              Unsigned32,
+            unisDhcpServer2IPInUseEndLease            OCTET STRING,
+            unisDhcpServer2IPInUseType                INTEGER,
+            unisDhcpServer2IPInUseIfIndex             InterfaceIndexOrZero,
+            unisDhcpServer2IPInUseRowStatus           RowStatus,
+            unisDhcpServer2IPInUseSecondVlanId        Unsigned32
+        }
+
+unisDhcpServer2IPInUseIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Ip address in use."
+    ::= { unisDhcpServer2IPInUseEntry 1 }
+
+unisDhcpServer2IPInUseClientId OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0|4..254))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Client identifier."
+    ::= { unisDhcpServer2IPInUseEntry 2 }
+
+unisDhcpServer2IPInUseHardAddr OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0|4..39))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Hardware address."
+    ::= { unisDhcpServer2IPInUseEntry 3 }
+
+unisDhcpServer2IPInUseHardType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            default(1),
+            ethernet(2),
+            tokenRing(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Hardware address type."
+    ::= { unisDhcpServer2IPInUseEntry 4 }
+
+unisDhcpServer2IPInUseVlanId OBJECT-TYPE
+    SYNTAX      Unsigned32(1..4094|65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User's VLAN ID.
+
+         65535 means that a client doesn't have VLAN ID or have an
+         invalid VLAN ID."
+    ::= { unisDhcpServer2IPInUseEntry 5 }
+
+unisDhcpServer2IPInUseEndLease OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..19))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "End time of lease.
+         The structure of the OCTET STRING is
+         month/day/year hour:munite:second
+         (MM/DD/YYYY hh:mm:ss)."
+    ::= { unisDhcpServer2IPInUseEntry 6 }
+
+unisDhcpServer2IPInUseType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            staticUnallocated(1),
+            staticOffered(2),
+            staticCommitted(3),
+            autoOffered(4),
+            autoCommitted(5)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Type of binding."
+    ::= { unisDhcpServer2IPInUseEntry 7 }
+
+unisDhcpServer2IPInUseIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Interface index information.
+         If the value of this object is zero,
+         the interface is unknown."
+    ::= { unisDhcpServer2IPInUseEntry 8 }
+
+unisDhcpServer2IPInUseRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Only destroy action is allow to use."
+    ::= { unisDhcpServer2IPInUseEntry 9 }
+
+unisDhcpServer2IPInUseSecondVlanId OBJECT-TYPE
+    SYNTAX      Unsigned32(1..4094|65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User's second VLAN ID.
+
+         65535 means that a client doesn't have second VLAN ID or has an
+         invalid second VLAN ID."
+    ::= { unisDhcpServer2IPInUseEntry 10 }
+
+-- =============================================================================
+-- 15th Table of unisDhcpServer2Tables: unisDhcpServer2DefOptGrpTable
+-- =============================================================================
+unisDhcpServer2DefOptGrpTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2DefOptGrpEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing option group of the DHCP server pool for user
+         classes."
+    ::= { unisDhcpServer2Tables 15 }
+
+unisDhcpServer2DefOptGrpEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2DefOptGrpEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing option group of DHCP pools for user classes."
+    INDEX {
+            unisDhcpServer2PoolIndex,
+            unisDhcpServer2DefOptGrpClass
+          }
+    ::= { unisDhcpServer2DefOptGrpTable 1 }
+
+UnisDhcpServer2DefOptGrpEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2DefOptGrpClass        OCTET STRING,
+            unisDhcpServer2DefOptGrpId           Integer32,
+            unisDhcpServer2DefOptGrpStatus       RowStatus
+        }
+
+unisDhcpServer2DefOptGrpClass OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..63))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "User class name."
+    ::= { unisDhcpServer2DefOptGrpEntry 1 }
+
+unisDhcpServer2DefOptGrpId OBJECT-TYPE
+    SYNTAX      Integer32 (1..32768)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The option group ID."
+    ::= { unisDhcpServer2DefOptGrpEntry 2 }
+
+unisDhcpServer2DefOptGrpStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active, createAndGo, destroy.
+
+         If the value of this object is set to 'createAndGo',
+         unisDhcpServer2DefOptGrpId must also be set."
+    ::= { unisDhcpServer2DefOptGrpEntry 3 }
+
+-- =============================================================================
+-- 16th Table of unisDhcpServer2Tables: unisDhcpServer2ValidClassTable
+-- =============================================================================
+unisDhcpServer2ValidClassTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2ValidClassEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing valid user classes for DHCP server pool."
+    ::= { unisDhcpServer2Tables 16 }
+
+unisDhcpServer2ValidClassEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2ValidClassEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing valid user classes for DHCP server pool."
+    INDEX {
+      unisDhcpServer2PoolIndex,
+      unisDhcpServer2ValidClassName
+    }
+    ::= { unisDhcpServer2ValidClassTable 1 }
+
+UnisDhcpServer2ValidClassEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2ValidClassName            OCTET STRING,
+            unisDhcpServer2ValidClassStatus          RowStatus
+        }
+
+unisDhcpServer2ValidClassName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..63))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "User class name."
+    ::= { unisDhcpServer2ValidClassEntry 1 }
+
+unisDhcpServer2ValidClassStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active, createAndGo, destroy."
+    ::= { unisDhcpServer2ValidClassEntry 2 }
+
+-- =============================================================================
+-- 17th Table of unisDhcpServer2Tables: unisDhcpServer2RuleHwAddrTable
+-- =============================================================================
+unisDhcpServer2RuleHwAddrTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2RuleHwAddrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for configuring hardware address rules used to match DHCP
+         users."
+    ::= { unisDhcpServer2Tables 17 }
+
+unisDhcpServer2RuleHwAddrEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2RuleHwAddrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for configuring hardware address rules used to match DHCP
+         users."
+    INDEX
+        {
+          unisDhcpServer2ClassName,
+          unisDhcpServer2RuleHwAddrNumber
+        }
+    ::= { unisDhcpServer2RuleHwAddrTable 1 }
+
+UnisDhcpServer2RuleHwAddrEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2RuleHwAddrNumber           Integer32,
+            unisDhcpServer2RuleHwAddress              OCTET STRING,
+            unisDhcpServer2RuleHwAddrMask             OCTET STRING,
+            unisDhcpServer2RuleHwAddrType             Integer32,
+            unisDhcpServer2RuleHwAddrStatus           RowStatus
+        }
+
+unisDhcpServer2RuleHwAddrNumber OBJECT-TYPE
+    SYNTAX      Integer32(1..16)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Rule number."
+    ::= { unisDhcpServer2RuleHwAddrEntry 1 }
+
+unisDhcpServer2RuleHwAddress OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(4..39))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Hardware address for a rule.
+
+         The structure of the OCTET STRING is H-H-H... while H indicates 4
+         hexadecimal characters except that the last H indicates 2 or 4
+         hexadecimal characters.
+
+         The SET operation to this object ought to be with the SET operation
+         of unisDhcpServer2RuleHwAddrMask together, and any SET operation
+         alone to this object will be regarded as an invalid operation."
+    ::= { unisDhcpServer2RuleHwAddrEntry 2 }
+
+unisDhcpServer2RuleHwAddrMask OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(4..39))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Mask of hardware address for a rule.
+
+         The structure of the OCTET STRING is the same with
+         unisDhcpServer2RuleHwAddress.
+
+         The SET operation to this object ought to be with the SET operation
+         of unisDhcpServer2RuleHwAddress together, and any SET operation
+         alone to this object will be regarded as an invalid operation."
+    ::= { unisDhcpServer2RuleHwAddrEntry 3 }
+
+unisDhcpServer2RuleHwAddrType OBJECT-TYPE
+    SYNTAX      Integer32(1..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Hardware type for a rule.
+
+         The codes of all hardware types see ARP section in RFC 1700.
+
+         The SET operation alone to this object will be regarded as an
+         invalid operation."
+    DEFVAL { 1 }
+    ::= { unisDhcpServer2RuleHwAddrEntry 4 }
+
+unisDhcpServer2RuleHwAddrStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active, createAndGo, destroy.
+
+         If the value of this object is set to 'createAndGo',
+         unisDhcpServer2RuleHwAddrAddress and unisDhcpServer2RuleHwAddrMask
+         must also be set."
+    ::= { unisDhcpServer2RuleHwAddrEntry 5 }
+
+-- =============================================================================
+-- 18th Table of unisDhcpServer2Tables: unisDhcpServer2OptionGroupTable
+-- =============================================================================
+unisDhcpServer2OptionGroupTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2OptionGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for creating DHCP server option groups."
+    ::= { unisDhcpServer2Tables 18 }
+
+unisDhcpServer2OptionGroupEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2OptionGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing objects for creating or deleting an option
+         group."
+    INDEX { unisDhcpServer2OptionGroupId }
+    ::= { unisDhcpServer2OptionGroupTable 1 }
+
+UnisDhcpServer2OptionGroupEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2OptionGroupId         Integer32,
+            unisDhcpServer2OptionGroupStatus     RowStatus
+        }
+
+unisDhcpServer2OptionGroupId OBJECT-TYPE
+    SYNTAX      Integer32 (1..32768)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The option group ID."
+    ::= { unisDhcpServer2OptionGroupEntry 1 }
+
+unisDhcpServer2OptionGroupStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active, createAndGo, destroy."
+    ::= { unisDhcpServer2OptionGroupEntry 2 }
+
+-- =============================================================================
+-- 19th Table of unisDhcpServer2Tables: unisDhcpServer2OptionTable
+-- =============================================================================
+unisDhcpServer2OptionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpServer2OptionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for configuring options in an option group."
+    ::= { unisDhcpServer2Tables 19 }
+
+unisDhcpServer2OptionEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2OptionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing objects for configuring an option in an option
+         group."
+    INDEX
+        {
+          unisDhcpServer2OptionGroupId,
+          unisDhcpServer2OptionCode
+        }
+    ::= { unisDhcpServer2OptionTable 1 }
+
+UnisDhcpServer2OptionEntry ::=
+    SEQUENCE
+        {   unisDhcpServer2OptionCode         Integer32,
+            unisDhcpServer2OptionType         INTEGER,
+            unisDhcpServer2OptionAscii        OCTET STRING,
+            unisDhcpServer2OptionHexStr       OCTET STRING,
+            unisDhcpServer2OptionIPStr        OCTET STRING,
+            unisDhcpServer2OptionRowStatus    RowStatus
+        }
+
+unisDhcpServer2OptionCode OBJECT-TYPE
+    SYNTAX      Integer32 (2..254)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Option code."
+    ::= { unisDhcpServer2OptionEntry 1 }
+
+unisDhcpServer2OptionType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            ascii(1),
+            hex(2),
+            ip(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Option type.
+
+         'ascii' means using the ascii string that is defined by
+         unisDhcpServer2OptionAscii to fill in the option.
+
+         'hex' means using the hex string that is defined by
+         unisDhcpServer2OptionHexStr to fill in the option.
+
+         'ip' means using the IP string that is defined by
+         unisDhcpServer2OptionIPStr to fill in the option."
+    ::= { unisDhcpServer2OptionEntry 2 }
+
+unisDhcpServer2OptionAscii    OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Ascii string of an option.
+
+         If unisDhcpServer2OptionType is set with 'ascii', this object must
+         be set with a non-zero length string."
+    ::= { unisDhcpServer2OptionEntry 3 }
+
+unisDhcpServer2OptionHexStr    OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..510))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Hex string of an option.
+
+         The length of the string must be even.  If
+         unisDhcpServer2OptionType is set with 'hex', this object must be
+         set with a non-zero length string."
+    ::= { unisDhcpServer2OptionEntry 4 }
+
+unisDhcpServer2OptionIPStr    OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "IP string of an option.
+
+         IP addresses are space separated and the leading or trailing space
+         will be trimmed.
+
+         1 to 8 IP addresses can be configured simultaneously.
+
+         If unisDhcpServer2OptionType is set with 'ip', this object must be
+         set with a non-zero length string that must contain at least one IP
+         address."
+    ::= { unisDhcpServer2OptionEntry 5 }
+
+unisDhcpServer2OptionRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active, createAndGo, destroy.
+
+         If the value of this object is set to 'createAndGo',
+         unisDhcpServer2OptionType must also be set."
+    ::= { unisDhcpServer2OptionEntry 6 }
+
+-- =============================================================================
+-- 20th Table of unisDhcpServer2Tables: unisDhcpServer2PoolStatTable
+-- =============================================================================
+unisDhcpServer2PoolStatTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDhcpServer2PoolStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table for displaying the statistics of
+         a DHCP Server pool."
+    ::= { unisDhcpServer2Tables 20 }
+
+unisDhcpServer2PoolStatEntry OBJECT-TYPE
+    SYNTAX      UnisDhcpServer2PoolStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry of objects for displaying the statistics of
+         a DHCP Server pool."
+    INDEX { unisDhcpServer2PoolIndex }
+    ::= { unisDhcpServer2PoolStatTable 1 }
+
+UnisDhcpServer2PoolStatEntry ::=
+    SEQUENCE
+        {
+            unisDhcpServer2PoolUsage                  Unsigned32,
+            unisDhcpServer2PoolReqCnt                 Counter64,
+            unisDhcpServer2PoolReqSuccCnt             Counter64,
+            unisDhcpServer2PoolDiscoverCnt            Counter64,
+            unisDhcpServer2PoolOfferCnt               Counter64,
+            unisDhcpServer2PoolAckCnt                 Counter64,
+            unisDhcpServer2PoolIPTotalNum             Unsigned32,
+            unisDhcpServer2PoolIPUsedNum              Unsigned32,
+            unisDhcpServer2PoolIPIdleNum              Unsigned32,
+            unisDhcpServer2PoolIPExcludeNum           Unsigned32,
+            unisDhcpServer2PoolConflictNum            Unsigned32,
+            unisDhcpServer2PoolAutoBindNum            Unsigned32,
+            unisDhcpServer2PoolManualBindNum          Unsigned32,
+            unisDhcpServer2PoolExpiredBindNum         Unsigned32,
+            unisDhcpServer2PoolNameInfo               OCTET STRING
+        }
+
+unisDhcpServer2PoolUsage OBJECT-TYPE
+    SYNTAX      Unsigned32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The percentage of IP addresses in use
+         of the DHCP server pool."
+    ::= { unisDhcpServer2PoolStatEntry 1 }
+
+unisDhcpServer2PoolReqCnt OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of address allocation
+         requests which matched the DHCP pool and
+         were received by the DHCP server."
+    ::= { unisDhcpServer2PoolStatEntry 2 }
+
+unisDhcpServer2PoolReqSuccCnt OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of address allocation
+         requests success responses which matched
+         the DHCP pool and were sent by the DHCP server."
+    ::= { unisDhcpServer2PoolStatEntry 3 }
+
+unisDhcpServer2PoolDiscoverCnt OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of DISCOVER packets which
+         matched the DHCP pool and were received by the
+         DHCP server."
+    ::= { unisDhcpServer2PoolStatEntry 4 }
+
+unisDhcpServer2PoolOfferCnt OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of OFFER packets which
+         matched the DHCP pool and were sent by the
+         DHCP server."
+    ::= { unisDhcpServer2PoolStatEntry 5 }
+
+unisDhcpServer2PoolAckCnt OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of ACK packets which
+         matched the DHCP pool and were sent by the
+         DHCP server."
+    ::= { unisDhcpServer2PoolStatEntry 6 }
+
+unisDhcpServer2PoolIPTotalNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of addresses in the
+         DHCP pool."
+    ::= { unisDhcpServer2PoolStatEntry 7 }
+
+unisDhcpServer2PoolIPUsedNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of used addresses in the
+         DHCP pool."
+    ::= { unisDhcpServer2PoolStatEntry 8 }
+
+unisDhcpServer2PoolIPIdleNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of idle addresses in the
+         DHCP pool."
+    ::= { unisDhcpServer2PoolStatEntry 9 }
+
+unisDhcpServer2PoolIPExcludeNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of addresses excluded from address
+         allocation in the DHCP pool."
+    ::= { unisDhcpServer2PoolStatEntry 10 }
+
+unisDhcpServer2PoolConflictNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of conflicting addresses in the
+         DHCP pool."
+    ::= { unisDhcpServer2PoolStatEntry 11 }
+
+unisDhcpServer2PoolAutoBindNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of auto binding addresses in the
+         DHCP pool."
+    ::= { unisDhcpServer2PoolStatEntry 12 }
+
+unisDhcpServer2PoolManualBindNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of manual binding addresses in
+         the DHCP pool."
+    ::= { unisDhcpServer2PoolStatEntry 13 }
+
+unisDhcpServer2PoolExpiredBindNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of expired addresses in
+         the DHCP pool."
+    ::= { unisDhcpServer2PoolStatEntry 14 }
+
+unisDhcpServer2PoolNameInfo OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..63))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "DHCP server pool name."
+    ::= { unisDhcpServer2PoolStatEntry 15 }
+
+-- =============================================================================
+-- DHCP relay scalar object definition begin
+-- =============================================================================
+    unisDhcpRelay2ScalarObjects   OBJECT IDENTIFIER ::= { unisDhcp4 3 }
+
+-- =============================================================================
+-- unisDhcpRelay2ScalarObjects: unisDhcpRelay2ConfigGroup
+-- =============================================================================
+unisDhcpRelay2ConfigGroup  OBJECT IDENTIFIER ::= { unisDhcpRelay2ScalarObjects 1 }
+
+unisDhcpRelay2UserInfoRecord OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "If the value is 'true', user information will be recorded."
+    DEFVAL { false }
+    ::= { unisDhcpRelay2ConfigGroup 1 }
+
+unisDhcpRelay2UserInfoRefresh OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "If the value is 'true', user information will be refreshed
+         on timer."
+    DEFVAL { true }
+    ::= { unisDhcpRelay2ConfigGroup 2 }
+
+unisDhcpRelay2UserInfoFlushTime OBJECT-TYPE
+    SYNTAX      Unsigned32(0..120)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "User information refresh interval in seconds.
+
+         If the value of the object is set to 0, the interval is
+         calculated automatically by the number of user
+         information entries."
+    DEFVAL { 0 }
+    ::= { unisDhcpRelay2ConfigGroup 3 }
+
+unisDhcpRelay2ReleaseAddr   OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..47))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "User address to be released.
+
+         The structure of the OCTET STRING is
+         IP address:VPN name.
+         If the VPN instance name is NOT specified,
+         the IP address is in public network."
+    ::= { unisDhcpRelay2ConfigGroup 4 }
+
+-- =============================================================================
+-- unisDhcpRelay2ScalarObjects: unisDhcpRelay2StatisticsGroup
+-- =============================================================================
+unisDhcpRelay2StatisticsGroup  OBJECT IDENTIFIER ::= { unisDhcpRelay2ScalarObjects 2 }
+
+unisDhcpRelay2RxClientNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the packets received from DHCP
+         clients by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 1 }
+
+unisDhcpRelay2TxClientNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the packets transmitted to
+         DHCP clients by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 2 }
+
+unisDhcpRelay2RxServerNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the packets received from
+         DHCP Servers by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 3 }
+
+unisDhcpRelay2TxServerNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the packets transmitted to
+         DHCP Servers by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 4 }
+
+unisDhcpRelay2BadNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the bad packets received."
+    ::= { unisDhcpRelay2StatisticsGroup 5 }
+
+unisDhcpRelay2BootpRequestNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the BOOTREQUEST packets handled
+         by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 6 }
+
+unisDhcpRelay2DiscoverNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPDISCOVER packets handled
+         by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 7 }
+
+unisDhcpRelay2RequestNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPREQUEST packets handled
+         by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 8 }
+
+unisDhcpRelay2DeclineNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPDECLINE packets handled
+         by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 9 }
+
+unisDhcpRelay2ReleaseNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPRELEASE packets handled
+         by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 10 }
+
+unisDhcpRelay2InformNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPINFORM packets handled
+         by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 11 }
+
+unisDhcpRelay2BootpReplyNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the BOOTREPLY packets handled
+         by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 12 }
+
+unisDhcpRelay2OfferNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPOFFER packets handled
+         by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 13 }
+
+unisDhcpRelay2AckNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPACK packets handled
+         by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 14 }
+
+unisDhcpRelay2NakNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of the DHCPNAK packets handled
+         by DHCP relay."
+    ::= { unisDhcpRelay2StatisticsGroup 15 }
+
+-- =============================================================================
+-- DHCP relay table definition.
+-- =============================================================================
+    unisDhcpRelay2Tables OBJECT IDENTIFIER ::= { unisDhcp4 4 }
+
+-- =============================================================================
+-- 1st Table of unisDhcpRelay2Tables: unisDhcpRelay2IfConfigTable
+-- =============================================================================
+unisDhcpRelay2IfConfigTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpRelay2IfConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for configuring relay functions for interfaces."
+    ::= { unisDhcpRelay2Tables 1 }
+
+unisDhcpRelay2IfConfigEntry  OBJECT-TYPE
+    SYNTAX      UnisDhcpRelay2IfConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for configuring relay functions for an interface."
+    INDEX { ifIndex }
+    ::= { unisDhcpRelay2IfConfigTable 1 }
+
+UnisDhcpRelay2IfConfigEntry ::=
+    SEQUENCE
+        {
+            unisDhcpRelay2IfSelectRelay              TruthValue,
+            unisDhcpRelay2IfCheckMac                 TruthValue,
+            unisDhcpRelay2IfOpt82Enable              TruthValue,
+            unisDhcpRelay2IfOpt82Strategy            INTEGER,
+            unisDhcpRelay2IfOpt82CIDMode             INTEGER,
+            unisDhcpRelay2IfOpt82CIDNodeType         INTEGER,
+            unisDhcpRelay2IfOpt82CIDNodeStr          OCTET STRING,
+            unisDhcpRelay2IfOpt82CIDStr              OCTET STRING,
+            unisDhcpRelay2IfOpt82CIDFormat           INTEGER,
+            unisDhcpRelay2IfOpt82RIDMode             INTEGER,
+            unisDhcpRelay2IfOpt82RIDStr              OCTET STRING,
+            unisDhcpRelay2IfOpt82RIDFormat           INTEGER
+        }
+
+unisDhcpRelay2IfSelectRelay    OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "If the value is 'true', the DHCP relay function
+         would be enabled on this interface."
+    DEFVAL      { false }
+    ::= { unisDhcpRelay2IfConfigEntry 1 }
+
+unisDhcpRelay2IfCheckMac    OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "If the value is 'true', the function of checking MAC address
+         of packets received from the interface would be enabled."
+    DEFVAL      { false }
+    ::= { unisDhcpRelay2IfConfigEntry 2 }
+
+unisDhcpRelay2IfOpt82Enable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "If DHCP relay supports option 82 functions, the
+         value is 'true'.
+         If DHCP relay does NOT support option 82 functions,
+         the value is 'false'."
+    DEFVAL      { false }
+    ::= { unisDhcpRelay2IfConfigEntry 3 }
+
+unisDhcpRelay2IfOpt82Strategy     OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        drop(1),
+        keep(2),
+        replace(3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The strategies of DHCP relay handling option 82.
+
+         'drop' indicates DHCP relay discarding the request
+         packet including option 82.
+
+         'keep' indicates DHCP relay accepting the request
+         packet without any change of the option 82.
+
+         'replace' indicates DHCP relay accepting the
+         request packet on condition that it generates a new
+         option 82 to replace the original one."
+    DEFVAL      { replace }
+    ::= { unisDhcpRelay2IfConfigEntry 4 }
+
+unisDhcpRelay2IfOpt82CIDMode OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        normal(1),
+        verbose(2),
+        userDefine(3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The mode of the circuit ID suboption of DHCP option 82.
+
+         'normal' is the standard mode.
+
+         'verbose' is the detailed mode.
+
+         'userDefine' is the user-defined mode.
+
+         If the value of this object is set to 'userDefine',
+         unisDhcpRelay2IfOpt82CIDStr must also be set."
+    DEFVAL      { normal }
+    ::= { unisDhcpRelay2IfConfigEntry 5 }
+
+unisDhcpRelay2IfOpt82CIDNodeType OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        invalid(1),
+        mac(2),
+        sysname(3),
+        userDefine(4)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Type of access node identifier that is used to fill
+         in the circuit ID suboption of option 82 when the value
+         of unisDhcpRelay2IfOpt82CIDMode is set to 'verbose'.
+
+         The SET operation of this object must be with the SET
+         operation of unisDhcpRelay2IfOpt82CIDMode.
+
+         'invalid' indicates that the node identifier is NOT used
+         to fill in the circuit ID suboption of option 82.
+         If the value of unisDhcpRelay2IfOpt82CIDMode is NOT 'verbose',
+         the value of this object is set to 'invalid' automatically.
+         Otherwise the value of this object cannot be set to 'invalid'.
+
+         'mac' indicates that the node identifier is filled in with
+         the MAC of DHCP relay input interface.
+         If the value of unisDhcpRelay2IfOpt82CIDMode is set to
+         'verbose', the default value of this object is 'mac'.
+
+         'sysname' indicates that the node identifier is filled in with
+         the sysname of the DHCP relay device.
+
+         'userDefine' indicates that the node identifier is filled in with
+         the string defined by the object of unisDhcpRelay2IfOpt82CIDNodeStr.
+         If the value is set to 'userDefine', the value of
+         unisDhcpRelay2IfOpt82CIDNodeStr must be set to a non-zero
+         length string simultaneously."
+    ::= { unisDhcpRelay2IfConfigEntry 6 }
+
+unisDhcpRelay2IfOpt82CIDNodeStr      OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..50))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+         "The string defined by user to fill in the
+          node identifier in the verbose mode.
+
+          If the value of unisDhcpRelay2IfOpt82CIDMode is NOT 'verbose',
+          or the value of unisDhcpRelay2IfOpt82CIDNodeType is
+          NOT 'userDefine', it is set with a zero-length string
+          automatically.
+          Otherwise it must be set with a non-zero length string.
+
+          The SET operation of this object must be with the SET
+          operation of unisDhcpRelay2IfOpt82CIDMode and
+          unisDhcpRelay2IfOpt82CIDNodeType."
+    ::= { unisDhcpRelay2IfConfigEntry 7 }
+
+unisDhcpRelay2IfOpt82CIDStr      OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0|3..63))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The string defined by user to fill in the circuit ID
+         suboption of option 82 in the user-define mode.
+
+         If the value of unisDhcpRelay2IfOpt82CIDMode is NOT 'userDefine',
+         it is set to a zero-length string automatically.
+         Otherwise it must be set with a non-zero length string.
+
+         The SET operation of this object must be with the SET
+         operation of unisDhcpRelay2IfOpt82CIDMode."
+    ::= { unisDhcpRelay2IfConfigEntry 8 }
+
+unisDhcpRelay2IfOpt82CIDFormat    OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        hex(1),
+        ascii(2),
+        undefine(3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The format of the circuit ID suboption of DHCP
+         option 82.
+
+         'hex' is the hex format.
+
+         'ascii' is the ascii format.
+
+         'undefine' is the undefine format.
+
+         If the value of unisDhcpRelay2IfOpt82CIDMode is
+         'normal', the value of this object is set to 'hex'
+         automatically and cannot be set to 'undefine'.
+
+         If the value of unisDhcpRelay2IfOpt82CIDMode is
+         'verbose', the default value of this object is 'undefine'.
+
+         If the value of unisDhcpRelay2IfOpt82CIDMode is
+         'userDefine', the value of this object is set to
+         'ascii' automatically and cannot be set to other value.
+
+         The SET operation of this object must be with the SET
+         operation of unisDhcpRelay2IfOpt82CIDMode."
+    ::= { unisDhcpRelay2IfConfigEntry 9 }
+
+unisDhcpRelay2IfOpt82RIDMode OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        normal(1),
+        sysname(2),
+        userDefine(3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The mode of the remote ID suboption of DHCP
+         option 82.
+
+         'normal' is the standard mode.
+
+         'sysname' is the sysname mode.
+
+         'userDefine' is the user-defined mode.
+
+         If the value of this object is set to 'userDefine',
+         unisDhcpRelay2IfOpt82RIDStr must also be set."
+    DEFVAL      { normal }
+    ::= { unisDhcpRelay2IfConfigEntry 10 }
+
+unisDhcpRelay2IfOpt82RIDStr  OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..63))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The string defined by user to fill in the
+         remote ID in the user-defined mode.
+
+         If the value of unisDhcpRelay2IfOpt82RIDMode is NOT
+         'userDefine', it is set to a zero-length string automatically.
+         Otherwise it must be set with a non-zero length string.
+
+         The SET operation of this object must be with the SET
+         operation of unisDhcpRelay2IfOpt82RIDMode."
+    ::= { unisDhcpRelay2IfConfigEntry 11 }
+
+unisDhcpRelay2IfOpt82RIDFormat    OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        hex(1),
+        ascii(2)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The format of the remote ID suboption of DHCP option 82.
+
+         'hex' is the hex format.
+
+         'ascii' is the ascii format.
+
+         If the value of unisDhcpRelay2IfOpt82RIDMode is
+         'sysname' or 'userDefine', this object is set with 'ascii'
+         automatically and cannot be set with other value.
+
+         If the value of unisDhcpRelay2IfOpt82RIDMode is 'normal',
+         the default value of this object is 'hex'.
+
+         The SET operation of this object must be with the SET
+         operation of unisDhcpRelay2IfOpt82RIDMode."
+    ::= { unisDhcpRelay2IfConfigEntry 12 }
+
+-- =============================================================================
+-- 2nd Table of unisDhcpRelay2Tables: unisDhcpRelay2SrvAddrTable
+-- =============================================================================
+unisDhcpRelay2SrvAddrTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpRelay2SrvAddrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for configuring a DHCP
+         server address on the interface."
+    ::= { unisDhcpRelay2Tables 2 }
+
+unisDhcpRelay2SrvAddrEntry  OBJECT-TYPE
+    SYNTAX      UnisDhcpRelay2SrvAddrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for configuring a DHCP
+         server address on the interface."
+    INDEX
+        {
+            ifIndex,
+            unisDhcpRelay2SrvAddrIP
+        }
+    ::= { unisDhcpRelay2SrvAddrTable 1 }
+
+UnisDhcpRelay2SrvAddrEntry ::=
+    SEQUENCE
+        {
+            unisDhcpRelay2SrvAddrIP                InetAddressIPv4,
+            unisDhcpRelay2SrvAddrRowStatus         RowStatus
+        }
+
+unisDhcpRelay2SrvAddrIP    OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Ip address of DHCP server."
+    ::= { unisDhcpRelay2SrvAddrEntry 1 }
+
+unisDhcpRelay2SrvAddrRowStatus    OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry.
+         Three actions are used: active,
+         createAndGo, destroy."
+    ::= { unisDhcpRelay2SrvAddrEntry 2 }
+
+-- =============================================================================
+-- 3rd Table of unisDhcpRelay2Tables: unisDhcpRelay2UserInfoTable
+-- =============================================================================
+unisDhcpRelay2UserInfoTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcpRelay2UserInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing the user information of DHCP client."
+    ::= { unisDhcpRelay2Tables 3 }
+
+unisDhcpRelay2UserInfoEntry  OBJECT-TYPE
+    SYNTAX      UnisDhcpRelay2UserInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing the user information of DHCP client."
+    INDEX
+    {
+        unisDhcpRelay2UserInfoVpnIndex,
+        unisDhcpRelay2UserInfoIpAddr
+    }
+    ::= { unisDhcpRelay2UserInfoTable 1 }
+
+UnisDhcpRelay2UserInfoEntry   ::=
+    SEQUENCE
+    {
+        unisDhcpRelay2UserInfoVpnIndex      Unsigned32,
+        unisDhcpRelay2UserInfoIpAddr        InetAddressIPv4,
+        unisDhcpRelay2UserInfoMacAddr       MacAddress,
+        unisDhcpRelay2UserInfoIfIndex       InterfaceIndexOrZero,
+        unisDhcpRelay2UserInfoRowStatus     RowStatus
+    }
+
+unisDhcpRelay2UserInfoVpnIndex OBJECT-TYPE
+    SYNTAX      Unsigned32(0 .. 65534)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "VPN index of the DHCP client."
+    ::= { unisDhcpRelay2UserInfoEntry 1 }
+
+unisDhcpRelay2UserInfoIpAddr     OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "DHCP client's IP address."
+    ::= { unisDhcpRelay2UserInfoEntry 2 }
+
+unisDhcpRelay2UserInfoMacAddr    OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "DHCP client's MAC address."
+    ::= { unisDhcpRelay2UserInfoEntry 3 }
+
+unisDhcpRelay2UserInfoIfIndex      OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The index of the interface that DHCP client adhered to.
+         0 means that no interface information is recorded in the
+         user information entry."
+    ::= { unisDhcpRelay2UserInfoEntry 4 }
+
+unisDhcpRelay2UserInfoRowStatus     OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry.
+         Only destroy action is allow to use."
+    ::= { unisDhcpRelay2UserInfoEntry 5 }
+
+-- =============================================================================
+-- DHCP server trap objects definition.
+-- =============================================================================
+unisDhcpServer2Traps OBJECT IDENTIFIER ::= { unisDhcp4 5 }
+
+unisDhcpServer2TrapNotify OBJECT IDENTIFIER ::= { unisDhcpServer2Traps 0 }
+
+unisDhcpServer2AddrExhaust NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDhcpServer2PoolIndex,
+        unisDhcpServer2PoolName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when addresses are exhausted
+         in the DHCP pool."
+    ::= { unisDhcpServer2TrapNotify 1 }
+
+unisDhcpServer2AddrExhaustRecov NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDhcpServer2PoolIndex,
+        unisDhcpServer2PoolName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the DHCP pool recovers from
+         address exhaustion."
+    ::= { unisDhcpServer2TrapNotify 2 }
+
+unisDhcpServer2IpUsageOverflow NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDhcpServer2PoolIndex,
+        unisDhcpServer2PoolName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the IP address usage of DHCP
+         server pool above the threshold.  The value of the IP address
+         usage is sampled for every 5 minutes."
+    ::= { unisDhcpServer2TrapNotify 3 }
+
+unisDhcpServer2AllocOverflow NOTIFICATION-TYPE
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the success rate of allocation
+         of DHCP server IP address in 5 minutes below the threshold."
+    ::= { unisDhcpServer2TrapNotify 4 }
+
+unisDhcpServer2IpUsageOverflowRecov NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDhcpServer2PoolIndex,
+        unisDhcpServer2PoolName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the IP address usage of DHCP
+         server pool reduced to 90% of the threshold.
+         The value of the IP address usage is sampled for every 5 minutes."
+    ::= { unisDhcpServer2TrapNotify 5 }
+
+END

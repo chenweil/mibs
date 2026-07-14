@@ -1,0 +1,305 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: subnet vlan mib
+-- Reference:
+-- Version: V1.1
+-- History:
+--  V1.0 Initial version 2005-08-02
+--  V1.1 2013-04-23 updated by yangxiaoren
+--       Add unisSubnetVlanPortStatus object to support the subnet vlan status
+--       of port applied.
+-- =================================================================
+UNIS-SUBNET-VLAN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-GROUP, MODULE-COMPLIANCE
+        FROM SNMPv2-CONF
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB
+    RowStatus
+        FROM SNMPv2-TC;
+
+
+unisSubnetVlan MODULE-IDENTITY
+    LAST-UPDATED "200508021353Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB contains the objects for managing the subnet-based VLAN
+        configurations."
+    REVISION "200508021353Z"        -- August 02, 2005 at 13:53 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 61 }
+
+--
+-- Textual Conventions
+--
+
+--
+-- Node definitions
+--
+
+unisSubnetVlanObjects OBJECT IDENTIFIER ::= { unisSubnetVlan 1 }
+
+unisSubnetVlanScalarObjects OBJECT IDENTIFIER ::= { unisSubnetVlanObjects 1 }
+
+unisSubnetNumAllVlan OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The maximum number of subnets that can be configured on all VLANs."
+    ::= { unisSubnetVlanScalarObjects 1 }
+
+unisSubnetNumPerVlan OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The maximum number of subnets that can be configured on each VLAN."
+    ::= { unisSubnetVlanScalarObjects 2 }
+
+unisSubnetNumAllPort OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The maximum number of subnets that can be applied to all ports."
+    ::= { unisSubnetVlanScalarObjects 3 }
+
+unisSubnetNumPerPort OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The maximum number of subnets that can be applied to each port."
+    ::= { unisSubnetVlanScalarObjects 4 }
+
+unisSubnetVlanTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSubnetVlanEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Subnet-based VLAN configuration table."
+    ::= { unisSubnetVlanObjects 2 }
+
+unisSubnetVlanEntry OBJECT-TYPE
+    SYNTAX UnisSubnetVlanEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Subnet-based VLAN configuration entry."
+    INDEX { unisSubnetVlanVlanId, unisSubnetVlanSubnetIndex }
+    ::= { unisSubnetVlanTable 1 }
+
+UnisSubnetVlanEntry ::=
+    SEQUENCE {
+        unisSubnetVlanVlanId
+            Integer32,
+        unisSubnetVlanSubnetIndex
+            Integer32,
+        unisSubnetVlanVlanIpAddressType
+            InetAddressType,
+        unisSubnetVlanIpAddressValue
+            InetAddress,
+        unisSubnetVlanNetMaskValue
+            InetAddress,
+        unisSubnetVlanRowStatus
+            RowStatus
+         }
+
+unisSubnetVlanVlanId OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Vlan id."
+    ::= { unisSubnetVlanEntry 1 }
+
+unisSubnetVlanSubnetIndex OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The subnet index value of a row in this table is from zero to
+         the value of unisSubnetNumPerVlan subtracting one."
+    ::= { unisSubnetVlanEntry 2 }
+
+unisSubnetVlanVlanIpAddressType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "There are two kinds of ip address supported by VLAN.
+         One is IPv4, which is 32 bits.
+         The other is IPv6, which is 128 bits."
+    ::= { unisSubnetVlanEntry 3 }
+
+unisSubnetVlanIpAddressValue OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The ip address of the configured subnet on VLAN, which can be an IPv4
+        or IPv6."
+    ::= { unisSubnetVlanEntry 4 }
+
+unisSubnetVlanNetMaskValue OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The net mask of the configured subnet on VLAN, which can be an IPv4 or
+        IPv6."
+    ::= { unisSubnetVlanEntry 5 }
+
+unisSubnetVlanRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The row status of this table."
+    ::= { unisSubnetVlanEntry 6 }
+
+
+unisSubnetVlanPortCreateTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSubnetVlanPortCreateEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Subnet-based VLAN port table."
+    ::= { unisSubnetVlanObjects 3 }
+
+unisSubnetVlanPortCreateEntry OBJECT-TYPE
+    SYNTAX UnisSubnetVlanPortCreateEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Subnet-based VLAN port creation entry."
+    INDEX { unisSubnetVlanPortCreateIndex, unisSubnetVlanPortCreateVlanId }
+    ::= { unisSubnetVlanPortCreateTable 1 }
+
+UnisSubnetVlanPortCreateEntry ::=
+    SEQUENCE {
+        unisSubnetVlanPortCreateIndex
+            Integer32,
+        unisSubnetVlanPortCreateVlanId
+            Integer32,
+        unisSubnetVlanPortInfoVlanId
+            Integer32,
+        unisSubnetVlanPortRowStatus
+            RowStatus,
+        unisSubnetVlanPortStatus
+            INTEGER
+         }
+
+unisSubnetVlanPortCreateIndex OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The port index."
+    ::= { unisSubnetVlanPortCreateEntry  1 }
+
+unisSubnetVlanPortCreateVlanId OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The subnet-based VLAN id."
+    ::= { unisSubnetVlanPortCreateEntry  2 }
+
+unisSubnetVlanPortInfoVlanId OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "This value is the same as the value of unisSubnetVlanPortCreateVlanId index.
+         All of the subnet information in this port,
+         is described on vlan, whose VLAN id is the value of unisSubnetVlanPortInfoVlanId.
+         The VLAN id of vlan including subnet information can be obtained here.
+         The subnet information can be obtained in the unisSubnetVlanTable above."
+    ::= { unisSubnetVlanPortCreateEntry  3 }
+
+unisSubnetVlanPortRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The row status of this table."
+    ::= { unisSubnetVlanPortCreateEntry  4 }
+
+unisSubnetVlanPortStatus OBJECT-TYPE
+    SYNTAX  INTEGER
+    {
+        active   (1),
+        inactive (2)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The subnet VLAN status on the port.  The value is active only
+        when unisSubnetVlanPortCreateVlanId has the corresponding entry in
+        unisSubnetVlanTable, the port link type is hybrid, and the VLAN is
+        allowed by the port.
+
+        active:   subnet VLAN has been applied on the port.
+        inactive: subnet VLAN is not applied on the port."
+    ::= { unisSubnetVlanPortCreateEntry  5 }
+unisSubnetVlanConformance OBJECT IDENTIFIER ::= { unisSubnetVlan 2 }
+
+
+unisSubnetVlanCompliances OBJECT IDENTIFIER ::= { unisSubnetVlanConformance 1 }
+
+
+unisSubnetVlanCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+        "The compliance statement for subnet VLAN MIB."
+    MODULE -- this module
+        MANDATORY-GROUPS {
+                   unisSubnetVlanScalarObjectGroup,
+                   unisSubnetVlanSubnetGroup,
+                   unisSubnetVlanPortCreateGroup }
+    ::= { unisSubnetVlanCompliances 1 }
+
+
+unisSubnetVlanGroups OBJECT IDENTIFIER ::= { unisSubnetVlanConformance 2 }
+
+unisSubnetVlanScalarObjectGroup OBJECT-GROUP
+    OBJECTS { unisSubnetNumAllVlan,
+          unisSubnetNumPerVlan,
+          unisSubnetNumAllPort,
+          unisSubnetNumPerPort }
+    STATUS current
+    DESCRIPTION
+        "A group of scalar objects describing the maximum number."
+    ::= { unisSubnetVlanGroups 1 }
+
+unisSubnetVlanSubnetGroup OBJECT-GROUP
+    OBJECTS { unisSubnetVlanVlanIpAddressType,
+          unisSubnetVlanIpAddressValue,
+          unisSubnetVlanNetMaskValue,
+          unisSubnetVlanRowStatus }
+    STATUS current
+    DESCRIPTION
+        "A group of subnet VLAN subnets."
+    ::= { unisSubnetVlanGroups 2 }
+
+unisSubnetVlanPortCreateGroup OBJECT-GROUP
+    OBJECTS { unisSubnetVlanPortInfoVlanId,
+          unisSubnetVlanPortRowStatus }
+    STATUS current
+    DESCRIPTION
+        "A group of subnet VLAN port creation table."
+    ::= { unisSubnetVlanGroups 3 }
+
+END

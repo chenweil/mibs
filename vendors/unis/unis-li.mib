@@ -1,0 +1,789 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Lawful Interception MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2009-08-25 Initial version Created by Lixin Xu
+-- ============================================================================
+UNIS-LI-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Counter64, Counter32, Integer32, Unsigned32,
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    RowStatus, TruthValue, MacAddress, DateAndTime
+        FROM SNMPv2-TC
+    InetAddress, InetAddressType, InetAddressPrefixLength, InetPortNumber
+        FROM INET-ADDRESS-MIB
+    InterfaceIndexOrZero
+        FROM IF-MIB
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB;
+
+unisLI MODULE-IDENTITY
+    LAST-UPDATED "200908251000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Lawful Interception MIB"
+    REVISION
+        "200908251000Z"
+    DESCRIPTION
+        "Initial version."
+    ::= { unisCommon 111 }
+
+--
+-- Node definitions
+--
+
+unisLICommon OBJECT IDENTIFIER ::= { unisLI 1 }
+
+unisLITrapBindObjects OBJECT IDENTIFIER ::= { unisLICommon 1 }
+
+unisLIBoardInformation OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "It is a slot number."
+    ::= { unisLITrapBindObjects 1 }
+
+unisLINotifications OBJECT IDENTIFIER ::= { unisLICommon 2 }
+
+unisLINotificationsPrefix OBJECT IDENTIFIER ::= { unisLINotifications 0 }
+
+unisLIActive NOTIFICATION-TYPE
+    OBJECTS {
+              unisLIStreamtype
+            }
+    STATUS current
+    DESCRIPTION
+        "This Notification is sent when a type of intercepting configuration
+        is changed from inactive to active.
+        The value of the unisLIStreamtype which identify the actual intercept
+        stream is included in this notification."
+    ::= { unisLINotificationsPrefix 1 }
+
+unisLITimeOut NOTIFICATION-TYPE
+    OBJECTS { unisLIMediationRowStatus }
+    STATUS current
+    DESCRIPTION
+        "When the time specified in unisLIMediationTimeout arrives,
+        the device notifies the manager corresponding intercept is removed."
+    ::= { unisLINotificationsPrefix 2 }
+
+unisLIFailureInformation NOTIFICATION-TYPE
+    OBJECTS {
+                unisLIStreamtype,
+                unisLIBoardInformation
+            }
+    STATUS current
+    DESCRIPTION
+        "When interception is configured on distributed device,
+        the configuration perhaps failed on some board.
+        If this happened, this notification will occur."
+    ::= { unisLINotificationsPrefix 3 }
+
+unisLIObjects OBJECT IDENTIFIER ::= { unisLICommon 3 }
+
+unisLINewIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "This object will be used as an index value for a new
+        unisLIMediationEntry.  Whenever read, the agent will
+        give a non-used value.  This is to reduce the probability
+        of conflict during creation of new unisLIMediationTable entries."
+    ::= { unisLIObjects 1 }
+--
+-- unisLIMediationTable definition
+--
+unisLIMediationTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisLIMediationEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table describes interception gateway information with which
+        interception device communicates."
+    ::= { unisLIObjects 2 }
+
+unisLIMediationEntry OBJECT-TYPE
+    SYNTAX UnisLIMediationEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry of configuring mediation device."
+    INDEX { unisLIMediationIndex }
+    ::= { unisLIMediationTable 1 }
+
+UnisLIMediationEntry ::=
+    SEQUENCE {
+        unisLIMediationIndex                 Integer32,
+        unisLIMediationDestAddrType          InetAddressType,
+        unisLIMediationDestAddr              InetAddress,
+        unisLIMediationDestPort              InetPortNumber,
+        unisLIMediationSrcInterface          InterfaceIndexOrZero,
+        unisLIMediationDscp                  Integer32,
+        unisLIMediationTimeOut               DateAndTime,
+        unisLIMediationTransport             INTEGER,
+        unisLIMediationNotificationEnable    TruthValue,
+        unisLIMediationRowStatus             RowStatus
+     }
+
+unisLIMediationIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "unisLIMediationIndex is a entry identifier.  The Mediation Device
+            should be responsible for making sure these are unique.
+            Before creating a new entry, a value for this variable may be
+            obtained by reading unisLINewIndex to reduce the probability
+            of a value collision."
+    ::= { unisLIMediationEntry 1 }
+
+unisLIMediationDestAddrType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The type of unisLIMediationDestAddr."
+    ::= { unisLIMediationEntry 2 }
+
+unisLIMediationDestAddr OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The IP Address of the Mediation Device to receive intercepted traffic."
+    ::= { unisLIMediationEntry 3 }
+
+unisLIMediationDestPort OBJECT-TYPE
+    SYNTAX InetPortNumber
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The L4-port number on the Mediation Device
+         to receive intercepted traffic."
+    ::= { unisLIMediationEntry 4 }
+
+unisLIMediationSrcInterface OBJECT-TYPE
+    SYNTAX InterfaceIndexOrZero
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The interface on the intercepting device from which to
+        transmit intercepted data.
+        If zero, intercepting device will select an outbound
+        interface according to unisLIMediationDestAddr."
+    ::= { unisLIMediationEntry 5 }
+
+unisLIMediationDscp OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The Differentiated Services Code Point the intercepting
+        device applies to the IP packets encapsulating the intercepted traffic."
+    DEFVAL { 34 }
+    ::= { unisLIMediationEntry 6 }
+
+unisLIMediationTimeOut OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The time at which this row and all related Stream Table rows
+        should be automatically removed, and the intercept function expire."
+    ::= { unisLIMediationEntry 7 }
+
+unisLIMediationTransport OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            udp(1)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The protocol used in transferring intercepted data to the
+        Mediation Device."
+    ::= { unisLIMediationEntry 8 }
+
+unisLIMediationNotificationEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This variable controls the generation of any notifications or
+        informs by the MIB agent for this table entry."
+    DEFVAL { true }
+    ::= { unisLIMediationEntry 9 }
+
+unisLIMediationRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisLIMediationEntry 10 }
+
+--
+-- unisLIStreamTable definition
+--
+unisLIStreamTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisLIStreamEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table lists the traffic stream's type to be intercepted.
+         The specified filter is defined in unisLIIPStreamTable,
+         unisLIMACStreamTable or unisLIUserStreamTable, according to
+         unisLIStreamtype.  Also it contains counters for packets to
+         be intercepted and dropped by attached type of filter."
+    ::= { unisLIObjects 3 }
+
+unisLIStreamEntry OBJECT-TYPE
+    SYNTAX UnisLIStreamEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A single type of data stream to be intercepted."
+    INDEX { unisLIMediationIndex, unisLIStreamIndex }
+    ::= { unisLIStreamTable 1 }
+
+UnisLIStreamEntry ::=
+    SEQUENCE {
+        unisLIStreamIndex        Integer32,
+        unisLIStreamtype         INTEGER,
+        unisLIStreamEnable       TruthValue,
+        unisLIStreamPackets      Counter32,
+        unisLIStreamDrops        Counter32,
+        unisLIStreamHPackets     Counter64,
+        unisLIStreamHDrops       Counter64,
+        unisLIStreamRowStatus    RowStatus
+     }
+
+unisLIStreamIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of the stream entry."
+    ::= { unisLIStreamEntry 1 }
+
+unisLIStreamtype OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            ip(1),
+            mac(2),
+            userConnection(3)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Identifies the type of stream, and according to it uses filter table.
+        It can not be changed after a filter table is attached to it.
+        The following types of streams are supported:
+         ip:             IP filter.  The exact definition is a row in
+                         unisLIIPStreamTable.
+         mac:            MAC filter.  The exact definition is a row in
+                         unisLIMACStreamTable.
+         userConnecton:  User connection filter.  The exact definition
+                         is a row in unisLIUserStreamTable."
+    ::= { unisLIStreamEntry 2 }
+
+unisLIStreamEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "If 'true', the interception is active.  And it is set to 'true'
+         only after an additional filter specification has been attached
+         to this stream."
+    DEFVAL { false }
+    ::= { unisLIStreamEntry 3 }
+
+unisLIStreamPackets OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The numbers of packets that have been intercepted."
+    ::= { unisLIStreamEntry 4 }
+
+unisLIStreamDrops OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The numbers of packets were dropped in the lawful intercept process."
+    ::= { unisLIStreamEntry 5 }
+
+unisLIStreamHPackets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The numbers of packets have been intercepted.
+        This object is a 64-bit version of unisLIStreamPackets."
+    ::= { unisLIStreamEntry 6 }
+
+unisLIStreamHDrops OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The numbers of packets were dropped in the lawful intercept process.
+        This object is a 64-bit version of unisLIStreamDrops."
+    ::= { unisLIStreamEntry 7 }
+
+unisLIStreamRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisLIStreamEntry 8 }
+
+--
+-- unisLIIPStreamTable definition
+--
+unisLIIPStream OBJECT IDENTIFIER ::= { unisLI 2 }
+
+unisLIIPStreamObjects OBJECT IDENTIFIER ::= { unisLIIPStream 1 }
+
+unisLIIPStreamTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisLIIPStreamEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table lists the IPv4 and IPv6 streams to be intercepted.
+        It is associated with unisLIMediationTable and unisLIStreamTable."
+    ::= { unisLIIPStreamObjects 1 }
+
+unisLIIPStreamEntry OBJECT-TYPE
+    SYNTAX UnisLIIPStreamEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A single stream to be intercepted.
+        The first index indicates the Mediation Device.
+        The second index is that of the stream's counter entry
+        in the unisLIStreamTable.  The second index permits multiple
+        classifiers to be used together, such as having an IP address
+        as source or destination."
+    INDEX { unisLIMediationIndex, unisLIStreamIndex }
+    ::= { unisLIIPStreamTable 1 }
+
+UnisLIIPStreamEntry ::=
+    SEQUENCE {
+        unisLIIPStreamInterface          InterfaceIndexOrZero,
+        unisLIIPStreamAddrType           InetAddressType,
+        unisLIIPStreamDestAddr           InetAddress,
+        unisLIIPStreamDestAddrLength     InetAddressPrefixLength,
+        unisLIIPStreamSrcAddr            InetAddress,
+        unisLIIPStreamSrcAddrLength      InetAddressPrefixLength,
+        unisLIIPStreamTosByte            Integer32,
+        unisLIIPStreamTosByteMask        Integer32,
+        unisLIIPStreamFlowId             Integer32,
+        unisLIIPStreamProtocol           Integer32,
+        unisLIIPStreamDestL4PortMin      InetPortNumber,
+        unisLIIPStreamDestL4PortMax      InetPortNumber,
+        unisLIIPStreamSrcL4PortMin       InetPortNumber,
+        unisLIIPStreamSrcL4PortMax       InetPortNumber,
+        unisLIIPStreamVRF                SnmpAdminString,
+        unisLIIPStreamRowStatus          RowStatus
+     }
+
+unisLIIPStreamInterface OBJECT-TYPE
+    SYNTAX InterfaceIndexOrZero
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Traffic received or transmitted over this interface
+         will be intercepted.
+
+         This value must be set when creating a stream entry,
+         either zero, or a valid interface index.
+
+         If the value is zero, interception accepts any interface.
+         Then at least one additional parameter must be selected,
+         and not be default value."
+    ::= { unisLIIPStreamEntry 1 }
+
+unisLIIPStreamAddrType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The type of address, used in packet selection."
+    DEFVAL { ipv4 }
+    ::= { unisLIIPStreamEntry 2 }
+
+unisLIIPStreamDestAddr OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The Destination address  used in packet selection.
+        This address will be consistent with the type specified in
+        unisLIIPStreamAddrType."
+    DEFVAL  { '00000000'H }
+    ::= { unisLIIPStreamEntry 3 }
+
+unisLIIPStreamDestAddrLength OBJECT-TYPE
+    SYNTAX InetAddressPrefixLength
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The length of the Destination Prefix.  A value of zero means
+        all addresses to match.  This prefix length will be consistent
+        with the type specified in unisLIIPStreamAddrType."
+    DEFVAL { 0 }
+    ::= { unisLIIPStreamEntry 4 }
+
+unisLIIPStreamSrcAddr OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The Source Address used in packet selection.  This address will
+        be consistent with the type specified in unisLIIPStreamAddrType."
+    DEFVAL  { '00000000'H }
+    ::= { unisLIIPStreamEntry 5 }
+
+unisLIIPStreamSrcAddrLength OBJECT-TYPE
+    SYNTAX InetAddressPrefixLength
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The length of the Source Prefix.  A value of zero means all
+        addresses to match.  This prefix length will be consistent with
+        the type specified in unisLIIPStreamAddrType."
+    DEFVAL { 0 }
+    ::= { unisLIIPStreamEntry 6 }
+
+unisLIIPStreamTosByte OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The value of the TOS byte.
+        If unisLIIPStreamTosByte&(~unisLIIPStreamTosByteMask)!=0,
+        configuration is rejected."
+    DEFVAL { 0 }
+    ::= { unisLIIPStreamEntry 7 }
+
+unisLIIPStreamTosByteMask OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This value is ANDed with the value of the TOS byte in a packet
+         and compared with unisLIIPStreamTosByte.  If the values are equal,
+         the comparison is equal.
+         If both the mask and the TosByte value are zero,
+         the result is to always accept."
+    DEFVAL { 0 }
+    ::= { unisLIIPStreamEntry 8 }
+
+unisLIIPStreamFlowId OBJECT-TYPE
+    SYNTAX Integer32 (-1 | 0..1048575)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The flow identifier in an IPv6 header.  -1 indicates that the
+        Flow Id is unused."
+    DEFVAL { -1 } -- any flow identifier value
+    ::= { unisLIIPStreamEntry 9 }
+
+unisLIIPStreamProtocol OBJECT-TYPE
+    SYNTAX Integer32 (-1 | 0..255)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The IP protocol to match against the IPv4 protocol number or
+        the IPv6 Next- Header number in the packet."
+    DEFVAL { -1 } -- any IP protocol
+    ::= { unisLIIPStreamEntry 10 }
+
+unisLIIPStreamDestL4PortMin OBJECT-TYPE
+    SYNTAX InetPortNumber
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The minimum value that the layer-4 destination port number in
+         the packet must have in order to match.  This value must be
+         equal to or less than the value specified for this entry in
+         unisLIIPStreamDestL4PortMax.
+
+         If both unisLIIPStreamDestL4PortMin and unisLIIPStreamDestL4PortMax
+         are at their default values, the port number is effectively unused.
+         If unisLIIPStreamDestL4PortMin is equal to
+         unisLIIPStreamDestL4PortMax, only one port number to be intercepted."
+    DEFVAL { 0 }
+    ::= { unisLIIPStreamEntry 11 }
+
+unisLIIPStreamDestL4PortMax OBJECT-TYPE
+    SYNTAX InetPortNumber
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The maximum value that the layer-4 destination port number in
+         the packet must have in order to match this classifier entry.
+         This value must be equal to or greater than the value specified
+         for this entry in unisLIIPStreamDestL4PortMin.
+         If both unisLIIPStreamDestL4PortMin and unisLIIPStreamDestL4PortMax
+         are at their default values, the port number is effectively unused.
+         If unisLIIPStreamDestL4PortMin is equal to unisLIIPStreamDestL4PortMax,
+         only one port number to be intercepted."
+    DEFVAL { 65535 }
+    ::= { unisLIIPStreamEntry 12 }
+
+unisLIIPStreamSrcL4PortMin OBJECT-TYPE
+    SYNTAX InetPortNumber
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The minimum value that the layer-4 destination port number in
+         the packet must have in order to match.  This value must be
+         equal to or less than the value specified for this entry in
+         unisLIIPStreamSrcL4PortMax.
+         If both unisLIIPStreamSrcL4PortMin and unisLIIPStreamSrcL4PortMax
+         are at their default values, the port number is effectively unused.
+         If unisLIIPStreamSrcL4PortMin is equal to
+         unisLIIPStreamSrcL4PortMax, only one port number to be intercepted."
+    DEFVAL { 0 }
+    ::= { unisLIIPStreamEntry 13 }
+
+unisLIIPStreamSrcL4PortMax OBJECT-TYPE
+    SYNTAX InetPortNumber
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The maximum value that the layer-4 destination port number in
+         the packet must have in order to match this classifier entry.
+         This value must be equal to or greater than the value specified
+         for this entry in unisLIIPStreamSrcL4PortMin.
+         If both unisLIIPStreamSrcL4PortMin and unisLIIPStreamSrcL4PortMax
+         are at their default values, the port number is effectively unused.
+         If unisLIIPStreamSrcL4PortMin is equal to unisLIIPStreamSrcL4PortMax,
+         only one port number to be intercepted."
+    DEFVAL { 65535 }
+    ::= { unisLIIPStreamEntry 14 }
+
+unisLIIPStreamVRF OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "It is the name of a Virtual Routing and Forwarding (VRF) of a VPN."
+    DEFVAL { "" }
+    ::= { unisLIIPStreamEntry 15 }
+
+unisLIIPStreamRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisLIIPStreamEntry 18 }
+
+--
+-- unisLIMACStreamTable definition
+--
+unisLIMACStream OBJECT IDENTIFIER ::= { unisLI 3 }
+
+unisLIMACStreamObjects OBJECT IDENTIFIER ::= { unisLIMACStream 1 }
+
+unisLIMACStreamTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisLIMACStreamEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table lists the IEEE 802 streams to be intercepted.
+        It is associated with unisLIMediationTable and unisLIStreamTable."
+    ::= { unisLIMACStreamObjects 1 }
+
+unisLIMACStreamEntry OBJECT-TYPE
+    SYNTAX UnisLIMACStreamEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A single stream to be intercepted.
+        The first index indicates the Mediation Device.
+        The second index is that of the stream's counter entry
+        in the unisLIStreamTable.  The second index permits multiple
+        classifiers to be used together, such as having an MAC address
+        as source or destination."
+    INDEX { unisLIMediationIndex, unisLIStreamIndex }
+    ::= { unisLIMACStreamTable 1 }
+
+UnisLIMACStreamEntry ::=
+    SEQUENCE {
+        unisLIMACStreamFields        BITS,
+        unisLIMACStreamInterface     InterfaceIndexOrZero,
+        unisLIMACStreamDestAddr      MacAddress,
+        unisLIMACStreamSrcAddr       MacAddress,
+        unisLIMACStreamEthPid        Unsigned32,
+        unisLIMACStreamDSap          Unsigned32,
+        unisLIMACStreamSSap          Unsigned32,
+        unisLIMACStreamRowStatus     RowStatus
+     }
+
+unisLIMACStreamFields OBJECT-TYPE
+    SYNTAX BITS {
+                    interface(0),
+                    dstMacAddress(1),
+                    srcMacAddress(2),
+                    ethernetPid(3),
+                    dSap(4),
+                    sSap(5)
+                }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This object displays what attributes will be compared to
+         identify traffic.
+         interface:     indicates that traffic on the stated
+                                interface is to be intercepted
+         dstMacAddress: indicates that traffic destined to a
+                                given address should be intercepted
+         srcMacAddress: indicates that traffic sourced from a
+                                given address should be intercepted
+         ethernetPid:   indicates that traffic with a stated
+                                Ethernet Protocol Identifier should
+                                be intercepted
+         dSap:          indicates that traffic with an certain
+                                802.2 LLC Destination SAP should be
+                                intercepted
+         sSap:          indicates that traffic with an certain
+                                802.2 LLC Source SAP should be intercepted
+
+         At least one of the bits has to be set in order to activate an
+         entry.  If multiple bits are set, traffic to be intercepted must
+         be satisfied with all set attributes."
+    ::= { unisLIMACStreamEntry 1 }
+
+unisLIMACStreamInterface OBJECT-TYPE
+    SYNTAX InterfaceIndexOrZero
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Traffic received or transmitted over this interface
+         will be intercepted.
+         This value must be set when creating a stream entry,
+         either zero, or a valid interface index.
+         If the value is zero, interception accepts any interface.
+         Additional parameter must be selected together."
+    ::= { unisLIMACStreamEntry 2 }
+
+unisLIMACStreamDestAddr OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The Destination address used in packet selection."
+    ::= { unisLIMACStreamEntry 3 }
+
+unisLIMACStreamSrcAddr OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The Source Address used in packet selection."
+    ::= { unisLIMACStreamEntry 4 }
+
+unisLIMACStreamEthPid OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The value of the Ethernet Protocol Identifier in the
+        Ethernet traffic or IEEE 802.2 SNAP traffic."
+    ::= { unisLIMACStreamEntry 5 }
+
+unisLIMACStreamDSap OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The value of the IEEE 802.2 Destination SAP."
+    ::= { unisLIMACStreamEntry 6 }
+
+unisLIMACStreamSSap OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The value of the IEEE 802.2 Source SAP."
+    ::= { unisLIMACStreamEntry 7 }
+
+unisLIMACStreamRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisLIMACStreamEntry 8 }
+
+--
+-- unisLIUserStreamTable definition
+--
+unisLIUserStream OBJECT IDENTIFIER ::= { unisLI 4 }
+
+unisLIUserStreamObjects OBJECT IDENTIFIER ::= { unisLIUserStream 1 }
+
+unisLIUserStreamTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisLIUserStreamEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table lists the user connection streams to be intercepted.
+        It is associated with unisLIMediationTable and unisLIStreamTable."
+    ::= { unisLIUserStreamObjects 1 }
+
+unisLIUserStreamEntry OBJECT-TYPE
+    SYNTAX UnisLIUserStreamEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A single stream to be intercepted.
+        The first index indicates the Mediation Device.
+        The second index is that of the stream's counter entry
+        in the unisLIStreamTable.  This permits multiple classifiers
+        to be used together."
+    INDEX { unisLIMediationIndex, unisLIStreamIndex }
+    ::= { unisLIUserStreamTable 1 }
+
+UnisLIUserStreamEntry ::=
+    SEQUENCE {
+        unisLIUserStreamAcctSessID       OCTET STRING,
+        unisLIUserStreamRowStatus        RowStatus
+     }
+
+unisLIUserStreamAcctSessID OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..253))
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This is the RADIUS attribute 44 acct-session-ID.
+         The string must be set, and the length not be zero."
+    ::= { unisLIUserStreamEntry 1 }
+
+unisLIUserStreamRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisLIUserStreamEntry 2 }
+
+END

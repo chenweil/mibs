@@ -1,0 +1,322 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--   The file defines a MIB to provide more information for WLAN network.
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2007-06-08 Initial version, created by wanghao (Kumar)
+-- =============================================================================
+UNIS-DOT11-WLANEXT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        Counter32
+    FROM SNMPv2-SMI
+        unisDot11,
+        UnisDot11ObjectIDType,
+        UnisDot11RadioScopeType,
+        UnisDot11QosAcType
+    FROM UNIS-DOT11-REF-MIB;
+
+unisDot11WLANEXT MODULE-IDENTITY
+    LAST-UPDATED "200706082000Z"            -- Jun. 08, 2007 at 20:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB provides more information for WLAN network.
+
+        GLOSSARY
+
+        IEEE 802.11
+        Standard to encourage interoperability among
+        wireless networking equipment.
+
+        IEEE 802.11e
+        Standard to define the MAC procedures to support
+        LAN applications with Quality of Service (QoS) requirements,
+        including the transport of voice, audio and video over
+        IEEE 802.11 wireless LANs.
+
+        Access point (AP)
+        Transmitter/receiver (transceiver) device
+        that commonly connects and transports data
+        between a wireless network and a wired network.
+
+        Access control (AC)
+        To control and manage multi-APs, it will bridge
+        wireless and wired network.
+
+        Radio
+        The chip set to receive and send wireless signal.
+
+        Fat AP
+        Applied in the home, SOHO and so on, and it could
+        independently work without help from AC.
+
+        Fit AP
+        Applied in the enterprise environment, it will work
+        under the control and management from AC.
+
+        Control And Provisioning of Wireless Access Points Protocol
+        The short name of protocol is CAPWAP. AC will control
+        and manage AP by CAPWAP tunnel protocol defined by IETF.
+        Also, a data tunnel will be set up between AC and AP.
+
+        Basic Service Set
+        The IEEE 802.11 BSS of an AP comprises of the
+        stations directly associating with the AP. It will
+        be identified by BSSID."
+
+    REVISION "200706082000Z"        -- Jun 08, 2007 at 20:00 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisDot11 7 }
+
+-- *****************************************************************************
+-- *  Major sections
+-- *****************************************************************************
+--  RF Management Group
+--  DEFINED AS "The group to provide the statistic information
+--  for RF management feature.
+unisDot11RFGroup OBJECT IDENTIFIER   ::= { unisDot11WLANEXT 1 }
+
+--  The RF Management Group has the following children:
+--  unisDot11RFSignalStatisTable  ::= { unisDot11RFGroup 1 }
+
+--  Qos Group
+--  DEFINED AS "The group to provide the statistic information
+--  for Qos feature."
+unisDot11QosGroup OBJECT IDENTIFIER  ::= { unisDot11WLANEXT 2 }
+
+--  The Qos Group has the following children:
+--  unisDot11QosStatisTable    ::= { unisDot11QosGroup 1 }
+--  unisDot11QosAcStatisTable  ::= { unisDot11QosGroup 2 }
+
+-- *****************************************************************************
+-- *  unisDot11RFSignalStatisticTable Definition
+-- *****************************************************************************
+unisDot11RFSignalStatisTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11RFSignalStatisEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table will describe statistic information of signal strength
+        for AP radio."
+    ::= { unisDot11RFGroup 1 }
+
+unisDot11RFSignalStatisEntry OBJECT-TYPE
+    SYNTAX      UnisDot11RFSignalStatisEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the signal of each signal strength information of
+        a specific AP."
+    INDEX
+        {
+            unisDot11RFAPID,
+            unisDot11RFRadioID
+        }
+    ::= { unisDot11RFSignalStatisTable 1 }
+
+UnisDot11RFSignalStatisEntry ::= SEQUENCE
+    {
+        unisDot11RFAPID                     UnisDot11ObjectIDType,
+        unisDot11RFRadioID                  UnisDot11RadioScopeType,
+        unisDot11RFSignalStatisInterv       Integer32,
+        unisDot11RFAverageSignalStrength    Integer32,
+        unisDot11RFMaxSignalStrength        Integer32,
+        unisDot11RFMinSignalStrength        Integer32
+    }
+
+unisDot11RFAPID OBJECT-TYPE
+    SYNTAX      UnisDot11ObjectIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "To identify each AP, and AP is running status."
+    ::= { unisDot11RFSignalStatisEntry 1 }
+
+unisDot11RFRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents each radio."
+    ::= { unisDot11RFSignalStatisEntry 2 }
+
+unisDot11RFSignalStatisInterv OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval of statistic."
+    ::= { unisDot11RFSignalStatisEntry 3 }
+
+unisDot11RFAverageSignalStrength OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the average value of signal strength
+        for stations on a specific radio."
+    ::= { unisDot11RFSignalStatisEntry 4 }
+
+unisDot11RFMaxSignalStrength OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum value of signal strength
+        for stations on a specific radio."
+    ::= { unisDot11RFSignalStatisEntry 5 }
+
+unisDot11RFMinSignalStrength OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the minimum value of signal strength
+        for stations on a specific radio."
+    ::= { unisDot11RFSignalStatisEntry 6 }
+-- *****************************************************************************
+-- *  End of unisDot11RFSignalStatisTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11QosStatisTable Definition
+-- *****************************************************************************
+unisDot11QosStatisTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11QosStatisEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table defines the attributes for the Qos feature of radio."
+    ::= { unisDot11QosGroup 1 }
+
+unisDot11QosStatisEntry OBJECT-TYPE
+    SYNTAX      UnisDot11QosStatisEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of the Qos attribute of each radio."
+    INDEX
+        {
+            unisDot11QosAPID,
+            unisDot11QosRadioID
+        }
+    ::= { unisDot11QosStatisTable 1 }
+
+UnisDot11QosStatisEntry ::= SEQUENCE
+    {
+        unisDot11QosAPID               UnisDot11ObjectIDType,
+        unisDot11QosRadioID            UnisDot11RadioScopeType,
+        unisDot11QosAverageQueLen      Integer32,
+        unisDot11QosDropFrameRatio     Integer32,
+        unisDot11QosAverageDataRate    Integer32
+    }
+
+unisDot11QosAPID OBJECT-TYPE
+    SYNTAX      UnisDot11ObjectIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "To uniquely identify a AP in running status."
+    ::= { unisDot11QosStatisEntry 1 }
+
+unisDot11QosRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents each radio."
+    ::= { unisDot11QosStatisEntry 2 }
+
+unisDot11QosAverageQueLen OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The average frame numbers to be sent out in the queue."
+    ::= { unisDot11QosStatisEntry 3 }
+
+unisDot11QosDropFrameRatio OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The ratio of dropped frames in a minute because of full queue."
+    ::= { unisDot11QosStatisEntry 4 }
+
+unisDot11QosAverageDataRate OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Kbps"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The average transmit data rate of radio."
+    ::= { unisDot11QosStatisEntry 5 }
+-- *****************************************************************************
+-- *  End of unisDot11QosStatisTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11QosAcAttributeTable Definition
+-- *****************************************************************************
+unisDot11QosAcStatisTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11QosAcStatisEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table defines the parameters for Qos access category."
+    ::= { unisDot11QosGroup 2 }
+
+unisDot11QosAcStatisEntry OBJECT-TYPE
+    SYNTAX      UnisDot11QosAcStatisEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of each Qos access category."
+    INDEX
+        {
+            unisDot11QosAPID,
+            unisDot11QosRadioID,
+            unisDot11QosAcType
+        }
+    ::= { unisDot11QosAcStatisTable 1 }
+
+UnisDot11QosAcStatisEntry ::= SEQUENCE
+    {
+        unisDot11QosAcType         UnisDot11QosAcType,
+        unisDot11AcDropFrameCnt    Counter32
+    }
+
+unisDot11QosAcType OBJECT-TYPE
+    SYNTAX      UnisDot11QosAcType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The access category type."
+    ::= { unisDot11QosAcStatisEntry 1 }
+
+unisDot11AcDropFrameCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of dropped frames in a minute for one specific access
+        category because of full queue."
+    ::= { unisDot11QosAcStatisEntry 2 }
+-- *****************************************************************************
+-- *  End of unisDot11AcAttributeTable Definition
+-- *****************************************************************************
+END

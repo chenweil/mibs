@@ -1,0 +1,161 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:  Private MIB File For Loadbalance
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0  2010-12 Initial Version by l05567
+--       2011-11 Add 'unisLBRealServerConnectNumber', 'unisLBTrap',
+--               'unisLBRealServerOverLoad', 'unisLBTrapPrex' by l05567
+-- =================================================================
+UNIS-LB-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, Integer32
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM SNMPv2-TC
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisLB MODULE-IDENTITY
+    LAST-UPDATED "201012010000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The private mib file includes the loadbalance information of
+        the device."
+    REVISION      "201012010000Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 116 }
+
+unisLBTables OBJECT IDENTIFIER ::= { unisLB 1 }
+
+-- MIB contains 2 groups
+
+-- =================================================================
+--    Real Server Group Table
+-- =================================================================
+
+unisLBRealServerGroupTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisLBRealServerGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Real server group table for loadbalance."
+    ::= { unisLBTables 1 }
+
+unisLBRealServerGroupEntry OBJECT-TYPE
+    SYNTAX      UnisLBRealServerGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry contains the information of the real server group."
+    INDEX {
+            unisLBRealServerGroupName
+          }
+    ::= { unisLBRealServerGroupTable 1 }
+
+UnisLBRealServerGroupEntry  ::=
+    SEQUENCE{
+        unisLBRealServerGroupName                DisplayString
+    }
+
+unisLBRealServerGroupName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..31))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Real server group name."
+    ::= { unisLBRealServerGroupEntry 1 }
+
+
+-- =================================================================
+--    Real Server Table
+-- =================================================================
+unisLBRealServerTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisLBRealServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Real server table for loadbalance."
+    ::= { unisLBTables 2 }
+
+unisLBRealServerEntry OBJECT-TYPE
+    SYNTAX      UnisLBRealServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry contains the information of the real server."
+    INDEX {
+            unisLBRealServerGroupName,
+            unisLBRealServerName
+          }
+    ::= { unisLBRealServerTable 1 }
+
+UnisLBRealServerEntry  ::=
+    SEQUENCE{
+        unisLBRealServerName                DisplayString,
+        unisLBRealServerStatus              INTEGER,
+        unisLBRealServerConnectNumber       Integer32
+    }
+
+unisLBRealServerName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..31))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Real server name."
+    ::= { unisLBRealServerEntry 1 }
+
+unisLBRealServerStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                          enabled(1),
+                          disabled(2),
+                          slowdown(3)
+                        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "A list of real server status type.
+         enabled:      the real server is enabled.
+         disabled:     the real server is disabled, the loadbalance device
+                       does not assign any traffic to the real server.
+         slowdown:     the real server continues to process the existed session
+                       previously assigned to it, but the loadbalance device
+                       does not assign any new session to the real server."
+     ::= { unisLBRealServerEntry 2 }
+
+unisLBRealServerConnectNumber OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The connection number of real server."
+    ::= { unisLBRealServerEntry 3 }
+
+-- =================================================================
+--    Traps of Loadbalance
+-- =================================================================
+unisLBTrap OBJECT IDENTIFIER ::= {unisLB 2}
+
+unisLBTrapPrex OBJECT IDENTIFIER ::= {unisLBTrap 0}
+
+unisLBRealServerOverLoad NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisLBRealServerGroupName,
+            unisLBRealServerName,
+            unisLBRealServerConnectNumber
+        }
+    STATUS      current
+    DESCRIPTION
+        "This trap is sent when the real server is overloaded."
+    ::= {unisLBTrapPrex 1}
+
+END
+

@@ -1,0 +1,3990 @@
+-- ------------------------------------------------------------------
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Descripton: Qos MIB
+--
+-- History V2.3
+--     V1.0 2002-11-18 created by qizhenglin
+--     V1.1 2004-05-09 add and modify unisPortWredTable by tangshun
+--     V1.2 2004-08-05 modify unisQueueScheduleMode(add hq_wrr(9)) by qizhenglin
+--     v1.3 2004-08-12 add unisFlowtempVlanId,unisFlowtempCos to unisFlowtempTable
+--     v1.4 2004-09-17 change value range of unisRateLimitTargetRateKbps from 200..100000
+--          to 64..1000000 by zhuangyu
+--     v1.5 2004-10-12 updated by gaolong
+--          Import Counter64.
+--          Remove some adjacent hyphens
+--          Rewrite value of unisQueueScheduleMode and unisRateLimitConformActionType.
+--          Change all underscore('_') characters to hyphen characters('-') because
+--          underscore character is not allowed in MIB module.
+--     v1.51 2004-10-27 changed by zhuangyu
+--          1 Add an enumeration in unisRateLimitConformActionType
+--          2 Add unisRateLimitConformCos and unisRateLimitConformDscp in unisRateLimitTable
+--          3 Import IpAddress
+--     v1.52 2004-12-13 updated by jinyi
+--          Fix syntax bugs and adjust format of the whole file.
+--     v1.53 2004-12-13 updated by zhuangyu
+--          Modify description of unisRateLimitExceedDscp,unisRateLimitConformDscp and unisPriorityDscp.
+--     v1.6 2004-12-1 changed by yangjianjun
+--          Add  unisMirroringGroupTable
+--               unisMirroringGroupMirrorTable
+--               unisMirroringGroupMonitorTable
+--               unisMirroringGroupReflectorTable
+--               unisMirroringGroupRprobeVlanTable
+--     v1.7 2005-4-6 changed by fanghailin
+--          Add unisRedirectToSlotNo unisRedirectRemarkedDSCP unisRedirectRemarkedPri unisRedirectRemarkedTos
+--          unisRedirectToNextHop3 unisRedirectTargetVlan unisRedirectMode
+--          in unisRedirectTable Notice:All the nodes are used only for L3plus funtion and speciality.
+--     v1.8 2005-5-18 updated by zhangyinxi
+--          Add  unisRedirectToNestedVlanID and unisRedirectToModifiedVlanID
+--     v1.9 2005-6-27
+--          1. Add unisMirroringGroupMirrorMacTable, unisMirroringGroupMirrorVlanTable,
+--             unisPortTrustTable, unisRemarkVlanIDTable, unisCosToDscpMapTable, unisDscpToLocalPreMapTable,
+--             unisDscpToDropPreMapTable, unisDscpToCosMapTable, unisDscpToDscpMapTable,
+--             unisRateLimitMeterStatByteCount, unisRateLimitMeterStatByteXCount,
+--             unisRateLimitMeterStatState by liyan and wangyingxia
+--          2. Modify the range of unisRateLimitTargetRateKbps by liyan and wangyingxia
+--          3. Add unisMirrorToGroup in unisMirrorTable by yubin
+--     v2.0 2005-10-25 updated by houli
+--          1. Remove value range of unisLineRateValue
+--          2. Remove value range of unisRateLimitTargetRateMbps
+--     V2.1 2005-11-07 update by wangyingxia
+--          1. Add UnisMirrorOrMonitorType and unisMirroringGroupMonitorType
+--          2. Modify the description of unisMirroringGroupMonitorIfIndex
+--          3. Change the value range of unisRedirectTargetVlan by lihaijun
+--     V2.2 2005-12-19 update by wangyingxia
+--          1. Add unisMirroringGroupMirrorInTypeList, unisMirroringGroupMirrorOutTypeList
+--             by wangyingxia
+--          2. change the description of unisMirroringGroupMirrorInboundIfIndexList  
+--             add unisMirroringGroupMirrorOutboundIfIndexList by wangyingxia
+--     v2.3 2006-01-16 updated by houli
+--          1. Remove value range of unisTrafficShapeMaxRate
+--          2. Remove value range of unisTrafficShapeBurstSize
+-- ------------------------------------------------------------------
+-- ------------------------------------------------------------------
+--
+-- Import and definition
+--
+-- ------------------------------------------------------------------
+UNIS-LswQos-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+
+    Integer32, MODULE-IDENTITY,OBJECT-TYPE,Counter32, Counter64,IpAddress
+        FROM SNMPv2-SMI
+    TruthValue, MacAddress, RowStatus, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    unislswCommon
+        FROM UNIS-OID-MIB;
+
+
+---------- Following is for Node£ºunisLswQosMib --------
+  unisLswQosAclMib MODULE-IDENTITY
+    LAST-UPDATED "200211190000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+      "Module node for qos and acl."
+    REVISION "200211190000Z"
+    DESCRIPTION
+      "Table of qos and acl."
+    ::= { unislswCommon  16 }
+
+  UnisMirrorOrMonitorType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+    "
+     Specify the mirror source or destination type.
+     port(1):
+        the mirror source or destination is port.
+     board(2):
+        the mirror source or destination is board.
+    "
+    SYNTAX INTEGER
+    {
+       port(1),
+       board(2)
+    }
+
+---------- Following is for Node£ºunisLswQosMibObject --------
+  unisLswQosMibObject OBJECT IDENTIFIER ::= {  unisLswQosAclMib 2  }
+
+  unisPriorityTrustMode OBJECT-TYPE
+    SYNTAX      INTEGER
+            {
+                default(0),
+                dscp(1),
+                ipprecedence(2),
+                cos(3),
+                localprecedence(4)
+            }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Priority type of inbound queue."
+    DEFVAL      { 0}
+    ::= { unisLswQosMibObject 1 }
+
+  unisPortMonitorBothIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The ifIndex of in/out monitor port."
+    DEFVAL      { 0}
+    ::= { unisLswQosMibObject 2 }
+
+
+ --TABLE: unisQueueTable
+
+  unisQueueTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisQueueEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Queue table which contains queue entry."
+    ::= { unisLswQosMibObject 3 }
+
+  unisQueueEntry OBJECT-TYPE
+    SYNTAX      UnisQueueEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "The configuration information of queue."
+    INDEX {
+              unisQueueIfIndex
+          }
+    ::= { unisQueueTable 1 }
+
+  UnisQueueEntry ::=
+    SEQUENCE
+    {
+      unisQueueIfIndex    INTEGER,
+      unisQueueScheduleMode    INTEGER,
+      unisQueueWeight1    INTEGER,
+      unisQueueWeight2    INTEGER,
+      unisQueueWeight3    INTEGER,
+      unisQueueWeight4    INTEGER,
+      unisQueueMaxDelay    INTEGER,
+      unisQueueWeight5    INTEGER,
+      unisQueueWeight6    INTEGER,
+      unisQueueWeight7    INTEGER,
+      unisQueueWeight8    INTEGER
+    }
+
+
+  unisQueueIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "ifIndex of port."
+    ::= { unisQueueEntry 1 }
+
+  unisQueueScheduleMode OBJECT-TYPE
+    SYNTAX      INTEGER{
+                        sp(1),
+                        wrr(2),
+                        wrr-max-delay(3),
+                        sc-0(4),
+                        sc-1(5),
+                        sc-2(6),
+                        rr(7),
+                        wfq(8),
+                        hq-wrr(9)
+                       }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The mode of the queue schedule."
+    DEFVAL      { sp }
+    ::= { unisQueueEntry 2 }
+
+  unisQueueWeight1 OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "If queue mode is wfq, then unisQueueWeight1 represent the bandwidth of queue 1.
+      If queue mode is wrr, then unisQueueWeight1 represent the weight of queue 1."
+    ::= { unisQueueEntry 3 }
+
+  unisQueueWeight2 OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "If queue mode is wfq, then unisQueueWeight2 represent the bandwidth of queue 2.
+      If queue mode is wrr, then unisQueueWeight2 represent the weight of queue 2."
+    ::= { unisQueueEntry 4 }
+
+  unisQueueWeight3 OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "If queue mode is wfq, then unisQueueWeight3 represent the bandwidth of queue 3.
+      If queue mode is wrr, then unisQueueWeight3 represent the weight of queue 3."
+    ::= { unisQueueEntry 5 }
+
+  unisQueueWeight4 OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "If queue mode is wfq, then unisQueueWeight4 represent the bandwidth of queue 4.
+      If queue mode is wrr, then unisQueueWeight4 represent the weight of queue 4."
+    ::= { unisQueueEntry 6 }
+
+  unisQueueMaxDelay OBJECT-TYPE
+    SYNTAX      INTEGER(0..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      " "
+    ::= { unisQueueEntry 7 }
+
+  unisQueueWeight5 OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "If queue mode is wfq, then unisQueueWeight5 represent the bandwidth of queue 5.
+      If queue mode is wrr, then unisQueueWeight5 represent the weight of queue 5."
+    ::= { unisQueueEntry 8 }
+
+  unisQueueWeight6 OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "If queue mode is wfq, then unisQueueWeight6 represent the bandwidth of queue 6.
+      If queue mode is wrr, then unisQueueWeight6 represent the weight of queue 6."
+    ::= { unisQueueEntry 9 }
+
+  unisQueueWeight7 OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "If queue mode is wfq, then unisQueueWeight7 represent the bandwidth of queue 7.
+      If queue mode is wrr, then unisQueueWeight7 represent the weight of queue 7."
+    ::= { unisQueueEntry 10 }
+
+  unisQueueWeight8 OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "If queue mode is wfq, then unisQueueWeight8 represent the bandwidth of queue 8.
+      If queue mode is wrr, then unisQueueWeight8 represent the weight of queue 8."
+    ::= { unisQueueEntry 11 }
+
+
+  -- TABLE: unisRateLimitTable ------
+  unisRateLimitTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisRateLimitEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Rate limit table which contains limit entry. "
+    ::= { unisLswQosMibObject 4 }
+
+  unisRateLimitEntry OBJECT-TYPE
+    SYNTAX      UnisRateLimitEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "The configuration information of the rate-limited port."
+    INDEX {
+              unisRateLimitAclIndex,
+              unisRateLimitIfIndex,
+              unisRateLimitVlanID,
+              unisRateLimitDirection
+          }
+    ::= { unisRateLimitTable 1 }
+
+  UnisRateLimitEntry ::=
+    SEQUENCE
+    {
+      unisRateLimitAclIndex    INTEGER,
+      unisRateLimitIfIndex    INTEGER,
+      unisRateLimitVlanID    INTEGER,
+      unisRateLimitDirection    INTEGER,
+      unisRateLimitUserAclNum    INTEGER,
+      unisRateLimitUserAclRule    INTEGER,
+      unisRateLimitIpAclNum    INTEGER,
+      unisRateLimitIpAclRule    INTEGER,
+      unisRateLimitLinkAclNum    INTEGER,
+      unisRateLimitLinkAclRule    INTEGER,
+      unisRateLimitTargetRateMbps    INTEGER,
+      unisRateLimitTargetRateKbps    INTEGER,
+      unisRateLimitPeakRate    INTEGER,
+      unisRateLimitCIR    INTEGER,
+      unisRateLimitCBS    INTEGER,
+      unisRateLimitEBS    INTEGER,
+      unisRateLimitPIR    INTEGER,
+      unisRateLimitConformLocalPre    INTEGER,
+      unisRateLimitConformActionType    INTEGER,
+      unisRateLimitExceedActionType    INTEGER,
+      unisRateLimitExceedDscp    INTEGER,
+      unisRateLimitRuntime    TruthValue,
+      unisRateLimitRowStatus    RowStatus,
+      unisRateLimitExceedCos INTEGER,
+      unisRateLimitConformCos INTEGER,
+      unisRateLimitConformDscp INTEGER,
+      unisRateLimitMeterStatByteCount Counter64,
+      unisRateLimitMeterStatByteXCount Counter64,
+      unisRateLimitMeterStatState INTEGER
+    }
+
+  unisRateLimitAclIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..2999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Index of acl rule."
+    ::= { unisRateLimitEntry 1 }
+
+  unisRateLimitIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "ifIndex of the rate-limited port."
+    ::= { unisRateLimitEntry 2 }
+
+  unisRateLimitVlanID OBJECT-TYPE
+    SYNTAX      INTEGER(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Vlan ID."
+    ::= { unisRateLimitEntry 3 }
+
+  unisRateLimitDirection OBJECT-TYPE
+    SYNTAX      INTEGER{invalid(0), input(1), output(2)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Direction of the rate-limited port."
+    ::= { unisRateLimitEntry 4 }
+
+  unisRateLimitUserAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|5000..5999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of user acl."
+    ::= { unisRateLimitEntry 5 }
+
+  unisRateLimitUserAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of user acl-rule."
+    ::= { unisRateLimitEntry 6 }
+
+  unisRateLimitIpAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|2000..3999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of Ip acl."
+    ::= { unisRateLimitEntry 7 }
+
+  unisRateLimitIpAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of Ip acl-rule."
+    ::= { unisRateLimitEntry 8 }
+
+  unisRateLimitLinkAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|4000..4999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of link acl."
+    ::= { unisRateLimitEntry 9 }
+
+  unisRateLimitLinkAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of link acl-rule."
+    ::= { unisRateLimitEntry 10 }
+
+  unisRateLimitTargetRateMbps OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Target rate: Mbps."
+    ::= { unisRateLimitEntry 11 }
+
+  unisRateLimitTargetRateKbps OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Target rate: Kbps."
+    ::= { unisRateLimitEntry 12 }
+
+  unisRateLimitPeakRate OBJECT-TYPE
+    SYNTAX      INTEGER(0|64..8388608)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Peak rate of the rate-limited port."
+    ::= { unisRateLimitEntry 13 }
+
+  unisRateLimitCIR OBJECT-TYPE
+    SYNTAX      INTEGER(0..34120000)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "CIR of the rate-limited port."
+    ::= { unisRateLimitEntry 14 }
+
+  unisRateLimitCBS OBJECT-TYPE
+    SYNTAX      INTEGER(0..1048575)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Burst traffic of the rate-limited port."
+    ::= { unisRateLimitEntry 15 }
+
+  unisRateLimitEBS OBJECT-TYPE
+    SYNTAX      INTEGER(0..268435455)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Excess burst traffic of the rate-limited port."
+    ::= { unisRateLimitEntry 16 }
+
+  unisRateLimitPIR OBJECT-TYPE
+    SYNTAX      INTEGER(0..34120000)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "PIR of the rate-limited port."
+    ::= { unisRateLimitEntry 17 }
+
+  unisRateLimitConformLocalPre OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Conform local pre."
+    DEFVAL      { 1 }
+    ::= { unisRateLimitEntry 18 }
+
+  unisRateLimitConformActionType OBJECT-TYPE
+    SYNTAX      INTEGER{
+                       invalid(0),
+                       remark-cos(1),
+                       remark-drop-priority(2),
+                       remark-cos-drop-priority(3),
+                       remark-policed-service(4),
+                       remark-dscp(5)
+                       }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Conform action type."
+    DEFVAL      { 1 }
+    ::= { unisRateLimitEntry 19 }
+
+  unisRateLimitExceedActionType OBJECT-TYPE
+    SYNTAX      INTEGER{invalid(0), forward(1), drop(2), remarkdscp(3), exceed-cos(4)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Exceed action type."
+    DEFVAL      { 1 }
+    ::= { unisRateLimitEntry 20 }
+
+  unisRateLimitExceedDscp OBJECT-TYPE
+    SYNTAX      INTEGER(0..63|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Exceed DSCP.
+      <0-63>  Value of DSCP
+      af11    Specify Assured Forwarding 11 service(10)
+      af12    Specify Assured Forwarding 12 service(12)
+      af13    Specify Assured Forwarding 13 service(14)
+      af21    Specify Assured Forwarding 21 service(18)
+      af22    Specify Assured Forwarding 22 service(20)
+      af23    Specify Assured Forwarding 23 service(22)
+      af31    Specify Assured Forwarding 31 service(26)
+      af32    Specify Assured Forwarding 32 service(28)
+      af33    Specify Assured Forwarding 33 service(30)
+      af41    Specify Assured Forwarding 41 service(34)
+      af42    Specify Assured Forwarding 42 service(36)
+      af43    Specify Assured Forwarding 43 service(38)
+      be      Specify Best Effort service(0)
+      cs1     Specify Class Selector 1 service(8)
+      cs2     Specify Class Selector 2 service(16)
+      cs3     Specify Class Selector 3 service(24)
+      cs4     Specify Class Selector 4 service(32)
+      cs5     Specify Class Selector 5 service(40)
+      cs6     Specify Class Selector 6 service(48)
+      cs7     Specify Class Selector 7 service(56)
+      ef      Specify Expedited Forwarding service(46)"
+    DEFVAL      { 255 }
+    ::= { unisRateLimitEntry 21 }
+
+  unisRateLimitRuntime OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Runtime."
+    ::= { unisRateLimitEntry 22 }
+
+  unisRateLimitRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisRateLimitEntry 23 }
+
+  unisRateLimitExceedCos OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Exceeding COS of rate-limited port."
+    DEFVAL      { 255 }
+    ::= { unisRateLimitEntry 24 }
+
+  unisRateLimitConformCos OBJECT-TYPE
+    SYNTAX      INTEGER(0..7|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "If the user choose remark-cos value of the unisRateLimitConformActionType,
+      This object can be used to set the conform COS value.  There are a few
+      enumerations as follows:
+      background          Specify background priority(1)
+      best-effort         Specify best-effort priority(0)
+      controlled-load     Specify controlled-load priority(4)
+      excellent-effort    Specify excellent-effort priority(3)
+      network-management  Specify network-management priority(7)
+      spare               Specify spare priority(2)
+      video               Specify video priority(5)
+      voice               Specify voice priority(6)"
+    DEFVAL      { 255 }
+    ::= { unisRateLimitEntry 25 }
+
+  unisRateLimitConformDscp OBJECT-TYPE
+    SYNTAX      INTEGER(0..63|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "If the user choose remark-dscp value of the unisRateLimitConformActionType,
+      This object can be used to set the conform dscp value.  There are a few
+      enumerations as follows:
+      <0-63>  Value of DSCP
+      af11    Specify Assured Forwarding 11 service(10)
+      af12    Specify Assured Forwarding 12 service(12)
+      af13    Specify Assured Forwarding 13 service(14)
+      af21    Specify Assured Forwarding 21 service(18)
+      af22    Specify Assured Forwarding 22 service(20)
+      af23    Specify Assured Forwarding 23 service(22)
+      af31    Specify Assured Forwarding 31 service(26)
+      af32    Specify Assured Forwarding 32 service(28)
+      af33    Specify Assured Forwarding 33 service(30)
+      af41    Specify Assured Forwarding 41 service(34)
+      af42    Specify Assured Forwarding 42 service(36)
+      af43    Specify Assured Forwarding 43 service(38)
+      be      Specify Best Effort service(0)
+      cs1     Specify Class Selector 1 service(8)
+      cs2     Specify Class Selector 2 service(16)
+      cs3     Specify Class Selector 3 service(24)
+      cs4     Specify Class Selector 4 service(32)
+      cs5     Specify Class Selector 5 service(40)
+      cs6     Specify Class Selector 6 service(48)
+      cs7     Specify Class Selector 7 service(56)
+      ef      Specify Expedited Forwarding service(46)"
+    DEFVAL      { 255 }
+    ::= { unisRateLimitEntry 26 }
+
+  unisRateLimitMeterStatByteCount  OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+               "The counter of conform byte."
+    ::= { unisRateLimitEntry 27 }
+
+  unisRateLimitMeterStatByteXCount  OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+               "The counter of exceed byte."
+    ::= { unisRateLimitEntry 28 }
+
+  unisRateLimitMeterStatState  OBJECT-TYPE
+    SYNTAX      INTEGER
+                       {
+                       set(1), --enable meter statistic
+                       unDo(2), --undo meter statistic
+                       reset(3), --reset meter statistic
+                       running(4), --status of meter statistic running
+                       notRunning(5) --status of meter statistic not running
+                       }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+               "The status of meter statistic."
+    ::= { unisRateLimitEntry 29 }
+
+  -- TABLE: unisPriorityTable ------
+  unisPriorityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPriorityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "The priority table which contains priority entry."
+    ::= { unisLswQosMibObject 5 }
+
+  unisPriorityEntry OBJECT-TYPE
+    SYNTAX      UnisPriorityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "The configuration information of priority."
+    INDEX {
+              unisPriorityAclIndex,
+              unisPriorityIfIndex,
+              unisPriorityVlanID,
+              unisPriorityDirection
+          }
+    ::= { unisPriorityTable 1 }
+
+  UnisPriorityEntry ::=
+    SEQUENCE
+    {
+      unisPriorityAclIndex    INTEGER,
+      unisPriorityIfIndex    INTEGER,
+      unisPriorityVlanID    INTEGER,
+      unisPriorityDirection    INTEGER,
+      unisPriorityUserAclNum    INTEGER,
+      unisPriorityUserAclRule    INTEGER,
+      unisPriorityIpAclNum    INTEGER,
+      unisPriorityIpAclRule    INTEGER,
+      unisPriorityLinkAclNum    INTEGER,
+      unisPriorityLinkAclRule    INTEGER,
+      unisPriorityDscp    INTEGER,
+      unisPriorityIpPre    INTEGER,
+      unisPriorityIpPreFromCos    TruthValue,
+      unisPriorityCos    INTEGER,
+      unisPriorityCosFromIpPre    TruthValue,
+      unisPriorityLocalPre    INTEGER,
+      unisPriorityPolicedServiceType    INTEGER,
+      unisPriorityPolicedServiceDscp    INTEGER,
+      unisPriorityPolicedServiceExp    INTEGER,
+      unisPriorityPolicedServiceCos    INTEGER,
+      unisPriorityPolicedServiceLoaclPre    INTEGER,
+      unisPriorityPolicedServiceDropPriority    INTEGER,
+      unisPriorityRuntime    TruthValue,
+      unisPriorityRowStatus    RowStatus
+    }
+
+  unisPriorityAclIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..2999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Index of acl rule."
+    ::= { unisPriorityEntry 1 }
+
+  unisPriorityIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "ifIndex of the port."
+    ::= { unisPriorityEntry 2 }
+
+  unisPriorityVlanID OBJECT-TYPE
+    SYNTAX      INTEGER(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Vlan ID."
+    ::= { unisPriorityEntry 3 }
+
+  unisPriorityDirection OBJECT-TYPE
+    SYNTAX      INTEGER{invalid(0), input(1), output(2)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Direction of data stream."
+    ::= { unisPriorityEntry 4 }
+
+  unisPriorityUserAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|5000..5999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of user acl."
+    ::= { unisPriorityEntry 5 }
+
+  unisPriorityUserAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of the user acl."
+    ::= { unisPriorityEntry 6 }
+
+  unisPriorityIpAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|2000..3999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of Ip acl."
+    ::= { unisPriorityEntry 7 }
+
+  unisPriorityIpAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of the IP acl."
+    ::= { unisPriorityEntry 8 }
+
+  unisPriorityLinkAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|4000..4999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of Link acl."
+    ::= { unisPriorityEntry 9 }
+
+  unisPriorityLinkAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of the link acl."
+    ::= { unisPriorityEntry 10 }
+
+  unisPriorityDscp OBJECT-TYPE
+    SYNTAX      INTEGER(0..63|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Set DSCP Value.
+      <0-63>  Value of DSCP
+      af11    Specify Assured Forwarding 11 service(10)
+      af12    Specify Assured Forwarding 12 service(12)
+      af13    Specify Assured Forwarding 13 service(14)
+      af21    Specify Assured Forwarding 21 service(18)
+      af22    Specify Assured Forwarding 22 service(20)
+      af23    Specify Assured Forwarding 23 service(22)
+      af31    Specify Assured Forwarding 31 service(26)
+      af32    Specify Assured Forwarding 32 service(28)
+      af33    Specify Assured Forwarding 33 service(30)
+      af41    Specify Assured Forwarding 41 service(34)
+      af42    Specify Assured Forwarding 42 service(36)
+      af43    Specify Assured Forwarding 43 service(38)
+      be      Specify Best Effort service(0)
+      cs1     Specify Class Selector 1 service(8)
+      cs2     Specify Class Selector 2 service(16)
+      cs3     Specify Class Selector 3 service(24)
+      cs4     Specify Class Selector 4 service(32)
+      cs5     Specify Class Selector 5 service(40)
+      cs6     Specify Class Selector 6 service(48)
+      cs7     Specify Class Selector 7 service(56)
+      ef      Specify Expedited Forwarding service(46)"
+    DEFVAL      { 255 }
+    ::= { unisPriorityEntry 11 }
+
+  unisPriorityIpPre OBJECT-TYPE
+    SYNTAX      INTEGER(0..7|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Set Ip precedence."
+    DEFVAL      { 255 }
+    ::= { unisPriorityEntry 12 }
+
+  unisPriorityIpPreFromCos OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Set Ip precedence according to vlan priority."
+    DEFVAL      { 2 }
+    ::= { unisPriorityEntry 13 }
+
+  unisPriorityCos OBJECT-TYPE
+    SYNTAX      INTEGER(0..7|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Set vlan priority."
+    DEFVAL      { 255 }
+    ::= { unisPriorityEntry 14 }
+
+  unisPriorityCosFromIpPre OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Set vlan priority according to IP precedence."
+    DEFVAL      { 2 }
+    ::= { unisPriorityEntry 15 }
+
+  unisPriorityLocalPre OBJECT-TYPE
+    SYNTAX      INTEGER(0..7|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Set local precedence."
+    DEFVAL      { 255 }
+    ::= { unisPriorityEntry 16 }
+
+  unisPriorityPolicedServiceType OBJECT-TYPE
+    SYNTAX      INTEGER{invalid(0), auto(1), trust-dscp(2), new-dscp(3), untrusted(4)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The service type of proliced Priority."
+    ::= { unisPriorityEntry 17 }
+
+  unisPriorityPolicedServiceDscp OBJECT-TYPE
+    SYNTAX      INTEGER(0..63|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The service Dscp of proliced Priority."
+    DEFVAL      { 255 }
+    ::= { unisPriorityEntry 18 }
+
+  unisPriorityPolicedServiceExp OBJECT-TYPE
+    SYNTAX      INTEGER(0..7|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The service Exp of proliced Priority."
+    DEFVAL      { 255 }
+    ::= { unisPriorityEntry 19 }
+
+  unisPriorityPolicedServiceCos OBJECT-TYPE
+    SYNTAX      INTEGER(0..7|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The service COS of proliced Priority."
+    DEFVAL      { 255 }
+    ::= { unisPriorityEntry 20 }
+
+  unisPriorityPolicedServiceLoaclPre OBJECT-TYPE
+    SYNTAX      INTEGER(0..7|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The service local pre of proliced Priority."
+    DEFVAL      { 255 }
+    ::= { unisPriorityEntry 21 }
+
+  unisPriorityPolicedServiceDropPriority OBJECT-TYPE
+    SYNTAX      INTEGER(0..2|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The service drop priority of proliced Priority."
+    DEFVAL      { 255 }
+    ::= { unisPriorityEntry 22 }
+
+  unisPriorityRuntime OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Is run or not."
+    ::= { unisPriorityEntry 23 }
+
+  unisPriorityRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisPriorityEntry 24 }
+
+  -- TABLE: unisRedirectTable ------
+  unisRedirectTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisRedirectEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Redirect table which contains rediect entry."
+    ::= { unisLswQosMibObject 6 }
+
+  unisRedirectEntry OBJECT-TYPE
+    SYNTAX      UnisRedirectEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of redirection."
+    INDEX {
+              unisRedirectAclIndex,
+              unisRedirectIfIndex,
+              unisRedirectVlanID,
+              unisRedirectDirection
+          }
+    ::= { unisRedirectTable 1 }
+
+  UnisRedirectEntry ::=
+    SEQUENCE
+    {
+      unisRedirectAclIndex    INTEGER,
+      unisRedirectIfIndex    INTEGER,
+      unisRedirectVlanID    INTEGER,
+      unisRedirectDirection    INTEGER,
+      unisRedirectUserAclNum    INTEGER,
+      unisRedirectUserAclRule    INTEGER,
+      unisRedirectIpAclNum    INTEGER,
+      unisRedirectIpAclRule    INTEGER,
+      unisRedirectLinkAclNum    INTEGER,
+      unisRedirectLinkAclRule    INTEGER,
+      unisRedirectToCpu    TruthValue,
+      unisRedirectToIfIndex    INTEGER,
+      unisRedirectToNextHop1    IpAddress,
+      unisRedirectToNextHop2    IpAddress,
+      unisRedirectRuntime    TruthValue,
+      unisRedirectRowStatus    RowStatus,
+      unisRedirectToSlotNo INTEGER,
+      unisRedirectRemarkedDSCP    INTEGER,
+      unisRedirectRemarkedPri  INTEGER,
+      unisRedirectRemarkedTos  INTEGER,
+      unisRedirectToNextHop3  IpAddress,
+      unisRedirectTargetVlanID INTEGER,
+      unisRedirectMode INTEGER,
+      unisRedirectToNestedVlanID Integer32,
+      unisRedirectToModifiedVlanID Integer32
+    }
+
+  unisRedirectAclIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..2999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Index of acl rule."
+    ::= { unisRedirectEntry 1 }
+
+  unisRedirectIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "ifIndex of port."
+    ::= { unisRedirectEntry 2 }
+
+  unisRedirectVlanID OBJECT-TYPE
+    SYNTAX      INTEGER(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Vlan ID."
+    ::= { unisRedirectEntry 3 }
+
+  unisRedirectDirection OBJECT-TYPE
+    SYNTAX      INTEGER{invalid(0), input(1), output(2)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Direction of data stream."
+    ::= { unisRedirectEntry 4 }
+
+  unisRedirectUserAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|5000..5999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of the user acl."
+    ::= { unisRedirectEntry 5 }
+
+  unisRedirectUserAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of the user acl."
+    ::= { unisRedirectEntry 6 }
+
+  unisRedirectIpAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|2000..3999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The num of the IP acl."
+    ::= { unisRedirectEntry 7 }
+
+  unisRedirectIpAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of the IP acl."
+    ::= { unisRedirectEntry 8 }
+
+  unisRedirectLinkAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|4000..4999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The num of the link acl."
+    ::= { unisRedirectEntry 9 }
+
+  unisRedirectLinkAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of the link acl."
+    ::= { unisRedirectEntry 10 }
+
+  unisRedirectToCpu OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Redirect to cpu."
+    DEFVAL      { 2 }
+    ::= { unisRedirectEntry 11 }
+
+  unisRedirectToIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The ifIndex of port to be redirect to."
+    ::= { unisRedirectEntry 12 }
+
+  unisRedirectToNextHop1 OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          " "
+    ::= { unisRedirectEntry 13 }
+
+  unisRedirectToNextHop2 OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          " "
+    ::= { unisRedirectEntry 14 }
+
+  unisRedirectRuntime OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Is run or not."
+    ::= { unisRedirectEntry 15 }
+
+  unisRedirectRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisRedirectEntry 16 }
+
+  unisRedirectToSlotNo OBJECT-TYPE
+    SYNTAX      INTEGER(1..16)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The slot number to process redirection. Default value is 15.
+      When L3plus function is not supported, the default value would be set.
+      For L3plus redirection function, it is necessary."
+    ::= { unisRedirectEntry 17 }
+
+  unisRedirectRemarkedDSCP OBJECT-TYPE
+    SYNTAX      INTEGER(0..63|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "DSCP of Policy-Based Routing. When L3plus function is not supported,
+      the default value would be set.
+      For L3plus redirection function, it is optional."
+    DEFVAL      { 255 }
+    ::= { unisRedirectEntry 18 }
+
+  unisRedirectRemarkedPri OBJECT-TYPE
+    SYNTAX      INTEGER(0..7|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The priority of the redirect packet. When L3plus function is not supported,
+      the default value would be set.
+      For L3plus redirection function, it is optional."
+    DEFVAL      { 255 }
+    ::= { unisRedirectEntry 19 }
+
+  unisRedirectRemarkedTos OBJECT-TYPE
+    SYNTAX      INTEGER(0..15|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The TOS of the redirect packet.
+      When L3plus function is not supported, the default value would be set.
+      For L3plus redirection function, it is optional."
+    DEFVAL      { 255 }
+    ::= { unisRedirectEntry 20 }
+
+  unisRedirectToNextHop3 OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The third IP address for PBR. Default value is 0xffffffff.
+      When L3plus function is not supported, the default value would be set.
+      The data stream can be redirected to three nexthops at most or one
+      VLAN interface, one nexthop should be set at least if data packets
+      are not redirected to VLAN interface for L3plus redirection function."
+    ::= { unisRedirectEntry 21 }
+
+  unisRedirectTargetVlanID OBJECT-TYPE
+    SYNTAX      INTEGER(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The destination vlan ID for PBR. Default value is 0.
+      When L3plus function is not supported, the default value would be set.
+      For L3plus redirection function, it is necessary when no nexthop is set. "
+    ::= { unisRedirectEntry 22 }
+
+  unisRedirectMode OBJECT-TYPE
+    SYNTAX      INTEGER{
+                                strict-priority(1),
+                                load-balance(2)
+                       }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The node denotes the strategy adopted by the PBR.
+      If strict-priority is configured, the most preferential IP address
+      is use as redirected nexthop.
+      If the mode is load-balance, any of the three IP addresses will be
+      the nexthop and the traffic distributes in the three direction.
+      Default value is strict-priority.
+      When L3plus function is not supported, the default value would be set.
+      It is optional. "
+    DEFVAL      { strict-priority }
+    ::= { unisRedirectEntry 23 }
+
+  unisRedirectToNestedVlanID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The nested vlan ID inserted before the original vlan tag. Default value is 0.
+      When the function is not supported, the default value would be set.
+      It is optional."
+    DEFVAL      { 0 }
+    ::= { unisRedirectEntry 24 }
+
+  unisRedirectToModifiedVlanID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The new vlan ID replaced the old one. Default value is 0.
+      When the function is not supported, the default value would be set.
+      It is optional."
+    DEFVAL      { 0 }
+    ::= { unisRedirectEntry 25 }
+
+  -- TABLE: unisStatisticTable ------
+  unisStatisticTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisStatisticEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Statistic table which contains statistic entry."
+    ::= { unisLswQosMibObject 7 }
+
+  unisStatisticEntry OBJECT-TYPE
+    SYNTAX      UnisStatisticEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration about statistic information."
+    INDEX {
+              unisStatisticAclIndex,
+              unisStatisticIfIndex,
+              unisStatisticVlanID,
+              unisStatisticDirection
+          }
+    ::= { unisStatisticTable 1 }
+
+  UnisStatisticEntry ::=
+    SEQUENCE
+    {
+      unisStatisticAclIndex    INTEGER,
+      unisStatisticIfIndex    INTEGER,
+      unisStatisticVlanID    INTEGER,
+      unisStatisticDirection    INTEGER,
+      unisStatisticUserAclNum    INTEGER,
+      unisStatisticUserAclRule    INTEGER,
+      unisStatisticIpAclNum    INTEGER,
+      unisStatisticIpAclRule    INTEGER,
+      unisStatisticLinkAclNum    INTEGER,
+      unisStatisticLinkAclRule    INTEGER,
+      unisStatisticRuntime    TruthValue,
+      unisStatisticPacketCount    Counter64,
+      unisStatisticByteCount    Counter64,
+      unisStatisticCountClear    INTEGER,
+      unisStatisticRowStatus    RowStatus,
+      unisStatisticPacketXCount Counter64,
+      unisStatisticByteXCount Counter64
+    }
+
+  unisStatisticAclIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..2999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Index of acl rule."
+    ::= { unisStatisticEntry 1 }
+
+  unisStatisticIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "ifIndex of port."
+    ::= { unisStatisticEntry 2 }
+
+  unisStatisticVlanID OBJECT-TYPE
+    SYNTAX      INTEGER(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Vlan ID."
+    ::= { unisStatisticEntry 3 }
+
+  unisStatisticDirection OBJECT-TYPE
+    SYNTAX      INTEGER{invalid(0), input(1), output(2)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Direction of data stream."
+    ::= { unisStatisticEntry 4 }
+
+  unisStatisticUserAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|5000..5999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of the user acl."
+    ::= { unisStatisticEntry 5 }
+
+  unisStatisticUserAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of the user acl."
+    ::= { unisStatisticEntry 6 }
+
+  unisStatisticIpAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|2000..3999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of the IP acl."
+    ::= { unisStatisticEntry 7 }
+
+  unisStatisticIpAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of the IP acl."
+    ::= { unisStatisticEntry 8 }
+
+  unisStatisticLinkAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|4000..4999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of the link acl."
+    ::= { unisStatisticEntry 9 }
+
+  unisStatisticLinkAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of the link acl."
+    ::= { unisStatisticEntry 10 }
+
+  unisStatisticRuntime OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Is run or not."
+    ::= { unisStatisticEntry 11 }
+
+  unisStatisticPacketCount OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "The counter of the packets which is matched."
+    ::= { unisStatisticEntry 12 }
+
+  unisStatisticByteCount OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "The counter of the byte which is matched."
+    ::= { unisStatisticEntry 13 }
+
+  unisStatisticCountClear OBJECT-TYPE
+    SYNTAX      INTEGER{cleared(1),nouse(2)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Clear the counter of the packets."
+    ::= { unisStatisticEntry 14 }
+
+  unisStatisticRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisStatisticEntry 15 }
+
+  unisStatisticPacketXCount OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "The counter of the outprofile packets."
+    ::= { unisStatisticEntry 16 }
+
+  unisStatisticByteXCount OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "The counter of the outprofile bytes."
+    ::= { unisStatisticEntry 17 }
+
+  -- TABLE: unisMirrorTable ------
+  unisMirrorTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMirrorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Mirror table which contains mirror entry."
+    ::= { unisLswQosMibObject 8 }
+
+  unisMirrorEntry OBJECT-TYPE
+    SYNTAX      UnisMirrorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information to be mirrored."
+    INDEX {
+              unisMirrorAclIndex,
+              unisMirrorIfIndex,
+              unisMirrorVlanID,
+              unisMirrorDirection
+          }
+    ::= { unisMirrorTable 1 }
+
+  UnisMirrorEntry ::=
+    SEQUENCE
+    {
+      unisMirrorAclIndex    INTEGER,
+      unisMirrorIfIndex    INTEGER,
+      unisMirrorVlanID    INTEGER,
+      unisMirrorDirection    INTEGER,
+      unisMirrorUserAclNum    INTEGER,
+      unisMirrorUserAclRule    INTEGER,
+      unisMirrorIpAclNum    INTEGER,
+      unisMirrorIpAclRule    INTEGER,
+      unisMirrorLinkAclNum    INTEGER,
+      unisMirrorLinkAclRule    INTEGER,
+      unisMirrorToIfIndex    INTEGER,
+      unisMirrorToCpu    TruthValue,
+      unisMirrorRuntime    TruthValue,
+      unisMirrorRowStatus    RowStatus,
+      unisMirrorToGroup       Integer32
+
+    }
+
+  unisMirrorAclIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..2999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Index of acl rule."
+    ::= { unisMirrorEntry 1 }
+
+  unisMirrorIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "ifIndex of port."
+    ::= { unisMirrorEntry 2 }
+
+  unisMirrorVlanID OBJECT-TYPE
+    SYNTAX      INTEGER(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Vlan ID."
+    ::= { unisMirrorEntry 3 }
+
+  unisMirrorDirection OBJECT-TYPE
+    SYNTAX      INTEGER{invalid(0), input(1), output(2)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Direction of data stream."
+    ::= { unisMirrorEntry 4 }
+
+  unisMirrorUserAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|5000..5999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of the user acl."
+    ::= { unisMirrorEntry 5 }
+
+  unisMirrorUserAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of the user acl."
+    ::= { unisMirrorEntry 6 }
+
+  unisMirrorIpAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|2000..3999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of the user acl."
+    ::= { unisMirrorEntry 7 }
+
+  unisMirrorIpAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of the IP acl."
+    ::= { unisMirrorEntry 8 }
+
+  unisMirrorLinkAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|4000..4999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of the link acl."
+    ::= { unisMirrorEntry 9 }
+
+  unisMirrorLinkAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of the link acl."
+    ::= { unisMirrorEntry 10 }
+
+  unisMirrorToIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The ifIndex of port that to be mirrored to."
+    ::= { unisMirrorEntry 11 }
+
+  unisMirrorToCpu OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Mirror to cpu."
+    ::= { unisMirrorEntry 12 }
+
+  unisMirrorRuntime OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Is run or not."
+    ::= { unisMirrorEntry 13 }
+
+  unisMirrorRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "RowStatus, now support three status: createAndGo, active, destroy. "
+    ::= { unisMirrorEntry 14 }
+
+  unisMirrorToGroup OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The destination of stream-based mirroring is the mirroring group."
+    ::= { unisMirrorEntry 15 }
+
+
+  -- TABLE: unisPortMirrorTable ------
+  unisPortMirrorTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortMirrorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Port Mirror."
+    ::= { unisLswQosMibObject 9 }
+
+  unisPortMirrorEntry OBJECT-TYPE
+    SYNTAX      UnisPortMirrorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of port mirroring."
+    INDEX {
+              unisPortMirrorIfIndex
+          }
+    ::= { unisPortMirrorTable 1 }
+
+  UnisPortMirrorEntry ::=
+    SEQUENCE
+    {
+      unisPortMirrorIfIndex    INTEGER,
+      unisPortMirrorDirection    INTEGER,
+      unisPortMirrorRowStatus    RowStatus
+    }
+
+  unisPortMirrorIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The ifIndex of mirror port."
+    ::= { unisPortMirrorEntry 1 }
+
+  unisPortMirrorDirection OBJECT-TYPE
+    SYNTAX      INTEGER{in(1),out(2),both(3)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The direction of mirror port."
+    ::= { unisPortMirrorEntry 2 }
+
+  unisPortMirrorRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisPortMirrorEntry 3 }
+
+  -- TABLE: unisLineRateTable ------
+  unisLineRateTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisLineRateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Line Rate."
+    ::= { unisLswQosMibObject 10 }
+
+  unisLineRateEntry OBJECT-TYPE
+    SYNTAX      UnisLineRateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of line-rate port."
+    INDEX {
+              unisLineRateIfIndex,
+              unisLineRateDirection
+          }
+    ::= { unisLineRateTable 1 }
+
+  UnisLineRateEntry ::=
+    SEQUENCE
+    {
+      unisLineRateIfIndex    INTEGER,
+      unisLineRateDirection    INTEGER,
+      unisLineRateValue    INTEGER,
+      unisLineRateRowStatus    RowStatus
+    }
+
+  unisLineRateIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The ifIndex of port of line rate."
+    ::= { unisLineRateEntry 1 }
+
+  unisLineRateDirection OBJECT-TYPE
+    SYNTAX      INTEGER{in(1),out(2)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The direction of line rate."
+    ::= { unisLineRateEntry 2 }
+
+  unisLineRateValue OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The value of the line-rate."
+    ::= { unisLineRateEntry 3 }
+
+  unisLineRateRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisLineRateEntry 4 }
+
+  -- TABLE: unisBandwidthTable ------
+  unisBandwidthTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisBandwidthEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Bandwidth."
+    ::= { unisLswQosMibObject 11 }
+
+  unisBandwidthEntry OBJECT-TYPE
+    SYNTAX      UnisBandwidthEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of bandwidth of port."
+    INDEX {
+              unisBandwidthAclIndex,
+              unisBandwidthIfIndex,
+              unisBandwidthVlanID,
+              unisBandwidthDirection
+          }
+    ::= { unisBandwidthTable 1 }
+
+  UnisBandwidthEntry ::=
+    SEQUENCE
+    {
+      unisBandwidthAclIndex    INTEGER,
+      unisBandwidthIfIndex    INTEGER,
+      unisBandwidthVlanID    INTEGER,
+      unisBandwidthDirection    INTEGER,
+      unisBandwidthIpAclNum    INTEGER,
+      unisBandwidthIpAclRule    INTEGER,
+      unisBandwidthLinkAclNum    INTEGER,
+      unisBandwidthLinkAclRule    INTEGER,
+      unisBandwidthMinGuaranteedWidth    INTEGER,
+      unisBandwidthMaxGuaranteedWidth    INTEGER,
+      unisBandwidthWeight    INTEGER,
+      unisBandwidthRuntime    TruthValue,
+      unisBandwidthRowStatus    RowStatus
+    }
+
+  unisBandwidthAclIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..2999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Index of acl rule."
+    ::= { unisBandwidthEntry 1 }
+
+  unisBandwidthIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "ifIndex of port."
+    ::= { unisBandwidthEntry 2 }
+
+  unisBandwidthVlanID OBJECT-TYPE
+    SYNTAX      INTEGER(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Vlan ID."
+    ::= { unisBandwidthEntry 3 }
+
+  unisBandwidthDirection OBJECT-TYPE
+    SYNTAX      INTEGER{invalid(0), output(2)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Direction of data stream."
+    ::= { unisBandwidthEntry 4 }
+
+  unisBandwidthIpAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|2000..3999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of Ip acl."
+    ::= { unisBandwidthEntry 5 }
+
+  unisBandwidthIpAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of ip acl."
+    ::= { unisBandwidthEntry 6 }
+
+  unisBandwidthLinkAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|4000..4999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of link acl."
+    ::= { unisBandwidthEntry 7 }
+
+  unisBandwidthLinkAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of link acl."
+    ::= { unisBandwidthEntry 8 }
+
+  unisBandwidthMinGuaranteedWidth OBJECT-TYPE
+    SYNTAX      INTEGER(1..8388608)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The min width which is guaranteed."
+    ::= { unisBandwidthEntry 9 }
+
+  unisBandwidthMaxGuaranteedWidth OBJECT-TYPE
+    SYNTAX      INTEGER(1..8388608)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The max width which is guaranteed."
+    ::= { unisBandwidthEntry 10 }
+
+  unisBandwidthWeight OBJECT-TYPE
+    SYNTAX      INTEGER(0..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Weight of bandwidth."
+    ::= { unisBandwidthEntry 11 }
+
+  unisBandwidthRuntime OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Is run or not."
+    ::= { unisBandwidthEntry 12 }
+
+  unisBandwidthRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisBandwidthEntry 13 }
+
+-- TABLE: unisRedTable ------
+  unisRedTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisRedEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Red table which contains RED entry."
+    ::= { unisLswQosMibObject 12 }
+
+  unisRedEntry OBJECT-TYPE
+    SYNTAX      UnisRedEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of RED."
+    INDEX {
+              unisRedAclIndex,
+              unisRedIfIndex,
+              unisRedVlanID,
+              unisRedDirection
+          }
+    ::= { unisRedTable 1 }
+
+  UnisRedEntry ::=
+    SEQUENCE
+    {
+      unisRedAclIndex    INTEGER,
+      unisRedIfIndex    INTEGER,
+      unisRedVlanID    INTEGER,
+      unisRedDirection    INTEGER,
+      unisRedIpAclNum    INTEGER,
+      unisRedIpAclRule    INTEGER,
+      unisRedLinkAclNum    INTEGER,
+      unisRedLinkAclRule    INTEGER,
+      unisRedStartQueueLen    INTEGER,
+      unisRedStopQueueLen    INTEGER,
+      unisRedProbability    INTEGER,
+      unisRedRuntime    TruthValue,
+      unisRedRowStatus    RowStatus
+    }
+
+  unisRedAclIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..2999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Index of acl rule."
+    ::= { unisRedEntry 1 }
+
+  unisRedIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "ifIndex of port."
+    ::= { unisRedEntry 2 }
+
+  unisRedVlanID OBJECT-TYPE
+    SYNTAX      INTEGER(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Vlan ID."
+    ::= { unisRedEntry 3 }
+
+  unisRedDirection OBJECT-TYPE
+    SYNTAX      INTEGER{invalid(0), output(2)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Direction of data stream."
+    ::= { unisRedEntry 4 }
+
+  unisRedIpAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|2000..3999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The num of Ip acl."
+    ::= { unisRedEntry 5 }
+
+  unisRedIpAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of Ip acl."
+    ::= { unisRedEntry 6 }
+
+  unisRedLinkAclNum OBJECT-TYPE
+    SYNTAX      INTEGER(0|4000..4999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The number of link acl."
+    ::= { unisRedEntry 7 }
+
+  unisRedLinkAclRule OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The subitem of link acl."
+    ::= { unisRedEntry 8 }
+
+  unisRedStartQueueLen OBJECT-TYPE
+    SYNTAX      INTEGER(0..262128)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The length of Starting queue."
+    ::= { unisRedEntry 9 }
+
+  unisRedStopQueueLen OBJECT-TYPE
+    SYNTAX      INTEGER(0..262128)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The length of stopping queue."
+    ::= { unisRedEntry 10 }
+
+  unisRedProbability OBJECT-TYPE
+    SYNTAX      INTEGER(0..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Probability."
+    ::= { unisRedEntry 11 }
+
+  unisRedRuntime OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Is run or not."
+    ::= { unisRedEntry 12 }
+
+  unisRedRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisRedEntry 13 }
+
+  -- TABLE: unisMirrorGroupTable ------
+  unisMirrorGroupTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMirrorGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Mirror Group."
+    ::= { unisLswQosMibObject 13 }
+
+  unisMirrorGroupEntry OBJECT-TYPE
+    SYNTAX      UnisMirrorGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of mirroring group."
+    INDEX {
+              unisMirrorGroupID
+          }
+    ::= { unisMirrorGroupTable 1 }
+
+  UnisMirrorGroupEntry ::=
+    SEQUENCE
+    {
+      unisMirrorGroupID    INTEGER,
+      unisMirrorGroupDirection    INTEGER,
+      unisMirrorGroupMirrorIfIndexList    OCTET STRING,
+      unisMirrorGroupMonitorIfIndex    INTEGER,
+      unisMirrorGroupRowStatus    RowStatus
+    }
+
+  unisMirrorGroupID OBJECT-TYPE
+    SYNTAX      INTEGER(1..20)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Group ID of mirroring group."
+    ::= { unisMirrorGroupEntry 1 }
+
+  unisMirrorGroupDirection OBJECT-TYPE
+    SYNTAX      INTEGER{input(1),output(2)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Direction of data stream which would be mirrored."
+    ::= { unisMirrorGroupEntry 2 }
+
+  unisMirrorGroupMirrorIfIndexList OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE (1..257))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "ifIndex list of source port."
+    ::= { unisMirrorGroupEntry 3 }
+
+  unisMirrorGroupMonitorIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "ifIndex of destination port."
+    ::= { unisMirrorGroupEntry 4 }
+
+  unisMirrorGroupRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisMirrorGroupEntry 5 }
+
+  -- TABLE: unisFlowtempTable ------
+  unisFlowtempTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisFlowtempEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Flow-template table which contains flow-template entry."
+    ::= { unisLswQosMibObject 14 }
+
+  unisFlowtempEntry OBJECT-TYPE
+    SYNTAX      UnisFlowtempEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of flow-template."
+    INDEX {
+              unisFlowtempIndex
+          }
+    ::= { unisFlowtempTable 1 }
+
+  UnisFlowtempEntry ::=
+    SEQUENCE
+    {
+      unisFlowtempIndex    INTEGER,
+      unisFlowtempIpProtocol    TruthValue,
+      unisFlowtempTcpFlag    TruthValue,
+      unisFlowtempSPort    TruthValue,
+      unisFlowtempDPort    TruthValue,
+      unisFlowtempIcmpType    TruthValue,
+      unisFlowtempIcmpCode    TruthValue,
+      unisFlowtempFragment    TruthValue,
+      unisFlowtempDscp    TruthValue,
+      unisFlowtempIpPre    TruthValue,
+      unisFlowtempTos    TruthValue,
+      unisFlowtempSIp          TruthValue,
+      unisFlowtempSIpMask    IpAddress,
+      unisFlowtempDIp          TruthValue,
+      unisFlowtempDIpMask    IpAddress,
+      unisFlowtempEthProtocol    TruthValue,
+      unisFlowtempSMac          TruthValue,
+      unisFlowtempSMacMask    MacAddress,
+      unisFlowtempDMac          TruthValue,
+      unisFlowtempDMacMask    MacAddress,
+      unisFlowtempVpn    TruthValue,
+      unisFlowtempRowStatus    RowStatus,
+      unisFlowtempVlanId    TruthValue,
+      unisFlowtempCos    TruthValue
+    }
+
+  unisFlowtempIndex OBJECT-TYPE
+    SYNTAX      INTEGER{default(1), user-defined(2)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Index of flow template."
+    ::= { unisFlowtempEntry 1 }
+
+  unisFlowtempIpProtocol OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "protocol-type of IP packet."
+    ::= { unisFlowtempEntry 2 }
+
+  unisFlowtempTcpFlag OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The flag of Tcp paceket. "
+    ::= { unisFlowtempEntry 3 }
+
+  unisFlowtempSPort OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The port of source."
+    ::= { unisFlowtempEntry 4 }
+
+  unisFlowtempDPort OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The port of destination."
+    ::= { unisFlowtempEntry 5 }
+
+  unisFlowtempIcmpType OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The type of Icmp."
+    ::= { unisFlowtempEntry 6 }
+
+  unisFlowtempIcmpCode OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The code of Icmp."
+    ::= { unisFlowtempEntry 7 }
+
+  unisFlowtempFragment OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The flag of Fragment. "
+    ::= { unisFlowtempEntry 8 }
+
+  unisFlowtempDscp OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Dscp of IP packet."
+    ::= { unisFlowtempEntry 9 }
+
+  unisFlowtempIpPre OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The Precedence of Ip packet. "
+    ::= { unisFlowtempEntry 10 }
+
+  unisFlowtempTos OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Tos of IP packet."
+    ::= { unisFlowtempEntry 11 }
+
+  unisFlowtempSIp OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The Ip of source."
+    ::= { unisFlowtempEntry 12 }
+
+  unisFlowtempSIpMask OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The mask of source-Ip."
+    ::= { unisFlowtempEntry 13 }
+
+  unisFlowtempDIp OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The Ip of destination."
+    ::= { unisFlowtempEntry 14 }
+
+  unisFlowtempDIpMask OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The mask of destination-Ip."
+    ::= { unisFlowtempEntry 15 }
+
+  unisFlowtempEthProtocol OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Protocol type of Ethernet."
+    ::= { unisFlowtempEntry 16 }
+
+  unisFlowtempSMac OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The Mac of source."
+    ::= { unisFlowtempEntry 17 }
+
+  unisFlowtempSMacMask OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The mask of source-Mac."
+    ::= { unisFlowtempEntry 18 }
+
+  unisFlowtempDMac OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The mac of destination."
+    ::= { unisFlowtempEntry 19 }
+
+  unisFlowtempDMacMask OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The mask of destination-Mac."
+    ::= { unisFlowtempEntry 20 }
+
+  unisFlowtempVpn OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Vpn"
+    ::= { unisFlowtempEntry 21 }
+
+  unisFlowtempRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisFlowtempEntry 22 }
+
+  unisFlowtempVlanId OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Source VLAN ID."
+    ::= { unisFlowtempEntry 23 }
+
+  unisFlowtempCos OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "802.1P priority."
+    ::= { unisFlowtempEntry 24 }
+
+  -- TABLE: unisFlowtempEnableTable ------
+  unisFlowtempEnableTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisFlowtempEnableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "The table of flow-template."
+    ::= { unisLswQosMibObject 15 }
+
+  unisFlowtempEnableEntry OBJECT-TYPE
+    SYNTAX      UnisFlowtempEnableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Enable entry of flow-template."
+    INDEX {
+              unisFlowtempEnableIfIndex,
+              unisFlowtempEnableVlanID
+          }
+    ::= { unisFlowtempEnableTable 1 }
+
+  UnisFlowtempEnableEntry ::=
+    SEQUENCE
+    {
+      unisFlowtempEnableIfIndex    INTEGER,
+      unisFlowtempEnableVlanID    INTEGER,
+      unisFlowtempEnableFlowtempIndex  INTEGER
+    }
+
+  unisFlowtempEnableIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "ifIndex of port."
+    ::= { unisFlowtempEnableEntry 1 }
+
+  unisFlowtempEnableVlanID OBJECT-TYPE
+    SYNTAX      INTEGER(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Vlan ID."
+    ::= { unisFlowtempEnableEntry 2 }
+
+  unisFlowtempEnableFlowtempIndex OBJECT-TYPE
+    SYNTAX      INTEGER{default(1), user-defined(2)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The index of Flowtemp table."
+    ::= { unisFlowtempEnableEntry 3 }
+
+  -- TABLE: unisTrafficShapeTable ------
+  unisTrafficShapeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTrafficShapeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "The traffic-shape table which contains traffic-shape entry."
+    ::= { unisLswQosMibObject 16 }
+
+  unisTrafficShapeEntry OBJECT-TYPE
+    SYNTAX      UnisTrafficShapeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of traffic-shape."
+    INDEX {
+              unisTrafficShapeIfIndex,
+              unisTrafficShapeQueueId
+          }
+    ::= { unisTrafficShapeTable 1 }
+
+  UnisTrafficShapeEntry ::=
+    SEQUENCE
+    {
+      unisTrafficShapeIfIndex    INTEGER,
+      unisTrafficShapeQueueId    INTEGER,
+      unisTrafficShapeMaxRate    INTEGER,
+      unisTrafficShapeBurstSize    INTEGER,
+      unisTrafficShapeBufferLimit    INTEGER,
+      unisTrafficShapeRowStatus    RowStatus
+    }
+
+  unisTrafficShapeIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "IfIdex of port."
+    ::= { unisTrafficShapeEntry 1 }
+
+  unisTrafficShapeQueueId OBJECT-TYPE
+    SYNTAX      INTEGER(0..7|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "ID of queue which would be shaped."
+    ::= { unisTrafficShapeEntry 2 }
+
+  unisTrafficShapeMaxRate OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The max rate."
+    ::= { unisTrafficShapeEntry 3 }
+
+  unisTrafficShapeBurstSize OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The size of burst."
+    ::= { unisTrafficShapeEntry 4 }
+
+  unisTrafficShapeBufferLimit OBJECT-TYPE
+    SYNTAX      INTEGER(0|16..8000)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "The limit of buffer."
+    ::= { unisTrafficShapeEntry 5 }
+
+  unisTrafficShapeRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisTrafficShapeEntry 6 }
+
+  -- TABLE: unisPortQueueTable ------
+  unisPortQueueTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortQueueEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "The port-queue table which contains port-queue entry."
+    ::= { unisLswQosMibObject 17 }
+
+  unisPortQueueEntry OBJECT-TYPE
+    SYNTAX      UnisPortQueueEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of port-queue."
+    INDEX {
+              unisPortQueueIfIndex,
+              unisPortQueueQueueID
+          }
+    ::= { unisPortQueueTable 1 }
+
+  UnisPortQueueEntry ::=
+    SEQUENCE
+    {
+      unisPortQueueIfIndex    INTEGER,
+      unisPortQueueQueueID    INTEGER,
+      unisPortQueueWrrPriority    INTEGER,
+      unisPortQueueWeight    INTEGER
+    }
+
+  unisPortQueueIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "ifIndex of port."
+    ::= { unisPortQueueEntry 1 }
+
+  unisPortQueueQueueID OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "ID of port-queue."
+    ::= { unisPortQueueEntry 2 }
+
+  unisPortQueueWrrPriority OBJECT-TYPE
+    SYNTAX      INTEGER{sp(1),wrr-high-priority(2),wrr-low-priority(3)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The priority of Wrr."
+    ::= { unisPortQueueEntry 3 }
+
+  unisPortQueueWeight OBJECT-TYPE
+    SYNTAX      INTEGER(0|1..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The weight of this queue."
+    ::= { unisPortQueueEntry 4 }
+
+  -- TABLE: unisDropModeTable ------
+  unisDropModeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDropModeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "The drop-mode table which contains drop-mode entry."
+    ::= { unisLswQosMibObject 18 }
+
+  unisDropModeEntry OBJECT-TYPE
+    SYNTAX      UnisDropModeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of the drop-mode."
+    INDEX {
+              unisDropModeIfIndex
+          }
+    ::= { unisDropModeTable 1 }
+
+  UnisDropModeEntry ::=
+    SEQUENCE
+    {
+      unisDropModeIfIndex    INTEGER,
+      unisDropModeMode    INTEGER,
+      unisDropModeWredIndex    INTEGER
+    }
+
+  unisDropModeIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "ifIndex of port."
+    ::= { unisDropModeEntry 1 }
+
+  unisDropModeMode OBJECT-TYPE
+    SYNTAX      INTEGER{random-detect(1),tail-drop(2)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Mode."
+    DEFVAL      { 2 }
+    ::= { unisDropModeEntry 2 }
+
+  unisDropModeWredIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..3)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The index of Wred table."
+    ::= { unisDropModeEntry 3 }
+
+  -- TABLE: unisWredTable ------
+  unisWredTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisWredEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "The Wred table which contains wred Entry."
+    ::= { unisLswQosMibObject 19 }
+
+  unisWredEntry OBJECT-TYPE
+    SYNTAX      UnisWredEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of Wred."
+    INDEX {
+              unisWredIndex,
+              unisWredQueueId
+          }
+    ::= { unisWredTable 1 }
+
+  UnisWredEntry ::=
+    SEQUENCE
+    {
+      unisWredIndex    INTEGER,
+      unisWredQueueId    INTEGER,
+      unisWredGreenMinThreshold    INTEGER,
+      unisWredGreenMaxThreshold    INTEGER,
+      unisWredGreenMaxProb    INTEGER,
+      unisWredYellowMinThreshold    INTEGER,
+      unisWredYellowMaxThreshold    INTEGER,
+      unisWredYellowMaxProb    INTEGER,
+      unisWredRedMinThreshold    INTEGER,
+      unisWredRedMaxThreshold    INTEGER,
+      unisWredRedMaxProb    INTEGER,
+      unisWredExponent    INTEGER
+    }
+
+  unisWredIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..3)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Index of wred."
+    ::= { unisWredEntry 1 }
+
+  unisWredQueueId OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Queue ID."
+    ::= { unisWredEntry 2 }
+
+  unisWredGreenMinThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The min threshold of Green."
+    ::= { unisWredEntry 3 }
+
+  unisWredGreenMaxThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The max threshold of Greem."
+    ::= { unisWredEntry 4 }
+
+  unisWredGreenMaxProb OBJECT-TYPE
+    SYNTAX      INTEGER(1..15)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The max prob of Green."
+    ::= { unisWredEntry 5 }
+
+  unisWredYellowMinThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The min threshold of Yellow."
+    ::= { unisWredEntry 6 }
+
+  unisWredYellowMaxThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The max threshold of Yellow."
+    ::= { unisWredEntry 7 }
+
+  unisWredYellowMaxProb OBJECT-TYPE
+    SYNTAX      INTEGER(1..15)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The Prob threshold of Yellow."
+    ::= { unisWredEntry 8 }
+
+  unisWredRedMinThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The min threshold of Red."
+    ::= { unisWredEntry 9 }
+
+  unisWredRedMaxThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The max threshold of Red."
+    ::= { unisWredEntry 10 }
+
+  unisWredRedMaxProb OBJECT-TYPE
+    SYNTAX      INTEGER(1..15)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The max prob of Red."
+    ::= { unisWredEntry 11 }
+
+  unisWredExponent OBJECT-TYPE
+    SYNTAX      INTEGER(1..15)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Exponent."
+    DEFVAL      { 9 }
+    ::= { unisWredEntry 12 }
+
+  -- TABLE: unisCosToLocalPrecedenceMapTable ------
+  unisCosToLocalPrecedenceMapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisCosToLocalPrecedenceMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Table of map of the COS to local-precedence."
+    ::= { unisLswQosMibObject 20 }
+
+  unisCosToLocalPrecedenceMapEntry OBJECT-TYPE
+    SYNTAX      UnisCosToLocalPrecedenceMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of map of the COS to local precedence."
+    INDEX {
+              unisCosToLocalPrecedenceMapCosIndex
+          }
+    ::= { unisCosToLocalPrecedenceMapTable 1 }
+
+  UnisCosToLocalPrecedenceMapEntry ::=
+    SEQUENCE
+    {
+      unisCosToLocalPrecedenceMapCosIndex    INTEGER,
+      unisCosToLocalPrecedenceMapLocalPrecedenceValue       INTEGER
+    }
+
+  unisCosToLocalPrecedenceMapCosIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Index of the map."
+    ::= { unisCosToLocalPrecedenceMapEntry 1 }
+
+  unisCosToLocalPrecedenceMapLocalPrecedenceValue OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Value of local precedence."
+    ::= { unisCosToLocalPrecedenceMapEntry 2 }
+
+  -- TABLE: unisCosToDropPrecedenceMapTable ------
+  unisCosToDropPrecedenceMapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisCosToDropPrecedenceMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "The table of map of COS to drop-precedence."
+    ::= { unisLswQosMibObject 21 }
+
+  unisCosToDropPrecedenceMapEntry OBJECT-TYPE
+    SYNTAX      UnisCosToDropPrecedenceMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of the map of the COS to drop-precedence."
+    INDEX {
+              unisCosToDropPrecedenceMapCosIndex
+          }
+    ::= { unisCosToDropPrecedenceMapTable 1 }
+
+  UnisCosToDropPrecedenceMapEntry ::=
+    SEQUENCE
+    {
+      unisCosToDropPrecedenceMapCosIndex    INTEGER,
+      unisCosToDropPrecedenceMapDropPrecedenceValue       INTEGER
+    }
+
+  unisCosToDropPrecedenceMapCosIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Index of the map."
+    ::= { unisCosToDropPrecedenceMapEntry 1 }
+
+  unisCosToDropPrecedenceMapDropPrecedenceValue OBJECT-TYPE
+    SYNTAX      INTEGER(0..2)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Value of drop-precedence."
+    ::= { unisCosToDropPrecedenceMapEntry 2 }
+
+  -- TABLE: unisDscpMapTable ------
+  unisDscpMapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDscpMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Table of dscp map."
+    ::= { unisLswQosMibObject 22 }
+
+  unisDscpMapEntry OBJECT-TYPE
+    SYNTAX      UnisDscpMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of Dscp map."
+    INDEX {
+              unisDscpMapConformLevel,
+              unisDscpMapDscpIndex
+          }
+    ::= { unisDscpMapTable 1 }
+
+  UnisDscpMapEntry ::=
+    SEQUENCE
+    {
+      unisDscpMapConformLevel    INTEGER,
+      unisDscpMapDscpIndex    INTEGER,
+      unisDscpMapDscpValue    INTEGER,
+      unisDscpMapExpValue    INTEGER,
+      unisDscpMapCosValue    INTEGER,
+      unisDscpMapLocalPrecedence    INTEGER,
+      unisDscpMapDropPrecedence    INTEGER
+    }
+
+  unisDscpMapConformLevel OBJECT-TYPE
+    SYNTAX      INTEGER(0..2)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Conformable level of Dscp-map."
+    ::= { unisDscpMapEntry 1 }
+
+  unisDscpMapDscpIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..63)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Index of dscp."
+    ::= { unisDscpMapEntry 2 }
+
+  unisDscpMapDscpValue OBJECT-TYPE
+    SYNTAX      INTEGER(0..63)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Value of Dscp."
+    ::= { unisDscpMapEntry 3 }
+
+  unisDscpMapExpValue OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Exp value."
+    ::= { unisDscpMapEntry 4 }
+
+  unisDscpMapCosValue OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "COS value."
+    ::= { unisDscpMapEntry 5 }
+
+  unisDscpMapLocalPrecedence OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The precedence of local."
+    ::= { unisDscpMapEntry 6 }
+
+  unisDscpMapDropPrecedence OBJECT-TYPE
+    SYNTAX      INTEGER(0..2)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The precedence of Drop."
+    ::= { unisDscpMapEntry 7 }
+
+  -- TABLE: unisExpMapTable ------
+  unisExpMapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisExpMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "The table of Exp-map"
+    ::= { unisLswQosMibObject 23 }
+
+  unisExpMapEntry OBJECT-TYPE
+    SYNTAX      UnisExpMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of Exp-map."
+    INDEX {
+              unisExpMapConformLevel,
+              unisExpMapExpIndex
+          }
+    ::= { unisExpMapTable 1 }
+
+  UnisExpMapEntry ::=
+    SEQUENCE
+    {
+      unisExpMapConformLevel    INTEGER,
+      unisExpMapExpIndex     INTEGER,
+      unisExpMapDscpValue    INTEGER,
+      unisExpMapExpValue    INTEGER,
+      unisExpMapCosValue    INTEGER,
+      unisExpMapLocalPrecedence    INTEGER,
+      unisExpMapDropPrecedence    INTEGER
+    }
+
+  unisExpMapConformLevel OBJECT-TYPE
+    SYNTAX      INTEGER(0..2)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Conformable level of Exp-map."
+    ::= { unisExpMapEntry 1 }
+
+  unisExpMapExpIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Index of Exp."
+    ::= { unisExpMapEntry 2 }
+
+  unisExpMapDscpValue OBJECT-TYPE
+    SYNTAX      INTEGER(0..63)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Dscp value."
+    ::= { unisExpMapEntry 3 }
+
+  unisExpMapExpValue OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Exp value."
+    ::= { unisExpMapEntry 4 }
+
+  unisExpMapCosValue OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "COS Value."
+    ::= { unisExpMapEntry 5 }
+
+  unisExpMapLocalPrecedence OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The precedence of local."
+    ::= { unisExpMapEntry 6 }
+
+  unisExpMapDropPrecedence OBJECT-TYPE
+    SYNTAX      INTEGER(0..2)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The precedence of Drop."
+    ::= { unisExpMapEntry 7 }
+
+  -- TABLE: unisLocalPrecedenceMapTable ------
+  unisLocalPrecedenceMapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisLocalPrecedenceMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "The table of local-precedence map."
+    ::= { unisLswQosMibObject 24 }
+
+  unisLocalPrecedenceMapEntry OBJECT-TYPE
+    SYNTAX      UnisLocalPrecedenceMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuraion information of local-precedence map."
+    INDEX {
+              unisLocalPrecedenceMapConformLevel,
+              unisLocalPrecedenceMapLocalPrecedenceIndex
+          }
+    ::= { unisLocalPrecedenceMapTable 1 }
+
+  UnisLocalPrecedenceMapEntry ::=
+    SEQUENCE
+    {
+      unisLocalPrecedenceMapConformLevel    INTEGER,
+      unisLocalPrecedenceMapLocalPrecedenceIndex    INTEGER,
+      unisLocalPrecedenceMapCosValue       INTEGER
+    }
+
+  unisLocalPrecedenceMapConformLevel OBJECT-TYPE
+    SYNTAX      INTEGER(0..2)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Conformable level of local-precedence map."
+    ::= { unisLocalPrecedenceMapEntry 1 }
+
+  unisLocalPrecedenceMapLocalPrecedenceIndex OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Index of local-precedence."
+    ::= { unisLocalPrecedenceMapEntry 2 }
+
+  unisLocalPrecedenceMapCosValue OBJECT-TYPE
+    SYNTAX      INTEGER(0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "COS value."
+    ::= { unisLocalPrecedenceMapEntry 3 }
+--
+--
+--
+  -- TABLE: unisPortWredTable ---------
+  unisPortWredTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPortWredEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "The table of PortWred."
+    ::= { unisLswQosMibObject 25 }
+
+
+  unisPortWredEntry OBJECT-TYPE
+    SYNTAX UnisPortWredEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "Configuration information of port Wred."
+    INDEX {
+              unisPortWredIfIndex,
+              unisPortWredQueueID
+          }
+    ::= { unisPortWredTable 1 }
+
+
+    UnisPortWredEntry ::=
+    SEQUENCE
+    {
+        unisPortWredIfIndex INTEGER,
+        unisPortWredQueueID INTEGER,
+        unisPortWredQueueStartLength INTEGER,
+        unisPortWredQueueProbability INTEGER
+    }
+
+  unisPortWredIfIndex OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ifIndex of port."
+    ::= { unisPortWredEntry 1 }
+
+
+  unisPortWredQueueID OBJECT-TYPE
+    SYNTAX  INTEGER(0..7)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "ID of port-Wred queue."
+    ::= { unisPortWredEntry 2 }
+
+
+  unisPortWredQueueStartLength OBJECT-TYPE
+    SYNTAX  INTEGER(0..2047)
+    MAX-ACCESS  read-write
+    STATUS current
+    DESCRIPTION
+      "Queue length."
+    ::= { unisPortWredEntry 3 }
+
+
+  unisPortWredQueueProbability OBJECT-TYPE
+    SYNTAX  INTEGER(0..100)
+    MAX-ACCESS  read-write
+    STATUS current
+    DESCRIPTION
+      "Probability."
+    ::= { unisPortWredEntry 4 }
+
+-- TABLE: unisMirroringGroupTable ---------
+  unisMirroringGroupTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMirroringGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "The table of MirrorGroup."
+    ::= { unisLswQosMibObject 26 }
+
+  unisMirroringGroupEntry OBJECT-TYPE
+    SYNTAX      UnisMirroringGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Configuration information of MirrorGroup."
+    INDEX  {
+    	       unisMirroringGroupID
+    	   }
+    ::= { unisMirroringGroupTable 1 }
+
+  UnisMirroringGroupEntry ::=
+    SEQUENCE
+    {
+      unisMirroringGroupID    INTEGER,
+      unisMirroringGroupType    INTEGER,
+      unisMirroringGroupStatus    INTEGER,
+      unisMirroringGroupRowStatus    RowStatus
+    }
+
+   unisMirroringGroupID  OBJECT-TYPE
+    SYNTAX      INTEGER(1..20)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "GroupID."
+    ::= { unisMirroringGroupEntry 1 }
+
+    unisMirroringGroupType  OBJECT-TYPE
+    SYNTAX      INTEGER{local(1),remote-source(2),remote-destination(3)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "GroupType."
+    ::= { unisMirroringGroupEntry 2 }
+
+    unisMirroringGroupStatus  OBJECT-TYPE
+    SYNTAX      INTEGER{active(1),inactive(2)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "MirroringGroup status."
+    ::= { unisMirroringGroupEntry 3 }
+
+    unisMirroringGroupRowStatus  OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "RowStatus, Now support three status: createAndGo, active, destroy."
+    ::= { unisMirroringGroupEntry 4 }
+
+  -- TABLE: unisMirroringGroupMirrorTable ---------
+  unisMirroringGroupMirrorTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMirroringGroupMirrorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "MirroringGroup mirroring-port information."
+    ::= { unisLswQosMibObject 27 }
+
+  unisMirroringGroupMirrorEntry OBJECT-TYPE
+    SYNTAX      UnisMirroringGroupMirrorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "MirroringGroup mirroring-port information."
+    INDEX {
+              unisMirroringGroupID
+          }
+    ::= { unisMirroringGroupMirrorTable 1 }
+
+  UnisMirroringGroupMirrorEntry ::=
+    SEQUENCE
+    {
+      unisMirroringGroupMirrorInboundIfIndexList    OCTET STRING,
+      unisMirroringGroupMirrorOutboundIfIndexList    OCTET STRING,
+      unisMirroringGroupMirrorRowStatus    RowStatus,
+      unisMirroringGroupMirrorInTypeList         OCTET STRING,
+      unisMirroringGroupMirrorOutTypeList         OCTET STRING
+    }
+
+    unisMirroringGroupMirrorInboundIfIndexList  OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Inbound-Mirror ifIndex(for port) and slot number(for board) list.
+
+      Example A describes the relation between values of
+      unisMirroringGroupMirrorInboundIfIndexList and unisMirroringGroupMirrorInTypeList.
+
+      Example A:
+      unisMirroringGroupMirrorInboundIfIndexList: '00000002 0C000022 00000007'
+      unisMirroringGroupMirrorInTypeList:         '00000002 00000001 00000002'
+
+      Every four octets represent an integer value.
+      The first four octets of them should be same. Here the value '00000002'
+      indicates there are two inbound mirror sources.
+      The following every four octets of unisMirroringGroupMirrorInboundIfIndexList
+      indicate an ifIndex or a slot number of mirror source. For '0C000022' and
+      '00000007' in the value of unisMirroringGroupMirrorInboundIfIndexList above,
+      the corresponding value of unisMirroringGroupMirrorInTypeList is '00000001'
+      and '00000002'(00000001 means the mirror source is port, 00000002 means the 
+      mirror source is board, the meaning reference the object UnisMirrorOrMonitorType), 
+      then '0C000022' indicates an ifIndex value 201326626(decimal), and '00000007' 
+      indicates a slot with number 7(decimal).
+
+      Values with different types(port/board) should be set in separate set operations.
+      If one value with port type and one value with board type are set with same
+      unisMirroringGroupID separately, the result of get operation for that entry
+      will be like the example A above.
+      
+      If unisMirroringGroupMirrorInTypeList is not supported, the first four octets
+      of unisMirroringGroupMirrorInboundIfIndexList also indicates the number of mirror
+      source, but the following octets are values for ifIndex(port type).
+
+      unisMirroringGroupMirrorOutboundIfIndexList and unisMirroringGroupMirrorOutTypeList
+      are a pair and have the same relations like unisMirroringGroupMirrorInboundIfIndexList
+      and unisMirroringGroupMirrorInTypeList pair.
+      "
+    ::= { unisMirroringGroupMirrorEntry 1 }
+
+    unisMirroringGroupMirrorOutboundIfIndexList  OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Outbound-Mirror ifIndex and slot number list.
+      Please refer to the description of unisMirroringGroupMirrorInboundIfIndexList."
+    ::= { unisMirroringGroupMirrorEntry 2 }
+
+    unisMirroringGroupMirrorRowStatus  OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisMirroringGroupMirrorEntry 3 }
+    
+    unisMirroringGroupMirrorInTypeList  OBJECT-TYPE
+    SYNTAX      OCTET STRING 
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Inbound-Mirror type list.
+      Please refer to the description of unisMirroringGroupMirrorInboundIfIndexList."
+      
+    ::= { unisMirroringGroupMirrorEntry 4 }
+    
+    unisMirroringGroupMirrorOutTypeList  OBJECT-TYPE
+    SYNTAX      OCTET STRING    
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Outbound-Mirror type list.
+      Please refer to the description of unisMirroringGroupMirrorInboundIfIndexList."
+    ::= { unisMirroringGroupMirrorEntry 5 }
+
+  -- TABLE: unisMirroringGroupMonitorTable ---------
+  unisMirroringGroupMonitorTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMirroringGroupMonitorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "MirroringGroup monitor-port information."
+    ::= { unisLswQosMibObject 28 }
+
+  unisMirroringGroupMonitorEntry OBJECT-TYPE
+    SYNTAX      UnisMirroringGroupMonitorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "MirroringGroup monitor-port information."
+    INDEX {
+              unisMirroringGroupID
+          }
+    ::= { unisMirroringGroupMonitorTable 1 }
+
+  UnisMirroringGroupMonitorEntry ::=
+    SEQUENCE
+    {
+      unisMirroringGroupMonitorIfIndex    INTEGER,
+      unisMirroringGroupMonitorRowStatus    RowStatus,
+      unisMirroringGroupMonitorType UnisMirrorOrMonitorType
+    }
+
+    unisMirroringGroupMonitorIfIndex  OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "If the monitor destination is port, the value means the ifIndex of this port.
+      If the monitor destination is board, the value means the slot number of the
+      board. Whether the value means ifIndex or slot number references the object
+      unisMirroringGroupMonitorType."
+    ::= { unisMirroringGroupMonitorEntry 1 }
+
+    unisMirroringGroupMonitorRowStatus  OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisMirroringGroupMonitorEntry 2 }
+
+    unisMirroringGroupMonitorType  OBJECT-TYPE
+    SYNTAX      UnisMirrorOrMonitorType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Specify whether the monitor destination is port or board. If this object is
+      not supported, then the value of unisMirroringGroupMonitorIfIndex means ifIndex."
+    ::= { unisMirroringGroupMonitorEntry 3 }
+
+  -- TABLE: unisMirroringGroupReflectorTable ---------
+  unisMirroringGroupReflectorTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMirroringGroupReflectorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "MirroringGroup reflector-port information."
+    ::= { unisLswQosMibObject 29 }
+
+  unisMirroringGroupReflectorEntry OBJECT-TYPE
+    SYNTAX      UnisMirroringGroupReflectorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "MirroringGroup reflector-port information."
+    INDEX {
+              unisMirroringGroupID
+          }
+    ::= { unisMirroringGroupReflectorTable 1 }
+
+  UnisMirroringGroupReflectorEntry ::=
+    SEQUENCE
+    {
+      unisMirroringGroupReflectorIfIndex    INTEGER,
+      unisMirroringGroupReflectorRowStatus    RowStatus
+    }
+
+  unisMirroringGroupReflectorIfIndex   OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Only valid for remote-source MirroringGroup."
+    ::= { unisMirroringGroupReflectorEntry 1 }
+
+  unisMirroringGroupReflectorRowStatus  OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisMirroringGroupReflectorEntry 2 }
+
+  -- TABLE: unisMirroringGroupRprobeVlanTable ---------
+  unisMirroringGroupRprobeVlanTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMirroringGroupRprobeVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "MirroringGroup rprobe-vlan information."
+    ::= { unisLswQosMibObject 30 }
+
+  unisMirroringGroupRprobeVlanEntry OBJECT-TYPE
+    SYNTAX      UnisMirroringGroupRprobeVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "MirroringGroup rprobe-vlan information."
+    INDEX {
+              unisMirroringGroupID
+          }
+    ::= { unisMirroringGroupRprobeVlanTable 1 }
+
+  UnisMirroringGroupRprobeVlanEntry ::=
+    SEQUENCE
+    {
+      unisMirroringGroupRprobeVlanID    INTEGER,
+      unisMirroringGroupRprobeVlanRowStatus    RowStatus
+    }
+
+  unisMirroringGroupRprobeVlanID   OBJECT-TYPE
+    SYNTAX      INTEGER (0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "Remote-Probe vlanID.
+      0 is invalid value.
+      Only valid for remote-source and remote-destination MirroringGroup."
+    ::= { unisMirroringGroupRprobeVlanEntry 1 }
+
+  unisMirroringGroupRprobeVlanRowStatus  OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+      "RowStatus, now support three status: createAndGo, active, destroy."
+    ::= { unisMirroringGroupRprobeVlanEntry 2 }
+
+  unisMirroringGroupMirrorMacTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMirroringGroupMirrorMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "MirroringGroup MAC information."
+    ::= { unisLswQosMibObject 31 }
+
+  unisMirroringGroupMirrorMacEntry OBJECT-TYPE
+    SYNTAX      UnisMirroringGroupMirrorMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "MirroringGroup MAC information."
+    INDEX {
+           unisMirroringGroupID,
+           unisMirroringGroupMirrorMacSeq
+          }
+    ::= { unisMirroringGroupMirrorMacTable 1 }
+
+  UnisMirroringGroupMirrorMacEntry ::=
+    SEQUENCE
+    {
+       unisMirroringGroupMirrorMacSeq  Integer32,
+       unisMirroringGroupMirrorMac  MacAddress,
+       unisMirrorMacVlanID   Integer32,
+       unisMirroringGroupMirroMacStatus RowStatus
+    }
+
+  unisMirroringGroupMirrorMacSeq   OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "The sequence MAC number of the same group."
+    ::= { unisMirroringGroupMirrorMacEntry 1 }
+
+  unisMirroringGroupMirrorMac   OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "The MAC address of the MirroringGroup."
+    ::= { unisMirroringGroupMirrorMacEntry 2 }
+
+  unisMirrorMacVlanID   OBJECT-TYPE
+    SYNTAX      Integer32(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "The vlan ID of MAC address ."
+    ::= { unisMirroringGroupMirrorMacEntry 3 }
+
+  unisMirroringGroupMirroMacStatus   OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "The status of this conceptual row."
+    ::= { unisMirroringGroupMirrorMacEntry 4 }
+
+  unisMirroringGroupMirrorVlanTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMirroringGroupMirrorVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "MirroringGroup Vlan Information."
+    ::= { unisLswQosMibObject 32 }
+
+  unisMirroringGroupMirrorVlanEntry OBJECT-TYPE
+    SYNTAX      UnisMirroringGroupMirrorVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "MirroringGroup Vlan Information."
+    INDEX {
+           unisMirroringGroupID,
+           unisMirroringGroupMirrorVlanSeq
+           }
+    ::= { unisMirroringGroupMirrorVlanTable 1 }
+
+  UnisMirroringGroupMirrorVlanEntry ::=
+    SEQUENCE
+    {
+       unisMirroringGroupMirrorVlanSeq Integer32,
+       unisMirroringGroupMirrorVlanID Integer32,
+       unisMirroringGroupMirrorVlanDirection INTEGER,
+       unisMirroringGroupMirroVlanStatus RowStatus
+    }
+
+  unisMirroringGroupMirrorVlanSeq   OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "The sequence vlan number of the same group."
+    ::= { unisMirroringGroupMirrorVlanEntry  1 }
+
+  unisMirroringGroupMirrorVlanID   OBJECT-TYPE
+    SYNTAX      Integer32(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "The vlan ID of MirroringGroup."
+    ::= { unisMirroringGroupMirrorVlanEntry  2 }
+
+  unisMirroringGroupMirrorVlanDirection   OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+       inbound(1),
+       outbound(2),
+       both(3)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "The vlan direction of MirroringGroup."
+    ::= { unisMirroringGroupMirrorVlanEntry  3 }
+
+  unisMirroringGroupMirroVlanStatus   OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "The status of this conceptual row."
+    ::= { unisMirroringGroupMirrorVlanEntry  4 }
+
+  unisPortTrustTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortTrustEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "Port trust information."
+    ::= { unisLswQosMibObject 33 }
+
+  unisPortTrustEntry OBJECT-TYPE
+    SYNTAX      UnisPortTrustEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "Port trust information."
+    INDEX  {
+             unisPortTrustIfIndex
+           }
+     ::= { unisPortTrustTable 1 }
+
+  UnisPortTrustEntry ::=
+    SEQUENCE
+    {
+       unisPortTrustIfIndex Integer32,
+       unisPortTrustTrustType INTEGER,
+       unisPortTrustOvercastType INTEGER,
+       unisPortTrustReset INTEGER
+    }
+
+  unisPortTrustIfIndex   OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "ifIndex of the port which port trust is configured."
+    ::= { unisPortTrustEntry  1 }
+
+  unisPortTrustTrustType   OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        port(1),  -- port untrust
+        cos(2),   -- port trust cos
+        dscp(3)   -- port trust dscp
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "Trust type of port trust."
+    DEFVAL      { port }
+    ::= { unisPortTrustEntry  2 }
+
+  unisPortTrustOvercastType   OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        noOvercast(1),
+        overcastDSCP(2),
+        overcastCOS(3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "Overcast type of port trust."
+    DEFVAL      { noOvercast }
+    ::= { unisPortTrustEntry  3 }
+
+    unisPortTrustReset   OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+       reset(1)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "This object is used to reset port trust to default value.
+          Read operation is meaningless."
+    ::= { unisPortTrustEntry  4 }
+
+  unisRemarkVlanIDTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisRemarkVlanIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "Remark vlan ID information."
+    ::= { unisLswQosMibObject 34 }
+
+  unisRemarkVlanIDEntry OBJECT-TYPE
+    SYNTAX      UnisRemarkVlanIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "Remark vlan ID information."
+    INDEX {
+              unisRemarkVlanIDAclIndex,
+              unisRemarkVlanIDIfIndex,
+              unisRemarkVlanIDVlanID,
+              unisRemarkVlanIDDirection
+          }
+    ::= { unisRemarkVlanIDTable 1 }
+
+    UnisRemarkVlanIDEntry ::=
+    SEQUENCE
+    {
+       unisRemarkVlanIDAclIndex         Integer32,
+       unisRemarkVlanIDIfIndex          Integer32,
+       unisRemarkVlanIDVlanID           Integer32,
+       unisRemarkVlanIDDirection        INTEGER,
+       unisRemarkVlanIDUserAclNum       Integer32,
+       unisRemarkVlanIDUserAclRule      Integer32,
+       unisRemarkVlanIDIpAclNum         Integer32,
+       unisRemarkVlanIDIpAclRule        Integer32,
+       unisRemarkVlanIDLinkAclNum       Integer32,
+       unisRemarkVlanIDLinkAclRule      Integer32,
+       unisRemarkVlanIDRemarkVlanID     Integer32,
+       unisRemarkVlanIDPacketType       INTEGER,
+       unisRemarkVlanIDRowStatus        RowStatus
+    }
+
+  unisRemarkVlanIDAclIndex   OBJECT-TYPE
+    SYNTAX      Integer32(0..2999)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "Action identifier, acl index."
+    ::= { unisRemarkVlanIDEntry  1 }
+
+  unisRemarkVlanIDIfIndex   OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "Action identifier, ifIndex."
+    ::= { unisRemarkVlanIDEntry  2 }
+
+  unisRemarkVlanIDVlanID   OBJECT-TYPE
+    SYNTAX      Integer32(0..4094)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "Action identifier, vlan ID."
+    ::= { unisRemarkVlanIDEntry  3 }
+
+  unisRemarkVlanIDDirection   OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+       invalid(0),
+       input(1),
+       output(2)
+    }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "Action identifier, direction of data stream."
+    ::= { unisRemarkVlanIDEntry  4 }
+
+  unisRemarkVlanIDUserAclNum   OBJECT-TYPE
+    SYNTAX      Integer32(0|5000..5999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "The number of the user acl."
+    ::= { unisRemarkVlanIDEntry  5 }
+
+  unisRemarkVlanIDUserAclRule   OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "The subitem of the user acl."
+    ::= { unisRemarkVlanIDEntry  6 }
+
+  unisRemarkVlanIDIpAclNum   OBJECT-TYPE
+    SYNTAX      Integer32(0|2000..3999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "The num of the IP acl."
+    ::= { unisRemarkVlanIDEntry  7 }
+
+  unisRemarkVlanIDIpAclRule   OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "The subitem of the IP acl."
+    ::= { unisRemarkVlanIDEntry  8 }
+
+  unisRemarkVlanIDLinkAclNum   OBJECT-TYPE
+    SYNTAX      Integer32(0|4000..4999|10000..12999)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "The num of the link acl."
+    ::= { unisRemarkVlanIDEntry  9 }
+
+  unisRemarkVlanIDLinkAclRule   OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "The subitem of the link acl."
+    ::= { unisRemarkVlanIDEntry  10 }
+
+  unisRemarkVlanIDRemarkVlanID   OBJECT-TYPE
+    SYNTAX      Integer32(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "Remark vlan ID."
+    ::= { unisRemarkVlanIDEntry 11 }
+
+  unisRemarkVlanIDPacketType   OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        all(1),
+        tagged(2),
+        untagged(3)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "Packet type of the remarked vlan ID."
+    ::= { unisRemarkVlanIDEntry 12 }
+
+  unisRemarkVlanIDRowStatus   OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "The status of this conceptual row. "
+    ::= { unisRemarkVlanIDEntry 13 }
+
+  unisCosToDscpMapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisCosToDscpMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "COS to DSCP map information."
+    ::= { unisLswQosMibObject 35 }
+
+  unisCosToDscpMapEntry OBJECT-TYPE
+    SYNTAX      UnisCosToDscpMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "COS to DSCP map information."
+    INDEX {
+             unisCosToDscpMapCosIndex
+          }
+    ::= { unisCosToDscpMapTable 1 }
+
+  UnisCosToDscpMapEntry ::=
+    SEQUENCE
+    {
+      unisCosToDscpMapCosIndex     Integer32,
+      unisCosToDscpMapDscpValue    Integer32,
+      unisCosToDscpMapReSet        INTEGER
+    }
+
+  unisCosToDscpMapCosIndex   OBJECT-TYPE
+    SYNTAX    Integer32(0..7)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "COS index of COS to DSCP map."
+    ::= { unisCosToDscpMapEntry 1 }
+
+  unisCosToDscpMapDscpValue   OBJECT-TYPE
+    SYNTAX      Integer32(0..63)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "DSCP value of COS to DSCP map."
+    ::= { unisCosToDscpMapEntry 2 }
+
+  unisCosToDscpMapReSet   OBJECT-TYPE
+    SYNTAX    INTEGER
+    {
+        reset(1)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "This object is used to reset COS to DSCP map to default value.
+          Read operation is meaningless."
+    ::= { unisCosToDscpMapEntry 3 }
+
+  unisDscpToLocalPreMapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDscpToLocalPreMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "DSCP to Local-precedence map information."
+    ::= { unisLswQosMibObject 36 }
+
+  unisDscpToLocalPreMapEntry OBJECT-TYPE
+    SYNTAX      UnisDscpToLocalPreMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "DSCP to Local-precedence map information."
+    INDEX {
+             unisDscpToLocalPreMapDscpIndex
+          }
+    ::= { unisDscpToLocalPreMapTable 1 }
+
+  UnisDscpToLocalPreMapEntry ::=
+    SEQUENCE
+    {
+      unisDscpToLocalPreMapDscpIndex     Integer32,
+      unisDscpToLocalPreMapLocalPreVal   Integer32,
+      unisDscpToLocalPreMapReset         INTEGER
+    }
+
+  unisDscpToLocalPreMapDscpIndex   OBJECT-TYPE
+    SYNTAX      Integer32(0..63)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "DSCP Index of DSCP to Local-precedence map."
+    ::= { unisDscpToLocalPreMapEntry 1 }
+
+  unisDscpToLocalPreMapLocalPreVal   OBJECT-TYPE
+    SYNTAX      Integer32(0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "Local-precedence value of DSCP to Local-precedence map."
+    ::= { unisDscpToLocalPreMapEntry 2 }
+
+  unisDscpToLocalPreMapReset   OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+       reset(1)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "This object is used to reset DSCP to Local-precedence map to default value.
+           Read operation is meaningless."
+    ::= { unisDscpToLocalPreMapEntry 3 }
+
+  unisDscpToDropPreMapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDscpToDropPreMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "DSCP to Drop-precedence map information."
+    ::= { unisLswQosMibObject 37 }
+
+  unisDscpToDropPreMapEntry OBJECT-TYPE
+    SYNTAX      UnisDscpToDropPreMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "DSCP to Drop-precedence map information."
+    INDEX {
+             unisDscpToDropPreMapDscpIndex
+          }
+    ::= { unisDscpToDropPreMapTable 1 }
+
+  UnisDscpToDropPreMapEntry ::=
+    SEQUENCE
+    {
+      unisDscpToDropPreMapDscpIndex    Integer32,
+      unisDscpToDropPreMapDropPreVal   Integer32,
+      unisDscpToDropPreMapReset        INTEGER
+    }
+
+  unisDscpToDropPreMapDscpIndex   OBJECT-TYPE
+    SYNTAX      Integer32(0..63)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "DSCP Index of DSCP to Drop-precedence map."
+    ::= { unisDscpToDropPreMapEntry 1 }
+
+  unisDscpToDropPreMapDropPreVal   OBJECT-TYPE
+    SYNTAX      Integer32(0..2)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "Drop-precedence value of DSCP to Drop-precedence map."
+    ::= { unisDscpToDropPreMapEntry 2 }
+
+  unisDscpToDropPreMapReset   OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+       reset(1)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "This object is used to reset DSCP to Drop-precedence map to default value.
+          Read operation is meaningless."
+    ::= { unisDscpToDropPreMapEntry 3 }
+
+  unisDscpToCosMapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDscpToCosMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "DSCP to COS map information."
+    ::= { unisLswQosMibObject 38 }
+
+  unisDscpToCosMapEntry OBJECT-TYPE
+    SYNTAX      UnisDscpToCosMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "DSCP to COS map information."
+    INDEX {
+             unisDscpToCosMapDscpIndex
+          }
+    ::= { unisDscpToCosMapTable 1 }
+
+  UnisDscpToCosMapEntry ::=
+    SEQUENCE
+    {
+      unisDscpToCosMapDscpIndex   Integer32,
+      unisDscpToCosMapCosValue    Integer32,
+      unisDscpToCosMapReset       INTEGER
+    }
+
+  unisDscpToCosMapDscpIndex   OBJECT-TYPE
+    SYNTAX      Integer32(0..63)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "DSCP index of DSCP to COS map."
+    ::= { unisDscpToCosMapEntry 1 }
+
+  unisDscpToCosMapCosValue   OBJECT-TYPE
+    SYNTAX      Integer32(0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "COS value of DSCP to COS map."
+    ::= { unisDscpToCosMapEntry 2 }
+
+  unisDscpToCosMapReset   OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+       reset(1)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "This object is used to reset DSCP to COS map to default value.
+          Read operation is meaningless."
+    ::= { unisDscpToCosMapEntry 3 }
+
+  unisDscpToDscpMapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDscpToDscpMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "DSCP to DSCP map information."
+    ::= { unisLswQosMibObject 39 }
+
+    unisDscpToDscpMapEntry OBJECT-TYPE
+    SYNTAX      UnisDscpToDscpMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "DSCP to DSCP map information."
+    INDEX {
+             unisDscpToDscpMapDscpIndex
+          }
+    ::= { unisDscpToDscpMapTable 1 }
+
+  UnisDscpToDscpMapEntry ::=
+    SEQUENCE
+    {
+      unisDscpToDscpMapDscpIndex  Integer32,
+      unisDscpToDscpMapDscpValue  Integer32,
+      unisDscpToDscpMapReset    INTEGER
+    }
+
+  unisDscpToDscpMapDscpIndex   OBJECT-TYPE
+    SYNTAX      Integer32(0..63)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+          "DSCP index of DSCP to DSCP map."
+    ::= { unisDscpToDscpMapEntry 1 }
+
+  unisDscpToDscpMapDscpValue   OBJECT-TYPE
+    SYNTAX      Integer32(0..63)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "DSCP value of DSCP to DSCP map."
+    ::= { unisDscpToDscpMapEntry 2 }
+
+  unisDscpToDscpMapReset    OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+       reset(1)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+          "This object is used to reset DSCP to DSCP map to default value.
+          Read operation is meaningless."
+    ::= { unisDscpToDscpMapEntry 3 }
+
+END

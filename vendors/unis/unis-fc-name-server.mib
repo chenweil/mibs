@@ -1,0 +1,103 @@
+-- =====================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--      This MIB module is intended for the management of Fibre Channel (FC)
+--      Name Server.
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 Initial version
+--        created by qiaoxinghua 2014-03-03
+-- =====================================================================
+UNIS-FC-NAME-SERVER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisSan, unisVsanIndex
+        FROM UNIS-VSAN-MIB
+    UnisFcNameId
+        FROM UNIS-FC-TC-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    TruthValue
+        FROM SNMPv2-TC;
+
+unisFcNameServer MODULE-IDENTITY
+    LAST-UPDATED "201403031018Z"    -- March 03, 2014 at 10:18 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB module is intended for the management of Fibre Channel (FC)
+         Name Server."
+    REVISION "201403031018Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { unisSan 10 }
+
+-- Node definitions
+unisFcNameServerMibObjects OBJECT IDENTIFIER ::= { unisFcNameServer 1 }
+
+-- FC Name Server Notifications
+unisFcNsNotification OBJECT IDENTIFIER ::= { unisFcNameServerMibObjects 1 }
+
+unisFcNsNotificationPrefix   OBJECT IDENTIFIER ::= { unisFcNsNotification 0 }
+unisFcNsNotificationSwitch   OBJECT IDENTIFIER ::= { unisFcNsNotification 1 }
+unisFcNsObjsForNotification  OBJECT IDENTIFIER ::= { unisFcNsNotification 2 }
+
+unisFcNsPortLoginNotify NOTIFICATION-TYPE
+    OBJECTS    { unisVsanIndex,
+                 unisFcNsLocalSwitchWWN,
+                 unisFcNsFloginPortWWN }
+    STATUS     current
+    DESCRIPTION
+    "This notification will be generated when an entry is added to the
+     Name Server database by Nx_Port locally logging in."
+    ::= { unisFcNsNotificationPrefix 1 }
+
+unisFcNsPortLogoutNotify NOTIFICATION-TYPE
+    OBJECTS    { unisVsanIndex,
+                 unisFcNsLocalSwitchWWN,
+                 unisFcNsFloginPortWWN }
+    STATUS     current
+    DESCRIPTION
+    "This notification will be generated when an entry is deleted from
+     the Name Server database by Nx_Port locally logging out."
+    ::= { unisFcNsNotificationPrefix 2 }
+
+unisFcNsPortLoginNotifyEnable OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+    "This object is used to determine whether unisFcNsPortLoginNotify
+     will be generated for Nx_Port locally logging in."
+    ::= { unisFcNsNotificationSwitch 1 }
+
+unisFcNsPortLogoutNotifyEnable OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+    "This object is used to determine whether unisFcNsPortLogoutNotify
+     will be generated for Nx_Port locally logging out."
+    ::= { unisFcNsNotificationSwitch 2 }
+
+unisFcNsLocalSwitchWWN OBJECT-TYPE
+    SYNTAX     UnisFcNameId
+    MAX-ACCESS accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "The world wide name of the local switch."
+    ::= { unisFcNsObjsForNotification 1 }
+
+unisFcNsFloginPortWWN OBJECT-TYPE
+    SYNTAX     UnisFcNameId
+    MAX-ACCESS accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "The world wide name of the local logged-in Nx_Port."
+    ::= { unisFcNsObjsForNotification 2 }
+
+END

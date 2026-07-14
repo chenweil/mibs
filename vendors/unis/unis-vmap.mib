@@ -1,0 +1,503 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: 802.1 VLAN Mapping MIB Version 1
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 Initial version Created by XiaoRen Yang, 2013.3.8
+-- V1.1 Updated by zhuhaifeng 2018-12-12.
+--   Add unisVMAP1to2RangeNestedPrio to unisVMAP1to2RangeTable.
+--   Add unisVMAP1to2SingleNestedPrio to unisVMAP1to2SingleTable.
+--   Add unisVMAP2to1Table.
+-- ==================================================================
+UNIS-VMAP-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    RowStatus, TruthValue
+        FROM SNMPv2-TC
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32
+        FROM SNMPv2-SMI
+    ifIndex
+        FROM IF-MIB
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+-- ==================================================================
+--
+-- module identity part
+--
+-- ==================================================================
+unisVmap MODULE-IDENTITY
+    LAST-UPDATED
+        "201812120000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "802.1 VLAN Mapping MIB Version"
+    REVISION    "201812120000Z"
+    DESCRIPTION "Add unisVMAP1to2RangeNestedPrio to unisVMAP1to2RangeTable.
+                 Add unisVMAP1to2SingleNestedPrio to unisVMAP1to2SingleTable.
+                 Add unisVMAP2to1Table."
+    REVISION    "201303080000Z"
+    DESCRIPTION "The initial version of this MIB."
+    ::= { unisCommon 138 }
+
+-- ==================================================================
+--
+-- =====================object definition begin======================
+--
+-- ==================================================================
+
+unisVMAPNNITable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVMAPNNIEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "VLAN mapping NNI table."
+    ::= { unisVmap 1 }
+
+unisVMAPNNIEntry OBJECT-TYPE
+    SYNTAX      UnisVMAPNNIEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "VLAN mapping NNI table entries."
+    INDEX { ifIndex }
+    ::= { unisVMAPNNITable 1 }
+
+UnisVMAPNNIEntry ::=
+    SEQUENCE
+    {
+        unisVMAPNNIState    TruthValue
+    }
+
+unisVMAPNNIState    OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Set the network-side interface for a many-to-one VLAN mapping."
+    ::= { unisVMAPNNIEntry 1 }
+
+unisVMAP1to1Table  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVMAP1to1Entry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "One-to-one VLAN mapping table."
+    ::= { unisVmap 2 }
+
+unisVMAP1to1Entry OBJECT-TYPE
+    SYNTAX     UnisVMAP1to1Entry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "One-to-one VLAN mapping table entries."
+    INDEX { ifIndex, unisVMAP1to1Vlan }
+    ::= { unisVMAP1to1Table 1 }
+
+UnisVMAP1to1Entry ::=
+    SEQUENCE
+    {
+        unisVMAP1to1Vlan             Integer32,
+        unisVMAP1to1TranslatedVlan   Integer32,
+        unisVMAP1to1RowStatus        RowStatus
+    }
+
+unisVMAP1to1Vlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The original VLAN for a one-to-one VLAN mapping on the port."
+    ::= { unisVMAP1to1Entry 1 }
+
+unisVMAP1to1TranslatedVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The translated VLAN for a one-to-one VLAN mapping on the port."
+    ::= { unisVMAP1to1Entry 2 }
+
+unisVMAP1to1RowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisVMAP1to1Entry 3 }
+
+unisVMAPNto1RangeTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVMAPNto1RangeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Many-to-one VLAN mapping table.  The original VLANs of each entry
+         should be a range of VLANs (for example, VLAN 20 to 30)."
+    ::= { unisVmap 3 }
+
+unisVMAPNto1RangeEntry OBJECT-TYPE
+    SYNTAX     UnisVMAPNto1RangeEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Many-to-one VLAN mapping table entries.  The original VLANs of each
+         entry should be a range of VLANs (for example, VLAN 20 to 30)."
+    INDEX { ifIndex, unisVMAPNto1StartVlan }
+    ::= { unisVMAPNto1RangeTable 1 }
+
+UnisVMAPNto1RangeEntry ::=
+    SEQUENCE
+    {
+        unisVMAPNto1StartVlan              Integer32,
+        unisVMAPNto1EndVlan                Integer32,
+        unisVMAPNto1RangeTranslatedVlan    Integer32,
+        unisVMAPNto1RangeRowStatus         RowStatus
+    }
+
+unisVMAPNto1StartVlan   OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The original start VLAN for a many-to-one VLAN mapping on the port."
+    ::= { unisVMAPNto1RangeEntry 1 }
+
+unisVMAPNto1EndVlan   OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The original end VLAN for a many-to-one VLAN mapping on the port."
+    ::= { unisVMAPNto1RangeEntry 2 }
+
+unisVMAPNto1RangeTranslatedVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The translated VLAN for a many-to-one VLAN mapping on the port."
+    ::= { unisVMAPNto1RangeEntry 3 }
+
+unisVMAPNto1RangeRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisVMAPNto1RangeEntry 4 }
+
+unisVMAPNto1SingleTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVMAPNto1SingleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Many-to-one VLAN mapping table.  The original VLANs of each entry
+         should be a group of VLANs listed one by
+         one (for example, VLAN 30, 31, 32)."
+    ::= { unisVmap 4 }
+
+unisVMAPNto1SingleEntry OBJECT-TYPE
+    SYNTAX     UnisVMAPNto1SingleEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Many-to-one VLAN mapping table entries.  The original VLANs of each
+         entry should be a group of VLANs listed one by
+         one (for example, VLAN 30, 31, 32)."
+    INDEX { ifIndex, unisVMAPNto1Vlan }
+    ::= { unisVMAPNto1SingleTable 1 }
+
+UnisVMAPNto1SingleEntry ::=
+    SEQUENCE
+    {
+        unisVMAPNto1Vlan                    Integer32,
+        unisVMAPNto1SingleTranslatedVlan    Integer32,
+        unisVMAPNto1SingleRowStatus         RowStatus
+    }
+
+unisVMAPNto1Vlan   OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The original VLANs for a many-to-one VLAN mapping on the port."
+    ::= { unisVMAPNto1SingleEntry 1 }
+
+unisVMAPNto1SingleTranslatedVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The translated VLAN for a many-to-one VLAN mapping on the port."
+    ::= { unisVMAPNto1SingleEntry 2 }
+
+unisVMAPNto1SingleRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisVMAPNto1SingleEntry 3 }
+
+unisVMAP1to2RangeTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVMAP1to2RangeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "One-to-two VLAN mapping table.  The original VLANs of each entry
+         should be a range of VLANs (for example, VLAN 20 to 30)."
+    ::= { unisVmap 5 }
+
+unisVMAP1to2RangeEntry OBJECT-TYPE
+    SYNTAX      UnisVMAP1to2RangeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "One-to-two VLAN mapping table entries.  The original VLANs of
+         each entry should be a range of VLANs (for example, VLAN 20 to 30)."
+    INDEX { ifIndex, unisVMAP1to2StartVlan }
+    ::= { unisVMAP1to2RangeTable 1 }
+
+UnisVMAP1to2RangeEntry ::=
+    SEQUENCE
+    {
+        unisVMAP1to2StartVlan          Integer32,
+        unisVMAP1to2EndVlan            Integer32,
+        unisVMAP1to2RangeNestedVlan    Integer32,
+        unisVMAP1to2RangeRowStatus     RowStatus,
+        unisVMAP1to2RangeNestedPrio    Integer32
+    }
+
+unisVMAP1to2StartVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The original start VLAN for a one-to-two VLAN mapping on the port."
+    ::= { unisVMAP1to2RangeEntry 1 }
+
+unisVMAP1to2EndVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The original end VLAN for a one-to-two VLAN mapping on the port."
+    ::= { unisVMAP1to2RangeEntry 2 }
+
+unisVMAP1to2RangeNestedVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The nested VLAN for a one-to-two VLAN mapping on the port."
+    ::= { unisVMAP1to2RangeEntry 3 }
+
+unisVMAP1to2RangeRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisVMAP1to2RangeEntry 4 }
+
+unisVMAP1to2RangeNestedPrio OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The nested VLAN tag's priority for a one-to-two VLAN mapping on the port."
+    DEFVAL { 65535 }
+    ::= { unisVMAP1to2RangeEntry 5 }
+
+unisVMAP1to2SingleTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVMAP1to2SingleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "One-to-two VLAN mapping table.  The original VLANs of each entry should
+         be a group of VLANs listed one by one (for example, VLAN 30, 31, 32)."
+    ::= { unisVmap 6 }
+
+unisVMAP1to2SingleEntry OBJECT-TYPE
+    SYNTAX      UnisVMAP1to2SingleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "One-to-two VLAN mapping table entries.  The original VLANs of each
+         entry should be a group of VLANs listed one by
+         one (for example, VLAN 30, 31, 32)."
+    INDEX { ifIndex, unisVMAP1to2Vlan }
+    ::= { unisVMAP1to2SingleTable 1 }
+
+UnisVMAP1to2SingleEntry ::=
+    SEQUENCE
+    {
+        unisVMAP1to2Vlan                Integer32,
+        unisVMAP1to2SingleNestedVlan    Integer32,
+        unisVMAP1to2SingleRowStatus     RowStatus,
+        unisVMAP1to2SingleNestedPrio    Integer32
+    }
+
+unisVMAP1to2Vlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The original VLANs for a one-to-two VLAN mapping on the port."
+    ::= { unisVMAP1to2SingleEntry 1 }
+
+unisVMAP1to2SingleNestedVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The nested VLAN for a one-to-two VLAN mapping on the port."
+    ::= { unisVMAP1to2SingleEntry 2 }
+
+unisVMAP1to2SingleRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisVMAP1to2SingleEntry 3 }
+
+unisVMAP1to2SingleNestedPrio OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The nested VLAN tag's priority for a one-to-two VLAN mapping on the port."
+    DEFVAL { 65535 }
+    ::= { unisVMAP1to2SingleEntry 4 }
+
+unisVMAP2to2Table    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVMAP2to2Entry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Two-to-two VLAN mapping table."
+    ::= { unisVmap 7 }
+
+unisVMAP2to2Entry OBJECT-TYPE
+    SYNTAX      UnisVMAP2to2Entry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Two-to-two VLAN mapping table entries."
+    INDEX { ifIndex, unisVMAP2to2OuterVlan, unisVMAP2to2InnerVlan }
+    ::= { unisVMAP2to2Table 1 }
+
+UnisVMAP2to2Entry ::=
+    SEQUENCE
+    {
+        unisVMAP2to2OuterVlan             Integer32,
+        unisVMAP2to2InnerVlan             Integer32,
+        unisVMAP2to2TranslatedOuterVlan   Integer32,
+        unisVMAP2to2TranslatedInnerVlan   Integer32,
+        unisVMAP2to2RowStatus             RowStatus
+    }
+
+unisVMAP2to2OuterVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The original outer VLAN for a two-to-two VLAN mapping on the port."
+    ::= { unisVMAP2to2Entry 1 }
+
+unisVMAP2to2InnerVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The original inner VLAN for a two-to-two VLAN mapping on the port."
+    ::= { unisVMAP2to2Entry 2 }
+
+unisVMAP2to2TranslatedOuterVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The translated outer VLAN for a two-to-two VLAN mapping on the port."
+    ::= { unisVMAP2to2Entry 3 }
+
+unisVMAP2to2TranslatedInnerVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The translated inner VLAN for a two-to-two VLAN mapping on the port."
+    ::= { unisVMAP2to2Entry 4 }
+
+unisVMAP2to2RowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisVMAP2to2Entry 5 }
+
+unisVMAP2to1Table    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVMAP2to1Entry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Two-to-one VLAN mapping table."
+    ::= { unisVmap 8 }
+
+unisVMAP2to1Entry OBJECT-TYPE
+    SYNTAX      UnisVMAP2to1Entry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Two-to-one VLAN mapping table entries."
+    INDEX { ifIndex, unisVMAP2to1OuterVlan, unisVMAP2to1InnerVlan }
+    ::= { unisVMAP2to1Table 1 }
+
+UnisVMAP2to1Entry ::=
+    SEQUENCE
+    {
+        unisVMAP2to1OuterVlan             Integer32,
+        unisVMAP2to1InnerVlan             Integer32,
+        unisVMAP2to1TranslatedOuterVlan   Integer32,
+        unisVMAP2to1RowStatus             RowStatus
+    }
+
+unisVMAP2to1OuterVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The original outer VLAN for a two-to-one VLAN mapping on the port."
+    ::= { unisVMAP2to1Entry 1 }
+
+unisVMAP2to1InnerVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The original inner VLAN for a two-to-one VLAN mapping on the port."
+    ::= { unisVMAP2to1Entry 2 }
+
+unisVMAP2to1TranslatedOuterVlan    OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The translated outer VLAN for a two-to-one VLAN mapping on the port."
+    ::= { unisVMAP2to1Entry 3 }
+
+unisVMAP2to1RowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisVMAP2to1Entry 4 }
+
+END

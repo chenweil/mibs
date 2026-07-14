@@ -1,0 +1,2630 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: interface extension mib
+-- Reference: IF-MIB
+-- Version: V2.5
+-- History:
+--   V1.0 Created by gaolong
+--     Initial version 2004-11-13
+--   V1.1 2007-01-13 Modified by wanglirong
+--     Added unisIfStatGlobalFlowInterval and unisIfSpeedStatTable
+--   V1.2 Modified by chenxi
+--     Added unisRTParentIfTable, unisRTSubIfTable, and
+--     unisIfLinkModeTable 2007-10-15
+--   V1.3 2009-05-05 Added unisIfPhysicalNumber and unisIfTable
+--   V1.4 2009-08-08 Added unisIfMtu, unisIfBandwidth, unisIfDiscardPktRate,
+--     and unisIfExtTrapCfgTable
+--   V1.5 2010-09-04 Added unisIfInNUcastPkts, unisIfOutNUcastPkts, and unisIfStatusKeepTime by shuaixj
+--   V1.6 2011-09-16 Added unisIfHCFlowStatTable by xiedong
+--        2011-11-04 Added unisIfIsPoe by duyanbing
+--   V1.7 2013-09-13 Added unisIfOperStatus and unisIfDownTimes by duyanbing
+--   V1.8 2014-07-23 Added unisIfShutDownInterval and unisIfUsingTable by xiedong
+--        2014-09-19 Added unisIfDampeningSuppressed and unisIfDampeningNotSuppressed by yinzhonghong
+--   V1.9 2014-11-20 Added unisIfPortTypeTable, unisIfPfcStatus, and unisIfPfcDot1pNoDrop by songhao
+--   V2.0 2015-02-12 Added unisIfPortUp, unisIfPortDown by chenzhouhui
+--        2015-12-10 Added unisIfDescription by chenzhouhui
+--   V2.1 2016-07-01 Added the values 25GE and 50GE to unisIfUsingType and unisIfUsingSupportType by yuhaiyan
+--        2016-12-05 Added unisIfHCSpeedStatTable by songhao.
+--        2017-07-13 Added unisIfFwdErrDiscards by songhao.
+--        2017-12-13 Added unisIfThroughputInKbps and unisIfThroughputOutKbps by chenzhouhui.
+--        2018-01-09 Added unisIfMonScalarGroup, unisIfMonGroup, unisIfMonGroup and unisIfMonTrapPrex by guhangchao.
+--        2018-02-07 Added unisIfPortDot1pTable, unisIfPfcOutRising and unisIfPfcInRising by guhangchao.
+--   V2.2 2018-04-26 Modified unisIfMonScalarGroup, unisIfMonGroup, unisIfMonGroup and unisIfMonTrapPrex by guhangchao.
+--   V2.3 2018-06-05 Added unisIfQueBufferTable by zhuhaifeng.
+--        2019-08-06 Added unisIfSpeedStatInBits, unisIfSpeedStatOutBits, unisIfSpeedStatHCInBits
+--        and unisIfSpeedStatHCOutBits by matianming.
+--   V2.4 2020-06-09 modify unisIfMonGroup by guhangchao
+--   V2.5 2020-08-04 modify unisIfMonGroup and unisIfMonTrapPrex by guhangchao
+--        2020-08-05 Added unisIfFiberOrCopper by shuaixiaojuan.
+-- =================================================================
+UNIS-IF-EXT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        ifIndex, ifDescr, InterfaceIndex
+    FROM IF-MIB
+        Integer32, Counter64, Unsigned32, TimeTicks,
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        CounterBasedGauge64
+    FROM HCNUM-TC
+        DisplayString, RowStatus, TruthValue
+    FROM SNMPv2-TC;
+
+unisIfExt MODULE-IDENTITY
+    LAST-UPDATED "202008050000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB is an extension of interface MIBs such as IF-MIB.
+
+        This MIB is applicable to routers, switches, and other products.
+
+        Some objects in this MIB may be used only for some specific products,
+        so users should refer to the related documents to acquire more
+        detailed information.
+        "
+    REVISION "202008050000Z"
+    DESCRIPTION
+        "Added unisIfFiberOrCopper to unisIfTable."
+    REVISION "202008040000Z"
+    DESCRIPTION
+        "modify unisIfMonGroup and unisIfMonTrapPrex."
+    REVISION "202006090000Z"
+    DESCRIPTION
+        "modify unisIfMonGroup."
+    REVISION "201908060000Z"
+    DESCRIPTION
+        "Added unisIfSpeedStatInBits, unisIfSpeedStatOutBits, unisIfSpeedStatHCInBits
+        and unisIfSpeedStatHCOutBits."
+    REVISION "201806050000Z"
+    DESCRIPTION
+        "Added unisIfQueBufferTable."
+    REVISION "201804260000Z"
+    DESCRIPTION
+        "Modified unisIfMonScalarGroup, unisIfMonGroup, unisIfMonGroup and unisIfMonTrapPrex."
+    REVISION "201802070000Z"
+    DESCRIPTION
+        "Added unisIfPortDot1pTable, unisIfPfcOutRising and unisIfPfcInRising."
+    REVISION "201801090000Z"
+    DESCRIPTION
+        "Added unisIfMonScalarGroup, unisIfMonGroup, unisIfMonGroup and unisIfMonTrapPrex."
+    REVISION "201712131820Z"
+    DESCRIPTION
+        "Added Added unisIfThroughputInKbps and unisIfThroughputOutKbps."
+    REVISION "201707131040Z"
+    DESCRIPTION
+        "Added unisIfFwdErrDiscards."
+    REVISION "201612051800Z"
+    DESCRIPTION
+        "Added unisIfHCSpeedStatTable."
+    REVISION "201607011700Z"
+    DESCRIPTION
+        "Added the values 25GE and 50GE to unisIfUsingType and unisIfUsingSupportType."
+    REVISION "201512101000Z"
+    DESCRIPTION
+        "Added unisIfDescription."
+    REVISION "201504020458Z"
+    DESCRIPTION
+        "Added unisIfPortUp and unisIfPortDown"
+    REVISION "201411200800Z"
+    DESCRIPTION
+        "Added unisIfPortTypeTable, unisIfPfcStatus, and unisIfPfcDot1pNoDrop."
+    REVISION "200905061936Z"
+    DESCRIPTION
+        "Update this MIB module."
+    REVISION "200411131936Z"        -- December 13, 2004 at 19:36 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 40 }
+
+
+--
+-- Node definitions
+--
+
+-- Scalar MIB objects, which are considered as global variables
+-- to all interfaces on a device, are defined in this section.
+unisIfExtScalarGroup OBJECT IDENTIFIER ::= { unisIfExt 1 }
+
+unisIfStatGlobalFlowInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Sampling interval for in/out flow of all interfaces.
+        Setting zero indicates closing the statistic function."
+    ::= { unisIfExtScalarGroup 1 }
+
+unisIfShutDownInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Set the port status detection timer.  The device starts a port status
+        detection timer when a port is shut down by a protocol.  Once the timer
+        expires, the device brings up the port so the port status reflects
+        the port's physical status."
+    ::= { unisIfExtScalarGroup 2 }
+
+unisIfThroughputInKbps OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Actual incoming throughput of the device in kbps."
+    ::= { unisIfExtScalarGroup 3 }
+
+unisIfThroughputOutKbps OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Actual outgoing throughput of the device in kbps."
+    ::= { unisIfExtScalarGroup 4 }
+
+-- =================================================================
+-- All other groups are defined below.  Of course, scalar objects can
+-- also be defined in a subsection, but they must be one part of
+-- that subsection.
+
+-- Note that a scalar group should be defined firstly and all
+-- scalar objects are placed under that group when doing so.
+unisIfExtGroup OBJECT IDENTIFIER ::= { unisIfExt 2 }
+
+
+-- =================================================================
+-- The section below describes statistics of interfaces on a device.
+-- These statistics may not be included in standard MIBs.
+unisIfStat OBJECT IDENTIFIER ::= { unisIfExtGroup 1 }
+
+-- Define a scalar group that contains all scalar objects used for
+-- interface statistics.
+unisIfStatScalarGroup OBJECT IDENTIFIER ::= { unisIfStat 1 }
+
+unisIfStatTable OBJECT IDENTIFIER ::= { unisIfStat 2 }
+
+unisIfFlowStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfFlowStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to get statistic information
+        of interfaces on a device."
+    ::= { unisIfStatTable 1 }
+
+unisIfFlowStatEntry OBJECT-TYPE
+    SYNTAX      UnisIfFlowStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Entry items"
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisIfFlowStatTable 1 }
+
+UnisIfFlowStatEntry ::= SEQUENCE
+    {
+        unisIfStatFlowInterval    Integer32,
+        unisIfStatFlowInBits      Unsigned32,
+        unisIfStatFlowOutBits     Unsigned32,
+        unisIfStatFlowInPkts      Unsigned32,
+        unisIfStatFlowOutPkts     Unsigned32,
+        unisIfStatFlowInBytes     Unsigned32,
+        unisIfStatFlowOutBytes    Unsigned32
+    }
+
+unisIfStatFlowInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Sampling interval for in/out flow of interface.
+        Setting zero indicates closing this statistic function
+        and objects in this table should return 0."
+    ::= { unisIfFlowStatEntry 1 }
+
+unisIfStatFlowInBits OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "In bits in the specified interval."
+    ::= { unisIfFlowStatEntry 2 }
+
+unisIfStatFlowOutBits OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Out bits in the specified interval."
+    ::= { unisIfFlowStatEntry 3 }
+
+unisIfStatFlowInPkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "In packets in the specified interval."
+    ::= { unisIfFlowStatEntry 4 }
+
+unisIfStatFlowOutPkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Out packets in the specified interval."
+    ::= { unisIfFlowStatEntry 5 }
+
+unisIfStatFlowInBytes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "In bytes in the specified interval."
+    ::= { unisIfFlowStatEntry 6 }
+
+unisIfStatFlowOutBytes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Out bytes in the specified interval."
+    ::= { unisIfFlowStatEntry 7 }
+
+
+-- =================================================================
+unisIfSpeedStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfSpeedStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to get average speed information
+        in the specified interval for interfaces on a device."
+    ::= { unisIfStatTable 2 }
+
+unisIfSpeedStatEntry OBJECT-TYPE
+    SYNTAX      UnisIfSpeedStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Entry items"
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisIfSpeedStatTable 1 }
+
+UnisIfSpeedStatEntry ::= SEQUENCE
+    {
+        unisIfSpeedStatInterval    Integer32,
+        unisIfSpeedStatInPkts      Unsigned32,
+        unisIfSpeedStatOutPkts     Unsigned32,
+        unisIfSpeedStatInBytes     Unsigned32,
+        unisIfSpeedStatOutBytes    Unsigned32,
+        unisIfSpeedStatInBits      Unsigned32,
+        unisIfSpeedStatOutBits     Unsigned32
+    }
+
+unisIfSpeedStatInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Sampling interval for in/out flow of interface.
+        Setting zero indicates closing this statistic function
+        and objects in this table should return 0."
+    ::= { unisIfSpeedStatEntry 1 }
+
+unisIfSpeedStatInPkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Average of input packets per second in the interval specified by
+        unisIfSpeedStatInterval."
+    ::= { unisIfSpeedStatEntry 2 }
+
+unisIfSpeedStatOutPkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Average of output packets per second in the interval specified by
+        unisIfSpeedStatInterval."
+    ::= { unisIfSpeedStatEntry 3 }
+
+unisIfSpeedStatInBytes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Average of input bytes per second in the interval specified by
+        unisIfSpeedStatInterval."
+    ::= { unisIfSpeedStatEntry 4 }
+
+unisIfSpeedStatOutBytes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Average of output bytes per second in the interval specified by
+        unisIfSpeedStatInterval."
+    ::= { unisIfSpeedStatEntry 5 }
+
+unisIfSpeedStatInBits OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Average of input bits per second in the interval specified by
+        unisIfSpeedStatInterval."
+    ::= { unisIfSpeedStatEntry 6 }
+
+unisIfSpeedStatOutBits OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Average of output bits per second in the interval specified by
+        unisIfSpeedStatInterval."
+    ::= { unisIfSpeedStatEntry 7 }
+
+-- =================================================================
+unisIfHCFlowStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfHCFlowStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to get statistic information
+         of interfaces on a device."
+    ::= { unisIfStatTable 3 }
+
+unisIfHCFlowStatEntry OBJECT-TYPE
+    SYNTAX      UnisIfHCFlowStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Entry items"
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisIfHCFlowStatTable 1 }
+
+UnisIfHCFlowStatEntry ::= SEQUENCE
+    {
+        unisIfStatFlowHCInBits      CounterBasedGauge64,
+        unisIfStatFlowHCOutBits     CounterBasedGauge64,
+        unisIfStatFlowHCInPkts      CounterBasedGauge64,
+        unisIfStatFlowHCOutPkts     CounterBasedGauge64,
+        unisIfStatFlowHCInBytes     CounterBasedGauge64,
+        unisIfStatFlowHCOutBytes    CounterBasedGauge64
+    }
+
+unisIfStatFlowHCInBits OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "In bits in the specified interval.  This object is a 64-bit
+         version of unisIfStatFlowInBits."
+    ::= { unisIfHCFlowStatEntry 1 }
+
+unisIfStatFlowHCOutBits OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Out bits in the specified interval.  This object is a 64-bit
+         version of unisIfStatFlowOutBits."
+    ::= { unisIfHCFlowStatEntry 2 }
+
+unisIfStatFlowHCInPkts OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "In packets in the specified interval.  This object is a 64-bit
+         version of unisIfStatFlowInPkts."
+    ::= { unisIfHCFlowStatEntry 3 }
+
+unisIfStatFlowHCOutPkts OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Out packets in the specified interval.  This object is a 64-bit
+         version of unisIfStatFlowOutPkts."
+    ::= { unisIfHCFlowStatEntry 4 }
+
+unisIfStatFlowHCInBytes OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "In bytes in the specified interval.  This object is a 64-bit
+         version of unisIfStatFlowInBytes."
+    ::= { unisIfHCFlowStatEntry 5 }
+
+unisIfStatFlowHCOutBytes OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Out bytes in the specified interval.  This object is a 64-bit
+         version of unisIfStatFlowOutBytes."
+    ::= { unisIfHCFlowStatEntry 6 }
+
+-- =================================================================
+unisIfHCSpeedStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfHCSpeedStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to get average speed information
+        in the specified interval for interfaces on a device.
+
+        This table is a 64-bit version of unisIfSpeedStatTable."
+    ::= { unisIfStatTable 4 }
+
+unisIfHCSpeedStatEntry OBJECT-TYPE
+    SYNTAX      UnisIfHCSpeedStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Entry items"
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisIfHCSpeedStatTable 1 }
+
+UnisIfHCSpeedStatEntry ::= SEQUENCE
+    {
+        unisIfSpeedStatHCInPkts      CounterBasedGauge64,
+        unisIfSpeedStatHCOutPkts     CounterBasedGauge64,
+        unisIfSpeedStatHCInBytes     CounterBasedGauge64,
+        unisIfSpeedStatHCOutBytes    CounterBasedGauge64,
+        unisIfSpeedStatHCInBits      CounterBasedGauge64,
+        unisIfSpeedStatHCOutBits     CounterBasedGauge64
+    }
+
+unisIfSpeedStatHCInPkts OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Average of input packets per second in the interval specified by
+        unisIfSpeedStatInterval.
+
+        This object is a 64-bit version of unisIfSpeedStatInPkts."
+    ::= { unisIfHCSpeedStatEntry 1 }
+
+unisIfSpeedStatHCOutPkts OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Average of output packets per second in the interval specified by
+        unisIfSpeedStatInterval.
+
+        This object is a 64-bit version of unisIfSpeedStatOutPkts."
+    ::= { unisIfHCSpeedStatEntry 2 }
+
+unisIfSpeedStatHCInBytes OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Average of input bytes per second in the interval specified by
+        unisIfSpeedStatInterval.
+
+        This object is a 64-bit version of unisIfSpeedStatInBytes."
+    ::= { unisIfHCSpeedStatEntry 3 }
+
+unisIfSpeedStatHCOutBytes OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Average of output bytes per second in the interval specified by
+        unisIfSpeedStatInterval.
+
+        This object is a 64-bit version of unisIfSpeedStatOutBytes."
+    ::= { unisIfHCSpeedStatEntry 4 }
+
+unisIfSpeedStatHCInBits OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Average of input bits per second in the interval specified by
+        unisIfSpeedStatInterval.
+
+        This object is a 64-bit version of unisIfSpeedStatInBits."
+    ::= { unisIfHCSpeedStatEntry 5 }
+
+unisIfSpeedStatHCOutBits OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Average of output bits per second in the interval specified by
+        unisIfSpeedStatInterval.
+
+        This object is a 64-bit version of unisIfSpeedStatOutBits."
+    ::= { unisIfHCSpeedStatEntry 6 }
+
+-- =================================================================
+
+unisIfControl OBJECT IDENTIFIER ::= { unisIfExtGroup 2 }
+
+unisRTParentIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisRTParentIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains all interfaces that can create subinterfaces."
+    ::= { unisIfControl  1 }
+
+unisRTParentIfEntry OBJECT-TYPE
+    SYNTAX      UnisRTParentIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This entry describes an interface that can create subinterfaces."
+    INDEX
+        {
+            unisRTParentIfIndex
+        }
+    ::= { unisRTParentIfTable 1}
+
+UnisRTParentIfEntry    ::= SEQUENCE
+    {
+        unisRTParentIfIndex      Integer32,
+        unisRTMinSubIfOrdinal    Integer32,
+        unisRTMaxSubIfOrdinal    Integer32
+    }
+
+unisRTParentIfIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index of the interface that can create subinterfaces.  The value
+        is the same as the ifIndex value for this interface."
+    ::= { unisRTParentIfEntry 1 }
+
+unisRTMinSubIfOrdinal OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The min ordinal of the subinterface."
+    ::= { unisRTParentIfEntry 2 }
+
+unisRTMaxSubIfOrdinal OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The max ordinal of the subinterface."
+    ::= { unisRTParentIfEntry 3 }
+
+-- =================================================================
+
+unisRTSubIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisRTSubIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to create or delete subinterfaces.
+        To create a subinterface, a valid parent interface must be
+        specified by unisRTSubIfParentIfIndex, and unisRTSubIfOrdinal
+        must be in the range between unisRTMinSubIfOrdinal and
+        unisRTMaxSubIfOrdinal of the parent interface from
+        unisRTParentIfTable.
+
+        Subinterfaces are logical virtual interfaces configured on a
+        main interface.  The main interface can be either a physical
+        interface (such as a Layer 3 Ethernet interface) or a logical
+        interface (such as an MFR interface).  The subinterfaces on a
+        main interface share the physical layer parameters of the main
+        interface but can have link layer and network layer parameters
+        of their own.  Disabling or enabling a subinterface doesn't
+        affect the main interface, but the main interface status change
+        affects the subinterfaces.  The subinterfaces can't operate
+        correctly unless the main interface is connected.
+        Creating multiple subinterfaces on a single interface
+        enables you to plan network in a more flexible way.
+
+        You can create subinterfaces for the following physical
+        interfaces:
+        Ethernet interface.  An Ethernet subinterface associated with no
+        VLAN supports only IPX, while an Ethernet subinterface associated
+        with a VLAN supports both IP and IPX.
+        WAN interfaces with their data link layer protocols being frame
+        relay, whose subinterfaces support IP and IPX.
+        WAN interfaces with their data link layer protocols being X.25,
+        whose subinterfaces support IP and IPX.
+        ATM interface, whose subinterfaces support only IP."
+    ::= { unisIfControl  2 }
+
+unisRTSubIfEntry OBJECT-TYPE
+    SYNTAX      UnisRTSubIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "The unisRTSubIfTable entry items"
+    INDEX
+        {
+            unisRTSubIfParentIfIndex,
+            unisRTSubIfOrdinal
+        }
+    ::= { unisRTSubIfTable 1}
+
+UnisRTSubIfEntry    ::= SEQUENCE
+    {
+        unisRTSubIfParentIfIndex    Integer32,
+        unisRTSubIfOrdinal          Integer32,
+        unisRTSubIfSubIfIndex       Integer32,
+        unisRTSubIfSubIfDesc        DisplayString,
+        unisRTSubIfRowStatus        RowStatus
+    }
+
+unisRTSubIfParentIfIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The parent interface index.  The value should be the same as
+        unisRTParentIfIndex."
+    ::= { unisRTSubIfEntry 1 }
+
+unisRTSubIfOrdinal OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The ordinal of the subinterface.  It should between
+        unisRTMinSubIfOrdinal and unisRTMaxSubIfOrdinal of the parent
+        interface."
+    ::= { unisRTSubIfEntry 2 }
+
+unisRTSubIfSubIfIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The ifIndex value of the subinterface"
+    ::= { unisRTSubIfEntry 3 }
+
+unisRTSubIfSubIfDesc OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the interface"
+    ::= { unisRTSubIfEntry 4 }
+
+unisRTSubIfRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status."
+    ::= { unisRTSubIfEntry 5 }
+
+-- =================================================================
+unisIfLinkModeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfLinkModeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to get or set the link mode of an
+        interface.
+        According to the layer at which the device processes received
+        data packets, Ethernet interfaces can operate in bridge or route
+        mode."
+    ::= { unisIfControl  3 }
+
+unisIfLinkModeEntry OBJECT-TYPE
+    SYNTAX      UnisIfLinkModeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "The interface link mode table entry"
+    INDEX
+        {
+            unisIfLinkModeIndex
+        }
+    ::= { unisIfLinkModeTable 1}
+
+UnisIfLinkModeEntry    ::= SEQUENCE
+    {
+        unisIfLinkModeIndex            Integer32,
+        unisIfLinkMode                 INTEGER,
+        unisIfLinkModeSwitchSupport    TruthValue
+    }
+
+unisIfLinkModeIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value is the same as ifIndex."
+    ::= { unisIfLinkModeEntry 1 }
+
+
+unisIfLinkMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            bridgeMode(1),
+            routeMode(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The current link mode of the interface.
+        If unisIfLinkModeSwitchSupport is true, writing to the object can
+        change the link mode of the interface."
+    ::= { unisIfLinkModeEntry 2 }
+
+unisIfLinkModeSwitchSupport OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Whether the interface supports link mode switching.
+        If this object is true, the interface can operate in either
+        bridge mode or route mode.  Otherwise the interfaces can operate
+        only in bridge or route mode."
+    ::= { unisIfLinkModeEntry 3 }
+
+-- =================================================================
+unisIfPortTypeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfPortTypeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to get or set the port type
+        of an interface."
+    ::= { unisIfControl  4 }
+
+unisIfPortTypeEntry OBJECT-TYPE
+    SYNTAX      UnisIfPortTypeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "The interface port type table entry."
+    INDEX
+        {
+            unisIfPortTypeIndex
+        }
+    ::= { unisIfPortTypeTable 1}
+
+UnisIfPortTypeEntry    ::= SEQUENCE
+    {
+        unisIfPortTypeIndex            InterfaceIndex,
+        unisIfPortType                 INTEGER
+    }
+
+unisIfPortTypeIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value is the same as ifIndex."
+    ::= { unisIfPortTypeEntry 1 }
+
+unisIfPortType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            other(1),
+            ethernet(2),
+            fc(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The current port type of the interface.
+        Don't set the port type to other for an interface."
+    ::= { unisIfPortTypeEntry 2 }
+
+-- =================================================================
+unisIfPfcDot1pTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfPfcDot1pEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table can set the inbound and outbound rate thresholds for the specified dot1p values."
+    ::= { unisIfControl 5 }
+
+unisIfPfcDot1pEntry OBJECT-TYPE
+    SYNTAX      UnisIfPfcDot1pEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Entry items"
+    INDEX
+        {
+            ifIndex,
+            unisIfPfcDot1pValue
+        }
+    ::= { unisIfPfcDot1pTable 1}
+
+UnisIfPfcDot1pEntry ::= SEQUENCE
+    {
+       unisIfPfcDot1pValue                 INTEGER,
+       unisIfPfcDot1pInPps                 Unsigned32,
+       unisIfPfcDot1pOutPps                Unsigned32,
+       unisIfPfcDot1pInPpsThreshold        Unsigned32,
+       unisIfPfcDot1pOutPpsThreshold       Unsigned32
+    }
+
+unisIfPfcDot1pValue OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        pri0(1),
+        pri1(2),
+        pri2(3),
+        pri3(4),
+        pri4(5),
+        pri5(6),
+        pri6(7),
+        pri7(8)
+    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The PFC dot1p value list."
+    ::= { unisIfPfcDot1pEntry 1 }
+
+unisIfPfcDot1pInPps OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current inbound rate for the PFC dot1p."
+    ::= { unisIfPfcDot1pEntry 2 }
+
+unisIfPfcDot1pOutPps  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current outbound rate for the PFC dot1p. "
+    ::= { unisIfPfcDot1pEntry 3 }
+
+unisIfPfcDot1pInPpsThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The threshold for the inbound rate.
+         If the unisIfPfcDot1pInPpsThreshold is set to 0, no unisIfPfcInRising will be generated."
+    ::= { unisIfPfcDot1pEntry 4 }
+
+unisIfPfcDot1pOutPpsThreshold  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The threshold for the outbound rate.
+         If the unisIfPfcDot1pOutPpsThreshold is set to 0, no unisIfPfcOutRising will be generated."
+    ::= { unisIfPfcDot1pEntry 5 }
+
+-- =================================================================
+unisIfQueBufferTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfQueBufferEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to get the usage info, thresholds, and
+        statistics of queue buffers and to set the thresholds of queue buffers."
+    ::= { unisIfControl 6 }
+
+unisIfQueBufferEntry OBJECT-TYPE
+    SYNTAX      UnisIfQueBufferEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Entry items"
+    INDEX
+        {
+            ifIndex,
+            unisIfQueId
+        }
+    ::= { unisIfQueBufferTable 1}
+
+UnisIfQueBufferEntry ::= SEQUENCE
+    {
+       unisIfQueId                         INTEGER,
+       unisIfQueOutUcastTotal              Unsigned32,
+       unisIfQueOutUcastFree               Unsigned32,
+       unisIfQueOutUcastUsedRatio          Unsigned32,
+       unisIfQueOutUcastUsedPeak           Unsigned32,
+       unisIfQueOutUcastThreshold          Unsigned32,
+       unisIfQueOutUcastOverThres          Unsigned32,
+       unisIfQueInTotal                    Unsigned32,
+       unisIfQueInFree                     Unsigned32,
+       unisIfQueInUsedRatio                Unsigned32,
+       unisIfQueInUsedPeak                 Unsigned32,
+       unisIfQueInThreshold                Unsigned32,
+       unisIfQueInOverThres                Unsigned32,
+       unisIfQueInHeadRoomTotal            Unsigned32,
+       unisIfQueInHeadRoomFree             Unsigned32,
+       unisIfQueInHeadRoomUsedRatio        Unsigned32,
+       unisIfQueInHeadRoomUsedPeak         Unsigned32
+    }
+
+unisIfQueId OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        que0(1),
+        que1(2),
+        que2(3),
+        que3(4),
+        que4(5),
+        que5(6),
+        que6(7),
+        que7(8)
+    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The buffer's queue ID."
+    ::= { unisIfQueBufferEntry 1 }
+
+unisIfQueOutUcastTotal  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total amount of outbound unicast queue buffer."
+    ::= { unisIfQueBufferEntry 2 }
+
+unisIfQueOutUcastFree  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The amount of free outbound unicast queue buffer."
+    ::= { unisIfQueBufferEntry 3 }
+
+unisIfQueOutUcastUsedRatio  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The ratio of outbound unicast queue buffer which is used."
+    ::= { unisIfQueBufferEntry 4 }
+
+unisIfQueOutUcastUsedPeak  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The peak of outbound unicast queue buffer which is used."
+    ::= { unisIfQueBufferEntry 5 }
+
+unisIfQueOutUcastThreshold  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The alarm threshold of outbound unicast queue buffer which is used."
+    ::= { unisIfQueBufferEntry 6 }
+
+unisIfQueOutUcastOverThres  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times of exceeding the alarm threshold of outbound unicast queue buffer which is used."
+    ::= { unisIfQueBufferEntry 7 }
+
+unisIfQueInTotal  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total amount of inbound queue buffer."
+    ::= { unisIfQueBufferEntry 8 }
+
+unisIfQueInFree  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The amount of free inbound queue buffer."
+    ::= { unisIfQueBufferEntry 9 }
+
+unisIfQueInUsedRatio  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The ratio of inbound queue buffer which is used."
+    ::= { unisIfQueBufferEntry 10 }
+
+unisIfQueInUsedPeak  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The peak of inbound queue buffer which is used."
+    ::= { unisIfQueBufferEntry 11 }
+
+unisIfQueInThreshold  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The alarm threshold of inbound queue buffer which is used."
+    ::= { unisIfQueBufferEntry 12 }
+
+unisIfQueInOverThres  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times over the alarm threshold of inbound queue buffer which is used."
+    ::= { unisIfQueBufferEntry 13 }
+
+unisIfQueInHeadRoomTotal  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total amount of inbound queue headroom buffer."
+    ::= { unisIfQueBufferEntry 14 }
+
+unisIfQueInHeadRoomFree  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The amount of free inbound queue headroom buffer."
+    ::= { unisIfQueBufferEntry 15 }
+
+unisIfQueInHeadRoomUsedRatio  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The ratio of inbound queue headroom buffer which is used."
+    ::= { unisIfQueBufferEntry 16 }
+
+unisIfQueInHeadRoomUsedPeak  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The peak of inbound queue headroom buffer which is used."
+    ::= { unisIfQueBufferEntry 17 }
+
+-- =================================================================
+unisIfInterfaces OBJECT IDENTIFIER ::= { unisIfExtGroup 3 }
+
+unisIfPhysicalNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of physical interfaces on the device."
+    ::= { unisIfInterfaces 1 }
+
+unisIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of interface entries.  The number of entries is given by
+         the value of IfNumber."
+    ::= { unisIfInterfaces 2 }
+
+unisIfEntry OBJECT-TYPE
+    SYNTAX      UnisIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable to a
+         particular interface."
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisIfTable 1 }
+
+UnisIfEntry ::= SEQUENCE
+    {
+        unisIfUpDownTimes      Integer32,
+        unisIfMtu              Integer32,
+        unisIfBandwidthRate    Integer32,
+        unisIfDiscardPktRate   Integer32,
+        unisIfStatusKeepTime   TimeTicks,
+        unisIfInNUcastPkts     Counter64,
+        unisIfOutNUcastPkts    Counter64,
+        unisIfIsPoe            TruthValue,
+        unisIfOperStatus       INTEGER,
+        unisIfDownTimes        Integer32,
+        unisIfPfcStatus        INTEGER,
+        unisIfPfcDot1pNoDrop   BITS,
+        unisIfDescription      DisplayString,
+        unisIfFwdErrDiscards   Unsigned32,
+        unisIfFiberOrCopper    INTEGER
+    }
+
+unisIfUpDownTimes OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The interface's up/down times, since the device was initialized."
+    ::= { unisIfEntry 1 }
+
+unisIfMtu OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The size of the largest datagram that can be sent or received on the
+        interface, specified in octets.  For interfaces that are used for
+        transmitting network datagram, this is the size of the largest network
+        datagram that can be sent on the interfaces."
+    ::= { unisIfEntry 2 }
+
+unisIfBandwidthRate OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The rate of the bandwidth for an interface."
+    ::= { unisIfEntry 3 }
+
+unisIfDiscardPktRate OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The rate of the discarded packets for an interface."
+    ::= { unisIfEntry 4 }
+
+unisIfStatusKeepTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The time since the interface
+        entered its current operational state."
+    ::= { unisIfEntry 5 }
+
+unisIfInNUcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of non-unicast (i.e., subnetwork-
+        broadcast or subnetwork-multicast) packets
+        delivered to a higher-layer protocol."
+    ::= { unisIfEntry 6 }
+
+unisIfOutNUcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of packets that higher-level
+        protocols requested be transmitted to a non-
+        unicast (i.e., a subnetwork-broadcast or
+        subnetwork-multicast) address."
+    ::= { unisIfEntry 7 }
+
+unisIfIsPoe OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Whether the interface supports PoE."
+    ::= { unisIfEntry 8 }
+
+unisIfOperStatus OBJECT-TYPE
+    SYNTAX  INTEGER {
+                up(1),        -- ready to forward packets
+                down(2),
+                testing(3),   -- in a test mode
+                admindown(4)  -- shut down by administrator
+            }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Current status of the interface.  In testing state,
+            no operational packets can be forwarded.  If ifAdminStatus
+            is down, unisIfOperStatus should be admindown.  If
+            ifAdminStatus is changed to up, unisIfOperStatus should
+            change to up if the interface is ready to send and receive
+            network traffic; otherwise, it should stay in down state."
+    ::= { unisIfEntry 9 }
+
+unisIfDownTimes OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of times the interface went down, since the device was initialized."
+    ::= { unisIfEntry 10 }
+
+unisIfPfcStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(1),
+            disable(2),
+            auto(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Pfc (Priority-based Flow Control) status.
+         Forcibly enable Pfc by enable(1).
+         Disable Pfc by disable(2).
+         Set Pfc to auto mode by auto(3).
+               In auto mode, the local end automatically negotiates
+               the Pfc status with its peer.
+         When congestion occurs in the network, the local device notifies
+         the peer to stop sending packets carrying the specified 802.1p
+         priority if all of the following conditions exist:
+         1. Both the local end and the remote end have Pfc enabled.
+         2. Both the local end and the remote end have the dot1p list specified
+         by unisIfPfcDot1pNoDrop.
+         3. The specified 802.1p priority is in the dot1p list of unisIfPfcDot1pNoDrop.
+         4. The local end receives a packet carrying the specified 802.1p priority."
+    DEFVAL { disable }
+    ::= { unisIfEntry 11 }
+
+unisIfPfcDot1pNoDrop OBJECT-TYPE
+    SYNTAX      BITS { pri0(0), pri1(1), pri2(2), pri3(3), pri4(4), pri5(5), pri6(6), pri7(7) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Pfc (Priority-based Flow Control) dot1q list,
+        bit 0 through bit 7 corresponding to priority 0 through priority 7.
+        See unisIfPfcStatus."
+    DEFVAL{ { } }
+    ::= { unisIfEntry 12 }
+
+unisIfDescription OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is also an 'alias' name for the interface specified by a
+        network manager, like the object of ifAlias.  However, the size of
+        this object is larger than ifAlias.  When this object is set to a
+        string of more than 64 characters, only the first 64 characters of the
+        object are read for the IfAlias object."
+    ::= { unisIfEntry 13 }
+
+unisIfFwdErrDiscards OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets that were discarded when being forwarded."
+    ::= { unisIfEntry 14 }
+
+unisIfFiberOrCopper  OBJECT-TYPE
+    SYNTAX  INTEGER
+    {
+        unknown  (0),
+        fiber  (1),
+        copper   (2)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Type of the port,which can be copper or fiber."
+    ::= { unisIfEntry 15 }
+
+unisIfUsingTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfUsingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing management information applicable to splitting
+       interfaces.  To improve port density, reduce costs, and improve network
+       flexibility, a high-bandwidth interface can be split into multiple
+       low-bandwidth breakout interfaces, and the breakout interfaces can be
+       combined into a higher-bandwidth interface.
+       For example, a 40-GE interface can be split into four 10-GE breakout
+       interfaces.  After the operation takes effect on a 40-GE interface, the
+       system deletes the 40-GE interface and creates four 10-GE breakout
+       interfaces."
+    ::= { unisIfInterfaces 3 }
+
+unisIfUsingEntry OBJECT-TYPE
+    SYNTAX      UnisIfUsingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry of unisIfUsingTable."
+    INDEX { unisIfUsingIndex }
+    ::= { unisIfUsingTable 1 }
+
+UnisIfUsingEntry ::= SEQUENCE
+    {
+        unisIfUsingIndex              Integer32,
+        unisIfUsingSupportType        Integer32,
+        unisIfUsingType               INTEGER,
+        unisIfUsingStatus             INTEGER
+    }
+
+unisIfUsingIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Index of an interface that can be split into multiple low-bandwidth
+        breakout interfaces or be restored to a high-bandwidth interface."
+    ::= { unisIfUsingEntry 1 }
+
+unisIfUsingSupportType OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object specifies the port type which can be split into or restored to.
+        From lowest bit, each bit corresponds to a port type ('10GE', '20GE',
+        '40GE', '100GE', '25GE', '50GE').
+        For example, value 3 means this object can be split into 10GE or 20GE,
+        value 4 means this object can be split into 40GE, or can be restored to
+        40GE."
+    ::= { unisIfUsingEntry 2 }
+
+unisIfUsingType OBJECT-TYPE
+    SYNTAX  INTEGER {
+                noUsing(0),
+                using10GE(1),
+                using20GE(2),
+                using40GE(3),
+                using100GE(4),
+                using25GE(5),
+                using50GE(6)
+             }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object specifies the port type that can be split into or restored to.
+
+        After this object is set to a non-zero value, the operation returns
+        success in the following cases:
+        1.  The original instance still exists and is read as a non-zero value.
+            In this case, object unisIfUsingStatus change to needReboot(1),
+            which means that you need to reboot the line card (for distributed
+            devices) or device (for centralized devices) where the port is
+            located to make the operation take effect.
+            Set this object to noUsing(0) for cancelling the operation.
+        2.  The operation takes effect immediately.
+        Original instance is deleted and new instance is created while the
+        operation takes effect."
+    ::= { unisIfUsingEntry 3 }
+
+unisIfUsingStatus OBJECT-TYPE
+    SYNTAX  INTEGER {
+                noUsing(0),
+                needReboot(1)
+             }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " After object unisIfUsingType is set to a non-zero value, the value
+         for this object is needReboot(1) until you reboot the line card (for
+         distributed devices) or device (for centralized devices) where the
+         port is located."
+    ::= { unisIfUsingEntry 4 }
+
+--
+-- Notification definitions
+--
+-- =================================================================
+-- Traps are defined below.
+
+unisIfExtTrap OBJECT IDENTIFIER ::= { unisIfExt 3 }
+unisIfExtTrapPrex OBJECT IDENTIFIER ::= { unisIfExtTrap 0 }
+-- All trap definitions should be placed under this object.
+
+unisIfBandwidthUsageHigh NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifDescr,
+            unisIfBandwidthRate,
+            unisIfBandwidthUpperLimit
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the rate of the bandwidth for the
+         interface exceeds the upper limit."
+    ::= { unisIfExtTrapPrex 1 }
+
+unisIfDiscardPktRateHigh NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifDescr,
+            unisIfDiscardPktRate,
+            unisIfDiscardPktRateUpperLimit
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the rate of the discarded packets
+         for the interface exceeds the upper limit."
+    ::= { unisIfExtTrapPrex 2 }
+
+unisIfDampeningSuppressed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the interface is suppressed
+         via dampening."
+    ::= { unisIfExtTrapPrex 3 }
+
+unisIfDampeningNotSuppressed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the interface is resumed to
+         not suppressed via dampening."
+    ::= { unisIfExtTrapPrex 4 }
+
+unisIfPortUp NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when physical state of the interface changes to up."
+    ::= { unisIfExtTrapPrex 5 }
+
+unisIfPortDown NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when physical state of the interface changes to down."
+    ::= { unisIfExtTrapPrex 6 }
+
+unisIfPfcOutRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfPfcDot1pValue,
+            unisIfPfcDot1pOutPps,
+            unisIfPfcDot1pOutPpsThreshold
+        }
+    STATUS current
+    DESCRIPTION
+    "The notification is generated when the outbound rate exceeds the threshold for the dot1p value.
+     If the unisIfPfcDot1pOutPpsThreshold is set to 0, no unisIfPfcOutRising will be generated."
+    ::= { unisIfExtTrapPrex 7 }
+
+unisIfPfcInRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfPfcDot1pValue,
+            unisIfPfcDot1pInPps,
+            unisIfPfcDot1pInPpsThreshold
+        }
+    STATUS current
+    DESCRIPTION
+    "The notification is generated when the inbound rate exceeds the threshold for the dot1p value.
+     If the unisIfPfcDot1pInPpsThreshold is set to 0, no unisIfPfcInRising will be generated."
+    ::= { unisIfExtTrapPrex 8 }
+
+unisIfExtTrapObject OBJECT IDENTIFIER ::= { unisIfExtTrap 1 }
+
+unisIfExtTrapCfgTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfExtTrapCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The trap configuration table."
+    ::= { unisIfExtTrapObject 1 }
+
+unisIfExtTrapCfgEntry OBJECT-TYPE
+    SYNTAX      UnisIfExtTrapCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for this table."
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisIfExtTrapCfgTable 1 }
+
+UnisIfExtTrapCfgEntry ::= SEQUENCE
+    {
+        unisIfBandwidthUpperLimit      Integer32,
+        unisIfDiscardPktRateUpperLimit Integer32
+    }
+
+unisIfBandwidthUpperLimit OBJECT-TYPE
+    SYNTAX      Integer32(1..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The rate of the bandwidth upper limit for an interface."
+    ::= { unisIfExtTrapCfgEntry 1 }
+
+unisIfDiscardPktRateUpperLimit OBJECT-TYPE
+    SYNTAX      Integer32(1..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The rate of the discarded packets upper limit for an interface."
+    ::= { unisIfExtTrapCfgEntry 2 }
+
+-- =================================================================
+unisIfMonScalarGroup OBJECT IDENTIFIER ::= { unisIfExt 4 }
+
+-- =================================================================
+-- All other groups are defined below.  Of course, scalar objects can
+-- also be defined in a subsection, but they must be one part of
+-- that subsection.
+
+-- Note that a scalar group should be defined firstly and all
+-- scalar objects are placed under that group when doing so.
+
+unisIfMonGroup OBJECT IDENTIFIER ::= { unisIfExt 5 }
+
+-- =================================================================
+unisIfMonStat OBJECT IDENTIFIER ::= { unisIfMonGroup 1 }
+
+unisIfMonStatTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfMonStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is about some types of statistics."
+    ::= { unisIfMonStat 1}
+
+unisIfMonStatEntry OBJECT-TYPE
+    SYNTAX      UnisIfMonStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Entry items."
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisIfMonStatTable 1}
+
+UnisIfMonStatEntry ::= SEQUENCE
+    {
+        unisIfMonInputUsageStatistics         Unsigned32,
+        unisIfMonOutputUsageStatistics        Unsigned32,
+        unisIfMonInputErrorAlarmStatistics    Counter64,
+        unisIfMonOutputErrorAlarmStatistics   Counter64,
+        unisIfMonSdhErrorStatistics           Counter64,
+        unisIfMonSdhB1ErrorStatistics         Counter64,
+        unisIfMonSdhB2ErrorStatistics         Counter64,
+        unisIfMonCRCErrorStatistics           Counter64,
+        unisIfMonRxPauseFrameStatistics       Counter64,
+        unisIfMonTxPauseFrameStatistics       Counter64,
+        unisIfMonRuntStatistics               Counter64,
+        unisIfMonGiantStatistics              Counter64
+    }
+
+unisIfMonInputUsageStatistics OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics about the inbound bandwidth usage."
+    ::= { unisIfMonStatEntry 1 }
+
+unisIfMonOutputUsageStatistics OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics about the outbound bandwidth usage."
+    ::= { unisIfMonStatEntry 2 }
+
+unisIfMonInputErrorAlarmStatistics OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics about the number of inbound error packets."
+    ::= { unisIfMonStatEntry 3 }
+
+unisIfMonOutputErrorAlarmStatistics OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics  about the number of outbound error packets."
+    ::= { unisIfMonStatEntry 4 }
+
+unisIfMonSdhErrorStatistics OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics about the number of SDH error packets."
+    ::= { unisIfMonStatEntry 5 }
+
+unisIfMonSdhB1ErrorStatistics OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics about the number of SDH B1 error packets."
+    ::= { unisIfMonStatEntry 6 }
+
+unisIfMonSdhB2ErrorStatistics OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics about the number of SDH B2 error packets."
+    ::= { unisIfMonStatEntry 7 }
+
+unisIfMonCRCErrorStatistics OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics about the number of CRC error packets. "
+    ::= { unisIfMonStatEntry 8}
+
+unisIfMonRxPauseFrameStatistics OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics about the number of received pause frames."
+    ::= { unisIfMonStatEntry 9}
+
+unisIfMonTxPauseFrameStatistics OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics about the number of transmitted pause frames."
+    ::= { unisIfMonStatEntry 10}
+
+unisIfMonRuntStatistics OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics about the Runt packets."
+    ::= { unisIfMonStatEntry 11 }
+
+unisIfMonGiantStatistics OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics about the Giant packets."
+    ::= { unisIfMonStatEntry 12 }
+
+-- =================================================================
+unisIfMonControl  OBJECT IDENTIFIER ::= { unisIfMonGroup 2 }
+
+unisIfMonThresholdTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfMonThresholdEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is about the upper threshold, lower threshold, CRC type, and inspection interval.
+         The upper threshold and lower threshold must be bound together.  If the CRC type is configured,
+         node unisIfMonCRCErrType must be carried.  If there is no current configuration for a type, all
+         attributes of this type must be carried.  After modification, the table unisIfMonAlarmDownEnableTable
+         will be changed.If there is configuration for the current type, setting all attributes of this type to
+         invalid values indicates that the configuration of this type is deleted, and the table unisIfMonAlarmDownEnableTable
+         will be changed.  Take CRC as an example.  If there is no CRC configuration, nodes unisIfMonCRCErrorLowThres,
+         unisIfMonCRCErrorLowThres, unisIfMonCRCErrorLowThres, and unisIfMonCRCErrorLowThres must be carried.
+         After modification, the node unisIfMonCRCErrorEnableDown becomes false.  If there is CRC configuration,
+         settings the nodes unisIfMonCRCErrorLowThres, unisIfMonCRCErrorHighThres, unisIfMonCRCErrorInterval,
+         and unisIfMonCRCErrorInterval to invalid values indicates the CRC configuration is deleted, and the
+         node unisIfMonCRCErrorEnableDown becomes invalid."
+
+    ::= { unisIfMonControl 1 }
+
+unisIfMonThresholdEntry OBJECT-TYPE
+    SYNTAX      UnisIfMonThresholdEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Entry items."
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisIfMonThresholdTable 1}
+
+UnisIfMonThresholdEntry ::= SEQUENCE
+    {
+        unisIfMonInputUsageLowThres               Unsigned32,
+        unisIfMonInputUsageHighThres              Unsigned32,
+        unisIfMonOutputUsageLowThres              Unsigned32,
+        unisIfMonOutputUsageHighThres             Unsigned32,
+        unisIfMonInputErrorAlarmLowThres          Unsigned32,
+        unisIfMonInputErrorAlarmHighThres         Unsigned32,
+        unisIfMonInputErrorAlarmInterval          Unsigned32,
+        unisIfMonOutputErrorAlarmLowThres         Unsigned32,
+        unisIfMonOutputErrorAlarmHighThres        Unsigned32,
+        unisIfMonOutputErrorAlarmInterval         Unsigned32,
+        unisIfMonSdhErrorLowThres                 Unsigned32,
+        unisIfMonSdhErrorHighThres                Unsigned32,
+        unisIfMonSdhErrorInterval                 Unsigned32,
+        unisIfMonSdhB1ErrorLowThres               Unsigned32,
+        unisIfMonSdhB1ErrorHighThres              Unsigned32,
+        unisIfMonSdhB1ErrorInterval               Unsigned32,
+        unisIfMonSdhB2ErrorLowThres               Unsigned32,
+        unisIfMonSdhB2ErrorHighThres              Unsigned32,
+        unisIfMonSdhB2ErrorInterval               Unsigned32,
+        unisIfMonCRCErrorLowThres                 Unsigned32,
+        unisIfMonCRCErrorHighThres                Unsigned32,
+        unisIfMonCRCErrorInterval                 Unsigned32,
+        unisIfMonCRCErrType                       INTEGER,
+        unisIfMonRxPauseFrameLowThres             Unsigned32,
+        unisIfMonRxPauseFrameHighThres            Unsigned32,
+        unisIfMonRxPauseFrameInterval             Unsigned32,
+        unisIfMonTxPauseFrameLowThres             Unsigned32,
+        unisIfMonTxPauseFrameHighThres            Unsigned32,
+        unisIfMonTxPauseFrameInterval             Unsigned32,
+        unisIfMonGiantLowThres                    Unsigned32,
+        unisIfMonGiantHighThres                   Unsigned32,
+        unisIfMonGiantInterval                    Unsigned32,
+        unisIfMonRuntLowThres                     Unsigned32,
+        unisIfMonRuntHighThres                    Unsigned32,
+        unisIfMonRuntInterval                     Unsigned32
+    }
+
+unisIfMonInputUsageLowThres        OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Lower threshold for the inbound bandwidth usage."
+    DEFVAL { 80 }
+    ::= { unisIfMonThresholdEntry 1 }
+
+unisIfMonInputUsageHighThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Upper threshold for the inbound bandwidth usage."
+    DEFVAL { 90 }
+    ::= { unisIfMonThresholdEntry 2 }
+
+unisIfMonOutputUsageLowThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Lower threshold for the outbound bandwidth usage."
+    DEFVAL { 80 }
+    ::= { unisIfMonThresholdEntry 3 }
+
+unisIfMonOutputUsageHighThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Upper threshold for the outbound bandwidth usage."
+    DEFVAL { 90 }
+    ::= { unisIfMonThresholdEntry 4 }
+
+unisIfMonInputErrorAlarmLowThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Lower threshold for the number of inbound error packets."
+    DEFVAL { 100 }
+    ::= { unisIfMonThresholdEntry 5 }
+
+unisIfMonInputErrorAlarmHighThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Upper threshold for the number of inbound error packets."
+    DEFVAL { 1000 }
+    ::= { unisIfMonThresholdEntry 6 }
+
+unisIfMonInputErrorAlarmInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Inspection interval for the number of inbound error packets."
+    DEFVAL { 10 }
+    ::= { unisIfMonThresholdEntry 7 }
+
+unisIfMonOutputErrorAlarmLowThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Lower threshold for the number of outbound error packets."
+    DEFVAL { 100 }
+    ::= { unisIfMonThresholdEntry 8 }
+
+unisIfMonOutputErrorAlarmHighThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Upper threshold for the number of outbound error packets."
+    DEFVAL { 1000 }
+    ::= { unisIfMonThresholdEntry 9 }
+
+unisIfMonOutputErrorAlarmInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Inspection interval for the number of outbound error packets."
+    DEFVAL { 10 }
+    ::= { unisIfMonThresholdEntry 10 }
+
+unisIfMonSdhErrorLowThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Lower threshold for the number of SDH error packets."
+    DEFVAL { 100 }
+    ::= { unisIfMonThresholdEntry 11 }
+
+unisIfMonSdhErrorHighThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Upper threshold for the number of SDH error packets."
+    DEFVAL { 1000 }
+    ::= { unisIfMonThresholdEntry 12 }
+
+unisIfMonSdhErrorInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Inspection interval for the number of SDH error packets."
+    DEFVAL { 10 }
+    ::= { unisIfMonThresholdEntry 13 }
+
+unisIfMonSdhB1ErrorLowThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Lower threshold for the number of SDH B1 error packets."
+    DEFVAL { 100 }
+    ::= { unisIfMonThresholdEntry 14 }
+
+unisIfMonSdhB1ErrorHighThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Upper threshold for the number of SDH B1 error packets."
+    DEFVAL { 1000 }
+    ::= { unisIfMonThresholdEntry 15 }
+
+unisIfMonSdhB1ErrorInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Inspection interval for the number of SDH B1 error packets. "
+    DEFVAL { 10 }
+    ::= { unisIfMonThresholdEntry 16 }
+
+unisIfMonSdhB2ErrorLowThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Lower threshold for the number of SDH B2 error packets."
+    DEFVAL { 100 }
+    ::= { unisIfMonThresholdEntry 17 }
+
+unisIfMonSdhB2ErrorHighThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Upper threshold for the number of SDH B2 error packets."
+    DEFVAL { 1000 }
+    ::= { unisIfMonThresholdEntry 18 }
+
+unisIfMonSdhB2ErrorInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Inspection interval for the number of SDH B2 error packets."
+    DEFVAL { 10 }
+    ::= { unisIfMonThresholdEntry 19 }
+
+unisIfMonCRCErrorLowThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Lower threshold for the number of CRC error packets."
+    ::= { unisIfMonThresholdEntry 20 }
+
+unisIfMonCRCErrorHighThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Upper threshold for the number of CRC error packets."
+    ::= { unisIfMonThresholdEntry 21 }
+
+unisIfMonCRCErrorInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Inspection interval for the number of CRC error packets."
+    DEFVAL { 10 }
+    ::= { unisIfMonThresholdEntry 22 }
+
+unisIfMonCRCErrType OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        absolute(1),
+        ratio(2),
+        invalid(65535)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        " Inspection type for the CRC error packets."
+    ::= { unisIfMonThresholdEntry 23 }
+
+unisIfMonRxPauseFrameLowThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Lower threshold for the number of received pause frames."
+    DEFVAL { 100 }
+    ::= { unisIfMonThresholdEntry 24 }
+
+unisIfMonRxPauseFrameHighThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Upper threshold for the number of received pause frames."
+    DEFVAL { 500 }
+    ::= { unisIfMonThresholdEntry 25 }
+
+unisIfMonRxPauseFrameInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Inspection interval for the number of received pause frames."
+    DEFVAL { 10 }
+    ::= { unisIfMonThresholdEntry 26 }
+
+unisIfMonTxPauseFrameLowThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Lower threshold for the number of transmitted pause frames."
+    DEFVAL { 100 }
+    ::= { unisIfMonThresholdEntry 27 }
+
+unisIfMonTxPauseFrameHighThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Upper threshold for the number of transmitted pause frames."
+    DEFVAL { 500 }
+    ::= { unisIfMonThresholdEntry 28 }
+
+unisIfMonTxPauseFrameInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Inspection interval for the number of transmitted pause frames."
+    DEFVAL { 10 }
+    ::= { unisIfMonThresholdEntry 29 }
+
+unisIfMonGiantLowThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Lower threshold for the number of Giant error packets."
+    DEFVAL { 100 }
+    ::= { unisIfMonThresholdEntry 30 }
+
+unisIfMonGiantHighThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Upper threshold for the number of Giant error packets."
+    DEFVAL { 1000 }
+    ::= { unisIfMonThresholdEntry 31 }
+
+unisIfMonGiantInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Inspection interval for the number of Giant error packets."
+    DEFVAL { 10 }
+    ::= { unisIfMonThresholdEntry 32 }
+
+unisIfMonRuntLowThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Lower threshold for the number of Runt error packets."
+    DEFVAL { 100 }
+    ::= { unisIfMonThresholdEntry 33 }
+
+unisIfMonRuntHighThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Upper threshold for the number of Runt error packets."
+    DEFVAL { 1000 }
+    ::= { unisIfMonThresholdEntry 34 }
+
+unisIfMonRuntInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Inspection interval for the number of Runt packets."
+    DEFVAL { 10 }
+    ::= { unisIfMonThresholdEntry 35 }
+
+-- =================================================================
+unisIfMonAlarmDownEnableTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIfMonAlarmDownEnableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table can set or get whether to enable the interface down function."
+    ::= { unisIfMonControl 2 }
+
+unisIfMonAlarmDownEnableEntry OBJECT-TYPE
+    SYNTAX      UnisIfMonAlarmDownEnableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Entry items"
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisIfMonAlarmDownEnableTable 1}
+
+UnisIfMonAlarmDownEnableEntry ::= SEQUENCE
+    {
+        unisIfMonInputErrorAlarmEnableDown        TruthValue,
+        unisIfMonOutputErrorAlarmEnableDown       TruthValue,
+        unisIfMonSdhErrorEnableDown               TruthValue,
+        unisIfMonSdhB1ErrorEnableDown             TruthValue,
+        unisIfMonSdhB2ErrorEnableDown             TruthValue,
+        unisIfMonCRCErrorEnableDown               TruthValue,
+        unisIfMonGiantEnableDown                  TruthValue,
+        unisIfMonRuntEnableDown                   TruthValue
+    }
+
+unisIfMonInputErrorAlarmEnableDown OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When the number of inbound error packets exceeds the upper threshold,
+         the physical interface goes down. "
+    DEFVAL { false }
+    ::= { unisIfMonAlarmDownEnableEntry 1 }
+
+unisIfMonOutputErrorAlarmEnableDown OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When the number of outbound error packets exceeds the upper threshold,
+         the physical interface goes down."
+    DEFVAL { false }
+    ::= { unisIfMonAlarmDownEnableEntry 2 }
+
+unisIfMonSdhErrorEnableDown OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When the number of SDH error packets exceeds the upper threshold,
+         the physical interface goes down. "
+    DEFVAL { false }
+    ::= { unisIfMonAlarmDownEnableEntry 3 }
+
+unisIfMonSdhB1ErrorEnableDown OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When the number of SDH B1 error packets exceeds the upper threshold,
+         the physical interface goes down."
+    DEFVAL { false }
+    ::= { unisIfMonAlarmDownEnableEntry 4 }
+
+unisIfMonSdhB2ErrorEnableDown OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When the number of SDH B2 error packets exceeds the upper threshold,
+         the physical interface goes down."
+    DEFVAL { false }
+    ::= { unisIfMonAlarmDownEnableEntry 5 }
+
+unisIfMonCRCErrorEnableDown OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When the number of CRC error packets exceeds the upper threshold,
+         the physical interface goes down."
+    DEFVAL { false }
+    ::= { unisIfMonAlarmDownEnableEntry 6 }
+
+unisIfMonGiantEnableDown OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When the number of Giant error packets exceeds the upper threshold,
+         the physical interface goes down."
+    DEFVAL { false }
+    ::= { unisIfMonAlarmDownEnableEntry 7 }
+
+unisIfMonRuntEnableDown OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When the number of Runt error packets exceeds the upper threshold,
+         the physical interface goes down."
+    DEFVAL { false }
+    ::= { unisIfMonAlarmDownEnableEntry 8 }
+
+
+-- =================================================================
+-- Traps are defined below.
+
+unisIfMonTrap OBJECT IDENTIFIER ::= { unisIfExt 6 }
+unisIfMonTrapPrex OBJECT IDENTIFIER ::= { unisIfMonTrap 0 }
+-- All trap definitions should be placed under this object.
+
+unisIfMonInputUsageRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonInputUsageLowThres,
+            unisIfMonInputUsageHighThres,
+            unisIfMonInputUsageStatistics
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the inbound bandwidth usage exceeds the
+         upper threshold."
+    ::= { unisIfMonTrapPrex 1 }
+
+unisIfMonInputUsageResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonInputUsageLowThres,
+            unisIfMonInputUsageHighThres,
+            unisIfMonInputUsageStatistics
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the inbound bandwidth usage drops from
+         above the upper threshold to below the lower threshold."
+    ::= { unisIfMonTrapPrex 2 }
+
+unisIfMonOutputUsageRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonOutputUsageLowThres,
+            unisIfMonOutputUsageHighThres,
+            unisIfMonOutputUsageStatistics
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the outbound bandwidth usage exceeds the
+         upper threshold."
+    ::= { unisIfMonTrapPrex 3 }
+
+unisIfMonOutputUsageResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonOutputUsageLowThres,
+            unisIfMonOutputUsageHighThres,
+            unisIfMonOutputUsageStatistics
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the outbound bandwidth usage drops from
+         above the upper threshold to below the lower threshold."
+    ::= { unisIfMonTrapPrex 4 }
+
+unisIfMonInputErrorAlarmRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonInputErrorAlarmHighThres,
+            unisIfMonInputErrorAlarmLowThres,
+            unisIfMonInputErrorAlarmStatistics,
+            unisIfMonInputErrorAlarmInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of inbound error packets exceeds the
+         upper threshold within the default interval."
+    ::= { unisIfMonTrapPrex 5 }
+
+unisIfMonInputErrorAlarmResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonInputErrorAlarmHighThres,
+            unisIfMonInputErrorAlarmLowThres,
+            unisIfMonInputErrorAlarmStatistics,
+            unisIfMonInputErrorAlarmInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of inbound error packets drops from
+         above the upper threshold to below the lower threshold within the default interval."
+    ::= { unisIfMonTrapPrex 6 }
+
+unisIfMonOutputErrorAlarmRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonOutputErrorAlarmHighThres,
+            unisIfMonOutputErrorAlarmLowThres,
+            unisIfMonOutputErrorAlarmStatistics,
+            unisIfMonOutputErrorAlarmInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of outbound error packets exceeds the
+         upper threshold within the default interval."
+    ::= { unisIfMonTrapPrex 7 }
+
+unisIfMonOutputErrorAlarmResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonOutputErrorAlarmHighThres,
+            unisIfMonOutputErrorAlarmLowThres,
+            unisIfMonOutputErrorAlarmStatistics,
+            unisIfMonOutputErrorAlarmInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of outbound error packets drops from
+         above the upper threshold to below the lower threshold within the default interval."
+    ::= { unisIfMonTrapPrex 8 }
+
+unisIfMonSdhErrorRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonSdhErrorLowThres,
+            unisIfMonSdhErrorHighThres,
+            unisIfMonSdhErrorStatistics,
+            unisIfMonSdhErrorInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of SDH error packets exceeds
+         the upper threshold within the default interval."
+    ::= { unisIfMonTrapPrex 9 }
+
+unisIfMonSdhErrorResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonSdhErrorLowThres,
+            unisIfMonSdhErrorHighThres,
+            unisIfMonSdhErrorStatistics,
+            unisIfMonSdhErrorInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of SDH error packets drops from
+         above the upper threshold to below the lower threshold within the default interval."
+    ::= { unisIfMonTrapPrex 10 }
+
+unisIfMonSdhB1ErrorRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonSdhB1ErrorLowThres,
+            unisIfMonSdhB1ErrorHighThres,
+            unisIfMonSdhB1ErrorStatistics,
+            unisIfMonSdhB1ErrorInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of SDH B1 error packets exceeds
+         the upper threshold within the default interval."
+    ::= { unisIfMonTrapPrex 11 }
+
+unisIfMonSdhB1ErrorResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonSdhB1ErrorLowThres,
+            unisIfMonSdhB1ErrorHighThres,
+            unisIfMonSdhB1ErrorStatistics,
+            unisIfMonSdhB1ErrorInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of SDH B1 error packets drops from
+         above the upper threshold to below the lower threshold within the default interval."
+    ::= { unisIfMonTrapPrex 12 }
+
+unisIfMonSdhB2ErrorRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonSdhB2ErrorLowThres,
+            unisIfMonSdhB2ErrorHighThres,
+            unisIfMonSdhB2ErrorStatistics,
+            unisIfMonSdhB2ErrorInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of SDH B2 error packets exceeds
+         the upper threshold within the default interval."
+    ::= { unisIfMonTrapPrex 13 }
+
+unisIfMonSdhB2ErrorResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonSdhB2ErrorLowThres,
+            unisIfMonSdhB2ErrorHighThres,
+            unisIfMonSdhB2ErrorStatistics,
+            unisIfMonSdhB2ErrorInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of SDH B2 error packets drops from
+         above the upper threshold to below the lower threshold within the default interval."
+    ::= { unisIfMonTrapPrex 14 }
+
+unisIfMonCRCErrorRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonCRCErrorHighThres,
+            unisIfMonCRCErrorLowThres,
+            unisIfMonCRCErrorStatistics,
+            unisIfMonCRCErrorInterval,
+            unisIfMonCRCErrType
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of CRC error packets exceeds
+         the upper threshold within the default interval."
+    ::= { unisIfMonTrapPrex 15 }
+
+unisIfMonCRCErrorResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonCRCErrorHighThres,
+            unisIfMonCRCErrorLowThres,
+            unisIfMonCRCErrorStatistics,
+            unisIfMonCRCErrorInterval,
+            unisIfMonCRCErrType
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of CRC error packets drops from
+         above the upper threshold to below the lower threshold within the default interval."
+    ::= { unisIfMonTrapPrex 16 }
+
+unisIfMonRxPauseFrameRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonRxPauseFrameHighThres,
+            unisIfMonRxPauseFrameLowThres,
+            unisIfMonRxPauseFrameStatistics,
+            unisIfMonRxPauseFrameInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of received pause frames exceeds the
+         upper threshold."
+    ::= { unisIfMonTrapPrex 17 }
+
+unisIfMonRxPauseFrameResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonRxPauseFrameHighThres,
+            unisIfMonRxPauseFrameLowThres,
+            unisIfMonRxPauseFrameStatistics,
+            unisIfMonRxPauseFrameInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of received pause frames drops from
+         above the upper threshold to below the lower-threshold."
+    ::= { unisIfMonTrapPrex 18 }
+
+unisIfMonTxPauseFrameRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonTxPauseFrameHighThres,
+            unisIfMonTxPauseFrameLowThres,
+            unisIfMonTxPauseFrameStatistics,
+            unisIfMonTxPauseFrameInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of transmitted pause frames exceeds
+         the upper threshold."
+    ::= { unisIfMonTrapPrex 19 }
+
+unisIfMonTxPauseFrameResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonTxPauseFrameHighThres,
+            unisIfMonTxPauseFrameLowThres,
+            unisIfMonTxPauseFrameStatistics,
+            unisIfMonTxPauseFrameInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of transmitted pause frames  drops from
+         above the upper threshold to below the lower threshold."
+    ::= { unisIfMonTrapPrex 20 }
+
+unisIfMonGiantRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonGiantLowThres,
+            unisIfMonGiantHighThres,
+            unisIfMonGiantStatistics,
+            unisIfMonGiantInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of Giant error packets exceeds
+         the upper threshold within the default interval."
+    ::= { unisIfMonTrapPrex 21 }
+
+unisIfMonGiantResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonGiantLowThres,
+            unisIfMonGiantHighThres,
+            unisIfMonGiantStatistics,
+            unisIfMonGiantInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of Giant error packets drops from
+         above the upper threshold to below the lower threshold within the default interval."
+    ::= { unisIfMonTrapPrex 22 }
+
+ unisIfMonRuntRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonRuntLowThres,
+            unisIfMonRuntHighThres,
+            unisIfMonRuntStatistics,
+            unisIfMonRuntInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of Runt error packets exceeds
+         the upper threshold within the default interval."
+    ::= { unisIfMonTrapPrex 23 }
+
+unisIfMonRuntResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisIfMonRuntLowThres,
+            unisIfMonRuntHighThres,
+            unisIfMonRuntStatistics,
+            unisIfMonRuntInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of Runt error packets drops from
+         above the upper threshold to below the lower threshold within the default interval."
+    ::= { unisIfMonTrapPrex 24 }
+
+
+unisIfMonTrapObject OBJECT IDENTIFIER ::= { unisIfMonTrap 1 }
+
+END

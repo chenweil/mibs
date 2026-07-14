@@ -1,0 +1,255 @@
+-- =================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: GRPC mib
+-- Reference:
+-- Version: V1.1
+-- History:
+--  V1.0 Created by xiexiang
+--      Initial version 2022-12-22
+--  V1.1 2023-06-25 Updated by meishenhe
+--      Added notification node unisGrpcConnectionFailure
+--      Added notification node unisGrpcConnectionRecover
+-- =================================================================
+UNIS-GRPC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Integer32
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM SNMPv2-TC
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisGrpc MODULE-IDENTITY
+    LAST-UPDATED "202306252101Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for GRPC connection notification."
+    REVISION "202306252101Z"
+    DESCRIPTION
+        "Added notification node unisGrpcConnectionFailure
+         Added notification node unisGrpcConnectionRecover"
+    REVISION    "202212220000Z"
+    DESCRIPTION    "The initial version."
+    ::= { unisCommon 259 }
+
+-- ==================================================================
+--
+-- GRPC trap object
+--
+-- ==================================================================
+unisGrpcObjects OBJECT IDENTIFIER ::= { unisGrpc 1 }
+
+unisGrpcConnObjects OBJECT IDENTIFIER ::= { unisGrpcObjects 1 }
+
+unisGrpcUserName OBJECT-TYPE
+    SYNTAX       DisplayString (SIZE(1..80))
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The name of an GRPC user."
+    ::= { unisGrpcConnObjects 1 }
+
+unisGrpcUserIPAddressType OBJECT-TYPE
+    SYNTAX       InetAddressType
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The IP address type of the GRPC user."
+    ::= { unisGrpcConnObjects 2 }
+
+unisGrpcUserIPAddress OBJECT-TYPE
+    SYNTAX       InetAddress
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The IP address of the GRPC user."
+    ::= { unisGrpcConnObjects 3 }
+
+unisGrpcSessionId OBJECT-TYPE
+    SYNTAX       Integer32(1..2147483647)
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "ID of a GRPC session."
+    ::= { unisGrpcConnObjects 4 }
+
+unisGrpcTrapDescription OBJECT-TYPE
+    SYNTAX       DisplayString (SIZE(1..80))
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The description of the GRPC trap."
+    ::= { unisGrpcConnObjects 5 }
+
+unisGrpcEventName OBJECT-TYPE
+    SYNTAX       DisplayString (SIZE(1..80))
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The name of an GRPC event."
+    ::= { unisGrpcConnObjects 6 }
+
+unisGrpcModuleName OBJECT-TYPE
+    SYNTAX       DisplayString (SIZE(1..80))
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The name of a GRPC module."
+    ::= { unisGrpcConnObjects 7 }
+
+unisGrpcServerIPAddress OBJECT-TYPE
+    SYNTAX         InetAddress
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The IP address of the GRPC Server."
+    ::= { unisGrpcConnObjects 8 }
+
+unisGrpcServerPort OBJECT-TYPE
+    SYNTAX         Integer32(1..2147483647)
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The port of the GRPC Server."
+    ::= { unisGrpcConnObjects 9 }
+
+unisGrpcVpnInstance OBJECT-TYPE
+    SYNTAX         OCTET STRING (SIZE(1..255))
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The IP address of the GRPC Server."
+    ::= { unisGrpcConnObjects 10 }
+
+unisGrpcDestDg OBJECT-TYPE
+    SYNTAX         OCTET STRING (SIZE(1..255))
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The destination group of the GRPC."
+    ::= { unisGrpcConnObjects 11 }
+
+unisGrpcSubscription OBJECT-TYPE
+    SYNTAX         OCTET STRING (SIZE(1..255))
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The subscription of the GRPC."
+    ::= { unisGrpcConnObjects 12 }
+
+unisGrpcTrap OBJECT IDENTIFIER ::= { unisGrpc 2 }
+
+unisGrpcConnTrapPrefix OBJECT IDENTIFIER ::= { unisGrpcTrap 0 }
+
+unisGrpcLogin NOTIFICATION-TYPE
+    OBJECTS {
+            unisGrpcUserName,
+            unisGrpcUserIPAddressType,
+            unisGrpcUserIPAddress,
+            unisGrpcSessionId
+        }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when a user logs in successfully through GRPC."
+::= { unisGrpcConnTrapPrefix 1 }
+
+unisGrpcLoginFailure NOTIFICATION-TYPE
+    OBJECTS {
+            unisGrpcUserName,
+            unisGrpcUserIPAddressType,
+            unisGrpcUserIPAddress
+        }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when a user fails to log in through GRPC."
+::= { unisGrpcConnTrapPrefix 2 }
+
+unisGrpcLogout NOTIFICATION-TYPE
+    OBJECTS {
+            unisGrpcUserName,
+            unisGrpcSessionId
+        }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when a user logs out successfully through GRPC."
+::= { unisGrpcConnTrapPrefix 3 }
+
+unisGrpcServerFailure NOTIFICATION-TYPE
+    OBJECTS {
+            unisGrpcTrapDescription
+        }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when the GRPC server fails to enable ."
+::= { unisGrpcConnTrapPrefix 4 }
+
+unisGrpcServiceStop NOTIFICATION-TYPE
+    OBJECTS {
+            unisGrpcTrapDescription
+        }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when the CPU usage threshold has been exceeded."
+::= { unisGrpcConnTrapPrefix 5 }
+
+unisGrpcServiceRecover NOTIFICATION-TYPE
+    OBJECTS {
+            unisGrpcTrapDescription
+        }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when the GRPC service recovered."
+::= { unisGrpcConnTrapPrefix 6 }
+
+unisGrpcSubscribeEventFailure NOTIFICATION-TYPE
+    OBJECTS {
+            unisGrpcEventName
+        }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when the GRPC subscribes event unsuccessfully."
+::= { unisGrpcConnTrapPrefix 7 }
+
+unisGrpcReceiveSubscription NOTIFICATION-TYPE
+    OBJECTS {
+            unisGrpcModuleName
+        }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when the GRPC subscription is received."
+::= { unisGrpcConnTrapPrefix 8 }
+
+unisGrpcConnectionFailure NOTIFICATION-TYPE
+    OBJECTS {
+            unisGrpcServerIPAddress,
+            unisGrpcServerPort,
+            unisGrpcVpnInstance,
+            unisGrpcDestDg,
+            unisGrpcSubscription
+        }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when the GRPC device disconnected from a collector."
+::= { unisGrpcConnTrapPrefix 9 }
+
+unisGrpcConnectionRecover NOTIFICATION-TYPE
+    OBJECTS {
+            unisGrpcServerIPAddress,
+            unisGrpcServerPort,
+            unisGrpcVpnInstance,
+            unisGrpcDestDg,
+            unisGrpcSubscription
+        }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when the GRPC connection established to a collector."
+::= { unisGrpcConnTrapPrefix 10 }
+END

@@ -1,0 +1,375 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Resource Monitor MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2017-04-01 created by yanfang.
+-- ============================================================================
+UNIS-RES-MON-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM  UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY,
+    NOTIFICATION-TYPE, Unsigned32
+        FROM SNMPv2-SMI
+    TruthValue
+        FROM SNMPv2-TC;
+
+unisResMon MODULE-IDENTITY
+    LAST-UPDATED "201704010000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Resource monitor information base for managing devices."
+    REVISION
+         "201704010000Z"
+    DESCRIPTION
+        "The first version of this module."
+    ::= { unisCommon 169 }
+
+--
+-- Nodes defined
+--
+unisResMonScalarObjects OBJECT IDENTIFIER ::= { unisResMon 1 }
+
+unisResMonMinorResendEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The switch for enabling or disabling retransmission of
+        minor resource depletion alarms."
+    ::= { unisResMonScalarObjects 1 }
+
+unisResMonOutputEnable OBJECT-TYPE
+    SYNTAX BITS
+    {
+        syslog(0),
+        snmpNotification(1),
+        netconfEvent(2)
+    }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Destinations for resource depletion alarms,
+        including syslog, SNMP notification, and NETCONF event."
+    ::= { unisResMonScalarObjects 2 }
+
+unisResMonTables OBJECT IDENTIFIER ::= { unisResMon 2 }
+
+--
+-- Node of unisResMonConfigTable
+--
+unisResMonConfigTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisResMonConfigEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Table for resource monitoring configuration."
+    ::= { unisResMonTables 1 }
+
+unisResMonConfigEntry OBJECT-TYPE
+    SYNTAX UnisResMonConfigEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Entry of unisResMonConfigTable."
+    INDEX
+    {
+        unisResMonChassisIndex,
+        unisResMonSlotIndex,
+        unisResMonCpuIndex,
+        unisResMonResourceName
+    }
+    ::= { unisResMonConfigTable 1 }
+
+UnisResMonConfigEntry ::=
+    SEQUENCE
+    {
+        unisResMonChassisIndex                 Unsigned32,
+        unisResMonSlotIndex                    Unsigned32,
+        unisResMonCpuIndex                     Unsigned32,
+        unisResMonResourceName                 OCTET STRING,
+        unisResMonThresholdUnit                INTEGER,
+        unisResMonMinorThreshold               Unsigned32,
+        unisResMonSevereThreshold              Unsigned32
+    }
+
+unisResMonChassisIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Member ID of the member device where the entity resides."
+    ::= { unisResMonConfigEntry 1 }
+
+unisResMonSlotIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Slot number of the device node."
+    ::= { unisResMonConfigEntry 2 }
+
+unisResMonCpuIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "CPU ID."
+    ::= { unisResMonConfigEntry 3 }
+
+unisResMonResourceName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(1..31))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Resource name."
+    ::= { unisResMonConfigEntry 4 }
+
+unisResMonThresholdUnit OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        absolute(1),
+        percentage(2)
+    }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Unit for resource depletion thresholds."
+    ::= { unisResMonConfigEntry 5 }
+
+unisResMonMinorThreshold OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Minor resource depletion threshold."
+    ::= { unisResMonConfigEntry 6 }
+
+unisResMonSevereThreshold OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Severe resource depletion threshold."
+    ::= { unisResMonConfigEntry 7 }
+
+--
+-- Node of unisResMonInfoTable
+--
+unisResMonInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisResMonInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Table for resource monitoring information."
+    ::= { unisResMonTables 2 }
+
+unisResMonInfoEntry OBJECT-TYPE
+    SYNTAX UnisResMonInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Entry of unisResMonInfoEntry."
+    INDEX
+    {
+        unisResMonChassisIndex,
+        unisResMonSlotIndex,
+        unisResMonCpuIndex,
+        unisResMonResourceName
+    }
+    ::= { unisResMonInfoTable 1 }
+
+    UnisResMonInfoEntry ::=
+    SEQUENCE
+    {
+        unisResMonUnit              INTEGER,
+        unisResMonCurrent           Unsigned32,
+        unisResMonFree              Unsigned32,
+        unisResMonTotal             Unsigned32
+    }
+
+unisResMonUnit OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        absolute(1),
+        percentage(2)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Unit for resource information."
+    ::= { unisResMonInfoEntry 1 }
+
+unisResMonCurrent OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Amount of the used resource."
+    ::= { unisResMonInfoEntry 2 }
+
+unisResMonFree OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Amount of the free resource."
+    ::= { unisResMonInfoEntry 3 }
+
+unisResMonTotal OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total size of resource."
+    ::= { unisResMonInfoEntry 4 }
+
+--
+-- Nodes of unisResMonNotification
+--
+unisResMonNotification OBJECT IDENTIFIER ::= { unisResMon 3 }
+
+unisResMonTrapPrefix OBJECT IDENTIFIER ::= { unisResMonNotification 0 }
+
+unisResMonMinorNotification NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisResMonChassisIndex,
+        unisResMonSlotIndex,
+        unisResMonCpuIndex,
+        unisResMonResourceName,
+        unisResMonThresholdUnit,
+        unisResMonMinorThreshold,
+        unisResMonSevereThreshold,
+        unisResMonCurrent,
+        unisResMonFree,
+        unisResMonTotal,
+        unisResMonAdditionalInfo
+    }
+    STATUS current
+    DESCRIPTION
+        "The notification indicates that the amount of the free resource
+        decreased to or below the hhcResMonMinorThreshold"
+    ::= { unisResMonTrapPrefix 1 }
+
+unisResMonMinorRecoverNotification NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisResMonChassisIndex,
+        unisResMonSlotIndex,
+        unisResMonCpuIndex,
+        unisResMonResourceName,
+        unisResMonThresholdUnit,
+        unisResMonMinorThreshold,
+        unisResMonSevereThreshold,
+        unisResMonCurrent,
+        unisResMonFree,
+        unisResMonTotal,
+        unisResMonAdditionalInfo
+    }
+    STATUS current
+    DESCRIPTION
+        "The notification indicates that the amount of the free resource
+        increased to or above the hhcResMonMinorThreshold."
+    ::= { unisResMonTrapPrefix 2 }
+
+unisResMonSevereNotification NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisResMonChassisIndex,
+        unisResMonSlotIndex,
+        unisResMonCpuIndex,
+        unisResMonResourceName,
+        unisResMonThresholdUnit,
+        unisResMonMinorThreshold,
+        unisResMonSevereThreshold,
+        unisResMonCurrent,
+        unisResMonFree,
+        unisResMonTotal,
+        unisResMonAdditionalInfo
+    }
+    STATUS current
+    DESCRIPTION
+        "The notification indicates that the amount of the free resource
+        decreased to or below the hhcResMonSevereThreshold."
+    ::= { unisResMonTrapPrefix 3 }
+
+unisResMonSevereRecoverNotification NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisResMonChassisIndex,
+        unisResMonSlotIndex,
+        unisResMonCpuIndex,
+        unisResMonResourceName,
+        unisResMonThresholdUnit,
+        unisResMonMinorThreshold,
+        unisResMonSevereThreshold,
+        unisResMonCurrent,
+        unisResMonFree,
+        unisResMonTotal,
+        unisResMonAdditionalInfo
+    }
+    STATUS current
+    DESCRIPTION
+        "The notification indicates that the amount of the free resource
+        increased to or above hhcResMonSevereThreshold."
+    ::= { unisResMonTrapPrefix 4 }
+
+unisResMonUsedUpNotification NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisResMonChassisIndex,
+        unisResMonSlotIndex,
+        unisResMonCpuIndex,
+        unisResMonResourceName,
+        unisResMonThresholdUnit,
+        unisResMonMinorThreshold,
+        unisResMonSevereThreshold,
+        unisResMonCurrent,
+        unisResMonFree,
+        unisResMonTotal,
+        unisResMonAdditionalInfo
+    }
+    STATUS current
+    DESCRIPTION
+        "This notification indicates that the resource is used up."
+    ::= { unisResMonTrapPrefix 5 }
+
+unisResMonUsedUpRecoverNotification NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisResMonChassisIndex,
+        unisResMonSlotIndex,
+        unisResMonCpuIndex,
+        unisResMonResourceName,
+        unisResMonThresholdUnit,
+        unisResMonMinorThreshold,
+        unisResMonSevereThreshold,
+        unisResMonCurrent,
+        unisResMonFree,
+        unisResMonTotal,
+        unisResMonAdditionalInfo
+    }
+    STATUS current
+    DESCRIPTION
+        "This notification indicates that the free resource increases from zero up."
+    ::= { unisResMonTrapPrefix 6 }
+
+unisResMonTrapInfor OBJECT IDENTIFIER ::= { unisResMonNotification 1 }
+
+unisResMonAdditionalInfo OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Additional information for a notification."
+    ::= { unisResMonTrapInfor 1 }
+
+END

@@ -1,0 +1,97 @@
+-- ==========================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Bit Index Explicit Replication MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 Initial version 2022-08-10 by liziyi kf9672.
+-- ==========================================================================
+UNIS-BIER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB;
+
+-- ==================================================================
+--
+-- ======================= definition begin =========================
+--
+-- ==================================================================
+
+unisBier MODULE-IDENTITY
+    LAST-UPDATED "202208100000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+      "All the configuration of the bier can be managed
+        by bier Mib."
+    REVISION "202208100000Z"
+    DESCRIPTION
+    "Initial revision"
+    ::= { unisCommon 244 }
+
+--
+-- Notification definitions
+--
+-- =================================================================
+-- Traps are defined below.
+
+unisBierTrap OBJECT IDENTIFIER ::= { unisBier 1 }
+unisBierTrapPrefix OBJECT IDENTIFIER ::= { unisBierTrap 0 }
+-- All trap definitions should be placed under this object.
+
+unisBierTrapPrefixBfridConflict  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisBierSubdomain,
+            unisBierBfrid,
+            unisBierAddressFamily,
+            unisBierPrefix
+        }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when a Bit-Forwarding Router Identifier conflict occurs in a subdomain."
+    ::= { unisBierTrapPrefix 1 }
+
+unisBierTrapObject OBJECT IDENTIFIER ::= { unisBierTrap 1 }
+
+unisBierSubdomain  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Current subdomain."
+    ::= {unisBierTrapObject 1 }
+
+unisBierBfrid  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The Bit-Forwarding Router Identifier of the current conflict."
+    ::= {unisBierTrapObject 2 }
+
+unisBierAddressFamily  OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The address family of the conflicting node."
+    ::= {unisBierTrapObject 3 }
+
+unisBierPrefix  OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The prefix of the node."
+    ::= {unisBierTrapObject 4 }
+
+END

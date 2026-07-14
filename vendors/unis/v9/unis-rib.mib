@@ -1,0 +1,557 @@
+-- =================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:  RIB (Routing Information Base) MIB
+-- Reference:
+-- Version: V1.1
+-- History:
+--   V1.0 2022-06-16 Created by Mei Haitao
+--     Initial version.
+--   V1.1 2022-07-12 Updated by Zhang Yao
+--     Add the objects of unisRibPublicNotifyObjects, unisRibNotifyObjects,
+--     unisRibPublicNotifications and unisRibNotifications.
+-- =================================================================
+UNIS-RIB-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisRib MODULE-IDENTITY
+    LAST-UPDATED "202207121002Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file provides information about RIB."
+
+    REVISION "202207121002Z"
+    DESCRIPTION
+        "Add the objects of unisRibPublicNotifyObjects, unisRibNotifyObjects,
+         unisRibPublicNotifications and unisRibNotifications."
+
+    REVISION "202205311002Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+
+    ::= { unisCommon 219 }
+
+unisRibVrfNotifyObjects           OBJECT IDENTIFIER ::= { unisRib 1 }
+unisRibVrfNotifications           OBJECT IDENTIFIER ::= { unisRib 2 }
+unisRibPublicNotifyObjects        OBJECT IDENTIFIER ::= { unisRib 3 }
+unisRibPublicNotifications        OBJECT IDENTIFIER ::= { unisRib 4 }
+unisRibNotifyObjects              OBJECT IDENTIFIER ::= { unisRib 5 }
+unisRibNotifications              OBJECT IDENTIFIER ::= { unisRib 6 }
+
+unisRibVrfNotifyPrefix            OBJECT IDENTIFIER ::= { unisRibVrfNotifications 0 }
+unisRibPublicNotifyPrefix         OBJECT IDENTIFIER ::= { unisRibPublicNotifications 0 }
+unisRibNotifyPrefix               OBJECT IDENTIFIER ::= { unisRibNotifications 0 }
+
+unisRibVrfRestrainType OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Family type of the VPN route."
+    ::= { unisRibVrfNotifyObjects 1 }
+
+unisRibVrfName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Name of the VPN instance."
+    ::= { unisRibVrfNotifyObjects 2 }
+
+unisRibVrfIndex OBJECT-TYPE
+    SYNTAX Unsigned32 (0..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Index value of the VPN instance."
+    ::= { unisRibVrfNotifyObjects 3 }
+
+unisRibVrfRtNexthopAddress OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..46))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Next hop address of the VPN route."
+    ::= { unisRibVrfNotifyObjects 4 }
+
+unisRibVrfRtProtocol OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Protocol type of the VPN route."
+    ::= { unisRibVrfNotifyObjects 5 }
+
+unisRibVrfIPv4PrefixNumber OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Current number of IPv4 route prefixes in the VPN instance."
+    ::= { unisRibVrfNotifyObjects 6 }
+
+unisRibVrfIPv4PrefixLimit OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Upper limit of IPv4 route prefixes in the VPN instance."
+    ::= { unisRibVrfNotifyObjects 7 }
+
+unisRibVrfIPv4PrefixTHLimit OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Threshold of IPv4 route prefixes in the VPN instance."
+    ::= { unisRibVrfNotifyObjects 8 }
+
+unisRibVrfIPv6PrefixNumber OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Current number of IPv6 route prefixes in the VPN instance."
+    ::= { unisRibVrfNotifyObjects 9 }
+
+unisRibVrfIPv6PrefixLimit OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Upper limit of IPv6 route prefixes in the VPN instance."
+    ::= { unisRibVrfNotifyObjects 10 }
+
+unisRibVrfIPv6PrefixTHLimit OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Threshold of IPv6 route prefixes in the VPN instance."
+    ::= { unisRibVrfNotifyObjects 11 }
+
+unisRibPublicIPv4PrefixNumber OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Current number of IPv4 route prefixes."
+    ::= { unisRibPublicNotifyObjects 1 }
+
+unisRibPublicIPv4PrefixLimit OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Upper limit of IPv4 route prefixes."
+    ::= { unisRibPublicNotifyObjects 2 }
+
+unisRibPublicIPv4PrefixTHLimit OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Threshold of IPv4 route prefixes."
+    ::= { unisRibPublicNotifyObjects 3 }
+
+unisRibPublicIPv6PrefixNumber OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Current number of IPv6 route prefixes."
+    ::= { unisRibPublicNotifyObjects 4 }
+
+unisRibPublicIPv6PrefixLimit OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Upper limit of IPv6 route prefixes."
+    ::= { unisRibPublicNotifyObjects 5 }
+
+unisRibPublicIPv6PrefixTHLimit OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Threshold of IPv6 route prefixes."
+    ::= { unisRibPublicNotifyObjects 6 }
+
+unisRibIPv4PrefixNumber OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Current number of IPv4 route prefixes."
+    ::= { unisRibNotifyObjects 1 }
+
+unisRibIPv4PrefixLimit OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Upper limit of IPv4 route prefixes."
+    ::= { unisRibNotifyObjects 2 }
+
+unisRibIPv4PrefixTHLimit OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Threshold of IPv4 route prefixes."
+    ::= { unisRibNotifyObjects 3 }
+
+unisRibIPv6PrefixNumber OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Current number of IPv6 route prefixes."
+    ::= { unisRibNotifyObjects 4 }
+
+unisRibIPv6PrefixLimit OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Upper limit of IPv6 route prefixes."
+    ::= { unisRibNotifyObjects 5 }
+
+unisRibIPv6PrefixTHLimit OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Threshold of IPv6 route prefixes."
+    ::= { unisRibNotifyObjects 6 }
+
+unisRibCyclicIterateRestrain NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibVrfRestrainType,
+        unisRibVrfName,
+        unisRibVrfIndex,
+        unisRibVrfRtNexthopAddress,
+        unisRibVrfRtProtocol
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when suppression for next hop recursion loop is
+         enabled."
+    ::= { unisRibVrfNotifyPrefix 1 }
+
+unisRibCyclicIterateRestrainClr NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibVrfRestrainType,
+        unisRibVrfName,
+        unisRibVrfIndex,
+        unisRibVrfRtNexthopAddress,
+        unisRibVrfRtProtocol
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when suppression for next hop recursion loop
+         is disabled."
+    ::= { unisRibVrfNotifyPrefix 2 }
+
+unisRibVrfIPv4PrefixExceed NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibVrfName,
+        unisRibVrfIndex,
+        unisRibVrfIPv4PrefixNumber,
+        unisRibVrfIPv4PrefixLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv4 route prefixes in the
+         VPN instance exceeded the maximum value."
+    ::= { unisRibVrfNotifyPrefix 3 }
+
+unisRibVrfIPv4PrefixExceedClear NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibVrfName,
+        unisRibVrfIndex,
+        unisRibVrfIPv4PrefixNumber,
+        unisRibVrfIPv4PrefixLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv4 route prefixes in the
+         VPN instance fell below the maximum value."
+    ::= { unisRibVrfNotifyPrefix 4 }
+
+unisRibVrfIPv4PrefixTHExceed NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibVrfName,
+        unisRibVrfIndex,
+        unisRibVrfIPv4PrefixNumber,
+        unisRibVrfIPv4PrefixTHLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv4 route prefixes in the VPN
+         instance exceeded the warning threshold multiplied by the maximum
+         value."
+    ::= { unisRibVrfNotifyPrefix 5 }
+
+unisRibVrfIPv4PrefixTHExceedClr NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibVrfName,
+        unisRibVrfIndex,
+        unisRibVrfIPv4PrefixNumber,
+        unisRibVrfIPv4PrefixTHLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv4 route prefixes in the VPN
+         instance fell below the warning threshold multiplied by the maximum
+         value."
+    ::= { unisRibVrfNotifyPrefix 6 }
+
+unisRibVrfIPv6PrefixExceed NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibVrfName,
+        unisRibVrfIndex,
+        unisRibVrfIPv6PrefixNumber,
+        unisRibVrfIPv6PrefixLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv6 route prefixes in the VPN
+         instance exceeded the maximum value."
+    ::= { unisRibVrfNotifyPrefix 7 }
+
+unisRibVrfIPv6PrefixExceedClear NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibVrfName,
+        unisRibVrfIndex,
+        unisRibVrfIPv6PrefixNumber,
+        unisRibVrfIPv6PrefixLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv6 route prefixes in the VPN
+         instance fell below the maximum value."
+    ::= { unisRibVrfNotifyPrefix 8 }
+
+unisRibVrfIPv6PrefixTHExceed NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibVrfName,
+        unisRibVrfIndex,
+        unisRibVrfIPv6PrefixNumber,
+        unisRibVrfIPv6PrefixTHLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv6 route prefixes in the VPN
+         instance exceeded the warning threshold multiplied by the maximum
+         value."
+    ::= { unisRibVrfNotifyPrefix 9 }
+
+unisRibVrfIPv6PrefixTHExceedClr NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibVrfName,
+        unisRibVrfIndex,
+        unisRibVrfIPv6PrefixNumber,
+        unisRibVrfIPv6PrefixTHLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv6 route prefixes in the VPN
+         instance fell below the warning threshold multiplied by the maximum
+         value."
+    ::= { unisRibVrfNotifyPrefix 10 }
+
+unisRibPUBIPv4PrefixExceed NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibPublicIPv4PrefixNumber,
+        unisRibPublicIPv4PrefixLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv4 route prefixes in the
+         public network exceeded the maximum value."
+    ::= { unisRibPublicNotifyPrefix 1 }
+
+unisRibPUBIPv4PrefixExceedClear NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibPublicIPv4PrefixNumber,
+        unisRibPublicIPv4PrefixLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv4 route prefixes in the
+         public network fell below the maximum value."
+    ::= { unisRibPublicNotifyPrefix 2 }
+
+unisRibPUBIPv4PrefixTHExceed NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibPublicIPv4PrefixNumber,
+        unisRibPublicIPv4PrefixTHLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv4 route prefixes in the
+         public network exceeded the warning threshold multiplied by the
+         maximum value."
+    ::= { unisRibPublicNotifyPrefix 3 }
+
+unisRibPUBIPv4PrefixTHExceedClr NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibPublicIPv4PrefixNumber,
+        unisRibPublicIPv4PrefixTHLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv4 route prefixes in the
+         public network fell below the warning threshold multiplied by the
+         maximum value."
+    ::= { unisRibPublicNotifyPrefix 4 }
+
+unisRibPUBIPv6PrefixExceed NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibPublicIPv6PrefixNumber,
+        unisRibPublicIPv6PrefixLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv6 route prefixes in the
+         public network exceeded the maximum value."
+    ::= { unisRibPublicNotifyPrefix 5 }
+
+unisRibPUBIPv6PrefixExceedClear NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibPublicIPv6PrefixNumber,
+        unisRibPublicIPv6PrefixLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv6 route prefixes in the
+         public network fell below the maximum value."
+    ::= { unisRibPublicNotifyPrefix 6 }
+
+unisRibPUBIPv6PrefixTHExceed NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibPublicIPv6PrefixNumber,
+        unisRibPublicIPv6PrefixTHLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv6 route prefixes in the
+         public network exceeded the warning threshold multiplied by the
+         maximum value."
+    ::= { unisRibPublicNotifyPrefix 7 }
+
+unisRibPUBIPv6PrefixTHExceedClr NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibPublicIPv6PrefixNumber,
+        unisRibPublicIPv6PrefixTHLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv6 route prefixes in the
+         public network fell below the warning threshold multiplied by the
+         maximum value."
+    ::= { unisRibPublicNotifyPrefix 8 }
+
+unisRibIPv4PrefixExceed NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibIPv4PrefixNumber,
+        unisRibIPv4PrefixLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv4 route prefixes in the
+         public network and all VPN instances exceeded the maximum value."
+    ::= { unisRibNotifyPrefix 1 }
+
+unisRibIPv4PrefixExceedClear NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibIPv4PrefixNumber,
+        unisRibIPv4PrefixLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv4 route prefixes in the
+         public network and all VPN instances fell below the maximum value."
+    ::= { unisRibNotifyPrefix 2 }
+
+unisRibIPv4PrefixTHExceed NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibIPv4PrefixNumber,
+        unisRibIPv4PrefixTHLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv4 route prefixes in the
+         public network and all VPN instances exceeded the warning threshold
+         multiplied by the maximum value."
+    ::= { unisRibNotifyPrefix 3 }
+
+unisRibIPv4PrefixTHExceedClr NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibIPv4PrefixNumber,
+        unisRibIPv4PrefixTHLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv4 route prefixes in the
+         public network and all VPN instances fell below the warning threshold
+         multiplied by the maximum value."
+    ::= { unisRibNotifyPrefix 4 }
+
+unisRibIPv6PrefixExceed NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibIPv6PrefixNumber,
+        unisRibIPv6PrefixLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv6 route prefixes in the
+         public network and all VPN instances exceeded the maximum value."
+    ::= { unisRibNotifyPrefix 5 }
+
+unisRibIPv6PrefixExceedClear NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibIPv6PrefixNumber,
+        unisRibIPv6PrefixLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv6 route prefixes in the
+         public network and all VPN instances fell below the maximum value."
+    ::= { unisRibNotifyPrefix 6 }
+
+unisRibIPv6PrefixTHExceed NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibIPv6PrefixNumber,
+        unisRibIPv6PrefixTHLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv6 route prefixes in the
+         public network and all VPN instances exceeded the warning threshold
+         multiplied by the maximum value."
+    ::= { unisRibNotifyPrefix 7 }
+
+unisRibIPv6PrefixTHExceedClr NOTIFICATION-TYPE
+    OBJECTS {
+        unisRibIPv6PrefixNumber,
+        unisRibIPv6PrefixTHLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the number of IPv6 route prefixes in the
+         public network and all VPN instances fell below the warning threshold
+         multiplied by the maximum value."
+    ::= { unisRibNotifyPrefix 8 }
+
+END

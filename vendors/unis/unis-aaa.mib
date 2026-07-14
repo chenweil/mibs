@@ -1,0 +1,151 @@
+-- ==================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: AAA MIB
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 2019.03.11 The initial version, created by Yuhua
+-- V1.1 2020.01.13 updated by liubo
+--      Added unisAAATables, unisAAASlotStatTable, unisAAAChassisId,
+--      unisAAASlotId, and unisAAASlotSessionResourceNum
+-- ==================================================================
+UNIS-AAA-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, Unsigned32, OBJECT-TYPE, NOTIFICATION-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI;
+
+unisAAA MODULE-IDENTITY
+    LAST-UPDATED "202001130000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for managing AAA."
+
+--  Revision history
+REVISION     "202001130000Z"          -- January 13, 2020 at 00:00 GMT
+    DESCRIPTION  "Added unisAAATables, unisAAASlotStatTable, unisAAAChassisId,
+             unisAAASlotId, and unisAAASlotSessionResourceNum"
+
+REVISION     "201903110000Z"
+    DESCRIPTION  "The initial version."
+
+::= { unisCommon 181 }
+
+-- ----------------------------------------------------------------------
+-- unisAAAMibTrapOid Table
+-- ----------------------------------------------------------------------
+unisAAAMibTrap OBJECT IDENTIFIER ::= { unisAAA 1 }
+
+unisAAAMibTrapOid OBJECT IDENTIFIER ::= { unisAAAMibTrap 1 }
+unisAAATrapOidDefine OBJECT IDENTIFIER ::= { unisAAAMibTrapOid 1 }
+
+unisAAAUserChassis OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Chassis that online users access."
+    ::= { unisAAATrapOidDefine 1 }
+
+unisAAAUserSlot OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Slot that online users access."
+    ::= { unisAAATrapOidDefine 2 }
+
+unisAAAUserSlotMaxNumThreshold OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Threshold about the maximum number of online users on this slot."
+    ::= { unisAAATrapOidDefine 3 }
+
+-- ----------------------------------------------------------------------
+-- unisAAATraps Table
+-- ----------------------------------------------------------------------
+unisAAATraps      OBJECT IDENTIFIER ::= { unisAAAMibTrap 2 }
+unisAAATrapsDefine      OBJECT IDENTIFIER ::= { unisAAATraps 0 }
+
+unisAAAUserSlotMaxNum NOTIFICATION-TYPE
+    OBJECTS { unisAAAUserChassis,
+              unisAAAUserSlot,
+              unisAAAUserSlotMaxNumThreshold }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated when the number of online users on the slot
+         reaches the maximum user threshold.  Subsequent users are recommended
+         to access the device through another slot."
+    ::= { unisAAATrapsDefine 1 }
+
+unisAAAUserSlotMaxNumResume NOTIFICATION-TYPE
+    OBJECTS { unisAAAUserChassis,
+              unisAAAUserSlot,
+              unisAAAUserSlotMaxNumThreshold }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated when the number of online users on the slot
+         falls below 90% of the maximum user threshold."
+    ::= { unisAAATrapsDefine 2 }
+
+-- ----------------------------------------------------------------------
+-- unisAAATables Definition
+-- ----------------------------------------------------------------------
+unisAAATables OBJECT IDENTIFIER ::= { unisAAA 2 }
+
+-- ----------------------------------------------------------------------
+-- unisAAASlotStatTable Table
+-- ----------------------------------------------------------------------
+unisAAASlotStatTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF UnisAAASlotStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Slot-based AAA statistics."
+    ::= { unisAAATables 1 }
+
+unisAAASlotStatEntry OBJECT-TYPE
+    SYNTAX  UnisAAASlotStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "An entry (conceptual row) represents AAA statistics for a slot."
+        INDEX { unisAAAChassisId, unisAAASlotId }
+    ::= { unisAAASlotStatTable 1 }
+
+UnisAAASlotStatEntry ::= SEQUENCE {
+    unisAAAChassisId           Unsigned32,
+    unisAAASlotId              Unsigned32,
+    unisAAASlotSessionResourceNum      Unsigned32}
+
+unisAAAChassisId   OBJECT-TYPE
+    SYNTAX   Unsigned32 (0..65535)
+    MAX-ACCESS not-accessible
+    STATUS   current
+    DESCRIPTION
+        "ID of the member device where the statistics are collected."
+    ::= { unisAAASlotStatEntry 1 }
+
+unisAAASlotId   OBJECT-TYPE
+    SYNTAX   Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS   current
+    DESCRIPTION
+        "Slot ID of the statistics."
+    ::= { unisAAASlotStatEntry 2 }
+
+unisAAASlotSessionResourceNum   OBJECT-TYPE
+    SYNTAX   Unsigned32
+    MAX-ACCESS  read-only
+    STATUS   current
+    DESCRIPTION
+        "Number of used session resource on this slot."
+    ::= { unisAAASlotStatEntry 3 }
+END

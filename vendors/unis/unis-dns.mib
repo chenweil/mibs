@@ -1,0 +1,232 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: DNS MIB File
+-- Reference:
+-- Version: V1.0
+-- History:
+--      V1.0 created by jiangshuaihua
+--      initial version 2009-02-12
+-- =================================================================
+UNIS-DNS-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        OBJECT-GROUP, MODULE-COMPLIANCE
+            FROM SNMPv2-CONF
+        MODULE-IDENTITY, OBJECT-TYPE, Integer32
+            FROM SNMPv2-SMI
+        RowStatus
+            FROM SNMPv2-TC
+        InetAddressType, InetAddress
+            FROM INET-ADDRESS-MIB
+        unisCommon
+            FROM UNIS-OID-MIB;
+
+    unisDns MODULE-IDENTITY
+        LAST-UPDATED
+            "200902120000Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "This MIB contains objects to manage the DNS."
+        REVISION
+            "200902120000Z"
+        DESCRIPTION
+            " "
+        ::= { unisCommon 97 }
+
+-- Objects define
+    unisDnsObjects OBJECT IDENTIFIER ::= { unisDns 1 }
+
+-- DNS static server IP table
+    unisDnsStaticSrvIpTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisDnsStaticSrvIpEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "
+            This table is a list of DNS static server IPv4 address
+            configuration, which is manually specified.
+            "
+       ::= { unisDnsObjects 1 }
+
+    unisDnsStaticSrvIpEntry OBJECT-TYPE
+        SYNTAX      UnisDnsStaticSrvIpEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "
+            An entry of unisDnsStaticSrvIpTable.
+            "
+        INDEX
+        {
+            unisDnsStaticSrvIpType,
+            unisDnsStaticSrvIpAddr
+        }
+        ::= { unisDnsStaticSrvIpTable 1 }
+
+    UnisDnsStaticSrvIpEntry ::=
+        SEQUENCE {
+        unisDnsStaticSrvIpType       InetAddressType,
+        unisDnsStaticSrvIpAddr       InetAddress,
+        unisDnsStaticSrvIpPriority   Integer32,
+        unisDnsStaticSrvIpRowStatus  RowStatus
+        }
+
+    unisDnsStaticSrvIpType          OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "
+            This node gives the type of the static DNS server IP address.
+            "
+        ::= { unisDnsStaticSrvIpEntry 1 }
+
+    unisDnsStaticSrvIpAddr        OBJECT-TYPE
+        SYNTAX      InetAddress (SIZE (1..64))
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "
+            This node gives the IP address of the DNS server
+            specified by the user.
+            "
+        ::= { unisDnsStaticSrvIpEntry 2 }
+
+    unisDnsStaticSrvIpPriority          OBJECT-TYPE
+        SYNTAX      Integer32 (0..2147483647)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "
+            This node gives the priority of the DNS server, according to the
+            creation order.  The smaller the value is, the higher the priority
+            level is.
+            "
+        ::= { unisDnsStaticSrvIpEntry 3 }
+
+    unisDnsStaticSrvIpRowStatus      OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "
+            This node gives the operation status of this table entry.
+            "
+        ::= { unisDnsStaticSrvIpEntry 4 }
+
+-- DNS dynamic server IP table
+    unisDnsDynamicSrvIpTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisDnsDynamicSrvIpEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "
+            This table is a list of DNS dynamic server IPv4 address
+            configuration, which is dynamically obtained through DHCP.
+            "
+       ::= { unisDnsObjects 2 }
+
+    unisDnsDynamicSrvIpEntry OBJECT-TYPE
+        SYNTAX      UnisDnsDynamicSrvIpEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry of unisDnsDynamicSrvIpTable."
+        INDEX
+        {
+           unisDnsDynamicSrvIpType,
+           unisDnsDynamicSrvIpAddr
+        }
+        ::= { unisDnsDynamicSrvIpTable 1 }
+
+    UnisDnsDynamicSrvIpEntry ::=
+        SEQUENCE
+        {
+            unisDnsDynamicSrvIpType      InetAddressType,
+            unisDnsDynamicSrvIpAddr      InetAddress,
+            unisDnsDynamicSrvIpPriority  Integer32
+        }
+
+    unisDnsDynamicSrvIpType          OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "
+            This node gives the type of the dynamic DNS server IP address.
+            "
+        ::= { unisDnsDynamicSrvIpEntry 1 }
+
+    unisDnsDynamicSrvIpAddr          OBJECT-TYPE
+        SYNTAX      InetAddress (SIZE (1..64))
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "
+            This node gives the IP address of the DNS server dynamically
+            obtained through DHCP.
+            "
+        ::= { unisDnsDynamicSrvIpEntry 2 }
+
+    unisDnsDynamicSrvIpPriority      OBJECT-TYPE
+        SYNTAX      Integer32 (0..2147483647)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "
+            This node gives the priority of the DNS server, according to the
+            order obtained through DHCP.  The smaller the value is, the higher
+            the priority level is.
+            "
+        ::= { unisDnsDynamicSrvIpEntry 3 }
+
+-- Conformance define
+    unisDnsMIBConformance OBJECT IDENTIFIER ::= { unisDns 2 }
+
+        unisDnsMIBCompliances OBJECT IDENTIFIER ::= { unisDnsMIBConformance 1 }
+
+        unisDnsMIBCompliance MODULE-COMPLIANCE
+            STATUS current
+            DESCRIPTION
+                "
+                The compliance statement for entities which implement
+                the DNS MIB.
+                "
+            MODULE -- this module
+                MANDATORY-GROUPS
+                {
+                    unisDnsStaticSrvIpGroup,
+                    unisDnsDynamicSrvIpGroup
+                }
+            ::= { unisDnsMIBCompliances 1 }
+
+        unisDnsMIBGroups OBJECT IDENTIFIER ::= { unisDnsMIBConformance 2 }
+
+        unisDnsStaticSrvIpGroup OBJECT-GROUP
+            OBJECTS
+            {
+                unisDnsStaticSrvIpPriority,
+                unisDnsStaticSrvIpRowStatus
+            }
+            STATUS current
+            DESCRIPTION
+                "
+                A collection of objects providing mandatory DNS server IP
+                addresses manually specified.
+                "
+            ::= { unisDnsMIBGroups 1 }
+
+        unisDnsDynamicSrvIpGroup OBJECT-GROUP
+            OBJECTS { unisDnsDynamicSrvIpPriority }
+            STATUS current
+            DESCRIPTION
+                "
+                A collection of objects providing mandatory DNS server IP
+                addresses dynamically obtained through DHCP.
+                "
+            ::= { unisDnsMIBGroups 2 }
+END

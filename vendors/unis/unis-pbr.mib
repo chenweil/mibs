@@ -1,0 +1,555 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: policy-based routing(PBR) MIB File
+-- Reference:
+-- Version: V1.1
+-- History:
+--      V1.0 created by houyefei
+--        initial version 2010-12-10
+--      V1.1 2012-7-21 modified by houyefei
+--         Add unisPBRLocalPolicy
+--         Add unisPBRMibPolicyNodeTable, unisPBRMibIfPolicyTable,
+--             unisPBRMibMatchAclTable, unisPBRMibMatchAclTable,
+--             unisPBRMibApplyNexthopTablel,
+--             unisPBRMibApplyDefaultNexthopTable
+--           2012-8-13 modified by houyefei
+--         Modify unisPBRNexthopTrapEnabled
+--         Add unisPBRIPv6NexthopTrapEnabled
+-- =================================================================
+UNIS-PBR-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Integer32
+        FROM SNMPv2-SMI
+    TruthValue, DisplayString, RowStatus
+        FROM SNMPv2-TC
+    ifIndex
+        FROM IF-MIB
+    InetAddress, InetAddressType
+        FROM INET-ADDRESS-MIB;
+
+unisPBR MODULE-IDENTITY
+    LAST-UPDATED
+        "201012101558Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB contains objects to manage the configuration and information
+        of PBR.  It routes IP packets by user defined policy
+        other than normal destination address based routing.
+        "
+    REVISION
+        "201012101558Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 113 }
+
+-- Objects define
+unisPBRObjects OBJECT IDENTIFIER ::= { unisPBR 1 }
+
+unisPBRGlobal OBJECT IDENTIFIER ::= { unisPBRObjects 1 }
+
+unisPBRNexthopTrapEnabled OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value is a global setting only for IPv4 PBR.  If the
+         value is set to 'false', the feature is disabled."
+    DEFVAL { true }
+    ::= { unisPBRGlobal 1 }
+
+unisPBRLocalPolicy OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..19))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value is a global setting.  An existing policy name setting enables
+        local PBR for IPv4 packets initiated by the device.
+        Only one policy can be applied locally.
+        An empty name setting disables the feature.
+        "
+    ::= { unisPBRGlobal 2 }
+
+unisPBRIPv6NexthopTrapEnabled OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value is a global setting only for IPv6 PBR.  If the
+         value is set to 'false', the feature is disabled."
+    DEFVAL { true }
+    ::= { unisPBRGlobal 3 }
+    
+-- PBR trap table
+unisPBRMibTrap OBJECT IDENTIFIER ::= { unisPBRObjects 2 }
+
+unisPBRTrapObjects OBJECT IDENTIFIER  ::= { unisPBRMibTrap 1 }
+
+unisPBRNexthopAddrType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Indicating address type of unisPBRNexthopAddr, which can be IPv4
+        or IPv6."
+    ::= { unisPBRTrapObjects 1 }
+
+unisPBRNexthopAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The involved next hop IP address of trap information."
+    ::= { unisPBRTrapObjects 2 }
+
+unisPBRTraps OBJECT IDENTIFIER  ::= { unisPBRMibTrap 2 }
+
+unisPBRTrapsPrefix OBJECT IDENTIFIER  ::= { unisPBRTraps 0 }
+
+unisPBRNexthopFailedTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisPBRNexthopAddrType,
+        unisPBRNexthopAddr
+    }
+    STATUS      current
+    DESCRIPTION
+        "When the next hop of PBR apply clause became
+        unreachable according to routing information, trap is generated
+        and is sent to the remote monitoring device."
+    ::= { unisPBRTrapsPrefix 1 }
+
+-- PBR policy node table
+unisPBRTables OBJECT IDENTIFIER ::= { unisPBR 2 }
+
+unisPBRMibPolicyNodeTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPBRMibPolicyNodeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A table for PBR nodes.
+                "
+    ::= { unisPBRTables 1 }
+
+unisPBRMibPolicyNodeEntry  OBJECT-TYPE
+    SYNTAX      UnisPBRMibPolicyNodeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry for PBR nodes.
+                "
+    INDEX
+    {
+            unisPBRMibPolicyNodeAddrType,
+            unisPBRMibPolicyName,
+            unisPBRMibPolicyNodeId
+    }
+    ::= { unisPBRMibPolicyNodeTable 1 }
+
+UnisPBRMibPolicyNodeEntry ::=
+    SEQUENCE
+    {
+            unisPBRMibPolicyNodeAddrType      InetAddressType,
+            unisPBRMibPolicyName              DisplayString,
+            unisPBRMibPolicyNodeId            Integer32,
+            unisPBRMibPolicyNodeMode          TruthValue,
+            unisPBRMibPolicyNodeRowStatus     RowStatus
+    }
+
+unisPBRMibPolicyNodeAddrType    OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Address type of policy node, which can be IPv4 or IPv6."
+    ::= { unisPBRMibPolicyNodeEntry 1 }
+
+unisPBRMibPolicyName    OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..19))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Policy name of PBR node."
+    ::= { unisPBRMibPolicyNodeEntry 2 }
+
+unisPBRMibPolicyNodeId   OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Sequence identifier of PBR node."
+    ::= { unisPBRMibPolicyNodeEntry 3 }
+
+unisPBRMibPolicyNodeMode   OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Mode of PBR node.  If the mode of a node is marked as true,
+                the packets that meet the matching rules are processed by
+                action rules in the node.  If the mode of a node is marked as
+                false, the packets that meet the matching rules are
+                sent back to the normal forwarding path."
+    DEFVAL { true }
+    ::= { unisPBRMibPolicyNodeEntry 4 }
+
+unisPBRMibPolicyNodeRowStatus   OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "Operation status of this table entry.
+            Three actions are used: active,
+            createAndGo, and destroy.
+            "
+    ::= { unisPBRMibPolicyNodeEntry 5 }
+
+-- PBR local policy
+
+
+-- PBR interface policy relation table
+
+unisPBRMibIfPolicyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPBRMibIfPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A table for interfaces being applied with PBR
+                 nodes with the same policy name.
+                "
+    ::= { unisPBRTables 2 }
+
+unisPBRMibIfPolicyEntry  OBJECT-TYPE
+    SYNTAX      UnisPBRMibIfPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry for reference relation between interface and policy
+                nodes."
+    INDEX
+    {
+            unisPBRMibPolicyAddressType,
+            ifIndex
+    }
+    ::= { unisPBRMibIfPolicyTable 1 }
+
+UnisPBRMibIfPolicyEntry ::=
+    SEQUENCE
+    {
+            unisPBRMibPolicyAddressType   InetAddressType,
+            unisPBRMibAppliedPolicyName   DisplayString,
+            unisPBRMibIfPolicyRowStatus   RowStatus
+    }
+
+unisPBRMibPolicyAddressType    OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION  "Address type of policy node, which can be
+                 IPv4 or IPv6."
+    ::= { unisPBRMibIfPolicyEntry 1 }
+
+unisPBRMibAppliedPolicyName    OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..19))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Policy name of PBR nodes."
+    ::= { unisPBRMibIfPolicyEntry 2 }
+
+unisPBRMibIfPolicyRowStatus  OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "Operation status of this table entry.
+            Three actions are used: active,
+            createAndGo, and destroy.
+            "
+    ::= { unisPBRMibIfPolicyEntry 3 }
+
+-- PBR policy node acl rule table
+
+unisPBRMibMatchAclTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPBRMibMatchAclEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A table for ACLs being used by a policy node.  Only one ACL
+                can be used within a node at most.
+                "
+    ::= { unisPBRTables 3 }
+
+unisPBRMibMatchAclEntry  OBJECT-TYPE
+    SYNTAX      UnisPBRMibMatchAclEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry for policy node that uses an ACL group as its
+                if-match rule."
+    INDEX
+    {
+            unisPBRMibPolicyNodeAddrType,
+            unisPBRMibPolicyName,
+            unisPBRMibPolicyNodeId
+    }
+    ::= { unisPBRMibMatchAclTable 1 }
+
+UnisPBRMibMatchAclEntry ::=
+    SEQUENCE
+    {
+            unisPBRMibAclGroupId   Integer32
+    }
+
+unisPBRMibAclGroupId    OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION "Index of number-acl group.
+                 Setting -1 indicates closing this rule.
+                "
+    ::= { unisPBRMibMatchAclEntry 1 }
+
+-- PBR policy node apply precedence action table
+
+unisPBRMibApplyPrecedenceTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPBRMibApplyPrecedenceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A table for precedence values being used by a policy node.
+                 Only one precedence value can be used within a node at most.
+                "
+    ::= { unisPBRTables 4 }
+
+unisPBRMibApplyPrecedenceEntry  OBJECT-TYPE
+    SYNTAX      UnisPBRMibApplyPrecedenceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry for policy node with an action
+                 to set IP precedence for matching packets.
+                "
+    INDEX
+    {
+            unisPBRMibPolicyNodeAddrType,
+            unisPBRMibPolicyName,
+            unisPBRMibPolicyNodeId
+    }
+    ::= { unisPBRMibApplyPrecedenceTable 1 }
+
+UnisPBRMibApplyPrecedenceEntry ::=
+    SEQUENCE
+    {
+            unisPBRMibApplyPrecedenceValue Integer32
+    }
+
+unisPBRMibApplyPrecedenceValue    OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION "Value of precedence being applied on IP header.
+                   <0-7>           Value of precedence
+                   routine         Specify routine precedence(0)
+                   priority        Specify priority precedence(1)
+                   immediate       Specify immediate precedence(2)
+                   flash           Specify flash precedence(3)
+                   flash-override  Specify flash-override precedence(4)
+                   critical        Specify critical precedence(5)
+                   internet        Specify internetwork control precedence(6)
+                   network         Specify network control precedence(7)
+                 Setting -1 indicates closing this action.
+                "
+    ::= { unisPBRMibApplyPrecedenceEntry 1 }
+
+-- PBR policy node apply next hop action table
+
+unisPBRMibApplyNexthopTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPBRMibApplyNexthopEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A table for next hop actions being used by a policy node.
+                "
+    ::= { unisPBRTables 5 }
+
+unisPBRMibApplyNexthopEntry  OBJECT-TYPE
+    SYNTAX      UnisPBRMibApplyNexthopEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry for policy node with an action
+                 to set next hop for matching packets.
+                "
+    INDEX
+    {
+            unisPBRMibPolicyNodeAddrType,
+            unisPBRMibPolicyName,
+            unisPBRMibPolicyNodeId,
+            unisPBRMibApplyNexthopIndex
+    }
+    ::= { unisPBRMibApplyNexthopTable 1 }
+
+UnisPBRMibApplyNexthopEntry ::=
+    SEQUENCE
+    {
+            unisPBRMibApplyNexthopIndex       Integer32,
+            unisPBRMibApplyNexthopVpnName     DisplayString,
+            unisPBRMibApplyNexthopAddressType InetAddressType,
+            unisPBRMibApplyNexthopAddress     InetAddress,
+            unisPBRMibApplyNexthopTrackId     Integer32,
+            unisPBRMibApplyNexthopDirect      TruthValue,
+            unisPBRMibApplyNexthopRowStatus   RowStatus
+    }
+
+unisPBRMibApplyNexthopIndex    OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Index of next hop for the apply next hop action."
+    ::= { unisPBRMibApplyNexthopEntry 1 }
+
+unisPBRMibApplyNexthopVpnName    OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..31))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Name of VPN instance where apply next hop action is used."
+    ::= { unisPBRMibApplyNexthopEntry 2 }
+
+unisPBRMibApplyNexthopAddressType     OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Address type of unisPBRMibApplyNexthopAddress,
+                 which can be IPv4 or IPv6."
+    ::= { unisPBRMibApplyNexthopEntry 3 }
+
+
+unisPBRMibApplyNexthopAddress     OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Next hop IP address of apply next hop action."
+    ::= { unisPBRMibApplyNexthopEntry 4 }
+
+unisPBRMibApplyNexthopTrackId     OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Identifier of track object related with next hop.
+                 Setting 0 indicates closing this function.
+                "
+    ::= { unisPBRMibApplyNexthopEntry 5 }
+
+unisPBRMibApplyNexthopDirect        OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Direct route attribute of next hop
+                according to route information."
+    DEFVAL { false }
+    ::= { unisPBRMibApplyNexthopEntry 6 }
+
+
+unisPBRMibApplyNexthopRowStatus  OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "Operation status of this table entry.
+            Three actions are used: active,
+            createAndGo, and destroy.
+            "
+    ::= { unisPBRMibApplyNexthopEntry 7 }
+
+-- PBR policy node apply default next hop action table
+
+unisPBRMibApplyDefaultNexthopTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPBRMibApplyDefaultNexthopEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A table for default next hop actions being used by a policy
+                node."
+    ::= { unisPBRTables 6 }
+
+unisPBRMibApplyDefaultNexthopEntry  OBJECT-TYPE
+    SYNTAX      UnisPBRMibApplyDefaultNexthopEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry for policy node with an action
+                 to set default next hop for matching packets.
+                "
+    INDEX
+    {
+            unisPBRMibPolicyNodeAddrType,
+            unisPBRMibPolicyName,
+            unisPBRMibPolicyNodeId,
+            unisPBRMibApplyDefaultNexthopIndex
+    }
+    ::= { unisPBRMibApplyDefaultNexthopTable 1 }
+
+UnisPBRMibApplyDefaultNexthopEntry ::=
+    SEQUENCE
+    {
+            unisPBRMibApplyDefaultNexthopIndex       Integer32,
+            unisPBRMibApplyDefaultNexthopVpnName     DisplayString,
+            unisPBRMibApplyDefaultNexthopAddressType InetAddressType,
+            unisPBRMibApplyDefaultNexthopAddress     InetAddress,
+            unisPBRMibApplyDefaultNexthopTrackId     Integer32,
+            unisPBRMibApplyDefaultNexthopDirect      TruthValue,
+            unisPBRMibApplyDefaultNexthopRowStatus   RowStatus
+    }
+
+unisPBRMibApplyDefaultNexthopIndex    OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Index of default next hop  for the apply
+                default next hop action."
+    ::= { unisPBRMibApplyDefaultNexthopEntry 1 }
+
+unisPBRMibApplyDefaultNexthopVpnName    OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..31))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Name of VPN instance where apply default next hop action
+                is used."
+    ::= { unisPBRMibApplyDefaultNexthopEntry 2 }
+
+unisPBRMibApplyDefaultNexthopAddressType     OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Address type of unisPBRMibApplyDefaultNexthopAddress,
+                 which can be IPv4 or IPv6."
+    ::= { unisPBRMibApplyDefaultNexthopEntry 3 }
+
+
+unisPBRMibApplyDefaultNexthopAddress     OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Next hop IP address of apply default next hop action."
+    ::= { unisPBRMibApplyDefaultNexthopEntry 4 }
+
+unisPBRMibApplyDefaultNexthopTrackId     OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Identifier of track object related with default next hop.
+                 Setting 0 indicates closing this function."
+    ::= { unisPBRMibApplyDefaultNexthopEntry 5 }
+
+unisPBRMibApplyDefaultNexthopDirect        OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Direct route attribute of apply default next hop
+                address according to route information."
+    DEFVAL { false }
+    ::= { unisPBRMibApplyDefaultNexthopEntry 6 }
+
+
+unisPBRMibApplyDefaultNexthopRowStatus  OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "Operation status of this table entry.
+            Three actions are used: active,
+            createAndGo, and destroy.
+            "
+    ::= { unisPBRMibApplyDefaultNexthopEntry 7 }
+
+END

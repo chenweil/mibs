@@ -1,0 +1,740 @@
+-- =========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB is designed to set session configuration or get session information.
+-- Reference:
+-- Version: V1.4
+-- History:
+--  V1.0 2013-12-20 created by liqian 04379
+--       Initial version.
+--  V1.1 2014-07-14 modified by songhaibin 03750
+--       Add unisSessionStatTCPCount, unisSessionStatUDPCount,
+--       unisSessionStatOtherCount, unisSessionStatTCPCreateRate,
+--       unisSessionStatUDPCreateRate, unisSessionStatOtherCreateRate.
+--  V1.2 2014-10-14 modified by songhaibin 03750
+--       Add unisSessionEntTCPTotal, unisSessionEntUDPTotal,
+--       unisSessionEntOtherTotal, unisSessionEntTable.
+--       2016-12-25 modified by wangxiaohua 11458
+--       Add unisSessionStatDNSCount, unisSessionStatFTPCount,
+--       unisSessionStatGTPCount, unisSessionStatH323Count,
+--       unisSessionStatHTTPCount, unisSessionStatILSCount,
+--       unisSessionStatMGCPCount, unisSessionStatNBTCount,
+--       unisSessionStatPPTPCount, unisSessionStatRSHCount,
+--       unisSessionStatRTSPCount, unisSessionStatSCCPCount,
+--       unisSessionStatSIPCount, unisSessionStatSMTPCount,
+--       unisSessionStatSQLNETCount, unisSessionStatSSHCount,
+--       unisSessionStatTELNETCount, unisSessionStatTFTPCount,
+--       unisSessionStatXDMCPCount.
+--  V1.3 2018-4-26 modified by zhouliping 01738
+--       Add unisSessionDrvTrap, unisSessionDrvMaxNum.
+--  V1.4 2019-07-25 modified by liuzhengrui 17656
+--       Add unisSessUsageAbruptAlarmTrap unisSessRateAbruptAlarmTrap unisSessTryRateAbruptAlarmTrap.
+--       2019-11-11 modified by zhongtingming 18548
+--       Add unisSessionThdMaxTrap unisSessionThdRecoveryTrap.
+-- =========================================================================
+UNIS-SESSION-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, Counter64, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI;
+
+unisSession MODULE-IDENTITY
+    LAST-UPDATED "201911111427Z"   -- November 11, 2019
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB is designed to manage sessions."
+
+    -- Revision History
+    REVISION "201911111427Z"  -- November 11, 2019
+    DESCRIPTION
+        "Add unisSessionThdMaxTrap unisSessionThdRecoveryTrap"
+    REVISION "201907251105Z"  -- July 25, 2019
+    DESCRIPTION
+        "Add unisSessUsageAbruptAlarmTrap, unisSessUsageAbruptAlarmTrap, unisSessTryRateAbruptAlarmTrap."
+    REVISION "201805161105Z"  -- May 16, 2018
+    DESCRIPTION
+        "Add unisSessionDrvTrap, unisSessionDrvMaxNum."
+    REVISION "201612251105Z"  -- December 25, 2016
+    DESCRIPTION
+        "Add the unisSessionStatDNSCount,
+         h3cSessionStatFTPCount,
+         h3cSessionStatGTPCount,
+         h3cSessionStatH323Count,
+         h3cSessionStatHTTPCount,
+         h3cSessionStatILSCount,
+         h3cSessionStatMGCPCount,
+         h3cSessionStatNBTCount,
+         h3cSessionStatPPTPCount,
+         h3cSessionStatRSHCount,
+         h3cSessionStatRTSPCount,
+         h3cSessionStatSCCPCount,
+         h3cSessionStatSIPCount,
+         h3cSessionStatSMTPCount,
+         h3cSessionStatSQLNETCount,
+         h3cSessionStatSSHCount,
+         h3cSessionStatTELNETCount,
+         h3cSessionStatTFTPCount,
+         h3cSessionStatXDMCPCount."
+    REVISION "201410141830Z"
+    DESCRIPTION
+        "Add unisSessionEntTCPTotal, unisSessionEntUDPTotal, unisSessionEntOtherTotal, unisSessionEntTable."
+    REVISION "201407151530Z"
+    DESCRIPTION
+        "The latest version of this MIB module."
+    REVISION     "201312200000Z"  -- December 26, 2013
+    DESCRIPTION  "Initial version."
+
+    ::= { unisCommon 149 }
+
+--
+-- Table definitions
+--
+
+unisSessionTables OBJECT IDENTIFIER ::= { unisSession 1 }
+-- ----------------------------------------------------------------------
+  -- Session statistic table
+-- ----------------------------------------------------------------------
+unisSessionStatTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF UnisSessionStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "The statistics of sessions."
+::= { unisSessionTables 1 }
+
+unisSessionStatEntry OBJECT-TYPE
+    SYNTAX  UnisSessionStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "An entry (conceptual row) representing session statistics information."
+    INDEX { unisSessionStatChassis, unisSessionStatSlot, unisSessionStatCPUID }
+::= { unisSessionStatTable 1 }
+
+UnisSessionStatEntry ::= SEQUENCE {
+    unisSessionStatChassis          Unsigned32,
+    unisSessionStatSlot             Unsigned32,
+    unisSessionStatCPUID            Unsigned32,
+    unisSessionStatCount            Unsigned32,
+    unisSessionStatCreateRate       Unsigned32,
+    unisSessionStatTCPCount         Unsigned32,
+    unisSessionStatUDPCount         Unsigned32,
+    unisSessionStatOtherCount       Unsigned32,
+    unisSessionStatTCPCreateRate    Unsigned32,
+    unisSessionStatUDPCreateRate    Unsigned32,
+    unisSessionStatOtherCreateRate  Unsigned32,
+    unisSessionStatTCPTotal         Counter64,
+    unisSessionStatUDPTotal         Counter64,
+    unisSessionStatOtherTotal       Counter64,
+    unisSessionStatDNSCount         Unsigned32,
+    unisSessionStatFTPCount         Unsigned32,
+    unisSessionStatGTPCount         Unsigned32,
+    unisSessionStatH323Count        Unsigned32,
+    unisSessionStatHTTPCount        Unsigned32,
+    unisSessionStatILSCount         Unsigned32,
+    unisSessionStatMGCPCount        Unsigned32,
+    unisSessionStatNBTCount         Unsigned32,
+    unisSessionStatPPTPCount        Unsigned32,
+    unisSessionStatRSHCount         Unsigned32,
+    unisSessionStatRTSPCount        Unsigned32,
+    unisSessionStatSCCPCount        Unsigned32,
+    unisSessionStatSIPCount         Unsigned32,
+    unisSessionStatSMTPCount        Unsigned32,
+    unisSessionStatSQLNETCount      Unsigned32,
+    unisSessionStatSSHCount         Unsigned32,
+    unisSessionStatTELNETCount      Unsigned32,
+    unisSessionStatTFTPCount        Unsigned32,
+    unisSessionStatXDMCPCount       Unsigned32
+    }
+
+unisSessionStatChassis   OBJECT-TYPE
+    SYNTAX Unsigned32(0..65534)
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "An IRF member device ID."
+::= { unisSessionStatEntry  1 }
+
+unisSessionStatSlot    OBJECT-TYPE
+    SYNTAX Unsigned32(0..65534)
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "The slot where the card resides."
+::= { unisSessionStatEntry  2 }
+
+unisSessionStatCPUID   OBJECT-TYPE
+    SYNTAX Unsigned32(0..7)
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "CPU ID."
+::= { unisSessionStatEntry  3 }
+
+unisSessionStatCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of current sessions."
+::= { unisSessionStatEntry  4 }
+
+unisSessionStatCreateRate     OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of sessions per second."
+::= { unisSessionStatEntry  5 }
+
+unisSessionStatTCPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of TCP sessions."
+::= { unisSessionStatEntry  6 }
+
+unisSessionStatUDPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of UDP sessions."
+::= { unisSessionStatEntry  7 }
+
+unisSessionStatOtherCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of other sessions."
+::= { unisSessionStatEntry  8 }
+
+unisSessionStatTCPCreateRate  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of TCP sessions per second."
+::= { unisSessionStatEntry  9 }
+
+unisSessionStatUDPCreateRate  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of UDP sessions per second."
+::= { unisSessionStatEntry  10 }
+
+unisSessionStatOtherCreateRate  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of other sessions per second."
+::= { unisSessionStatEntry  11 }
+
+unisSessionStatTCPTotal  OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The total number of TCP sessions created till now."
+::= { unisSessionStatEntry  12 }
+
+unisSessionStatUDPTotal  OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The total number of UDP sessions created till now."
+::= { unisSessionStatEntry  13 }
+
+unisSessionStatOtherTotal  OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The total number of Other sessions created till now."
+::= { unisSessionStatEntry  14 }
+
+unisSessionStatDNSCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of DNS sessions."
+::= { unisSessionStatEntry  15 }
+
+unisSessionStatFTPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of FTP sessions."
+::= { unisSessionStatEntry  16 }
+
+unisSessionStatGTPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of GTP sessions."
+::= { unisSessionStatEntry  17 }
+
+unisSessionStatH323Count  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of H323 sessions."
+::= { unisSessionStatEntry  18 }
+
+unisSessionStatHTTPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of HTTP sessions."
+::= { unisSessionStatEntry  19 }
+
+unisSessionStatILSCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of ILS sessions."
+::= { unisSessionStatEntry  20 }
+
+unisSessionStatMGCPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of MGCP sessions."
+::= { unisSessionStatEntry  21 }
+
+unisSessionStatNBTCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of NBT sessions."
+::= { unisSessionStatEntry  22 }
+
+unisSessionStatPPTPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of PPTP sessions."
+::= { unisSessionStatEntry  23 }
+
+unisSessionStatRSHCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of RSH sessions."
+::= { unisSessionStatEntry  24 }
+
+unisSessionStatRTSPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of RTSP sessions."
+::= { unisSessionStatEntry  25 }
+
+unisSessionStatSCCPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of SCCP sessions."
+::= { unisSessionStatEntry  26 }
+
+unisSessionStatSIPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of SIP sessions."
+::= { unisSessionStatEntry  27 }
+
+unisSessionStatSMTPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of SMTP sessions."
+::= { unisSessionStatEntry  28 }
+
+unisSessionStatSQLNETCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of SQLNET sessions."
+::= { unisSessionStatEntry  29 }
+
+unisSessionStatSSHCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of SSH sessions."
+::= { unisSessionStatEntry  30 }
+
+unisSessionStatTELNETCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of TELNET sessions."
+::= { unisSessionStatEntry  31 }
+
+unisSessionStatTFTPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of TFTP sessions."
+::= { unisSessionStatEntry  32 }
+
+unisSessionStatXDMCPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of XDMCP sessions."
+::= { unisSessionStatEntry  33 }
+
+-- ----------------------------------------------------------------------
+  -- Session statistic by entity table
+-- ----------------------------------------------------------------------
+unisSessionEntTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF UnisSessionEntEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "The statistics of sessions by entity."
+::= { unisSessionTables 2 }
+
+unisSessionEntEntry OBJECT-TYPE
+    SYNTAX  UnisSessionEntEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "An entry (conceptual row) representing session statistics information."
+    INDEX { unisSessionEntIndex }
+::= { unisSessionEntTable 1 }
+
+UnisSessionEntEntry ::= SEQUENCE {
+    unisSessionEntIndex            Unsigned32,
+    unisSessionEntCount            Unsigned32,
+    unisSessionEntCreateRate       Unsigned32,
+    unisSessionEntTCPCount         Unsigned32,
+    unisSessionEntUDPCount         Unsigned32,
+    unisSessionEntOtherCount       Unsigned32,
+    unisSessionEntTCPCreateRate    Unsigned32,
+    unisSessionEntUDPCreateRate    Unsigned32,
+    unisSessionEntOtherCreateRate  Unsigned32,
+    unisSessionEntTCPTotal         Counter64,
+    unisSessionEntUDPTotal         Counter64,
+    unisSessionEntOtherTotal       Counter64
+    }
+
+unisSessionEntIndex   OBJECT-TYPE
+    SYNTAX Unsigned32(1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "Device entity index."
+::= { unisSessionEntEntry  1 }
+
+unisSessionEntCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of current sessions."
+::= { unisSessionEntEntry  2 }
+
+unisSessionEntCreateRate     OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of sessions per second."
+::= { unisSessionEntEntry  3 }
+
+unisSessionEntTCPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of TCP sessions."
+::= { unisSessionEntEntry  4 }
+
+unisSessionEntUDPCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of UDP sessions."
+::= { unisSessionEntEntry  5 }
+
+unisSessionEntOtherCount  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of other sessions."
+::= { unisSessionEntEntry  6 }
+
+unisSessionEntTCPCreateRate  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of TCP sessions per second."
+::= { unisSessionEntEntry  7 }
+
+unisSessionEntUDPCreateRate  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of UDP sessions per second."
+::= { unisSessionEntEntry  8 }
+
+unisSessionEntOtherCreateRate  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The number of other sessions per second."
+::= { unisSessionEntEntry  9 }
+
+unisSessionEntTCPTotal  OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The total number of TCP sessions created till now."
+::= { unisSessionEntEntry  10 }
+
+unisSessionEntUDPTotal  OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The total number of UDP sessions created till now."
+::= { unisSessionEntEntry  11 }
+
+unisSessionEntOtherTotal  OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The total number of other sessions created till now."
+::= { unisSessionEntEntry  12 }
+
+-- Describe objects for session hardware resources trap
+unisSessionDrvTraps OBJECT IDENTIFIER ::= { unisSessionTables 3 }
+unisSessionDrvTrapPrefix OBJECT IDENTIFIER ::= { unisSessionDrvTraps 0 }
+unisSessionDrvMaxTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisSessionDrvNum,
+            unisSessionChassis,
+            unisSessionSlot,
+            unisSessionCpu
+        }
+    STATUS      current
+    DESCRIPTION
+    "Send trap when the number of sessions supported by hardware
+     already reached the unisSessionDrvNum."
+    ::= { unisSessionDrvTrapPrefix 1 }
+unisSessionDrvRecoveryTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisSessionChassis,
+            unisSessionSlot,
+            unisSessionCpu
+         }
+    STATUS      current
+    DESCRIPTION
+    "Send trap when the Session resources supported by hardware had been released."
+    ::= { unisSessionDrvTrapPrefix 2 }
+
+unisSessionThdMaxTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisSessionUsage,
+            unisSessionThreshold,
+            unisSessionChassis,
+            unisSessionSlot,
+            unisSessionCpu
+        }
+    STATUS      current
+    DESCRIPTION
+    "This notification is generated when the usage of sessions reached the threshold."
+    ::= { unisSessionDrvTrapPrefix 3 }
+unisSessionThdRecoveryTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisSessionUsage,
+            unisSessionThreshold,
+            unisSessionChassis,
+            unisSessionSlot,
+            unisSessionCpu
+        }
+    STATUS      current
+    DESCRIPTION
+    "This notification is generated when the usage of sessions dropped below the threshold."
+    ::= { unisSessionDrvTrapPrefix 4 }
+
+unisSessionDrvTrapObjects OBJECT IDENTIFIER ::= { unisSessionDrvTraps 1 }
+unisSessionDrvNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "The number of sessions supported by hardware."
+    ::= { unisSessionDrvTrapObjects 1 }
+unisSessionChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "An IRF member device ID."
+    ::= { unisSessionDrvTrapObjects 2}
+unisSessionSlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "The slot where the card resides."
+    ::= { unisSessionDrvTrapObjects 3 }
+unisSessionCpu OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "CPU ID."
+    ::= { unisSessionDrvTrapObjects 4 }
+unisSessionUsage OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "The number of rate."
+    ::= { unisSessionDrvTrapObjects 5 }
+unisSessionThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "The number of threshold rate."
+    ::= { unisSessionDrvTrapObjects 6 }
+
+--Describe objects for session abrupt trap
+unisSessionMonitor OBJECT IDENTIFIER ::= { unisSessionTables 4}
+
+unisSessionTrapObjects OBJECT IDENTIFIER ::= { unisSessionMonitor 0 }
+
+unisSessUsageAbruptAlarmTrap NOTIFICATION-TYPE
+    OBJECTS{
+    unisSessionChassis,
+    unisSessionSlot,
+    unisSessionCpu,
+    unisSessionUsageAbruptVar,
+    unisSessionLastStat,
+    unisSessionCurrentStat
+  }
+  STATUS current
+  DESCRIPTION
+    "This notification is generated when a unisSessionUsageAbruptVar
+    alarm is generated."
+::= { unisSessionTrapObjects 1}
+
+unisSessRateAbruptAlarmTrap NOTIFICATION-TYPE
+    OBJECTS{
+    unisSessionChassis,
+    unisSessionSlot,
+    unisSessionCpu,
+    unisSessionRateAbruptVar,
+    unisSessionLastStat,
+    unisSessionCurrentStat
+  }
+  STATUS current
+  DESCRIPTION
+    "This notification is generated when a unisSessionRateAbruptVar
+    alarm is generated."
+::= { unisSessionTrapObjects 2 }
+
+unisSessTryRateAbruptAlarmTrap NOTIFICATION-TYPE
+    OBJECTS{
+    unisSessionChassis,
+    unisSessionSlot,
+    unisSessionCpu,
+    unisSessionTryRateAbruptVar,
+    unisSessionLastStat,
+    unisSessionCurrentStat
+  }
+  STATUS current
+  DESCRIPTION
+    "This notification is generated when a unisSessionTryRateAbruptVar
+    alarm is generated."
+::= { unisSessionTrapObjects 3 }
+
+unisSessionAbruptAlarm OBJECT IDENTIFIER ::= { unisSessionMonitor 1 }
+
+unisSessionUsageAbruptVar OBJECT-TYPE
+  SYNTAX Unsigned32
+  MAX-ACCESS accessible-for-notify
+  STATUS current
+  DESCRIPTION
+    "The value is percentage change about session concurrency during a statistical period(10s)."
+  ::= { unisSessionAbruptAlarm 1}
+
+unisSessionRateAbruptVar OBJECT-TYPE
+  SYNTAX Unsigned32
+  MAX-ACCESS accessible-for-notify
+  STATUS current
+  DESCRIPTION
+    "The value is percentage change about session creation rate during a statistical period(10s)."
+  ::= { unisSessionAbruptAlarm 2 }
+
+unisSessionTryRateAbruptVar OBJECT-TYPE
+  SYNTAX Unsigned32
+  MAX-ACCESS accessible-for-notify
+  STATUS current
+  DESCRIPTION
+    "The value is percentage change about session attempt rate during a statistical period(10s)."
+  ::= { unisSessionAbruptAlarm 3 }
+
+unisSessionLastStat OBJECT-TYPE
+  SYNTAX Unsigned32
+  MAX-ACCESS accessible-for-notify
+  STATUS current
+  DESCRIPTION
+    "The value of last session statistics(Usage:piece  Rate/TryRate:piece/s)."
+  ::= { unisSessionAbruptAlarm 4}
+
+unisSessionCurrentStat OBJECT-TYPE
+  SYNTAX Unsigned32
+  MAX-ACCESS accessible-for-notify
+  STATUS current
+  DESCRIPTION
+    "The value of current session statistics(Usage:piece  Rate/TryRate:piece/s)."
+  ::= { unisSessionAbruptAlarm 5}
+END

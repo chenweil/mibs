@@ -1,0 +1,89 @@
+-- =========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB is designed to set rbm configuration or get rbm information.
+-- Reference:
+-- Version: V1.0
+-- History:
+--  V1.0 2020-05-19 created by liuzhengrui 17656
+--       Initial version.
+-- =========================================================================
+UNIS-RBM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+    FROM UNIS-OID-MIB
+        Integer32, OBJECT-TYPE, MODULE-IDENTITY , NOTIFICATION-TYPE
+    FROM SNMPv2-SMI;
+
+
+unisRbm MODULE-IDENTITY
+    LAST-UPDATED "202005191105Z"  -- May 19, 2020
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB is designed to manage Rbm products."
+
+ -- Revision History
+    REVISION     "202005191105Z"  -- May 19, 2020
+    DESCRIPTION  "Initial version."
+    ::= { unisCommon 187 }
+
+--
+-- Table definitions
+--
+
+unisRbmTables OBJECT IDENTIFIER ::= { unisRbm 1 }
+
+-- Describe objects for rbm abrupt trap
+
+unisRbmTrapObjects OBJECT IDENTIFIER ::= { unisRbmTables 1 }
+
+unisRbmTrapVar OBJECT-TYPE
+  SYNTAX Integer32 (0..1)
+  MAX-ACCESS accessible-for-notify
+  STATUS current
+  DESCRIPTION
+        "The value is RBM trap."
+::= { unisRbmTrapObjects 1 }
+
+
+
+unisRbmMonitor OBJECT IDENTIFIER ::= { unisRbmTables 2 }
+
+unisRbmTrap OBJECT IDENTIFIER ::= { unisRbmMonitor 0 }
+
+unisRbmKeepaliveNormal NOTIFICATION-TYPE
+    OBJECTS
+  {
+    unisRbmTrapVar
+  }
+  STATUS current
+  DESCRIPTION
+        "This notification is generated when RBM keepalive channel connected."
+::= { unisRbmTrap 1 }
+
+unisRbmKeepaliveFailure NOTIFICATION-TYPE
+    OBJECTS
+  {
+    unisRbmTrapVar
+  }
+  STATUS current
+  DESCRIPTION
+        "This notification is generated when RBM keepalive channel disconnected."
+::= { unisRbmTrap 2 }
+
+unisRbmStateChange NOTIFICATION-TYPE
+    OBJECTS
+  {
+    unisRbmTrapVar
+  }
+  STATUS current
+  DESCRIPTION
+        "This notification is generated when RBM running status changes(0:new-state = Active,1:new-state = Standby)."
+::= { unisRbmTrap 3 }
+
+
+END

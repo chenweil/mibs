@@ -1,0 +1,413 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 created by zhanghaiyang.
+--    Initial version of the MIB
+-- =================================================================
+UNIS-RS485-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        ifIndex
+    FROM IF-MIB
+        Integer32, OBJECT-TYPE, MODULE-IDENTITY
+    FROM SNMPv2-SMI
+        InetAddressType, InetAddress
+    FROM INET-ADDRESS-MIB
+        DisplayString, RowStatus
+    FROM SNMPv2-TC;
+
+
+unisRS485 MODULE-IDENTITY
+    LAST-UPDATED "200910210000Z" -- October 21, 2009
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The objects in this MIB module are used to manage RS485 interfaces,
+        and manage sessions on them."
+    ::= { unisCommon 109 }
+
+--
+-- unisRS485Properties
+--
+unisRS485Properties OBJECT IDENTIFIER ::= { unisRS485 1 }
+
+--
+-- unisRS485PropertiesTable
+--
+
+unisRS485PropertiesTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF UnisRS485PropertiesEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+            "Propertie table."
+    ::= { unisRS485Properties 1 }
+
+unisRS485PropertiesEntry OBJECT-TYPE
+    SYNTAX          UnisRS485PropertiesEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+            "Propertie entry."
+    INDEX           { ifIndex }
+    ::= { unisRS485PropertiesTable 1 }
+
+UnisRS485PropertiesEntry ::=
+    SEQUENCE{
+        unisRS485RawSessionNextIndex
+            Integer32,
+        unisRS485BaudRate
+            INTEGER,
+        unisRS485DataBits
+            INTEGER,
+        unisRS485Parity
+            INTEGER,
+        unisRS485StopBits
+            INTEGER,
+        unisRS485FlowControl
+            INTEGER,
+        unisRS485TXCharacters
+            Integer32,
+        unisRS485RXCharacters
+            Integer32,
+        unisRS485TXErrCharacters
+            Integer32,
+        unisRS485RXErrCharacters
+            Integer32,
+        unisRS485ResetCharacters
+            INTEGER
+    }
+
+unisRS485RawSessionNextIndex OBJECT-TYPE
+    SYNTAX          Integer32 (1..64)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The next valid index of raw sessions, from 1 to 64,
+        which session has been created.
+
+        When there is no valid index left, it will return 0."
+    ::= { unisRS485PropertiesEntry 1 }
+
+unisRS485BaudRate OBJECT-TYPE
+    SYNTAX          INTEGER {
+                        bautRate300(1),         -- baud rate 300
+                        bautRate600(2),         -- baud rate 600
+                        bautRate1200(3),        -- baud rate 1200
+                        bautRate2400(4),        -- baud rate 2400
+                        bautRate4800(5),        -- baud rate 4800
+                        bautRate9600(6),        -- baud rate 9600
+                        bautRate19200(7),       -- baud rate 19200
+                        bautRate38400(8),       -- baud rate 38400
+                        bautRate57600(9),       -- baud rate 57600
+                        bautRate115200(10)      -- baud rate 115200
+                    }
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+            "The port's baud rate."
+    DEFVAL          { bautRate9600 }
+    ::= { unisRS485PropertiesEntry 2 }
+
+unisRS485DataBits OBJECT-TYPE
+    SYNTAX          INTEGER {
+                        five(1),            -- 5 data bits
+                        six(2),             -- 6 data bits
+                        seven(3),           -- 7 data bits
+                        eight(4)            -- 8 data bits
+                    }
+    UNITS           "bit"
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+            "The port's number of data bits in a character."
+    DEFVAL          { eight }
+    ::= { unisRS485PropertiesEntry 3 }
+
+unisRS485Parity OBJECT-TYPE
+    SYNTAX          INTEGER {
+                        none(1),
+                        odd(2),
+                        even(3),
+                        mark(4),
+                        space(5)
+                    }
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+            "The port's sense of a character parity bit."
+    DEFVAL          { none }
+    ::= { unisRS485PropertiesEntry 4 }
+
+unisRS485StopBits OBJECT-TYPE
+    SYNTAX          INTEGER {
+                        one(1),               -- 1 stop bit
+                        two(2),               -- 2 stop bits
+                        oneAndHalf(3)         -- 1.5 stop bits
+                    }
+    UNITS           "bit"
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+            "The port's number of stop bits."
+    DEFVAL          { one }
+    ::= { unisRS485PropertiesEntry 5 }
+
+unisRS485FlowControl OBJECT-TYPE
+    SYNTAX          INTEGER{
+                        none(1),
+                        hardware(2),
+                        xonOrxoff(3)
+                    }
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+            "The port's type of input flow control.  'none'
+             indicates no flow control at this level.
+             'hardware' indicates use of hardware signals.
+             'xonOrxoff' indicates use of software function."
+    DEFVAL          { none }
+    ::= { unisRS485PropertiesEntry 6 }
+
+unisRS485TXCharacters OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+            "The number of output characters for the port."
+    ::= { unisRS485PropertiesEntry 7 }
+
+unisRS485RXCharacters OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+            "The number of input characters for the port."
+    ::= { unisRS485PropertiesEntry 8 }
+
+unisRS485TXErrCharacters OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+            "The number of output error characters for the port."
+    ::= { unisRS485PropertiesEntry 9 }
+
+unisRS485RXErrCharacters OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+            "The number of input error characters for the port."
+    ::= { unisRS485PropertiesEntry 10 }
+
+unisRS485ResetCharacters OBJECT-TYPE
+    SYNTAX          INTEGER {
+                        counting(1),
+                        clear(2)
+                    }
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+            "Reset the counters to zero, inlucding unisRS485TXCharacters,
+            unisRS485RXCharacters, unisRS485TXErrCharacters and
+            unisRS485RXErrCharacters."
+    DEFVAL          { counting }
+    ::= { unisRS485PropertiesEntry 11 }
+
+--
+-- unisRS485RawSessions
+--
+unisRS485RawSessions OBJECT IDENTIFIER ::= { unisRS485 2 }
+
+--
+-- unisRS485RawSessionSummary
+--
+unisRS485RawSessionSummary OBJECT IDENTIFIER ::= { unisRS485RawSessions 1 }
+
+unisRS485RawSessionMaxNum OBJECT-TYPE
+    SYNTAX          Integer32 (1..64)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The max number of raw sessions what we can support."
+    ::= { unisRS485RawSessionSummary 1 }
+
+--
+-- unisRS485RawSessionTable
+--
+unisRS485RawSessionTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF UnisRS485RawSessionEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "RS485 raw session table.  Data recieved from rs485 will be sent to
+        the destination by raw sockets."
+    ::= { unisRS485RawSessions 2}
+
+unisRS485RawSessionEntry OBJECT-TYPE
+    SYNTAX          UnisRS485RawSessionEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+            "Parameters of a session, including remote IP address, remote port,
+            local port, and so on."
+    INDEX           { ifIndex, unisRS485SessionIndex }
+    ::= { unisRS485RawSessionTable 1 }
+
+UnisRS485RawSessionEntry ::=
+    SEQUENCE{
+        unisRS485SessionIndex
+            Integer32,
+        unisRS485SessionType
+            INTEGER,
+        unisRS485SessionAddType
+            InetAddressType,
+        unisRS485SessionRemoteIP
+            InetAddress,
+        unisRS485SessionRemotePort
+            Integer32,
+        unisRS485SessionLocalPort
+            Integer32,
+        unisRS485SessionStatus
+            RowStatus
+    }
+
+unisRS485SessionIndex OBJECT-TYPE
+    SYNTAX          Integer32 (1..64)
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+            "Raw session index."
+    ::= { unisRS485RawSessionEntry 1 }
+
+unisRS485SessionType OBJECT-TYPE
+    SYNTAX          INTEGER {
+                        udp(1),
+                        tcpClient(2),
+                        tcpServer(3)
+                    }
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+            "The type of a session.  A session can use UDP socket,
+            TCP socket as a client, or TCP socket as a server."
+    ::= { unisRS485RawSessionEntry 2 }
+
+unisRS485SessionAddType OBJECT-TYPE
+    SYNTAX          InetAddressType
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+            "This object indicates the transport type of the
+             address contained in unisRS485SessionRemoteIP object."
+    DEFVAL          { ipv4 }
+    ::= { unisRS485RawSessionEntry 3 }
+
+unisRS485SessionRemoteIP OBJECT-TYPE
+    SYNTAX          InetAddress
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+            "The IP of remote entry.
+
+            When session type is 'udp', this is the IP of the peer.
+
+            When session type is 'tcpClient', this is the IP of the server .
+
+            When session type is 'tcpServer', this is invalid,
+            it will return 0.
+            "
+    ::= { unisRS485RawSessionEntry 4 }
+
+unisRS485SessionRemotePort OBJECT-TYPE
+    SYNTAX          Integer32 (1024..65535)
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+            "The port of remote entry.
+
+            When session type is 'udp', this is port of the peer.
+
+            When session type is 'tcpClient', this is the port of the server.
+
+            When session type is 'tcpServer', this is invalid,
+            it will return 0.
+            "
+    ::= { unisRS485RawSessionEntry 5 }
+
+unisRS485SessionLocalPort OBJECT-TYPE
+    SYNTAX          Integer32 (1024..65535)
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+            "Local socket port.
+
+            When session type is 'udp', this is local UDP socket port.
+
+            When session type is 'tcpClient', this is invalid,
+            it will return 0.
+
+            When session type is 'tcpServer', this is the local port which
+            will be listened.
+            "
+    ::= { unisRS485RawSessionEntry 6 }
+
+unisRS485SessionStatus OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+            "The status column used for creating,
+            modifying, and deleting instances of
+            the columnar objects in raw session table."
+    ::= { unisRS485RawSessionEntry 7 }
+
+--
+-- unisRS485RawSessionErrInfoTable
+--
+
+unisRS485RawSessionErrInfoTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF UnisRS485RawSessionErrInfoEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Error infomation table.  It is fail to create a session, management
+        station can get infomation from this table."
+    ::= { unisRS485RawSessions 3}
+
+unisRS485RawSessionErrInfoEntry OBJECT-TYPE
+    SYNTAX          UnisRS485RawSessionErrInfoEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Error infomaition."
+    INDEX           { ifIndex, unisRS485SessionIndex }
+    ::= { unisRS485RawSessionErrInfoTable 1 }
+
+UnisRS485RawSessionErrInfoEntry ::=
+    SEQUENCE{
+        unisRS485RawSessionErrInfo
+            DisplayString
+    }
+
+unisRS485RawSessionErrInfo OBJECT-TYPE
+    SYNTAX          DisplayString
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Error infomation string.  When a response with 'noCreeation' for
+        row creation in table unisRS485RawSessionTable,
+        the management station should display this string to users,
+        thus users can konw the reason."
+    ::= { unisRS485RawSessionErrInfoEntry 1 }
+
+END

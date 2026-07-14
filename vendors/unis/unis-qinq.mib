@@ -1,0 +1,572 @@
+-- ==================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: 802.1Q-in-Q and BPDU Tunnel MIB
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 2006-03-10 Initial version Created by Baiping Chen
+-- V1.1 2007/10/15 modified by wangjinwang
+--   Add unisQinQServiceTPIDValue and unisQinQCustomerTPIDValue
+--   to unisQinQGlobalConfigGroup.
+--   Add unisQinQIfServiceTPIDValue unisQinQIfCustomerTPIDValue
+--   unisQinQIfUplinkSwitch and unisQinQIfDownlinkSwitch
+--   to unisQinQIfConfigTable.
+-- ==================================================================
+UNIS-QINQ-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+        RowStatus, TEXTUAL-CONVENTION
+            FROM SNMPv2-TC
+        MODULE-IDENTITY, OBJECT-TYPE, Integer32
+            FROM SNMPv2-SMI
+        ifIndex
+            FROM RFC1213-MIB
+        unisCommon
+            FROM UNIS-OID-MIB;
+
+-- ==================================================================
+--
+-- module identity part
+--
+-- ==================================================================
+    unisQINQ MODULE-IDENTITY
+        LAST-UPDATED
+            "200603100000Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "802.1Q-in-Q MIB"
+        REVISION
+            "200603100000Z"
+        DESCRIPTION
+            "The initial version of this MIB."
+        ::= { unisCommon 69 }
+
+
+-- ==================================================================
+--
+-- Textual Conventions
+--
+-- ==================================================================
+        UnisQinQSwitchState ::= TEXTUAL-CONVENTION
+        STATUS      current
+        DESCRIPTION
+            "An enumerated value which indicates the state of
+            switch."
+        SYNTAX  INTEGER
+        {
+            enabled(1),
+            disabled(2)
+        }
+
+
+-- ==================================================================
+--
+-- =====================object definition begin======================
+--
+-- ==================================================================
+    unisQinQMibObject      OBJECT IDENTIFIER ::= { unisQINQ 1 }
+
+    unisQinQGlobalConfigGroup OBJECT IDENTIFIER ::= { unisQinQMibObject 1 }
+
+    unisQinQBpduTunnelSwitch  OBJECT-TYPE
+        SYNTAX UnisQinQSwitchState
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The global configuration switch of BPDU 802.1q tunnel.
+            If global configuration is disabled, BPDU tunnel function
+            will be disabled despite of the corresponding configuration
+            of interface. BPDU tunnel function of a certain interface
+            would work only if the global and interface's switch are
+            both enabled."
+        DEFVAL { enabled }
+        ::= { unisQinQGlobalConfigGroup 1 }
+
+    unisQinQEthernetTypeValue  OBJECT-TYPE
+        SYNTAX      Integer32 (1..65535)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Ethernet protocol type configuring for a global value.
+            The ethernet protocol type is also the TPID(Tag Protocol
+            Identity) field of a VLAN tag described in 802.1q
+            document. This value can be also configured for an
+            individual interface or VLAN. The node that configure
+            this value for a single interface is unisQinQIfEthernetType,
+            whose priority is higher than unisQinQEthernetTypeValue.
+            That means, if the value configured for a interface is
+            different from the global value, the switch will select
+            the configuration of the interface and ignore the global
+            configuration. The ethernet protocol type of node
+            unisQinQVidEthernetType that configured for a VLAN has
+            the highest priority."
+        DEFVAL { 33024 }
+        ::= { unisQinQGlobalConfigGroup 2 }
+
+    unisQinQServiceTPIDValue  OBJECT-TYPE
+        SYNTAX      Integer32 (1..65535)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Ethernet protocol type configured for service VLAN tags
+            globally.  The ethernet protocol type is also the TPID(Tag
+            Protocol Identity) field of a VLAN tag described in 802.1q
+            document.  This value can be also configured for an
+            individual interface.  The node that configure this
+            value for a single interface is unisQinQIfServiceTPIDValue,
+            whose priority is higher than unisQinQServiceTPIDValue.
+            That means, if the value configured for a interface is
+            different from the global value, the switch will select
+            the configuration of the interface and ignore the global
+            configuration."
+        ::= { unisQinQGlobalConfigGroup 3 }
+
+    unisQinQCustomerTPIDValue  OBJECT-TYPE
+        SYNTAX      Integer32 (1..65535)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Ethernet protocol type configured for customer VLAN tags
+            globally.  The ethernet protocol type is also the TPID(Tag
+            Protocol Identity) field of a VLAN tag described in 802.1q
+            document.  This value can be also configured for an
+            individual interface.  The node that configure this
+            value for a single interface is unisQinQIfCustomerTPIDValue,
+            whose priority is higher than unisQinQCustomerTPIDValue.
+            That means, if the value configured for a interface is
+            different from the global value, the switch will select
+            the configuration of the interface and ignore the global
+            configuration."
+        ::= { unisQinQGlobalConfigGroup 4 }
+
+    unisQinQBpduTunnelTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisQinQBpduTunnelEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table for configuring 802.1q BPDU tunnel function
+            for interfaces."
+        ::= { unisQinQMibObject 2 }
+
+    unisQinQBpduTunnelEntry  OBJECT-TYPE
+        SYNTAX      UnisQinQBpduTunnelEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry for configuring 802.1q BPDU tunnel function
+            for interfaces."
+        INDEX
+        {
+            ifIndex,
+            unisQinQProtocolIndex
+        }
+        ::= { unisQinQBpduTunnelTable 1 }
+
+    UnisQinQBpduTunnelEntry ::=
+        SEQUENCE
+        {
+            unisQinQProtocolIndex INTEGER,
+            unisQinQBpduRowStatus RowStatus
+        }
+
+    unisQinQProtocolIndex  OBJECT-TYPE
+        SYNTAX      INTEGER
+        {
+            bpdu(1),
+            stp(2),
+            gmosaic(3),
+            igmp(4)
+        }
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The index of protocol on which the BPDU tunnel state
+            will be set. 'bpdu' represents status of BPDU tunnel.
+            'stp' represents STP tunnel. 'gmosaic' represents GMOSAIC
+            tunnel. 'igmp' represents IGMP tunnel. STP/GMOSAIC/IGMP
+            tunnel will start to work only if BPDU tunnel and
+            STP/GMOSAIC/IGMP tunnel are both enabled."
+        ::= { unisQinQBpduTunnelEntry 1 }
+
+    unisQinQBpduRowStatus     OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Operation status of this table entry."
+        ::= { unisQinQBpduTunnelEntry 2 }
+
+
+    unisQinQPriorityRemarkTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisQinQPriorityRemarkEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table for configuring priority field in 802.1Q-in-Q
+            outer VLAN tag for interfaces. This feature uses the
+            priority of an inner VLAN tag to remark the priority
+            of an outer VLAN tag."
+        ::= { unisQinQMibObject 3 }
+
+    unisQinQPriorityRemarkEntry  OBJECT-TYPE
+        SYNTAX      UnisQinQPriorityRemarkEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry for configuring priority remark function for
+            interfaces."
+        INDEX
+        {
+            ifIndex,
+            unisQinQPriorityValue
+        }
+        ::= { unisQinQPriorityRemarkTable 1 }
+
+    UnisQinQPriorityRemarkEntry ::=
+        SEQUENCE
+        {
+            unisQinQPriorityValue Integer32,
+            unisQinQPriorityRemarkValue Integer32,
+            unisQinQPriorityRowStatus RowStatus
+        }
+
+    unisQinQPriorityValue  OBJECT-TYPE
+        SYNTAX      Integer32 (1..8)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The priority value in inner VLAN tag. Since the priority
+            range is from 0 to 7, yet the index range is from 1 to 8.
+            Thus, the actual priority value equals to the value that
+            subtracts 1 from corresponding index value."
+        ::= { unisQinQPriorityRemarkEntry 1 }
+
+    unisQinQPriorityRemarkValue  OBJECT-TYPE
+        SYNTAX      Integer32 (0..7)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The new priority value used to fill outer tag."
+        ::= { unisQinQPriorityRemarkEntry 2 }
+
+    unisQinQPriorityRowStatus     OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Operation status of this table entry."
+        ::= { unisQinQPriorityRemarkEntry 3 }
+
+
+    unisQinQVidTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisQinQVidEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table for configuring VLAN ID of the 802.1Q-in-Q
+            interfaces."
+        ::= { unisQinQMibObject 4 }
+
+    unisQinQVidEntry  OBJECT-TYPE
+        SYNTAX      UnisQinQVidEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry for configuring VLAN ID of the 802.1Q-in-Q
+            interfaces."
+        INDEX
+        {
+            ifIndex,
+            unisQinQVlanID
+        }
+        ::= { unisQinQVidTable 1 }
+
+    UnisQinQVidEntry ::=
+        SEQUENCE
+        {
+            unisQinQVlanID Integer32,
+            unisQinQInboundVidListLow OCTET STRING,
+            unisQinQInboundVidListHigh OCTET STRING,
+            unisQinQVidEthernetType Integer32,
+            unisQinQVidRowStatus RowStatus
+        }
+
+    unisQinQVlanID    OBJECT-TYPE
+        SYNTAX      Integer32 (1..4094)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "VLAN ID"
+        ::= { unisQinQVidEntry 1 }
+
+    unisQinQInboundVidListLow    OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(256))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The inbound VLAN IDs which need 802.1Q-in-Q processing.
+            The VLAN ID range, described by bitmap, is from 1 to
+            2048. The length of bitmap is 256 in bytes. Each octet
+            within this value specifies a set of eight VLANs, with
+            the first octet specifying VLANs 1 through 8, the second
+            octet specifying VLANs 9 through 16, etc. Within each
+            octet, the most significant bit represents the highest
+            numbered VLAN, and the least significant bit represents
+            the lowest numbered VLAN."
+        ::= { unisQinQVidEntry 2 }
+
+    unisQinQInboundVidListHigh    OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(256))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The inbound VLAN IDs which need 802.1Q-in-Q processing.
+            The VLAN ID range, described by bitmap, is from 2049 to
+            4094. The length of bitmap is 256 in bytes. Each octet
+            within this value specifies a set of eight VLANs, with
+            the first octet specifying VLANs 2049 through 2056, the
+            second octet specifying VLANs 2057 through 2064, etc.
+            Within each octet, the most significant bit represents
+            the highest numbered VLAN, and the least significant bit
+            represents the lowest numbered VLAN."
+        ::= { unisQinQVidEntry 3 }
+
+    unisQinQVidEthernetType   OBJECT-TYPE
+        SYNTAX      Integer32 (1..65535)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Ethernet protocol type configuring for a VLAN."
+        DEFVAL { 33024 }
+        ::= { unisQinQVidEntry 4 }
+
+    unisQinQVidRowStatus  OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Operation status of this table entry."
+        ::= { unisQinQVidEntry 5 }
+
+
+    unisQinQVidSwapTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisQinQVidSwapEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table for configuring 802.1Q-in-Q inner VLAN ID
+            swapping function for interfaces."
+        ::= { unisQinQMibObject 5 }
+
+    unisQinQVidSwapEntry  OBJECT-TYPE
+        SYNTAX      UnisQinQVidSwapEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry for configuring 802.1Q-in-Q inner VLAN ID
+            swapping function for interfaces."
+        INDEX
+        {
+            ifIndex,
+            unisQinQVlanID,
+            unisQinQVidSwapOld
+        }
+        ::= { unisQinQVidSwapTable 1 }
+
+    UnisQinQVidSwapEntry ::=
+        SEQUENCE
+        {
+            unisQinQVidSwapOld Integer32,
+            unisQinQVidSwapNew Integer32,
+            unisQinQVidSwapRowStatus RowStatus
+        }
+
+    unisQinQVidSwapOld    OBJECT-TYPE
+        SYNTAX      Integer32 (1..4094)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The old VLAN ID of original 802.1Q packets."
+        ::= { unisQinQVidSwapEntry 1 }
+
+    unisQinQVidSwapNew    OBJECT-TYPE
+        SYNTAX      Integer32 (1..4094)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The new VLAN ID of original 802.1Q packets."
+        ::= { unisQinQVidSwapEntry 2 }
+
+    unisQinQVidSwapRowStatus     OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Operation status of this table entry."
+        ::= { unisQinQVidSwapEntry 3 }
+
+
+    unisQinQPrioritySwapTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisQinQPrioritySwapEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table for configuring 802.1Q-in-Q inner VLAN priority
+            swapping function for interfaces. Using this function,
+            the priority of inner VLAN tag can be modified."
+        ::= { unisQinQMibObject 6 }
+
+    unisQinQPrioritySwapEntry  OBJECT-TYPE
+        SYNTAX      UnisQinQPrioritySwapEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry for configuring 802.1Q-in-Q inner VLAN
+            priority swapping function for interfaces."
+        INDEX
+        {
+            ifIndex,
+            unisQinQVlanID,
+            unisQinQPrioritySwapOld
+        }
+        ::= { unisQinQPrioritySwapTable 1 }
+
+    UnisQinQPrioritySwapEntry ::=
+        SEQUENCE
+        {
+            unisQinQPrioritySwapOld Integer32,
+            unisQinQPrioritySwapNew Integer32,
+            unisQinQPrioritySwapRowStatus RowStatus
+        }
+
+    unisQinQPrioritySwapOld    OBJECT-TYPE
+        SYNTAX      Integer32 (1..8)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The old priority of original 802.1Q packets. It is the
+            priority of inner VLAN tag. Since the VLAN priority range
+            is from 0 to 7, yet the index range is from 1 to 8. Thus,
+            the actual priority value equals to the value that
+            subtracts 1 from corresponding index value."
+        ::= { unisQinQPrioritySwapEntry 1 }
+
+    unisQinQPrioritySwapNew    OBJECT-TYPE
+        SYNTAX      Integer32 (0..7)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The new priority of original 802.1Q packets. It is the
+            priority of inner VLAN tag after swapped."
+        ::= { unisQinQPrioritySwapEntry 2 }
+
+    unisQinQPrioritySwapRowStatus     OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Operation status of this table entry."
+        ::= { unisQinQPrioritySwapEntry 3 }
+
+
+    unisQinQIfConfigTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisQinQIfConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table for configuring 802.1Q-in-Q functions for
+            interfaces."
+        ::= { unisQinQMibObject 7 }
+
+    unisQinQIfConfigEntry  OBJECT-TYPE
+        SYNTAX      UnisQinQIfConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry for configuring 802.1Q-in-Q functions for
+            interfaces."
+        INDEX
+        {
+            ifIndex
+        }
+        ::= { unisQinQIfConfigTable 1 }
+
+    UnisQinQIfConfigEntry ::=
+        SEQUENCE
+        {
+            unisQinQIfEthernetType Integer32,
+            unisQinQIfSwitch UnisQinQSwitchState,
+            unisQinQIfRowStatus RowStatus,
+            unisQinQIfServiceTPIDValue Integer32,
+            unisQinQIfCustomerTPIDValue Integer32,
+            unisQinQIfUplinkSwitch UnisQinQSwitchState,
+            unisQinQIfDownlinkSwitch UnisQinQSwitchState
+        }
+
+    unisQinQIfEthernetType    OBJECT-TYPE
+        SYNTAX      Integer32 (1..65535)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Ethernet protocol type configuring for an interface."
+        DEFVAL { 33024 }
+        ::= { unisQinQIfConfigEntry 1 }
+
+    unisQinQIfSwitch    OBJECT-TYPE
+        SYNTAX      UnisQinQSwitchState
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Switch of 802.1Q-in-Q functions configuring for an
+            interface."
+        DEFVAL { disabled }
+        ::= { unisQinQIfConfigEntry 2 }
+
+    unisQinQIfRowStatus    OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Operation status of this table entry."
+        ::= { unisQinQIfConfigEntry 3 }
+
+    unisQinQIfServiceTPIDValue    OBJECT-TYPE
+        SYNTAX      Integer32 (1..65535)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Service TPID value configured for an interface."
+        ::= { unisQinQIfConfigEntry 4 }
+
+    unisQinQIfCustomerTPIDValue    OBJECT-TYPE
+        SYNTAX      Integer32 (1..65535)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Customer TPID value configured for an interface."
+        ::= { unisQinQIfConfigEntry 5 }
+
+    unisQinQIfUplinkSwitch    OBJECT-TYPE
+        SYNTAX      UnisQinQSwitchState
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Switch of the uplink 802.1Q-in-Q function
+            for an interface."
+        DEFVAL { disabled }
+        ::= { unisQinQIfConfigEntry 6 }
+
+    unisQinQIfDownlinkSwitch    OBJECT-TYPE
+        SYNTAX      UnisQinQSwitchState
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Switch of the downlink 802.1Q-in-Q function
+            for an interface."
+        DEFVAL { disabled }
+        ::= { unisQinQIfConfigEntry 7 }
+
+END

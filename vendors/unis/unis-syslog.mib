@@ -1,0 +1,835 @@
+-- ==========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Syslog MIB
+-- Reference: RFC5424
+-- Version: V1.5
+-- History:
+--   V1.0 Initial version 2005-08-20 by wangrui
+--   V1.1 added unisSyslogLoghostIpaddressPort by jinyi
+--   V1.2 2010-06-09 added unisSyslogLogGlobalLevel by haoyan
+--                   added unisSyslogLoghostTAddress by jinyi
+--   V1.3 2012-06-06 added unisSyslogLogbufContTable, unisSyslogLogbufContEntry,
+--                         unisLogbufContIndex, unisLogbufContDescription by jixugang
+--   V1.4 2013-09-13 added unisSyslogState2 by duyanbing
+--   V1.5 2014-03-04 repalce unisSyslogLogGlobalLevel by unisSyslogLogGlobalLevelRfc by chengpengxing
+-- ==========================================================================
+UNIS-SYSLOG-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    DisplayString, TruthValue, RowStatus, TAddress, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    Integer32, Counter32, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB;
+
+unisSyslog MODULE-IDENTITY
+    LAST-UPDATED "201006091050Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "All the configuration of the syslog can be managed
+        by syslog Mib."
+    REVISION "201006091050Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+     ::= { unisCommon 63 }
+
+--
+-- Textual conventions
+--
+
+MessageLevelType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Specify severity level of message."
+    SYNTAX INTEGER
+        {
+            emergency(1),
+            alert(2),
+            critical(3),
+            error(4),
+            warning(5),
+            notice(6),
+            informational(7),
+            debug(8),
+            invalid(9)
+        }
+
+TimeStampType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Specify operation types on time stamp of message.
+        none: no time stamp information in message.
+        date: the time stamp type of message is date.
+        boot: the time stamp type of message is the time from
+            uptime of system.
+        dateWithoutYear: the time stamp type of message is date
+            without year information."
+    SYNTAX INTEGER
+        {
+            none(1),
+            date(2),
+            boot(3),
+            dateWithoutYear(4)
+        }
+
+FacilityType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Specify loghost facility which generates messages."
+    SYNTAX INTEGER
+        {
+            kernel(0),
+            userLevel(1),
+            mailSystem(2),
+            systemDaemons(3),
+            securityAuthorization(4),
+            internallyMessages(5),
+            linePrinter(6),
+            networkNews(7),
+            uucp(8),
+            clockDaemon(9),
+            securityAuthorization2(10),
+            ftpDaemon(11),
+            ntp(12),
+            logAudit(13),
+            logAlert(14),
+            clockDaemon2(15),
+            local0(16),
+            local1(17),
+            local2(18),
+            local3(19),
+            local4(20),
+            local5(21),
+            local6(22),
+            local7(23)
+        }
+
+--
+-- Node definitions
+--
+
+unisSyslogObjects OBJECT IDENTIFIER ::= { unisSyslog 1 }
+
+unisSyslogObject OBJECT IDENTIFIER ::= { unisSyslogObjects 1 }
+
+unisSyslogState OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The state of syslog: true(1):enable.
+                              false(2):disable."
+    ::= { unisSyslogObject 1 }
+
+unisSyslogMaxLoghost OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The object shows the maximum number of rows in
+         unisLoghostTable."
+    ::= { unisSyslogObject 2 }
+
+unisSyslogMaxChannel OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The object shows the maximum number of channels in
+         unisSyslogChannelTable."
+    ::= { unisSyslogObject 3 }
+
+unisSyslogMaxLogbufferSize OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The maximum number of messages that can be stored
+         in logbuffer."
+    ::= { unisSyslogObject 4 }
+
+unisSyslogMaxTrapbufferSize OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The maximum number of messages that can be stored
+         in trapbuffer."
+    ::= { unisSyslogObject 5 }
+
+unisSyslogState2 OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            off(0),
+            on(1)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Status of syslog, on for enabled or off for disabled.
+        This node differs from unisSyslogState in value."
+    ::= { unisSyslogObject 6 }
+
+unisSyslogConsole OBJECT IDENTIFIER ::= { unisSyslogObjects 2 }
+
+unisSyslogConsoleChannel OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The channel number of console."
+    DEFVAL { 0 }
+    ::= { unisSyslogConsole 1 }
+
+unisSyslogMonitor OBJECT IDENTIFIER ::= { unisSyslogObjects 3 }
+
+unisSyslogMonitorChannel OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The channel number of monitor."
+    DEFVAL { 1 }
+    ::= { unisSyslogMonitor 1 }
+
+unisSyslogSnmp OBJECT IDENTIFIER ::= { unisSyslogObjects 4 }
+
+unisSyslogSnmpChannel OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The channel number of snmp."
+    DEFVAL { 5 }
+    ::= { unisSyslogSnmp 1 }
+
+unisSyslogLogbuffer OBJECT IDENTIFIER ::= { unisSyslogObjects 5 }
+
+unisSyslogLogbufferChannel OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The channel number of logbuffer."
+    DEFVAL { 4 }
+    ::= { unisSyslogLogbuffer 1 }
+
+unisSyslogLogbufferSize OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The capacity of logbuffer which can be customized by users.
+         The valid range is from 0 to unisSyslogMaxLogbufferSize."
+    DEFVAL { 512 }
+    ::= { unisSyslogLogbuffer 2 }
+
+unisSyslogLogbufferTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSyslogLogbufferEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table of logbuffer."
+    ::= { unisSyslogLogbuffer 3 }
+
+unisSyslogLogbufferEntry OBJECT-TYPE
+    SYNTAX UnisSyslogLogbufferEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The logbuffer entry of syslog."
+    INDEX { unisLogbufferIndex }
+    ::= { unisSyslogLogbufferTable 1 }
+
+UnisSyslogLogbufferEntry ::=
+    SEQUENCE {
+        unisLogbufferIndex                    Integer32,
+        unisLogbufferCurrentMessages          Unsigned32,
+        unisLogbufferOverwrittenMessages      Counter32,
+        unisLogbufferDroppedMessages          Counter32
+        }
+
+unisLogbufferIndex OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of this table."
+    ::= { unisSyslogLogbufferEntry 1 }
+
+unisLogbufferCurrentMessages OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of log messages stored in logbuffer."
+    ::= { unisSyslogLogbufferEntry 2 }
+
+unisLogbufferOverwrittenMessages OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of log messages overwritten in logbuffer."
+    ::= { unisSyslogLogbufferEntry 3 }
+
+unisLogbufferDroppedMessages OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of log messages dropped in logbuffer."
+    ::= { unisSyslogLogbufferEntry 4 }
+
+unisSyslogLogbufContTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSyslogLogbufContEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table of logbuffer contents."
+    ::= { unisSyslogLogbuffer 4 }
+
+unisSyslogLogbufContEntry OBJECT-TYPE
+    SYNTAX UnisSyslogLogbufContEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The contens entry of logbuffer."
+    INDEX { unisLogbufContIndex }
+    ::= { unisSyslogLogbufContTable 1 }
+
+UnisSyslogLogbufContEntry ::=
+    SEQUENCE {
+        unisLogbufContIndex            Integer32,
+        unisLogbufContDescription      DisplayString
+        }
+
+unisLogbufContIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of this table."
+    ::= { unisSyslogLogbufContEntry 1 }
+
+unisLogbufContDescription OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..1600))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The contents of logbuffer."
+    ::= { unisSyslogLogbufContEntry 2 }
+
+unisSyslogTrapbuffer OBJECT IDENTIFIER ::= { unisSyslogObjects 6 }
+
+unisSyslogTrapbufferChannel OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The channel number of trapbuffer."
+    DEFVAL { 3 }
+    ::= { unisSyslogTrapbuffer 1 }
+
+unisSyslogTrapbufferSize OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The capacity of the trapbuffer which can be customized by users.
+         The valid range is from 0 to unisSyslogMaxTrapbufferSize."
+    DEFVAL { 256 }
+    ::= { unisSyslogTrapbuffer 2 }
+
+unisSyslogTrapbufferTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSyslogTrapbufferEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table of trapbuffer."
+    ::= { unisSyslogTrapbuffer 3 }
+
+unisSyslogTrapbufferEntry OBJECT-TYPE
+    SYNTAX UnisSyslogTrapbufferEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The trapbuffer entry of syslog."
+    INDEX { unisTrapbufferIndex }
+    ::= { unisSyslogTrapbufferTable 1 }
+
+UnisSyslogTrapbufferEntry ::=
+    SEQUENCE {
+        unisTrapbufferIndex                      Integer32,
+        unisTrapbufferCurrentMessages            Unsigned32,
+        unisTrapbufferOverwrittenMessages        Counter32,
+        unisTrapbufferDroppedMessages            Counter32
+        }
+
+unisTrapbufferIndex OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of this table."
+    ::= { unisSyslogTrapbufferEntry 1 }
+
+unisTrapbufferCurrentMessages OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of trap messages stored in trapbuffer."
+    ::= { unisSyslogTrapbufferEntry 2 }
+
+unisTrapbufferOverwrittenMessages OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of trap messages overwritten in trapbuffer."
+    ::= { unisSyslogTrapbufferEntry 3 }
+
+unisTrapbufferDroppedMessages OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of trap messages dropped in trapbuffer."
+    ::= { unisSyslogTrapbufferEntry 4 }
+
+unisSyslogLoghost OBJECT IDENTIFIER ::= { unisSyslogObjects 7 }
+
+unisSyslogLoghostSourceInterface OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The source interface which sends message to loghost.
+         All loghosts use the same source interface."
+    ::= { unisSyslogLoghost 1 }
+
+unisSyslogLoghostTimestampType OBJECT-TYPE
+    SYNTAX TimeStampType
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Time stamp type of message sent to loghost."
+    DEFVAL { date }
+    ::= { unisSyslogLoghost 2 }
+
+unisSyslogLoghostTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSyslogLoghostEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table of loghost."
+    ::= { unisSyslogLoghost 3 }
+
+unisSyslogLoghostEntry OBJECT-TYPE
+    SYNTAX UnisSyslogLoghostEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The loghost entry of syslog."
+    INDEX { unisSyslogLoghostIndex }
+    ::= { unisSyslogLoghostTable 1 }
+
+UnisSyslogLoghostEntry ::=
+    SEQUENCE {
+        unisSyslogLoghostIndex                   Integer32,
+        unisSyslogLoghostChannel                 Integer32,
+        unisSyslogLoghostIpaddressType           InetAddressType,
+        unisSyslogLoghostIpaddress               InetAddress,
+        unisSyslogLoghostFacility                FacilityType,
+        unisSyslogLoghostLanguage                INTEGER,
+        unisSyslogLoghostOperateRowStatus        RowStatus,
+        unisSyslogLoghostIpaddressPort           Integer32,
+        unisSyslogLoghostTAddress                TAddress
+    }
+
+unisSyslogLoghostIndex OBJECT-TYPE
+    SYNTAX Integer32(1..64)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of this table."
+    ::= { unisSyslogLoghostEntry 1 }
+
+unisSyslogLoghostChannel OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The channel number of loghost."
+    DEFVAL { 2 }
+    ::= { unisSyslogLoghostEntry 2 }
+
+unisSyslogLoghostIpaddressType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The ip address type of loghost."
+    DEFVAL { ipv4 }
+    ::= { unisSyslogLoghostEntry 3 }
+
+unisSyslogLoghostIpaddress OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The ip address of loghost."
+    ::= { unisSyslogLoghostEntry 4 }
+
+unisSyslogLoghostFacility OBJECT-TYPE
+    SYNTAX FacilityType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The operations staff can selectively filter the messages
+         with priority which consists of facility that generates
+         the message and severity of the message.
+         "
+    DEFVAL { local7 }
+    ::= { unisSyslogLoghostEntry 5 }
+
+unisSyslogLoghostLanguage OBJECT-TYPE
+    SYNTAX INTEGER {
+        chinese(1),
+        english(2)
+        }
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The language of the message sent to the loghost."
+    DEFVAL { english }
+    ::= { unisSyslogLoghostEntry 6 }
+
+unisSyslogLoghostOperateRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisSyslogLoghostEntry 7 }
+
+unisSyslogLoghostIpaddressPort OBJECT-TYPE
+    SYNTAX Integer32(1..65535)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The loghost server port."
+    DEFVAL { 514 }
+    ::= { unisSyslogLoghostEntry 8 }
+
+unisSyslogLoghostTAddress OBJECT-TYPE
+    SYNTAX TAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The loghost server transport address."
+    ::= { unisSyslogLoghostEntry 9 }
+
+unisSyslogChannel OBJECT IDENTIFIER ::= { unisSyslogObjects 8 }
+
+unisSyslogChannelTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSyslogChannelEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table of syslog channel."
+    ::= { unisSyslogChannel 1 }
+
+unisSyslogChannelEntry OBJECT-TYPE
+    SYNTAX UnisSyslogChannelEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The channel entry of syslog."
+    INDEX { unisSyslogChannelIndex }
+    ::= { unisSyslogChannelTable 1 }
+
+UnisSyslogChannelEntry ::=
+    SEQUENCE {
+        unisSyslogChannelIndex       Integer32,
+        unisSyslogChannelName        DisplayString
+        }
+
+unisSyslogChannelIndex OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of this table."
+    ::= { unisSyslogChannelEntry 1 }
+
+unisSyslogChannelName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..30))
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The name of channel.
+         The channel name must be different from each other."
+    ::= { unisSyslogChannelEntry 2 }
+
+unisSyslogModule OBJECT IDENTIFIER ::= { unisSyslogObjects 9 }
+
+unisSyslogModuleTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSyslogModuleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table of syslog module."
+    ::= { unisSyslogModule 1 }
+
+unisSyslogModuleEntry OBJECT-TYPE
+    SYNTAX UnisSyslogModuleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The module entry of syslog."
+    INDEX { unisSyslogModuleIndex }
+    ::= { unisSyslogModuleTable 1 }
+
+UnisSyslogModuleEntry ::=
+    SEQUENCE {
+        unisSyslogModuleIndex        Integer32,
+        unisSyslogModuleName         DisplayString
+        }
+
+unisSyslogModuleIndex OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of this table."
+    ::= { unisSyslogModuleEntry 1 }
+
+unisSyslogModuleName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..20))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The name of module."
+    ::= { unisSyslogModuleEntry 2 }
+
+unisSyslogLog OBJECT IDENTIFIER ::= { unisSyslogObjects 10 }
+
+unisSyslogLogTimestampType OBJECT-TYPE
+    SYNTAX TimeStampType
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Time stamp type of log message."
+    DEFVAL { date }
+    ::= { unisSyslogLog 1 }
+
+unisSyslogLogTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSyslogLogEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table of syslog module."
+    ::= { unisSyslogLog 2 }
+
+unisSyslogLogEntry OBJECT-TYPE
+    SYNTAX UnisSyslogLogEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The log entry of syslog."
+    INDEX { unisSyslogChannelIndex,
+            unisSyslogModuleIndex
+          }
+    ::= { unisSyslogLogTable 1 }
+
+UnisSyslogLogEntry ::=
+    SEQUENCE {
+        unisSyslogLogState           TruthValue,
+        unisSyslogLogLevel           MessageLevelType,
+        unisSyslogLogRowStatus       RowStatus
+        }
+
+unisSyslogLogState OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The switch state of log."
+    ::= { unisSyslogLogEntry 1 }
+
+unisSyslogLogLevel OBJECT-TYPE
+    SYNTAX MessageLevelType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The level of log message."
+    ::= { unisSyslogLogEntry 2 }
+
+unisSyslogLogRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisSyslogLogEntry 3 }
+
+unisSyslogLogGlobalLevel OBJECT-TYPE
+    SYNTAX MessageLevelType
+    MAX-ACCESS read-write
+    STATUS obsolete
+    DESCRIPTION
+        "The global level of log message.  This object is replaced by
+        unisSyslogLogGlobalLevelRfc because its value does not accord
+        with RFC5424."
+    ::= { unisSyslogLog 3 }
+
+unisSyslogLogGlobalLevelRfc OBJECT-TYPE
+    SYNTAX INTEGER {
+        emergency(0),
+        alert(1),
+        critical(2),
+        error(3),
+        warning(4),
+        notice(5),
+        informational(6),
+        debug(7)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The global level of log message.  This object replaces
+        unisSyslogLogGlobalLevel because it observes the terms of RFC5424."
+    ::= { unisSyslogLog 4 }
+
+unisSyslogTrap OBJECT IDENTIFIER ::= { unisSyslogObjects 11 }
+
+unisSyslogTrapTimestampType OBJECT-TYPE
+    SYNTAX TimeStampType
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Time stamp type of trap message."
+    DEFVAL { date }
+    ::= { unisSyslogTrap 1 }
+
+unisSyslogTrapTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSyslogTrapEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table of syslog module."
+    ::= { unisSyslogTrap 2 }
+
+unisSyslogTrapEntry OBJECT-TYPE
+    SYNTAX UnisSyslogTrapEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The trap entry of syslog."
+    INDEX { unisSyslogChannelIndex,
+            unisSyslogModuleIndex
+          }
+    ::= { unisSyslogTrapTable 1 }
+
+UnisSyslogTrapEntry ::=
+    SEQUENCE {
+        unisSyslogTrapState              TruthValue,
+        unisSyslogTrapLevel              MessageLevelType,
+        unisSyslogTrapRowStatus          RowStatus
+        }
+
+unisSyslogTrapState OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The switch state of trap."
+    ::= { unisSyslogTrapEntry 1 }
+
+unisSyslogTrapLevel OBJECT-TYPE
+    SYNTAX MessageLevelType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The level of trap message."
+    ::= { unisSyslogTrapEntry 2 }
+
+unisSyslogTrapRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisSyslogTrapEntry 3 }
+
+unisSyslogDebug OBJECT IDENTIFIER ::= { unisSyslogObjects 12 }
+
+unisSyslogDebugTimestampType OBJECT-TYPE
+    SYNTAX TimeStampType
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Time stamp type of debug message."
+    DEFVAL { boot }
+    ::= { unisSyslogDebug 1 }
+
+unisSyslogDebugTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSyslogDebugEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table of syslog module."
+    ::= { unisSyslogDebug 2 }
+
+unisSyslogDebugEntry OBJECT-TYPE
+    SYNTAX UnisSyslogDebugEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The debug entry of syslog."
+    INDEX { unisSyslogChannelIndex,
+            unisSyslogModuleIndex
+          }
+    ::= { unisSyslogDebugTable 1 }
+
+UnisSyslogDebugEntry ::=
+    SEQUENCE {
+        unisSyslogDebugState             TruthValue,
+        unisSyslogDebugLevel             MessageLevelType,
+        unisSyslogDebugRowStatus         RowStatus
+        }
+
+unisSyslogDebugState OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The switch state of debug."
+    ::= { unisSyslogDebugEntry 1 }
+
+unisSyslogDebugLevel OBJECT-TYPE
+    SYNTAX MessageLevelType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The level of debug message."
+    ::= { unisSyslogDebugEntry 2 }
+
+unisSyslogDebugRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisSyslogDebugEntry 3 }
+
+END

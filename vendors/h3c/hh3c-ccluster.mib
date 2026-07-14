@@ -1,0 +1,616 @@
+-- =================================================================
+-- Copyright (c) 2004-2023 New H3C Tech. Co., Ltd. All rights reserved
+--
+-- Description: cloud-cluster mib
+-- Reference: CCLUSTER-MIB
+-- Version: V1.0
+-- History:
+--   V1.0 Created by matianming10568
+--        Initial version 2023-8-10
+-- =================================================================
+HH3C-CCLUSTER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    hh3cCommon
+                FROM HH3C-OID-MIB
+    InetAddress, InetAddressType
+                FROM INET-ADDRESS-MIB
+    entPhysicalIndex
+                FROM ENTITY-MIB
+    ifIndex, ifDescr, InterfaceIndex
+                FROM IF-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Unsigned32
+                FROM SNMPv2-SMI
+    DisplayString, MacAddress, TruthValue
+                FROM SNMPv2-TC;
+
+hh3cCCluster MODULE-IDENTITY
+    LAST-UPDATED "202308101630Z"
+    ORGANIZATION
+        "New H3C Technologies Co., Ltd."
+    CONTACT-INFO
+        "No.466 Changhe Road, Binjiang District, Hangzhou, Zhejiang
+         http://www.h3c.com
+         Zip: 310052"
+    DESCRIPTION
+        "This MIB is used to manage cloud cluster topology management
+         information for CCLUSTER (Cloud Cluster) devices.
+         This MIB is applicable to CCLUSTER-capable products. Some objects in
+         this MIB may be used only for some specific products, so users should
+         refer to the related documents to acquire more detailed information."
+    REVISION "202308101630Z"             -- 10th August, 2023 at 16:30 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { hh3cCommon 265 }
+
+
+-- Scalar MIB objects, which are considered as global variables
+-- Global Level Configuration
+
+hh3cCClusterGlobalConfig OBJECT IDENTIFIER ::= { hh3cCCluster 1 }
+
+hh3cCClusterServiceDomainID OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..4294967295)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Domain ID of the service cluster fabric that is used to uniquely identify a service cluster fabric.
+         Domain IDs prevent service cluster fabrics from interfering with one another."
+    ::= { hh3cCClusterGlobalConfig 1 }
+
+hh3cCClusterCHelloTimeout OBJECT-TYPE
+    SYNTAX      Integer32 (3..58)
+    UNITS       "second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Timeout of cloud cluster hello packet."
+    ::= { hh3cCClusterGlobalConfig 2 }
+
+hh3cCClusterSHelloTimeout OBJECT-TYPE
+    SYNTAX      Integer32 (5..60)
+    UNITS       "second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Timeout of service-cluster hello packet.
+         The timeout time of the cluster Hello message may be too short,
+         which may lead to frequent cluster splitting. If it is too long,
+         it can lead to a decrease in the performance of the cluster's active/standby switching.
+         Usually, the default value is sufficient."
+    ::= { hh3cCClusterGlobalConfig 3 }
+
+hh3cCClusterLinkDelayInterval OBJECT-TYPE
+    SYNTAX      Integer32 (0..10000)
+    UNITS       "millisecond"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Delay for cluster ports to report a link down event.  If the link comes up
+         before the delay timer expires, the cluster port will not report the link
+         down event. If the link is not recovered before the delay timer expires,
+         the cluster port will report the change.  If the delay is set to 0,
+         the cluster ports will report a link down event without delay.
+
+        0: no delay
+        other value(ms): delay time"
+    ::= { hh3cCClusterGlobalConfig 4 }
+
+hh3cCClusterMacPersistence OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            notPersist(1),
+            persistForSixMin(2),
+            persistForever(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The mode of bridge MAC address persistence.  When a cluster starts,
+         the bridge MAC address of the master is used as that of the cluster.
+         When the master leaves the cluster, the bridge MAC address of the
+         cluster changes depending on the mode of bridge MAC address persistence.
+
+        notPersist: The bridge MAC address of the new master is used
+                    as that of the cluster immediately.
+        persistForSixMin: The original bridge MAC address will be reserved for six
+                    minutes. In this period, if the master that has left rejoins the cluster,
+                    the bridge MAC address of the cluster will not change.
+                    If the old master doesn't rejoin the cluster within this period, the
+                    bridge MAC address of the new master will be used as that of the cluster.
+        persistForever: Whether the master leaves or not, the bridge MAC address
+                    of the cluster will never change."
+    ::= { hh3cCClusterGlobalConfig 5 }
+
+hh3cCClusterMacPersistenceTime OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "minute"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Cloud cluster bridge MAC persistence time."
+    ::= { hh3cCClusterGlobalConfig 6 }
+
+hh3cCClusterBridgeMacAddress OBJECT-TYPE
+    SYNTAX         MacAddress
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+        "The textual name of the cloud cluster bridge MAC address."
+    ::= { hh3cCClusterGlobalConfig 7 }
+
+hh3cCClusterMode OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Current cloud cluster mode of the device.
+
+         true: the current device mode is cluster mode
+         false: the current device mode is standalone mode"
+    ::= { hh3cCClusterGlobalConfig 8 }
+
+hh3cCClusterMemberNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of members currently in the cloud cluster."
+    ::= { hh3cCClusterGlobalConfig 9 }
+
+hh3cCClusterMaxMember OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of members in the cloud cluster."
+    ::= { hh3cCClusterGlobalConfig 10 }
+
+hh3cCClusterAutoUpdate OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The function for automatically updating the image from the master to
+         a device that is attempting to join the cluster.
+         When a new device tries to join a cluster, Cloud cluster verifies the
+         image consistency between the joining device and the master.
+         If the joining device uses a different image version than the master,
+         the function updates the joining device with the image of the master.
+         When this function is disabled, the new device can't join the cluster
+         if it uses a different software version than the master.
+
+        false: disable auto update function
+        true: enable auto update function"
+    ::= { hh3cCClusterGlobalConfig 11 }
+
+hh3cCClusterConfigActivate OBJECT-TYPE
+    SYNTAX     INTEGER
+        {
+            set(1),
+            none(2)
+        }
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "After modifying the cluster configuration, it is necessary to activate the
+         configuration through this node for the new configuration to take effect.
+         This node will automatically determine the impact of the modified configuration
+         on the device, determine whether hardware restart is necessary based on the impact,
+         and automatically restart the business board, member devices,
+         and even the entire cloud cluster.
+
+         none: If the user sets this object to none, this object will return
+               a success without performing any operation.
+         set: Activates the settings on the IRF ports.
+              After the settings is activated, this object will return to
+              none at the next reading."
+    DEFVAL { none }
+    ::= { hh3cCClusterGlobalConfig 12 }
+
+
+-- Member Level Configuration
+hh3cCClusterMemberConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cCClusterMemberConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage device information in a cloud cluster."
+    ::= { hh3cCCluster 2 }
+
+hh3cCClusterMemberConfigEntry OBJECT-TYPE
+    SYNTAX      Hh3cCClusterMemberConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage device information in a cloud cluster."
+    INDEX
+        {
+            entPhysicalIndex
+        }
+    ::= { hh3cCClusterMemberConfigTable 1 }
+
+Hh3cCClusterMemberConfigEntry ::= SEQUENCE
+    {
+        hh3cCClusterMemberID          Integer32,
+        hh3cCClusterNewMemberID       Integer32,
+        hh3cCClusterMemberIPType      InetAddressType,
+        hh3cCClusterMemberIP          InetAddress,
+        hh3cCClusterMemberIPMaskLen   Integer32,
+        hh3cCClusterJoinIP            InetAddress,
+        hh3cCClusterRole              INTEGER,
+        hh3cCClusterCPUMacAddress     MacAddress,
+        hh3cCClusterDeviceStatus      OCTET STRING
+    }
+
+hh3cCClusterMemberID OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The member ID of the device in a cloud cluster."
+    ::= { hh3cCClusterMemberConfigEntry 1 }
+
+hh3cCClusterNewMemberID OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The configured member ID of the device. The valid value ranges from
+         1 to the value in hh3cCClusterMaxMember. The configured member ID will
+         take effect at a reboot if it is unique within the cluster."
+    ::= { hh3cCClusterMemberConfigEntry 2 }
+
+hh3cCClusterMemberIPType OBJECT-TYPE
+    SYNTAX       InetAddressType
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+         "The IP address type (IPv4 or IPv6) of hh3cCClusterMemberIP."
+    ::= { hh3cCClusterMemberConfigEntry 3 }
+
+hh3cCClusterMemberIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "IP address for cloud cluster member."
+    ::= { hh3cCClusterMemberConfigEntry 4 }
+
+hh3cCClusterMemberIPMaskLen OBJECT-TYPE
+    SYNTAX      Integer32 (1..127)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "IP address mask length for cloud cluster member."
+    ::= { hh3cCClusterMemberConfigEntry 5 }
+
+hh3cCClusterJoinIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The IP address of the member in the cluster."
+    ::= { hh3cCClusterMemberConfigEntry 6 }
+
+hh3cCClusterRole OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            managerworker(1),
+            worker(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The role of device in a cloud cluster.
+
+         managerworker: Being both a cluster manager and a cluster worker.
+         worker: Cluster worker."
+    ::= { hh3cCClusterMemberConfigEntry 7 }
+
+hh3cCClusterCPUMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The textual name of the CPU MAC address of the member device in a cloud cluster."
+    ::= { hh3cCClusterMemberConfigEntry 8 }
+
+hh3cCClusterDeviceStatus OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Device container running status: Online, Offline, MAD down, etc."
+    ::= { hh3cCClusterMemberConfigEntry 9 }
+
+
+-- Board Level Configuration
+hh3cCClusterBoardConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cCClusterBoardConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage MPU information for a cloud cluster."
+    ::= { hh3cCCluster 3 }
+
+hh3cCClusterBoardConfigEntry OBJECT-TYPE
+    SYNTAX      Hh3cCClusterBoardConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage MPU information for a cloud cluster."
+    INDEX
+        {
+            hh3cCClusterMemberID
+        }
+    ::= { hh3cCClusterBoardConfigTable 1 }
+
+Hh3cCClusterBoardConfigEntry ::= SEQUENCE
+    {
+        hh3cCClusterBoardRole               INTEGER,
+        hh3cCClusterBoardBelongtoMember     Integer32
+    }
+
+hh3cCClusterBoardRole OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            master(1),
+            standby(2),
+            loading(3),
+            other(4)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The role of the MPU in the service cluster.
+
+         master: Master MPU.
+         standby: Standby MPU.
+         loading: Standby MPU is loading the software image from the master.
+         other: other."
+    ::= { hh3cCClusterBoardConfigEntry 1 }
+
+hh3cCClusterBoardBelongtoMember OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Member ID of the device that holds the current board."
+    ::= { hh3cCClusterBoardConfigEntry 2 }
+
+
+-- cloud cluster port Information
+hh3cCClusterPortInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cCClusterPortInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage cluster port information
+         for CCLUSTER stacked devices."
+    ::= { hh3cCCluster 4 }
+
+hh3cCClusterPortInfoEntry OBJECT-TYPE
+    SYNTAX      Hh3cCClusterPortInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage cluster port information
+         for CCLUSTER stacked devices."
+    INDEX
+        {
+            hh3cCClusterMemberID
+        }
+    ::= { hh3cCClusterPortInfoTable 1 }
+
+Hh3cCClusterPortInfoEntry ::= SEQUENCE
+    {
+        hh3cCClusterPortIfIndex     InterfaceIndex,
+        hh3cCClusterPortLinkType    INTEGER,
+        hh3cCClusterPortLinkState   INTEGER
+    }
+
+hh3cCClusterPortIfIndex OBJECT-TYPE
+    SYNTAX        InterfaceIndex
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+        "Cluster interface index."
+    ::= { hh3cCClusterPortInfoEntry 1 }
+
+hh3cCClusterPortLinkType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            control(1),
+            data(2),
+            misc(3),
+            none(4)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Cluster interface channel type. A cluster link must have at least one control
+         channel and one data channel.
+
+         control: Control channel type for transmitting cluster protocol messages
+                  between members of a cloud cluster.
+         data: Data channel type, used for forwarding business messages
+               between members of a cloud cluster.
+         misc: As both control and data channels.
+         none: Unbind cluster links and physical interfaces."
+    ::= { hh3cCClusterPortInfoEntry 2 }
+
+hh3cCClusterPortLinkState OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            up(1),
+            down(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The link status of a cluster port on the device.
+
+        up: The physical state of the interface is up.
+        down: The physical state of the interface is down."
+    ::= { hh3cCClusterPortInfoEntry 3 }
+
+
+--
+-- Notification definitions
+--
+-- =================================================================
+-- Traps are defined below.
+hh3cCClusterTrap OBJECT IDENTIFIER ::= { hh3cCCluster 5 }
+
+hh3cCClusterTrapObjects OBJECT IDENTIFIER ::= { hh3cCClusterTrap 0 }
+-- All trap definitions should be placed under this object.
+
+hh3cCClusterMadLacpChangeNormal NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS      current
+    DESCRIPTION
+        "The hh3cCClusterMadLacpChangeNormal trap indicates that the
+         LACP MAD function changed to the normal state."
+    ::= { hh3cCClusterTrapObjects 1 }
+
+hh3cCClusterMadLacpChangeFail NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS      current
+    DESCRIPTION
+        "The hh3cCClusterMadLacpChangeFail trap indicates that the
+         LACP MAD function changed to the failure state."
+    ::= { hh3cCClusterTrapObjects 2 }
+
+hh3cCClusterPhysIntfLinkUp NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cCClusterMemberID,
+            hh3cCClusterPhysIntfName
+        }
+    STATUS      current
+    DESCRIPTION
+        "The hh3cCClusterPhysIntfLinkUp trap indicates that the status
+         of the cluster physical interface has changed to the up state."
+    ::= { hh3cCClusterTrapObjects 3 }
+
+hh3cCClusterPhysIntfLinkDown NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cCClusterMemberID,
+            hh3cCClusterPhysIntfName
+        }
+    STATUS      current
+    DESCRIPTION
+        "The hh3cCClusterPhysIntfLinkDown trap indicates that the status
+         of the cluster physical interface has changed to the down state."
+    ::= { hh3cCClusterTrapObjects 4 }
+
+hh3cCClusterMemberAdd NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cCClusterMemberID,
+            hh3cCClusterCPUMacAddress
+        }
+    STATUS      current
+    DESCRIPTION
+        "The hh3cCClusterMemberAdd trap indicates that
+         the new cluster member has joined."
+    ::= { hh3cCClusterTrapObjects 5 }
+
+hh3cCClusterMemberLeave NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cCClusterMemberID,
+            hh3cCClusterCPUMacAddress
+        }
+    STATUS      current
+    DESCRIPTION
+        "The hh3cCClusterMemberLeave trap indicates that
+         the cluster member has left."
+    ::= { hh3cCClusterTrapObjects 6 }
+
+hh3cCClusterLinkUp NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cCClusterMemberID
+        }
+    STATUS      current
+    DESCRIPTION
+        "The hh3cCClusterLinkUp trap indicates that the cluster
+         logical interface has changed to the up state."
+    ::= { hh3cCClusterTrapObjects 7 }
+
+hh3cCClusterLinkDown NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cCClusterMemberID
+        }
+    STATUS      current
+    DESCRIPTION
+        "The hh3cCClusterLinkDown trap indicates that the cluster
+         logical interface has changed to the down state."
+    ::= { hh3cCClusterTrapObjects 8 }
+
+hh3cCClusterBrigdgeMacChange NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cCClusterMemberID
+        }
+    STATUS      current
+    DESCRIPTION
+        "The hh3cCClusterBrigdgeMacChange trap indicates that the MAC address of
+         the cluster system has changed to that of the new primary device."
+    ::= { hh3cCClusterTrapObjects 9 }
+
+hh3cCClusterPortConfigFailure NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cCClusterMemberID
+        }
+    STATUS      current
+    DESCRIPTION
+        "The hh3cCClusterPortConfigFailure trap indicates that
+         Cloud cluster port configuration failed."
+    ::= { hh3cCClusterTrapObjects 10 }
+
+hh3cCClusterSetUpFailure NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cCClusterMemberID,
+            hh3cCClusterSetUpFailureReason
+        }
+    STATUS      current
+    DESCRIPTION
+        "The hh3cCClusterSetUpFailure trap indicates that
+         Cloud cluster creation failed."
+    ::= { hh3cCClusterTrapObjects 11 }
+
+hh3cCClusterTrapObjectDefs OBJECT IDENTIFIER ::= { hh3cCClusterTrap 1 }
+-- All objects used for TRAP only are defined here.
+
+hh3cCClusterPhysIntfName OBJECT-TYPE
+    SYNTAX         OCTET STRING (SIZE(1..255))
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The textual name of the stack physical interface."
+    ::= { hh3cCClusterTrapObjectDefs 1 }
+
+hh3cCClusterSetUpFailureReason OBJECT-TYPE
+    SYNTAX         DisplayString (SIZE(1..512))
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The textual name of the stack creation failed error reason."
+    ::= { hh3cCClusterTrapObjectDefs 2 }
+
+END

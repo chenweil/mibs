@@ -1,0 +1,142 @@
+-- ============================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description:  The purpose of this MIB file is to provide the definition of
+--               the DAC(Data Analysis Center) trap.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2022/07/15 created by suncao
+--      The initial revision of this MIB module.
+--      Add unisDacTrapStoreFull,
+--      unisDacTrapStoreDeleteFile,
+--      unisDacTrapStorageChange,
+--      unisDacTrapTotalStoreFull.
+-- ============================================================================
+UNIS-DAC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI;
+
+unisDac MODULE-IDENTITY
+    LAST-UPDATED "202207151100Z"             -- July 15, 2022 at 11:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Add unisDacTrapStoreFull,
+        unisDacTrapStoreDeleteFile,
+        unisDacTrapStorageChange,
+        unisDacTrapTotalStoreFull"
+
+    REVISION "202207151100Z"                -- July 15, 2022 at 11:00 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 237 }
+
+--
+-- Node definitions
+--
+
+-- Global Variants
+unisDacStoreTraps OBJECT IDENTIFIER ::= { unisDac 1 }
+
+--                     **************Global Variants***************
+-- Describe objects for dac trap
+unisDacTrapsStorePrefix OBJECT IDENTIFIER ::= { unisDacStoreTraps 0 }
+unisDacTrapStoreFull NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDacStoreServiceName,
+            unisDacStoreThresholdType,
+            unisDacStoreThresholdValue
+        }
+    STATUS    current
+    DESCRIPTION
+        "Send trap when storage space or storage time reaches the upper limit."
+    ::= { unisDacTrapsStorePrefix 1 }
+unisDacTrapStoreDeleteFile NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDacStoreServiceName,
+            unisDacStoreThresholdType
+        }
+    STATUS    current
+    DESCRIPTION
+        "When the storage space or storage time reaches the upper limit,
+        delete the data beyond the upper limit."
+    ::= { unisDacTrapsStorePrefix 2 }
+unisDacTrapStorageChange NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDacNewStorageMedia,
+            unisDacOldStorageMedia,
+            unisDacStorageChangeReason,
+            unisDacStorageChangeTip
+        }
+    STATUS    current
+    DESCRIPTION
+        "Log storage media switching."
+    ::= { unisDacTrapsStorePrefix 3 }
+unisDacTrapTotalStoreFull NOTIFICATION-TYPE
+    STATUS    current
+    DESCRIPTION
+        "The total storage space utilization rate of DAC business has reached 98%."
+    ::= { unisDacTrapsStorePrefix 4 }
+
+unisDacTrapsStoreObjects OBJECT IDENTIFIER ::= { unisDacStoreTraps 1 }
+unisDacStoreServiceName OBJECT-TYPE
+    SYNTAX    OCTET STRING(SIZE(0..36))
+    MAX-ACCESS    accessible-for-notify
+    STATUS    current
+    DESCRIPTION
+        "Service identification of storage alarm."
+    ::= { unisDacTrapsStoreObjects 1 }
+unisDacStoreThresholdType OBJECT-TYPE
+    SYNTAX    Unsigned32(1..2)
+    MAX-ACCESS    accessible-for-notify
+    STATUS    current
+    DESCRIPTION
+        "Storage time alarm or storage space alarm."
+    ::= { unisDacTrapsStoreObjects 2 }
+unisDacStoreThresholdValue OBJECT-TYPE
+    SYNTAX    OCTET STRING(SIZE(0..16))
+    MAX-ACCESS    accessible-for-notify
+    STATUS    current
+    DESCRIPTION
+        "Storage alarm threshold."
+    ::= { unisDacTrapsStoreObjects 3 }
+unisDacNewStorageMedia OBJECT-TYPE
+    SYNTAX    OCTET STRING(SIZE(0..32))
+    MAX-ACCESS    accessible-for-notify
+    STATUS    current
+    DESCRIPTION
+        "New storage media file system name after switching."
+    ::= { unisDacTrapsStoreObjects 4 }
+unisDacOldStorageMedia OBJECT-TYPE
+    SYNTAX    OCTET STRING(SIZE(0..32))
+    MAX-ACCESS    accessible-for-notify
+    STATUS    current
+    DESCRIPTION
+        "Old storage media file system name after switching."
+    ::= { unisDacTrapsStoreObjects 5 }
+unisDacStorageChangeReason OBJECT-TYPE
+    SYNTAX    OCTET STRING(SIZE(0..128))
+    MAX-ACCESS    accessible-for-notify
+    STATUS    current
+    DESCRIPTION
+        "The reason for switching storage media."
+    ::= { unisDacTrapsStoreObjects 6 }
+unisDacStorageChangeTip OBJECT-TYPE
+    SYNTAX    OCTET STRING(SIZE(0..128))
+    MAX-ACCESS    accessible-for-notify
+    STATUS    current
+    DESCRIPTION
+        "If the new storage medium is not memory, this item is empty.
+        Otherwise, the corresponding prompt message will be prompted."
+    ::= { unisDacTrapsStoreObjects 7 }
+
+END

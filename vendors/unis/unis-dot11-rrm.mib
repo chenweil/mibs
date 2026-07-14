@@ -1,0 +1,1436 @@
+-- ==========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The purpose of this MIB file is to provide object definition
+--              of WLAN radio resource management (RRM).
+-- Reference:
+-- Version: V1.9
+-- History:
+-- V1.0 2008-07-16 Initial version, created by ChenWei
+-- V1.1 2009-04-16 modified by WangChunsheng
+-- Add new table of unisDot11MonitorDetectedDevTable for unisDot11MonitorDetectedGroup.
+-- Add new table of unisDot11RRMAPCfgTable for unisDot11RRMConfigGroup.
+-- V1.2 2009-05-07 modified by Wang Shaojie, wangchunsheng
+--      Add unisDot11APInterfNumThreshhd, unisDot11StaInterfNumThreshhd
+--      to unisDot11GlobeConfigGroup.
+--      Modify unisDot11RRMCfgIntrvl
+-- V1.3 2009-05-07 modified by Wang Shaojie
+--      Add new node unisDot11MonitorDevSNR to unisDot11MonitorDetectedDevTable
+-- V1.4 2010-02-22 modified by Wang Chunsheng
+--      Add new table unisDot11RRMSDRadioGroupTable to unisDot11RRMConfigGroup
+--      2010-03-18 Modified by Wang Lu
+--      Add unisDot11RRMAPCfg2Table
+-- V1.5 2010-09-21 Modified by wu xiaopeng
+--      Add new node unisDot11RRMCoChlIntfTrapThhd, unisDot11RRMAdjChlIntfTrapThhd
+--      to unisDot11RRMAPCfg2Table
+--      2011-03-23 Modified by NiuJian
+--      Add new node unisDot11RrmNbrSSID
+--      to unisDot11RRMNbrInfoTable
+-- V1.6 2013-03-23 Modified by GaoFei
+--      Change SYNTAX of unisDot11RRMCfgPERThres,unisDot11RRMCfgToleranceFctr
+-- V1.7 2013-09-02 Modified by Zhang Siyu
+--      Add new table unisDot11RRMRadioNbrInfoTable to unisDot11RRMDetectGroup
+--      2013-11-19 Modified by wubin
+--      Add new node unisDot11RRM11nMultiCastMcs
+--      to unisDot11RRMGlobalCfgPara
+--      2013-12-21 Modified by wubin
+--      Add new node unisDot11RRM11acMadtMaxNss, unisDot11RRM11acSuptMaxNss,
+--      unisDot11RRM11acMultiCastNss, unisDot11RRM11acMultiCastVhtMcs
+--      to unisDot11RRMGlobalCfgPara
+-- V1.8 2014-05-07 Modified by yubo
+--      Change SYNTAX of unisDot11RRMCfgIntrfThres.
+-- V1.9 2017-05-22 Modified by weizhiguang
+--      Add new node unisDot11RrmNbrSNR, unisDot11RrmNbrNF
+--      to UnisDot11RRMNbrInfoEntry
+-- ==========================================================================
+UNIS-DOT11-RRM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    UnisDot11RadioType, UnisDot11ChannelScopeType, UnisDot11RadioElementIndex,
+    UnisDot11RadioScopeType, unisDot11APElementIndex
+        FROM UNIS-DOT11-REF-MIB
+    Integer32, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY,
+    NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    TruthValue, MacAddress, DateAndTime, RowStatus
+        FROM SNMPv2-TC
+    unisDot11,
+    UnisDot11ObjectIDType,
+    UnisDot11SSIDStringType
+        FROM UNIS-DOT11-REF-MIB;
+
+unisDot11RRM MODULE-IDENTITY
+    LAST-UPDATED "201705221600Z"        -- May 22, 2017 at 16:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file is to provide the object definition of
+        WLAN radio resource management (RRM)."
+
+    REVISION "201705221600Z"        -- May 22, 2017 at 16:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "201009251800Z"        -- Sep 25, 2010 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "201002231800Z"        -- Feb 23, 2010 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200908012000Z"        -- Aug 1, 2009 at 20:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes and new table."
+    REVISION "200905072000Z"        -- May 7, 2009 at 20:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes and new table."
+    REVISION "200904172000Z"        -- April 17, 2009 at 20:00 GMT
+    DESCRIPTION
+        "Modified to add new table and new group."
+    REVISION "200807141429Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisDot11 8 }
+
+--
+-- Node definitions
+--
+
+unisDot11RRMConfigGroup OBJECT IDENTIFIER ::= { unisDot11RRM 1 }
+
+unisDot11RRMGlobalCfgPara OBJECT IDENTIFIER ::= { unisDot11RRMConfigGroup 1 }
+
+unisDot11RRM11nMadtMaxMcs OBJECT-TYPE
+    SYNTAX Integer32 (0..76 | 255)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the maximum modulation and coding scheme (MCS) index for
+        802.11n mandatory rates.
+        The value 255 indicates that no maximum MCS index
+        is specified.  No maximum MCS index is specified for 802.11n
+        mandatory rates by default.
+        Besides 255, the specified maximum MCS index for 802.11n supported
+        rates must be no less than the specified maximum MCS index for 802.11n
+        mandatory rates."
+    DEFVAL { 255 }
+    ::= { unisDot11RRMGlobalCfgPara 1 }
+
+unisDot11RRM11nSuptMaxMcs OBJECT-TYPE
+    SYNTAX Integer32 (0..76)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the maximum Modulation and Coding Scheme (MCS) index for
+        802.11n supported rates.
+        The specified maximum MCS index for 802.11n supported rates must be no
+        less than the specified maximum MCS index for 802.11n mandatory rates."
+    DEFVAL { 76 }
+    ::= { unisDot11RRMGlobalCfgPara 2 }
+
+unisDot11RRM11gProtect OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Enable/Disable dot11g protection."
+    DEFVAL { false }
+    ::= { unisDot11RRMGlobalCfgPara 3 }
+
+unisDot11RRM11aPwrConstrt OBJECT-TYPE
+    SYNTAX Integer32
+    UNITS "dBm"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configure the power constraint for all 802.11a radios.
+        The configured power constraint is advertised in beacons if spectrum
+        management is enabled.
+        The range of power constraint is 0 to MAX-POWER-1 (where the MAX-POWER
+        is defined by the regulatory domain)."
+    DEFVAL { 0 }
+    ::= { unisDot11RRMGlobalCfgPara 4 }
+
+unisDot11RRM11aSpectrumManag OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Enable/Disable spectrum management for 802.11a radios.
+        When spectrum management is enabled, the WLAN sub-system advertises
+        power capabilities of the AP and power constraints applicable to all
+        devices in the BSS based on regulatory domain specification."
+    DEFVAL { false }
+    ::= { unisDot11RRMGlobalCfgPara 5 }
+
+unisDot11RRMAutoChlAvoid11h OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configure the auto-channel set as non-dot11h channels, this is,
+        only the non-dot11h channels belonging to the country code are scanned
+        during initial channel selection and one of them is selected."
+    DEFVAL { false }
+    ::= { unisDot11RRMGlobalCfgPara 6 }
+
+unisDot11RRMScanChl OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        auto(1),
+        all(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Set the scan mode.
+        auto: When this option is set, all channels of the country code being
+              set are scanned.
+        all: When this option is set, all the channels of the radio band are
+             scanned."
+    DEFVAL { auto }
+    ::= { unisDot11RRMGlobalCfgPara 7 }
+
+unisDot11RRMScanRptIntvel OBJECT-TYPE
+    SYNTAX Integer32 (5..120)
+    UNITS "second"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Set the scan report interval."
+    DEFVAL { 10 }
+    ::= { unisDot11RRMGlobalCfgPara 8 }
+
+unisDot11APInterfNumThreshhd OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents threshold of AP interference .
+         If the value of AP interference exceeds this threshold,
+         AP interference trap will be sent.  If the value of this node
+         is zero, AP interference trap will be sent immediately."
+
+    DEFVAL      { 0 }
+    ::= { unisDot11RRMGlobalCfgPara 9 }
+
+unisDot11StaInterfNumThreshhd OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents threshold of STA interference.
+         If the value of STA interference exceeds this threshold,
+         STA interference trap will be sent.  If the value of this
+         node is zero, STA interference trap will be sent immediately.
+         "
+    DEFVAL      { 0 }
+    ::= { unisDot11RRMGlobalCfgPara 10 }
+
+unisDot11RRM11nMultiCastMcs OBJECT-TYPE
+    SYNTAX Unsigned32 (0..76 | 4294967295)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the modulation and coding scheme (MCS) index for 802.11n
+        multicast rates.
+        The value 4294967295 indicates that no MCS index is specified.
+        No MCS index is specified for 802.11n multicast rates by default.
+        Besides 4294967295, the specified MCS index for 802.11n multicast
+        rates must be no less than the specified maximum MCS index for 802.11n
+        mandatory rates.
+        Before configure the MCS index for 802.11n multicast rates, the maximum
+        MCS index for 802.11n mandatory rates must be configured"
+    DEFVAL { 4294967295 }
+    ::= { unisDot11RRMGlobalCfgPara 11 }
+
+unisDot11RRM11acMadtMaxNss OBJECT-TYPE
+    SYNTAX Integer32 (0..8)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the maximum NSS index for 802.11ac mandatory rates.
+        The value 0 indicates that no maximum NSS index is specified.
+        No maximum NSS index is specified for 802.11ac mandatory rates by default.
+        The specified maximum NSS index for 802.11ac supported rates must be no less
+        than the specified maximum NSS index for 802.11ac mandatory rates."
+    DEFVAL { 0 }
+    ::= { unisDot11RRMGlobalCfgPara 12 }
+
+unisDot11RRM11acSuptMaxNss OBJECT-TYPE
+    SYNTAX Integer32 (1..8)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the maximum NSS index for 802.11ac supported rates.
+        The specified maximum NSS index for 802.11ac supported rates must be no
+        less than the specified maximum NSS index for 802.11ac mandatory rates."
+    DEFVAL { 8 }
+    ::= { unisDot11RRMGlobalCfgPara 13 }
+
+unisDot11RRM11acMultiCastNss OBJECT-TYPE
+    SYNTAX Integer32 (0..8)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the NSS index for 802.11ac multicast rates.
+        The value 0 indicates that no NSS index is specified.
+        No NSS index is specified for 802.11ac multicast rates by default.
+        The specified NSS index for 802.11ac multicast rates must be no less
+        than the specified maximum NSS index for 802.11ac mandatory rates.
+        Before configuring the NSS index for 802.11ac multicast rates, the maximum
+        NSS index for 802.11ac mandatory rates must be configured.
+        Besides, it must be configured together with the node below."
+    DEFVAL { 0 }
+    ::= { unisDot11RRMGlobalCfgPara 14 }
+
+unisDot11RRM11acMultiCastVhtMcs OBJECT-TYPE
+    SYNTAX Integer32 (0..9 | 255)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the MCS index for 802.11ac multicast rates.
+        The value 255 indicates that no MCS index is specified.
+        No MCS index is specified for 802.11ac multicast rates by default.
+        Besides, it must be configured together with the node above."
+    DEFVAL { 255 }
+    ::= { unisDot11RRMGlobalCfgPara 15 }
+
+unisDot11RRMRadioCfgTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11RRMRadioCfgEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Configure WLAN RRM based radio type.
+        When 802.11b parameter is modified, 802.11g parameter will be
+        changed at the same time.
+        In the same way, when 802.11g parameter is modified, 802.11b parameter
+        will be changed at the same time."
+    ::= { unisDot11RRMConfigGroup 2 }
+
+unisDot11RRMRadioCfgEntry OBJECT-TYPE
+    SYNTAX UnisDot11RRMRadioCfgEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Configure WLAN RRM based radio type.
+        When 802.11b parameter is modified, 802.11g parameter will be
+        changed at the same time.
+        In the same way, when 802.11g parameter is modified, 802.11b parameter
+        will be changed at the same time."
+    INDEX { unisDot11RRMRadioType }
+    ::= { unisDot11RRMRadioCfgTable 1 }
+
+UnisDot11RRMRadioCfgEntry ::=
+    SEQUENCE {
+        unisDot11RRMRadioType
+            UnisDot11RadioType,
+        unisDot11RRMCfgChlState
+            TruthValue,
+        unisDot11RRMCfgChlMode
+            INTEGER,
+        unisDot11RRMChlProntoRadioElmt
+            Unsigned32,
+        unisDot11RRMCfgPwrState
+            TruthValue,
+        unisDot11RRMCfgPwrMode
+            INTEGER,
+        unisDot11RRMPwrProntoRadioElmt
+            Unsigned32,
+        unisDot11RRMCfgIntrvl
+            Integer32,
+        unisDot11RRMCfgIntrfThres
+            Integer32,
+        unisDot11RRMCfgNoiseThres
+            Integer32,
+        unisDot11RRMCfgPERThres
+            Integer32,
+        unisDot11RRMCfgToleranceFctr
+            Integer32,
+        unisDot11RRMCfgAdjacencyFctr
+            Integer32
+     }
+
+unisDot11RRMRadioType OBJECT-TYPE
+    SYNTAX UnisDot11RadioType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "802.11 radio type."
+    ::= { unisDot11RRMRadioCfgEntry 1 }
+
+unisDot11RRMCfgChlState OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Enable/Disable dynamic channel selection."
+    DEFVAL { false }
+    ::= { unisDot11RRMRadioCfgEntry 2 }
+
+unisDot11RRMCfgChlMode OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        selfDecisive(1),
+        userTriggered(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configure the mode of channel selection.
+        This node can be configured only when dynamic channel selection
+        is enabled."
+    DEFVAL { userTriggered }
+    ::= { unisDot11RRMRadioCfgEntry 3 }
+
+unisDot11RRMChlProntoRadioElmt OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the AP and radio that will change channel at next
+        calibration cycle.
+        0 is returned when getting the value of this node.
+        This node can be configured only when the mode of channel selection
+        control is user-triggered.
+        When configuring, the higher 24 bits stand for the AP index,
+        and the last 8 bits stand for the radio index.
+        4294967295 stand for configuring each radio on all APs."
+    DEFVAL { 0 }
+    ::= { unisDot11RRMRadioCfgEntry 4 }
+
+unisDot11RRMCfgPwrState OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Enable/Disable dynamic power selection for the band."
+    DEFVAL { false }
+    ::= { unisDot11RRMRadioCfgEntry 5 }
+
+unisDot11RRMCfgPwrMode OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        selfDecisive(1),
+        userTriggered(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configure the mode of transmit power control.
+        This node can be configured only when dynamic power selection
+        is enabled."
+    DEFVAL { userTriggered }
+    ::= { unisDot11RRMRadioCfgEntry 6 }
+
+unisDot11RRMPwrProntoRadioElmt OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the AP and radio that will change power at next
+        calibration cycle.
+        0 is returned when getting the value of this node.
+        This node can be configured only when the mode of transmit power
+        control is user-triggered.
+        When configuring, the higher 24 bits stand for the AP index,
+        and the last 8 bits stand for the radio index.
+        4294967295 stand for configuring each radio on all APs."
+    DEFVAL { 0 }
+    ::= { unisDot11RRMRadioCfgEntry 7 }
+
+unisDot11RRMCfgIntrvl OBJECT-TYPE
+    SYNTAX Integer32
+    UNITS "minute"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configure the calibration interval."
+    DEFVAL { 8 }
+    ::= { unisDot11RRMRadioCfgEntry 8 }
+
+unisDot11RRMCfgIntrfThres OBJECT-TYPE
+    SYNTAX Integer32 (1..100)
+    UNITS "percent"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configure the interface threshold.
+        By default, interference observed on an operating channel is considered
+        during dynamic frequency selection and transmit power control.  If the
+        interference percentage on the channel reaches the set threshold, RRM
+        will perform resource adjustment to control the situation."
+    DEFVAL { 50 }
+    ::= { unisDot11RRMRadioCfgEntry 9 }
+
+unisDot11RRMCfgNoiseThres OBJECT-TYPE
+    SYNTAX Integer32 (-127..127)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configure the noise threshold."
+    DEFVAL { -70 }
+    ::= { unisDot11RRMRadioCfgEntry 10 }
+
+unisDot11RRMCfgPERThres OBJECT-TYPE
+    SYNTAX Integer32 (1..100)
+    UNITS "percent"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configure the CRC error threshold.
+        If the percentage of CRC errors reaches the threshold, RRM will perform
+        resource adjustment to control the situation."
+    DEFVAL { 20 }
+    ::= { unisDot11RRMRadioCfgEntry 11 }
+
+unisDot11RRMCfgToleranceFctr OBJECT-TYPE
+    SYNTAX Integer32 (1..45)
+    UNITS "percent"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configure the tolerance level.
+        During dynamic frequency selection (DFS), the channel will be changed
+        only if there is a better channel having lesser interference and packet
+        error rate than those specified by the user."
+    DEFVAL { 20 }
+    ::= { unisDot11RRMRadioCfgEntry 12 }
+
+unisDot11RRMCfgAdjacencyFctr OBJECT-TYPE
+    SYNTAX Integer32 (1..16)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configure the adjacency factor for the band.
+        If transmit power control (TPC) is configured, power will be adjusted
+        when the nth neighbor is detected.  The value n is the adjacency factor."
+    DEFVAL { 3 }
+    ::= { unisDot11RRMRadioCfgEntry 13 }
+
+unisDot11RRMAPCfgTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11RRMAPCfgEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table defines the RRM parameters for AP."
+    ::= { unisDot11RRMConfigGroup 3 }
+
+unisDot11RRMAPCfgEntry OBJECT-TYPE
+    SYNTAX UnisDot11RRMAPCfgEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information of RRM parameters for AP."
+    INDEX { unisDot11APElementIndex }
+    ::= { unisDot11RRMAPCfgTable 1 }
+
+UnisDot11RRMAPCfgEntry ::=
+    SEQUENCE {
+        unisDot11RRMAPWorkMode
+          INTEGER
+    }
+
+unisDot11RRMAPWorkMode OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        normal(1),
+        monitor(2),
+        hybrid(3)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "AP work mode."
+    ::= { unisDot11RRMAPCfgEntry 1 }
+
+unisDot11RRMSDRadioGroupTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11RRMSDRadioGroupEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table defines RRM self-decisive radio group."
+    ::= { unisDot11RRMConfigGroup 4 }
+
+unisDot11RRMSDRadioGroupEntry OBJECT-TYPE
+    SYNTAX      UnisDot11RRMSDRadioGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of one RRM self-decisive radio group."
+    INDEX
+        {
+            unisDot11RRMSDRadioGroupId
+        }
+    ::= { unisDot11RRMSDRadioGroupTable 1 }
+
+UnisDot11RRMSDRadioGroupEntry ::= SEQUENCE
+    {
+        unisDot11RRMSDRadioGroupId             Unsigned32,
+        unisDot11RRMSDRadioGroupDesc           OCTET STRING,
+        unisDot11RRMSDRdGrpChlHolddownTm       Unsigned32,
+        unisDot11RRMSDRdGrpPwrHolddownTm       Unsigned32,
+        unisDot11RRMSDRdGroupRowStatus         RowStatus
+    }
+
+unisDot11RRMSDRadioGroupId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents RRM self-decisive radio group ID."
+    ::= { unisDot11RRMSDRadioGroupEntry 1 }
+
+unisDot11RRMSDRadioGroupDesc OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the description of RRM self-decisive radio group."
+    ::= { unisDot11RRMSDRadioGroupEntry 2 }
+
+unisDot11RRMSDRdGrpChlHolddownTm OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "minute"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the channel holddown time of RRM self-decisive radio group."
+    ::= { unisDot11RRMSDRadioGroupEntry 3 }
+
+unisDot11RRMSDRdGrpPwrHolddownTm OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "minute"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the power holddown time of RRM self-decisive radio group."
+    ::= { unisDot11RRMSDRadioGroupEntry 4 }
+
+unisDot11RRMSDRdGroupRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The row status of this table entry."
+    ::= { unisDot11RRMSDRadioGroupEntry 5 }
+
+unisDot11RRMAPCfg2Table OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11RRMAPCfg2Entry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table defines the RRM parameters for AP."
+    ::= { unisDot11RRMConfigGroup 5 }
+
+unisDot11RRMAPCfg2Entry OBJECT-TYPE
+    SYNTAX UnisDot11RRMAPCfg2Entry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information of RRM parameters for AP."
+    INDEX { unisDot11RRMAPSerialID }
+    ::= { unisDot11RRMAPCfg2Table 1 }
+
+UnisDot11RRMAPCfg2Entry ::=
+    SEQUENCE {
+        unisDot11RRMAPSerialID
+            UnisDot11ObjectIDType,
+        unisDot11RRMAPIntfThreshold
+            Integer32,
+        unisDot11RRMStaIntfThreshold
+            Integer32,
+        unisDot11RRMCoChlIntfTrapThhd
+            Integer32,
+        unisDot11RRMAdjChlIntfTrapThhd
+            Integer32
+    }
+
+unisDot11RRMAPSerialID OBJECT-TYPE
+    SYNTAX UnisDot11ObjectIDType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Serial ID of the AP."
+    ::= { unisDot11RRMAPCfg2Entry 1 }
+
+unisDot11RRMAPIntfThreshold OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents threshold of AP interference .
+         If the number of AP interference exceeds this threshold,
+         AP interference trap will be sent."
+    ::= { unisDot11RRMAPCfg2Entry 2 }
+
+unisDot11RRMStaIntfThreshold OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents threshold of STA interference.
+         If the number of STA interference exceeds this threshold,
+         station interference trap will be sent."
+    ::= { unisDot11RRMAPCfg2Entry 3 }
+
+unisDot11RRMCoChlIntfTrapThhd OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dbm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents threshold of interference trap with current ap.
+        If signal strength of the device exceeds this threshold,
+        corresponding trap will be sent."
+    ::= { unisDot11RRMAPCfg2Entry 4 }
+
+
+unisDot11RRMAdjChlIntfTrapThhd OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dbm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents threshold of adjacent interference trap with current ap.
+        If signal strength of the device exceeds this threshold,
+        corresponding trap will be sent."
+    ::= { unisDot11RRMAPCfg2Entry 5 }
+
+unisDot11RRMDetectGroup OBJECT IDENTIFIER ::= { unisDot11RRM 2 }
+
+unisDot11RRMChlRptTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11RRMChlRptEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the RRM channel information of each radio
+        on all APs."
+    ::= { unisDot11RRMDetectGroup 1 }
+
+unisDot11RRMChlRptEntry OBJECT-TYPE
+    SYNTAX UnisDot11RRMChlRptEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information of RRM channel information
+        of the radio on the AP."
+    INDEX { unisDot11RRMRadioIndex, unisDot11RRMChlRptChlNum }
+    ::= { unisDot11RRMChlRptTable 1 }
+
+UnisDot11RRMChlRptEntry ::=
+    SEQUENCE {
+        unisDot11RRMRadioIndex
+            UnisDot11RadioElementIndex,
+        unisDot11RRMChlRptChlNum
+            Integer32,
+        unisDot11RRMChlRptChlType
+            INTEGER,
+        unisDot11RRMChlRptChlQlty
+            INTEGER,
+        unisDot11RRMChlRptNbrCnt
+            Integer32,
+        unisDot11RRMChlRptLoad
+            Integer32,
+        unisDot11RRMChlRptUtlz
+            Integer32,
+        unisDot11RRMChlRptIntrf
+            Integer32,
+        unisDot11RRMChlRptPER
+            Integer32,
+        unisDot11RRMChlRptRetryRate
+            Integer32,
+        unisDot11RRMChlRptNoise
+            Integer32,
+        unisDot11RRMChlRptRadarIndtcr
+            INTEGER
+     }
+
+unisDot11RRMRadioIndex OBJECT-TYPE
+    SYNTAX UnisDot11RadioElementIndex
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Represents index of the radio."
+    ::= { unisDot11RRMChlRptEntry 1 }
+
+unisDot11RRMChlRptChlNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Channel number."
+    ::= { unisDot11RRMChlRptEntry 2 }
+
+unisDot11RRMChlRptChlType OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        primeChannel(1),
+        offChannel(2)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Channel type."
+    ::= { unisDot11RRMChlRptEntry 3 }
+
+unisDot11RRMChlRptChlQlty OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        good(1),
+        bad(2)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Channel quality."
+    ::= { unisDot11RRMChlRptEntry 4 }
+
+unisDot11RRMChlRptNbrCnt OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of neighbors found on the channel."
+    ::= { unisDot11RRMChlRptEntry 5 }
+
+unisDot11RRMChlRptLoad OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    UNITS "percent"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Load observed on the channel in percentage."
+    ::= { unisDot11RRMChlRptEntry 6 }
+
+unisDot11RRMChlRptUtlz OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    UNITS "percent"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Utilization of the channel in percentage."
+    ::= { unisDot11RRMChlRptEntry 7 }
+
+unisDot11RRMChlRptIntrf OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    UNITS "percent"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Interference observed on the channel in percentage."
+    ::= { unisDot11RRMChlRptEntry 8 }
+
+unisDot11RRMChlRptPER OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    UNITS "percent"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Packet error rate observed on the channel in percentage."
+    ::= { unisDot11RRMChlRptEntry 9 }
+
+unisDot11RRMChlRptRetryRate OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    UNITS "percent"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Percentage of retransmission happened on the channel."
+    ::= { unisDot11RRMChlRptEntry 10 }
+
+unisDot11RRMChlRptNoise OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Noise observed on the channel."
+    ::= { unisDot11RRMChlRptEntry 11 }
+
+unisDot11RRMChlRptRadarIndtcr OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        detected(1),
+        notDetected(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Radar detection status."
+    ::= { unisDot11RRMChlRptEntry 12 }
+
+unisDot11RRMNbrInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11RRMNbrInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the RRM neighbor information of each radio
+        on all APs."
+    ::= { unisDot11RRMDetectGroup 2 }
+
+unisDot11RRMNbrInfoEntry OBJECT-TYPE
+    SYNTAX UnisDot11RRMNbrInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information of RRM neighbor information
+        of the radio on an AP."
+    INDEX { unisDot11RRMRadioIndex, unisDot11RrmNbrBSSID }
+    ::= { unisDot11RRMNbrInfoTable 1 }
+
+UnisDot11RRMNbrInfoEntry ::=
+    SEQUENCE {
+        unisDot11RrmNbrBSSID
+            MacAddress,
+        unisDot11RrmNbrChl
+            UnisDot11ChannelScopeType,
+        unisDot11RRMNbrIntrf
+            Integer32,
+        unisDot11RrmNbrRSSI
+            Integer32,
+        unisDot11RrmNbrType
+            INTEGER,
+        unisDot11RrmNbrSSID
+            UnisDot11SSIDStringType,
+        unisDot11RrmNbrSNR
+            Integer32,
+        unisDot11RrmNbrNF
+            Integer32
+     }
+
+unisDot11RrmNbrBSSID OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "MAC address of the AP."
+    ::= { unisDot11RRMNbrInfoEntry 1 }
+
+unisDot11RrmNbrChl OBJECT-TYPE
+    SYNTAX UnisDot11ChannelScopeType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Channel number on which the neighbor was found."
+    ::= { unisDot11RRMNbrInfoEntry 2 }
+
+unisDot11RRMNbrIntrf OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    UNITS "percent"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Interference observed on the channel in percentage by neighbor."
+    ::= { unisDot11RRMNbrInfoEntry 3 }
+
+unisDot11RrmNbrRSSI OBJECT-TYPE
+    SYNTAX Integer32
+    UNITS "dBm"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Signal strength of the AP in dBm."
+    ::= { unisDot11RRMNbrInfoEntry 4 }
+
+unisDot11RrmNbrType OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        managed(1),
+        unmanaged(2)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Type of the AP, managed or unmanaged."
+    ::= { unisDot11RRMNbrInfoEntry 5 }
+
+unisDot11RrmNbrSSID OBJECT-TYPE
+    SYNTAX UnisDot11SSIDStringType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "SSID of the Neighbor."
+    ::= { unisDot11RRMNbrInfoEntry 6 }
+
+unisDot11RrmNbrSNR OBJECT-TYPE
+    SYNTAX Integer32
+    UNITS "dB"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Signal to noise ratio of the AP in dB."
+    ::= { unisDot11RRMNbrInfoEntry 7 }
+
+unisDot11RrmNbrNF OBJECT-TYPE
+    SYNTAX Integer32
+    UNITS "dBm"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Noise floor of the AP in dBm."
+    ::= { unisDot11RRMNbrInfoEntry 8 }
+
+unisDot11RRMHistoryTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11RRMHistoryEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the details of the latest three channel changes
+        and power changes applied on all APs, including time of change,
+        reason of the change and the channel, power, interference parameters."
+    ::= { unisDot11RRMDetectGroup 3 }
+
+unisDot11RRMHistoryEntry OBJECT-TYPE
+    SYNTAX UnisDot11RRMHistoryEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry shows the details of channel and power changes."
+    INDEX { unisDot11RRMRadioIndex,
+            unisDot11RRMHistoryId,
+            unisDot11RRMHistoryRecIndctr }
+    ::= { unisDot11RRMHistoryTable 1 }
+
+UnisDot11RRMHistoryEntry ::=
+    SEQUENCE {
+        unisDot11RRMHistoryId
+            Integer32,
+        unisDot11RRMHistoryRecIndctr
+            INTEGER,
+        unisDot11RRMHistoryChl
+            UnisDot11ChannelScopeType,
+        unisDot11RRMHistoryPwr
+            Integer32,
+        unisDot11RRMHistoryLoad
+            Integer32,
+        unisDot11RRMHistoryUtlz
+            Integer32,
+        unisDot11RRMHistoryIntrf
+            Integer32,
+        unisDot11RRMHistoryNoise
+            Integer32,
+        unisDot11RRMHistoryPER
+            Integer32,
+        unisDot11RRMHistoryRetryRate
+            Integer32,
+        unisDot11RRMHistoryChgReason
+            BITS,
+        unisDot11RRMHistoryChgDateTime
+            DateAndTime
+     }
+
+unisDot11RRMHistoryId OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "History number of the change."
+    ::= { unisDot11RRMHistoryEntry 1 }
+
+unisDot11RRMHistoryRecIndctr OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        before(1),
+        after(2)
+        }
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "History record type of the change."
+    ::= { unisDot11RRMHistoryEntry 2 }
+
+unisDot11RRMHistoryChl OBJECT-TYPE
+    SYNTAX UnisDot11ChannelScopeType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Channel on which the radio operates before/after the change
+        of channel or power."
+    ::= { unisDot11RRMHistoryEntry 3 }
+
+unisDot11RRMHistoryPwr OBJECT-TYPE
+    SYNTAX Integer32
+    UNITS "dBm"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Power of the radio before/after the change of channel or
+        power."
+    ::= { unisDot11RRMHistoryEntry 4 }
+
+unisDot11RRMHistoryLoad OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    UNITS "percent"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Load observed on the radio in percentage before/after the
+        change of channel or power."
+    ::= { unisDot11RRMHistoryEntry 5 }
+
+unisDot11RRMHistoryUtlz OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    UNITS "percent"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Utilization of the radio in percentage before/after the
+        change of channel or power."
+    ::= { unisDot11RRMHistoryEntry 6 }
+
+unisDot11RRMHistoryIntrf OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    UNITS "percent"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Interference observed on the radio in percentage
+        before/after the change of channel or power."
+    ::= { unisDot11RRMHistoryEntry 7 }
+
+unisDot11RRMHistoryNoise OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Noise observed on the radio before/after the change
+        of channel or power."
+    ::= { unisDot11RRMHistoryEntry 8 }
+
+unisDot11RRMHistoryPER OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    UNITS "percent"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Packet error rate observed on the radio in percentage
+        before/after the change of channel or power."
+    ::= { unisDot11RRMHistoryEntry 9 }
+
+unisDot11RRMHistoryRetryRate OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    UNITS "percent"
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Percentage of retransmission happened on the radio
+        before/after the change of channel or power."
+    ::= { unisDot11RRMHistoryEntry 10 }
+
+unisDot11RRMHistoryChgReason OBJECT-TYPE
+    SYNTAX BITS
+        {
+        others(0),
+        coverage(1),
+        radar(2),
+        retransmission(3),
+        packetsDiscarded(4),
+        interference(5)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Reason for the change of channel or power.
+        The various bit positions are:
+        |0        |Others                    |
+        |1        |Coverage                  |
+        |2        |Radar                     |
+        |3        |Retransmission            |
+        |4        |Packets discarded         |
+        |5        |Interference              |
+        0 is returned when the history record type is after."
+    ::= { unisDot11RRMHistoryEntry 11 }
+
+unisDot11RRMHistoryChgDateTime OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The time when the channel or power change occurred."
+    ::= { unisDot11RRMHistoryEntry 12 }
+
+unisDot11RRMRadioNbrInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11RRMRadioNbrInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the RRM neighbor information of each radio
+        on all APs."
+    ::= { unisDot11RRMDetectGroup 4 }
+
+unisDot11RRMRadioNbrInfoEntry OBJECT-TYPE
+    SYNTAX UnisDot11RRMRadioNbrInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information of RRM neighbor information
+        of the radio on an AP."
+    INDEX { unisDot11RRMRadioNbrAPID, unisDot11RRMRadioNbrRadioID }
+    ::= { unisDot11RRMRadioNbrInfoTable 1 }
+
+UnisDot11RRMRadioNbrInfoEntry ::=
+    SEQUENCE {
+        unisDot11RRMRadioNbrAPID
+            UnisDot11ObjectIDType,
+        unisDot11RRMRadioNbrRadioID
+            UnisDot11RadioScopeType,
+        unisDot11RRMRadioNbrSSID
+            OCTET STRING
+     }
+
+unisDot11RRMRadioNbrAPID OBJECT-TYPE
+    SYNTAX UnisDot11ObjectIDType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "AP serial id."
+    ::= { unisDot11RRMRadioNbrInfoEntry 1 }
+
+unisDot11RRMRadioNbrRadioID OBJECT-TYPE
+    SYNTAX UnisDot11RadioScopeType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Radio Id on AP."
+    ::= { unisDot11RRMRadioNbrInfoEntry 2 }
+
+unisDot11RRMRadioNbrSSID OBJECT-TYPE
+    SYNTAX  OCTET STRING
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "All neighbour SSIDs scanned by the selected radio."
+    ::= { unisDot11RRMRadioNbrInfoEntry 3 }
+
+unisDot11RRMNotifyGroup OBJECT IDENTIFIER ::= { unisDot11RRM 3 }
+
+unisDot11RRMChlQltyNotifications OBJECT IDENTIFIER ::= { unisDot11RRMNotifyGroup 1 }
+
+unisDot11RRMChlQltyNtfPrefix OBJECT IDENTIFIER ::= { unisDot11RRMChlQltyNotifications 0 }
+
+unisDot11RRMIntrfLimit NOTIFICATION-TYPE
+    OBJECTS { unisDot11RRMChlRptIntrf }
+    STATUS current
+    DESCRIPTION
+        "This notification will be sent when interference on the radio
+        exceeds the limit."
+    ::= { unisDot11RRMChlQltyNtfPrefix 1 }
+
+unisDot11RRMPERLimit NOTIFICATION-TYPE
+    OBJECTS { unisDot11RRMChlRptPER }
+    STATUS current
+    DESCRIPTION
+        "This notification will be sent when packet error rate on the
+        radio exceeds the limit."
+    ::= { unisDot11RRMChlQltyNtfPrefix 2 }
+
+unisDot11RRMNoiseLimit NOTIFICATION-TYPE
+    OBJECTS { unisDot11RRMChlRptNoise }
+    STATUS current
+    DESCRIPTION
+        "This notification will be sent when noise on the radio exceeds
+        the limit."
+    ::= { unisDot11RRMChlQltyNtfPrefix 3 }
+
+unisDot11RRMResChgNotifications OBJECT IDENTIFIER ::= { unisDot11RRMNotifyGroup 2 }
+
+unisDot11RRMResChgNtfPrefix OBJECT IDENTIFIER ::= { unisDot11RRMResChgNotifications 0 }
+
+unisDot11RRMPowerChange NOTIFICATION-TYPE
+    OBJECTS { unisDot11RRMRadioIndex, unisDot11NewPower, unisDot11OldPower }
+    STATUS current
+    DESCRIPTION
+        "This notification will be sent when power changed on the radio
+        automatically."
+    ::= { unisDot11RRMResChgNtfPrefix 1 }
+
+unisDot11RRMNotificationsVar OBJECT IDENTIFIER ::= { unisDot11RRMNotifyGroup 3 }
+
+unisDot11NewPower OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Power of the radio after the change of power."
+    ::= { unisDot11RRMNotificationsVar 1 }
+
+unisDot11OldPower OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Power of the radio before the change of power."
+    ::= { unisDot11RRMNotificationsVar 2 }
+
+unisDot11MonitorDetectedGroup OBJECT IDENTIFIER ::= { unisDot11RRM 4 }
+
+unisDot11MonitorDetectedDevTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11MonitorDetectedDevEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the devices of AP detected"
+    ::= { unisDot11MonitorDetectedGroup 1 }
+
+unisDot11MonitorDetectedDevEntry OBJECT-TYPE
+    SYNTAX      UnisDot11MonitorDetectedDevEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of detected devices."
+    INDEX
+        {
+            unisDot11MonitorDevMAC, unisDot11APElementIndex
+        }
+    ::= { unisDot11MonitorDetectedDevTable 1 }
+
+UnisDot11MonitorDetectedDevEntry ::=
+    SEQUENCE {
+        unisDot11MonitorDevMAC
+            MacAddress,
+        unisDot11MonitorDevType
+            INTEGER,
+        unisDot11MonitorDevVendor
+            OCTET STRING,
+        unisDot11MonitorDevSSID
+            OCTET STRING,
+        unisDot11MonitorDevBSSID
+            MacAddress,
+        unisDot11MonitorDevChannel
+            UnisDot11ChannelScopeType,
+        unisDot11MonitorRadioId
+            UnisDot11RadioScopeType,
+        unisDot11MonitorDevMaxRSSI
+            Integer32,
+        unisDot11MonitorDevBeaconIntvl
+            Integer32,
+        unisDot11MonitorDevFstDctTime
+            DateAndTime,
+        unisDot11MonitorDevLstDctTime
+            DateAndTime,
+        unisDot11MonitorDevClear
+            TruthValue,
+        unisDot11MonitorDevSNR
+            Integer32
+     }
+
+unisDot11MonitorDevMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents MAC address of the device detected."
+    ::= { unisDot11MonitorDetectedDevEntry 1 }
+
+unisDot11MonitorDevType OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                    client(1),
+                    ap(2),
+                    adhoc(3),
+                    wirelessBridge(4),
+                    unknown(5)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents type of the device detected."
+    ::= { unisDot11MonitorDetectedDevEntry 2 }
+
+unisDot11MonitorDevVendor OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents vendor of the detected device."
+    ::= { unisDot11MonitorDetectedDevEntry 3 }
+
+unisDot11MonitorDevSSID OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the service set identifier for the ESS of the device which
+         type is ap or adhoc."
+    ::= { unisDot11MonitorDetectedDevEntry 4 }
+
+unisDot11MonitorDevBSSID OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the basic service set identifier of the detected device."
+    ::= { unisDot11MonitorDetectedDevEntry 5 }
+
+unisDot11MonitorDevChannel OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the channel in which the device was last detected.  AP will
+         choose the channel which has maximum signal strength as effective
+         channel, as there is interference between adjacent channels."
+    ::= { unisDot11MonitorDetectedDevEntry 6 }
+
+unisDot11MonitorRadioId OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the radio ID of the AP that detected the device."
+    ::= { unisDot11MonitorDetectedDevEntry 7 }
+
+unisDot11MonitorDevMaxRSSI OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dbm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum detected RSSI of the device in a scan report cycle."
+    ::= { unisDot11MonitorDetectedDevEntry 8 }
+
+unisDot11MonitorDevBeaconIntvl OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "millisecond"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the beacon interval for the detected device(not include
+         the device which type is client)."
+    ::= { unisDot11MonitorDetectedDevEntry 9 }
+
+unisDot11MonitorDevFstDctTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time at which the device was first detected."
+    ::= { unisDot11MonitorDetectedDevEntry 10 }
+
+unisDot11MonitorDevLstDctTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time at which the device was detected last time."
+    ::= { unisDot11MonitorDetectedDevEntry 11 }
+
+unisDot11MonitorDevClear OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to clear the information of the device detected
+         in the WLAN.
+         It will return false for get operation."
+    ::= { unisDot11MonitorDetectedDevEntry 12 }
+
+unisDot11MonitorDevSNR OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the SNR of the device in a scan report cycle."
+    ::= { unisDot11MonitorDetectedDevEntry 13 }
+
+END

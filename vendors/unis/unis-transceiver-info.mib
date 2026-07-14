@@ -1,0 +1,880 @@
+-- ===========================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:  Transceiver MIB
+-- Reference:  IF-MIB
+-- Version:  V1.9
+-- History:
+-- V1.0 created by liuhongxu and zoudian.
+--   Initial version 2006-01-10
+-- V1.1 2006-06-08 Updated by chenzhaojie
+--   Change description of unisTransceiverWaveLength
+-- V1.2 2009-12-29 Updated by jinyi
+--   Add the objects of unisTransceiverDiagnostic, unisTransceiverCurTXPower,
+--   unisTransceiverMaxTXPower, unisTransceiverMinTXPower, unisTransceiverCurRXPower,
+--   unisTransceiverMaxRXPower, unisTransceiverMinRXPower, unisTransceiverTemperature,
+--   unisTransceiverVoltage, unisTransceiverBiasCurrent
+-- V1.3 2012-06-06 Updated by jixugang
+--   Add the objects of unisTransceiverTempHiAlarm, unisTransceiverTempLoAlarm,
+--   unisTransceiverTempHiWarn, unisTransceiverTempLoWarn, unisTransceiverVccHiAlarm,
+--   unisTransceiverVccLoAlarm, unisTransceiverVccHiWarn, unisTransceiverVccLoWarn,
+--   unisTransceiverBiasHiAlarm, unisTransceiverBiasLoAlarm, unisTransceiverBiasHiWarn,
+--   unisTransceiverBiasLoWarn, unisTransceiverPwrOutHiAlarm, unisTransceiverPwrOutLoAlarm,
+--   unisTransceiverPwrOutHiWarn, unisTransceiverPwrOutLoWarn, unisTransceiverRcvPwrHiAlarm,
+--   unisTransceiverRcvPwrLoAlarm, unisTransceiverRcvPwrHiWarn, unisTransceiverRcvPwrLoWarn,
+--   unisTransceiverErrors
+-- V1.4 2013-06-06 Updated by chenyixian
+--   Add unisTransceiverChannelTable to transceiver channel statistics.
+-- V1.5 2014-08-11 Updated by SongHao
+--   Add unisTransceiverVendorOUI and unisTransceiverRevisionNumber.
+-- V1.6 2015-12-25 Updated by zhouliping
+--   Added unisTransceiverFrequency and unisTransceiverActiveITUChannel to unisTransceiverInfoTable.
+--   Added unisTransceiverITUChanTable for ITU channel information.
+-- V1.7 2016-03-09 Updated by zhouliping
+--   Added unisTransceiverCurWaveErr, unisTransceiverWaveErrHiAlarm, unisTransceiverWaveErrLoAlarm,
+--   unisTransceiverCurFreqErr, unisTransceiverFreqErrHiAlarm and unisTransceiverFreqErrLoAlarm
+--   to unisTransceiverInfoTable.
+--     2018-01-03 Updated by zhouliping
+--   Added unisTransceiverChannelBiasHiAm, unisTransceiverChannelBiasLoAm,
+--   unisTransceiverChannelTXPwrHiAm, unisTransceiverChannelTXPwrLoAm
+--   to unisTransceiverChannelTable.
+-- V1.8 2019-01-03 Updated by luozelei
+--   Added unisTransceiverPartNumber and unisTransceiverProductCode
+--   to unisTransceiverInfoTable.
+-- V1.9 2019-08-09 Updated by yuhaiyan
+--   Added unisTransceiverOriginalSN to unisTransceiverInfoTable.
+-- =================================================================
+UNIS-TRANSCEIVER-INFO-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, Unsigned32
+        FROM SNMPv2-SMI
+    TruthValue
+        FROM SNMPv2-TC
+    ifIndex
+        FROM IF-MIB
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+    unisTransceiver MODULE-IDENTITY
+        LAST-UPDATED "201908090000Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "The objects in this MIB module are used to display the
+            information of transceiver on interface."
+        REVISION "201908090000Z"
+        DESCRIPTION
+            "Added unisTransceiverOriginalSN to unisTransceiverInfoTable."
+        REVISION "201901030000Z"
+        DESCRIPTION
+            "Added unisTransceiverPartNumber and unisTransceiverProductCode
+            to unisTransceiverInfoTable."
+        REVISION "201801030000Z"
+        DESCRIPTION
+            "Added unisTransceiverChannelBiasHiAm, unisTransceiverChannelBiasLoAm,
+            unisTransceiverChannelTXPwrHiAm, unisTransceiverChannelTXPwrLoAm
+            to unisTransceiverChannelTable."
+        REVISION "201603090000Z"
+        DESCRIPTION
+            "Added unisTransceiverCurWaveErr, unisTransceiverWaveErrHiAlarm, unisTransceiverWaveErrLoAlarm,
+            unisTransceiverCurFreqErr, unisTransceiverFreqErrHiAlarm and unisTransceiverFreqErrLoAlarm
+            to unisTransceiverInfoTable."
+        REVISION "201512250000Z"
+        DESCRIPTION
+            "Added unisTransceiverFrequency and unisTransceiverActiveITUChannel to unisTransceiverInfoTable.
+            Added unisTransceiverITUChanTable for ITU channel information."
+        REVISION "201408111050Z"
+        DESCRIPTION
+            "Add unisTransceiverVendorOUI and unisTransceiverRevisionNumber."
+        REVISION "201306060000Z"
+        DESCRIPTION
+            "Add unisTransceiverChannelTable to transceiver channel statistics."
+        REVISION "201206060000Z"
+        DESCRIPTION
+            "Add the objects of unisTransceiverTempHiAlarm, unisTransceiverTempLoAlarm,
+            unisTransceiverTempHiWarn, unisTransceiverTempLoWarn, unisTransceiverVccHiAlarm,
+            unisTransceiverVccLoAlarm, unisTransceiverVccHiWarn, unisTransceiverVccLoWarn,
+            unisTransceiverBiasHiAlarm, unisTransceiverBiasLoAlarm, unisTransceiverBiasHiWarn,
+            unisTransceiverBiasLoWarn, unisTransceiverPwrOutHiAlarm, unisTransceiverPwrOutLoAlarm,
+            unisTransceiverPwrOutHiWarn, unisTransceiverPwrOutLoWarn, unisTransceiverRcvPwrHiAlarm,
+            unisTransceiverRcvPwrLoAlarm, unisTransceiverRcvPwrHiWarn, unisTransceiverRcvPwrLoWarn,
+            unisTransceiverErrors."
+        REVISION "200912290000Z"
+        DESCRIPTION
+            "Add the objects of unisTransceiverDiagnostic, unisTransceiverCurTXPower,
+            unisTransceiverMaxTXPower, unisTransceiverMinTXPower, unisTransceiverCurRXPower,
+            unisTransceiverMaxRXPower, unisTransceiverMinRXPower, unisTransceiverTemperature,
+            unisTransceiverVoltage, unisTransceiverBiasCurrent."
+        REVISION "200606080000Z"
+        DESCRIPTION
+            "Change description of unisTransceiverWaveLength."
+        REVISION "200601100000Z"
+        DESCRIPTION
+            "The initial revision of this MIB module."
+            ::= { unisCommon 70 }
+
+    unisTransceiverInfoAdm OBJECT IDENTIFIER ::= { unisTransceiver 1 }
+
+    unisTransceiverInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisTransceiverInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table shows transceiver information on an interface."
+        ::= { unisTransceiverInfoAdm 1 }
+
+    unisTransceiverInfoEntry OBJECT-TYPE
+        SYNTAX UnisTransceiverInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The entry of the unisTransceiverInfoTable."
+        INDEX { ifIndex }
+        ::= { unisTransceiverInfoTable 1 }
+
+    UnisTransceiverInfoEntry ::=
+        SEQUENCE {
+            unisTransceiverHardwareType      OCTET STRING,
+            unisTransceiverType              OCTET STRING,
+            unisTransceiverWaveLength        Integer32,
+            unisTransceiverVendorName        OCTET STRING,
+            unisTransceiverSerialNumber      OCTET STRING,
+            unisTransceiverFiberDiameterType INTEGER,
+            unisTransceiverTransferDistance  Integer32,
+            unisTransceiverDiagnostic        TruthValue,
+            unisTransceiverCurTXPower        Integer32,
+            unisTransceiverMaxTXPower        Integer32,
+            unisTransceiverMinTXPower        Integer32,
+            unisTransceiverCurRXPower        Integer32,
+            unisTransceiverMaxRXPower        Integer32,
+            unisTransceiverMinRXPower        Integer32,
+            unisTransceiverTemperature       Integer32,
+            unisTransceiverVoltage           Integer32,
+            unisTransceiverBiasCurrent       Integer32,
+            unisTransceiverTempHiAlarm       Integer32,
+            unisTransceiverTempLoAlarm       Integer32,
+            unisTransceiverTempHiWarn        Integer32,
+            unisTransceiverTempLoWarn        Integer32,
+            unisTransceiverVccHiAlarm        Integer32,
+            unisTransceiverVccLoAlarm        Integer32,
+            unisTransceiverVccHiWarn         Integer32,
+            unisTransceiverVccLoWarn         Integer32,
+            unisTransceiverBiasHiAlarm       Integer32,
+            unisTransceiverBiasLoAlarm       Integer32,
+            unisTransceiverBiasHiWarn        Integer32,
+            unisTransceiverBiasLoWarn        Integer32,
+            unisTransceiverPwrOutHiAlarm     Integer32,
+            unisTransceiverPwrOutLoAlarm     Integer32,
+            unisTransceiverPwrOutHiWarn      Integer32,
+            unisTransceiverPwrOutLoWarn      Integer32,
+            unisTransceiverRcvPwrHiAlarm     Integer32,
+            unisTransceiverRcvPwrLoAlarm     Integer32,
+            unisTransceiverRcvPwrHiWarn      Integer32,
+            unisTransceiverRcvPwrLoWarn      Integer32,
+            unisTransceiverErrors            BITS,
+            unisTransceiverVendorOUI         OCTET STRING,
+            unisTransceiverRevisionNumber    OCTET STRING,
+            unisTransceiverFrequency         Integer32,
+            unisTransceiverActiveITUChannel  Unsigned32,
+            unisTransceiverCurWaveErr        Integer32,
+            unisTransceiverWaveErrHiAlarm    Integer32,
+            unisTransceiverWaveErrLoAlarm    Integer32,
+            unisTransceiverCurFreqErr        Integer32,
+            unisTransceiverFreqErrHiAlarm    Integer32,
+            unisTransceiverFreqErrLoAlarm    Integer32,
+            unisTransceiverPartNumber        OCTET STRING,
+            unisTransceiverProductCode       OCTET STRING,
+            unisTransceiverOriginalSN        OCTET STRING
+        }
+
+    unisTransceiverHardwareType OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Hardware type of the interface, such as SM(single mode)."
+        ::= { unisTransceiverInfoEntry 1 }
+
+    unisTransceiverType OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Type of the interface, such as SFP/XFP/GBIC."
+        ::= { unisTransceiverInfoEntry 2 }
+
+    unisTransceiverWaveLength OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Wave length of the interface, measured in nanometer.
+            The unit is nm."
+        ::= { unisTransceiverInfoEntry 3 }
+
+    unisTransceiverVendorName OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Vendor name of the interface."
+        ::= { unisTransceiverInfoEntry 4 }
+
+    unisTransceiverSerialNumber OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Serial number of the interface."
+        ::= { unisTransceiverInfoEntry 5 }
+
+    unisTransceiverFiberDiameterType OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+              fiber9(1),
+              fiber50(2),
+              fiber625(3),
+              copper(4),
+              unknown(65535)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The diameter of the fiber, measured in micron.
+            fiber9 - 9 micron multi-mode fiber
+            fiber50 - 50 micron multi-mode fiber
+            fiber625 - 62.5 micron multi-mode fiber
+            copper - copper cable."
+        ::= { unisTransceiverInfoEntry 6 }
+
+    unisTransceiverTransferDistance OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The maximum distance which the interface can transmit,
+            measured in meter."
+        ::= { unisTransceiverInfoEntry 7 }
+
+    unisTransceiverDiagnostic OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the digital diagnostic monitoring function."
+        ::= { unisTransceiverInfoEntry 8 }
+
+    unisTransceiverCurTXPower OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the current transmitted power.
+            The unit is in hundredths of dBM."
+        ::= { unisTransceiverInfoEntry 9 }
+
+    unisTransceiverMaxTXPower OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the maximum transmitted power.
+            The unit is in hundredths of dBM."
+        ::= { unisTransceiverInfoEntry 10 }
+
+    unisTransceiverMinTXPower OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the minimum transmitted power.
+            The unit is in hundredths of dBM."
+        ::= { unisTransceiverInfoEntry 11 }
+
+    unisTransceiverCurRXPower OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the current received power.
+            The unit is in hundredths of dBM."
+        ::= { unisTransceiverInfoEntry 12 }
+
+    unisTransceiverMaxRXPower OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the maximum received power.
+            The unit is in hundredths of dBM."
+        ::= { unisTransceiverInfoEntry 13 }
+
+    unisTransceiverMinRXPower OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the minimum received power.
+            The unit is in hundredths of dBM."
+        ::= { unisTransceiverInfoEntry 14 }
+
+    unisTransceiverTemperature OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the current temperature.
+             The unit is Celsius centigrade."
+        ::= { unisTransceiverInfoEntry 15 }
+
+    unisTransceiverVoltage OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the current voltage.
+            The unit is in hundredths of V"
+        ::= { unisTransceiverInfoEntry 16 }
+
+    unisTransceiverBiasCurrent OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the current bias electric current.
+            The unit is in hundredths of mA"
+        ::= { unisTransceiverInfoEntry 17 }
+
+    unisTransceiverTempHiAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver temperature high alarm threshold
+             in thousandths of degrees Celsius.
+             As an example: 49120 is 49.120 degrees Celsius."
+        ::= { unisTransceiverInfoEntry 18 }
+
+    unisTransceiverTempLoAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver temperature low alarm threshold
+             in thousandths of degrees Celsius.
+             As an example: 49120 is 49.120 degrees Celsius."
+        ::= { unisTransceiverInfoEntry 19 }
+
+    unisTransceiverTempHiWarn OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver temperature high warning threshold
+             in thousandths of degrees Celsius.
+             As an example: 49120 is 49.120 degrees Celsius."
+        ::= { unisTransceiverInfoEntry 20 }
+
+    unisTransceiverTempLoWarn OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver temperature low warning threshold
+             in thousandths of degrees Celsius.
+             As an example: 49120 is 49.120 degrees Celsius."
+        ::= { unisTransceiverInfoEntry 21 }
+
+    unisTransceiverVccHiAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver VCC high alarm threshold
+             in hundreds of microvolts.
+             As an example: 32928 is 3.2928 volts.
+             Returns zero if not supported on the transceiver."
+        ::= { unisTransceiverInfoEntry 22 }
+
+    unisTransceiverVccLoAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver VCC low alarm threshold
+             in hundreds of microvolts.
+             As an example: 32928 is 3.2928 volts.
+             Returns zero if not supported on the transceiver."
+        ::= { unisTransceiverInfoEntry 23 }
+
+    unisTransceiverVccHiWarn OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver VCC high warning threshold
+             in hundreds of microvolts.
+             As an example: 32928 is 3.2928 volts.
+             Returns zero if not supported on the transceiver."
+        ::= { unisTransceiverInfoEntry 24 }
+
+    unisTransceiverVccLoWarn OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver VCC low warning threshold
+             in hundreds of microvolts.
+             As an example: 32928 is 3.2928 volts.
+             Returns zero if not supported on the transceiver."
+        ::= { unisTransceiverInfoEntry 25 }
+
+    unisTransceiverBiasHiAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver bias high alarm threshold in microamps."
+        ::= { unisTransceiverInfoEntry 26 }
+
+    unisTransceiverBiasLoAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver bias low alarm threshold in microamps."
+        ::= { unisTransceiverInfoEntry 27 }
+
+    unisTransceiverBiasHiWarn OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver bias high warning threshold in microamps."
+        ::= { unisTransceiverInfoEntry 28 }
+
+    unisTransceiverBiasLoWarn OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver bias low warning threshold in microamps."
+        ::= { unisTransceiverInfoEntry 29 }
+
+    unisTransceiverPwrOutHiAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver transmit power high alarm
+             threshold in tenths of microwatts.
+             As an example: 10000 is 1 milliwatt."
+        ::= { unisTransceiverInfoEntry 30 }
+
+    unisTransceiverPwrOutLoAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver transmit power low alarm
+             threshold in tenths of microwatts.
+             As an example: 10000 is 1 milliwatt."
+        ::= { unisTransceiverInfoEntry 31 }
+
+    unisTransceiverPwrOutHiWarn OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver transmit power high warning
+             threshold in tenths of microwatts
+             As an example: 10000 is 1 milliwatt."
+        ::= { unisTransceiverInfoEntry 32 }
+
+    unisTransceiverPwrOutLoWarn OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver transmit power low warning
+             threshold in tenths of microwatts.
+             As an example: 10000 is 1 milliwatt."
+        ::= { unisTransceiverInfoEntry 33 }
+
+    unisTransceiverRcvPwrHiAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver receive power high alarm
+             threshold in tenths of microwatts.
+             As an example: 10000 is 1 milliwatt."
+        ::= { unisTransceiverInfoEntry 34 }
+
+    unisTransceiverRcvPwrLoAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver receive power low alarm
+             threshold in tenths of microwatts.
+             As an example: 10000 is 1 milliwatt."
+        ::= { unisTransceiverInfoEntry 35 }
+
+    unisTransceiverRcvPwrHiWarn OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver receive power high warning
+             threshold in tenths of microwatts.
+             As an example: 10000 is 1 milliwatt."
+        ::= { unisTransceiverInfoEntry 36 }
+
+    unisTransceiverRcvPwrLoWarn OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver receive power low warning
+             threshold in tenths of microwatts.
+             As an example: 10000 is 1 milliwatt."
+        ::= { unisTransceiverInfoEntry 37 }
+
+    unisTransceiverErrors OBJECT-TYPE
+        SYNTAX      BITS
+            {
+                xcvrIOError(0),
+                xcvrChecksum(1),
+                xcvrTypeAndPortConfigMismatch(2),
+                xcvrTypeNotSupported(3),
+                wisLocalFault(4),
+                rcvOpticalPowerFault(5),
+                pmapmdReceiverLocalFault(6),
+                pcsReceiveLocalFault(7),
+                phyXSReceiveLocalFault(8),
+                laserBiasCurrentFault(9),
+                laserTemperatureFault(10),
+                laserOutputPowerFault(11),
+                txFault(12),
+                pmapmdTransmitterLocalFault(13),
+                pcsTransmitLocalFault(14),
+                phyXSTransmitLocalFault(15),
+                rxLossOfSignal(16),
+                tecError(17),
+                wavelengthUnlocked(18),
+                txIsNotReadyDueToTuning(19)
+            }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Bitmask indicating transceiver errors.
+             Transceiver information I/O error(0)
+             Transceiver information checksum error(1)
+             Transceiver type and port configuration mismatch(2)
+             Transceiver type not supported by port hardware(3)
+             WIS local fault(4)
+             Receive optical power fault(5)
+             PMA/PMD receiver local fault(6)
+             PCS receive local fault(7)
+             PHY XS receive local fault(8)
+             Laser bias current fault(9)
+             Laser temperature fault(10)
+             Laser output power fault(11)
+             TX fault(12)
+             PMA/PMD transmitter local fault(13)
+             PCS transmit local fault(14)
+             PHY XS Transmit Local Fault(15)
+             RX loss of signal(16)
+             TEC error(17)
+             Wavelength unlocked(18)
+             Tx is not ready due to tuning(19)
+             Unused(20-31)"
+        ::= { unisTransceiverInfoEntry 38 }
+
+    unisTransceiverVendorOUI OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..255))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Vendor OUI of the interface."
+        ::= { unisTransceiverInfoEntry 39 }
+
+    unisTransceiverRevisionNumber OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..255))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Revision number of the interface."
+        ::= { unisTransceiverInfoEntry 40 }
+
+    unisTransceiverFrequency OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The frequency of the current ITU channel on the connected transceiver.
+            The unit is hundredths of THz."
+        ::= { unisTransceiverInfoEntry 41 }
+
+    unisTransceiverActiveITUChannel OBJECT-TYPE
+        SYNTAX      Unsigned32 (1..4294967295)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The index of the current ITU channel on the connected transceiver.
+            The maximum index number for the ITU channel might vary by transceiver model.
+            The value of this node depends on the unisTransceiverITUChanIdx node of unisTransceiverITUChanTable.
+            The value of this node affects the frequency or wavelength."
+        ::= { unisTransceiverInfoEntry 42 }
+
+    unisTransceiverCurWaveErr OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The current wavelength error of the current ITU channel
+            on the connected transceiver.
+            The unit is thousandths of nm."
+        ::= { unisTransceiverInfoEntry 43 }
+
+    unisTransceiverWaveErrHiAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The high wavelength error alarm threshold of the
+            current ITU channel on the connected transceiver.
+            The unit is thousandths of nm."
+        ::= { unisTransceiverInfoEntry 44 }
+
+    unisTransceiverWaveErrLoAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The low wavelength error alarm threshold of the
+            current ITU channel on the connected transceiver.
+            The unit is thousandths of nm."
+        ::= { unisTransceiverInfoEntry 45 }
+
+    unisTransceiverCurFreqErr OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The current frequency error of the current ITU channel
+            on the connected transceiver.
+            The unit is tenths of GHz."
+        ::= { unisTransceiverInfoEntry 46 }
+
+    unisTransceiverFreqErrHiAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The high frequency error alarm threshold of the current
+            ITU channel on the connected transceiver.
+            The unit is tenths of GHz."
+        ::= { unisTransceiverInfoEntry 47 }
+
+    unisTransceiverFreqErrLoAlarm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The low frequency error alarm threshold of the current
+            ITU channel on the connected transceiver.
+            The unit is tenths of GHz."
+        ::= { unisTransceiverInfoEntry 48 }
+
+     unisTransceiverPartNumber OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "PartNumber of the interface.
+            As an example: 1110409083."
+        ::= { unisTransceiverInfoEntry 49 }
+
+      unisTransceiverProductCode OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Product Code of the interface.
+            As an example: MRC00CD."
+        ::= { unisTransceiverInfoEntry 50 }
+
+      unisTransceiverOriginalSN OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Orginal serial number of the interface."
+        ::= { unisTransceiverInfoEntry 51 }
+
+-- Transceiver Channel Table
+
+    unisTransceiverChannelTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisTransceiverChannelEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table provides statistics about transceiver with multi-channel."
+        ::= { unisTransceiverInfoAdm 2 }
+
+    unisTransceiverChannelEntry OBJECT-TYPE
+        SYNTAX UnisTransceiverChannelEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The entry of the unisTransceiverChannelTable."
+        INDEX { ifIndex, unisTransceiverChannelIndex }
+        ::= { unisTransceiverChannelTable 1 }
+
+    UnisTransceiverChannelEntry ::=
+        SEQUENCE {
+            unisTransceiverChannelIndex             Integer32,
+            unisTransceiverChannelCurTXPower        Integer32,
+            unisTransceiverChannelCurRXPower        Integer32,
+            unisTransceiverChannelTemperature       Integer32,
+            unisTransceiverChannelBiasCurrent       Integer32,
+            unisTransceiverChannelBiasHiAm          Integer32,
+            unisTransceiverChannelBiasLoAm          Integer32,
+            unisTransceiverChannelTXPwrHiAm         Integer32,
+            unisTransceiverChannelTXPwrLoAm         Integer32
+        }
+
+    unisTransceiverChannelIndex OBJECT-TYPE
+        SYNTAX      Integer32(1..2147483647)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The channel index of transceiver.
+            Indicating one channel of the interface."
+        ::= { unisTransceiverChannelEntry 1 }
+
+    unisTransceiverChannelCurTXPower OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the current transmission power.
+            The unit is in hundredths of dBM."
+        ::= { unisTransceiverChannelEntry 2 }
+
+    unisTransceiverChannelCurRXPower OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the current received power.
+            The unit is in hundredths of dBM."
+        ::= { unisTransceiverChannelEntry 3 }
+
+    unisTransceiverChannelTemperature OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the current temperature.
+            The unit is Celsius centigrade."
+        ::= { unisTransceiverChannelEntry 4 }
+
+    unisTransceiverChannelBiasCurrent OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicating the current bias electric current.
+            The unit is in hundredths of mA."
+        ::= { unisTransceiverChannelEntry 5 }
+
+    unisTransceiverChannelBiasHiAm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver bias high alarm threshold in microamps."
+        ::= { unisTransceiverChannelEntry 6 }
+
+    unisTransceiverChannelBiasLoAm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver bias low alarm threshold in microamps."
+        ::= { unisTransceiverChannelEntry 7 }
+
+    unisTransceiverChannelTXPwrHiAm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver transmit power high alarm threshold in tenths of microwatts."
+        ::= { unisTransceiverChannelEntry 8 }
+
+    unisTransceiverChannelTXPwrLoAm OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Transceiver transmit power low alarm threshold in tenths of microwatts."
+        ::= { unisTransceiverChannelEntry 9 }
+
+-- Transceiver ITUChannel Table
+
+    unisTransceiverITUChanTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisTransceiverITUChanEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table provides information about ITU channels supported on the transceiver that is connected to this interface."
+        ::= { unisTransceiverInfoAdm 3 }
+
+    unisTransceiverITUChanEntry OBJECT-TYPE
+        SYNTAX UnisTransceiverITUChanEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The entry of the unisTransceiverITUChanTable."
+        INDEX { ifIndex, unisTransceiverITUChanIdx }
+        ::= { unisTransceiverITUChanTable 1 }
+
+    UnisTransceiverITUChanEntry ::=
+        SEQUENCE {
+            unisTransceiverITUChanIdx            Unsigned32,
+            unisTransceiverITUChanFreq          Integer32,
+            unisTransceiverITUChanWaveLth        Integer32
+        }
+
+    unisTransceiverITUChanIdx OBJECT-TYPE
+        SYNTAX      Unsigned32 (1..4294967295)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The index of the specified ITU channel on the transceiver that is connected to this interface."
+        ::= { unisTransceiverITUChanEntry 1 }
+
+    unisTransceiverITUChanFreq OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The frequency of the specified ITU channel on the transceiver that is connected to this interface.
+            The unit is hundredths of THz."
+        ::= { unisTransceiverITUChanEntry 2 }
+
+    unisTransceiverITUChanWaveLth OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The wave length of the specified ITU channel on the transceiver that is connected to this interface.
+            The unit is pm."
+        ::= { unisTransceiverITUChanEntry 3 }
+
+END

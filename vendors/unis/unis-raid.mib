@@ -1,0 +1,638 @@
+-- ===========================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description: The MIB is designed to manage the raid.
+-- Reference:
+-- Version: V1.1
+-- History:
+--   V1.0 2007-09-04 created by lizhicheng
+--   V1.1 2009-10-20 modified by zhanglei
+--        Modify unisRaidName MAX-ACCESS to accessible-for-notify for simlint
+--        Delete raid run status stopped(3) in unisRaidRunState
+-- =================================================================
+UNIS-RAID-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+        Counter32, Integer32,
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        RowStatus, DateAndTime, TruthValue, TEXTUAL-CONVENTION
+    FROM SNMPv2-TC
+        entPhysicalIndex
+    FROM ENTITY-MIB
+        UnisStorageOwnerType, UnisStorageEnableState, UnisStorageActionType,
+        UnisRaidIDType, unisStorageRef
+    FROM UNIS-STORAGE-REF-MIB;
+
+unisRaid MODULE-IDENTITY
+    LAST-UPDATED "200709041452Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB describes the general information of raid."
+    ::= { unisStorageRef 4 }
+
+unisRaidMibObjects OBJECT IDENTIFIER ::= { unisRaid 1 }
+
+
+unisRaidCapacityTable  OBJECT IDENTIFIER ::= { unisRaidMibObjects 1 }
+unisPrimaryRaidCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the maximal number of primary raids supported."
+    ::= { unisRaidCapacityTable 1 }
+
+
+-- Raid Resource Create Table
+-- This table described the information of create server's array resource.
+unisRaidTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisRaidEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table containing some property information of the array."
+    ::= { unisRaidMibObjects 2 }
+
+unisRaidEntry OBJECT-TYPE
+    SYNTAX      UnisRaidEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to create array resource."
+    INDEX
+        {
+            unisRaidName
+        }
+
+    ::= { unisRaidTable 1 }
+
+UnisRaidEntry ::= SEQUENCE
+    {
+        unisRaidName         OCTET STRING,
+        unisRaidId           Integer32,
+        unisRaidUuid         UnisRaidIDType,
+        unisRaidLevel        INTEGER,
+        unisRaidTimestamp    DateAndTime,
+        unisRaidDiskList     OCTET STRING,
+        unisRaidOwner        UnisStorageOwnerType,
+        unisRaidSize         Integer32,
+        unisRaidFreeSize     Integer32,
+        unisRaidAutoSync     TruthValue,
+        unisRaidRowStatus    RowStatus
+    }
+
+unisRaidName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..31))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the name of the array."
+    ::= { unisRaidEntry 1 }
+
+unisRaidId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the identification of the array."
+    ::= { unisRaidEntry 2 }
+
+unisRaidUuid OBJECT-TYPE
+    SYNTAX      UnisRaidIDType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the UUID of the array."
+    ::= { unisRaidEntry 3 }
+
+unisRaidLevel OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            jbod(1),
+            raid0(2),
+            raid1(3),
+            raid2(4),
+            raid3(5),
+            raid4(6),
+            raid5(7),
+            raid6(8),
+            raid10(9),
+            raid50(10)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the type of array.
+        The value 'jbod' means just a bunch of disks,
+        the value 'raid0' means RAID Level 0, and so on."
+    ::= { unisRaidEntry 4 }
+
+unisRaidTimestamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the system time when the array is created."
+    ::= { unisRaidEntry 5 }
+
+unisRaidDiskList OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(2..256))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes a list of the disk composed the array,
+        each two bytes with network-byte order means a single entity index
+        of the disk."
+    ::= { unisRaidEntry 6 }
+
+unisRaidOwner OBJECT-TYPE
+    SYNTAX      UnisStorageOwnerType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the owner of the array."
+    ::= { unisRaidEntry 7 }
+
+unisRaidSize OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the size of array's total space. The
+        units is million bytes."
+    ::= { unisRaidEntry 8 }
+
+unisRaidFreeSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the size of array's vacancy space. The
+        units is million bytes."
+    ::= { unisRaidEntry 9 }
+
+unisRaidAutoSync OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the raid should be synchro automatically
+        when created."
+    ::= { unisRaidEntry 10 }
+
+unisRaidRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to crate or delete an array."
+    ::= { unisRaidEntry 11 }
+
+
+
+-- Raid Resource Manage Table
+-- This table described the information about how to manage the server's array
+-- resource.
+unisRaidManageTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisRaidManageEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table containing some management information of the array."
+    ::= { unisRaidMibObjects 3 }
+
+unisRaidManageEntry OBJECT-TYPE
+    SYNTAX      UnisRaidManageEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to particular array resource."
+    INDEX
+        {
+            unisRaidUuid
+        }
+
+    ::= { unisRaidManageTable 1 }
+
+UnisRaidManageEntry ::= SEQUENCE
+    {
+        unisRaidLocationState    UnisStorageEnableState,
+        unisRaidAction           INTEGER,
+        unisRaidRunState         INTEGER,
+        unisRaidAutoRebuild      UnisStorageEnableState,
+        unisRaidSyncPercentage   Integer32,
+        unisRaidHideState        UnisStorageEnableState,
+        unisRaidLvRestore        UnisStorageActionType,
+        unisRaidType             INTEGER
+    }
+
+unisRaidLocationState OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the array can be located."
+    DEFVAL { enable }
+    ::= { unisRaidManageEntry 1 }
+
+unisRaidAction OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            run(1),
+            pause(2),
+            rebuild(3),
+            invalid(4)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the actions to operating the array. When
+        read, this object always returns the value 'invalid'."
+    ::= { unisRaidManageEntry 2 }
+
+unisRaidRunState OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            normal(1),
+            degraded(2),
+            failed(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of the array.
+        The value 'normal' means array works well.
+        The value 'degraded' means array has degraded.
+        The value 'failed' means some disks met failure and array has failed."
+    ::= { unisRaidManageEntry 3 }
+
+unisRaidAutoRebuild OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the array can be auto rebuild."
+    DEFVAL { disable }
+    ::= { unisRaidManageEntry 4 }
+
+unisRaidSyncPercentage OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the percentage of progress when the array
+        is synchronizing. The value is equal to '100' when the progress
+        has finished."
+    ::= { unisRaidManageEntry 5 }
+
+unisRaidHideState OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the array is hided. When the value of
+        this object is equal to 'enable', the array will be hided and the
+        files on it can not be accessed by any user."
+    DEFVAL { disable }
+    ::= { unisRaidManageEntry 6 }
+
+
+unisRaidLvRestore OBJECT-TYPE
+    SYNTAX      UnisStorageActionType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies an action to restore all the logic volume
+        resources."
+    ::= { unisRaidManageEntry 7 }
+
+unisRaidType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            virtualDevice(1),
+            directDevice(2),
+            serviceEnabledDevice(3),
+            unassigned(4)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the physical type of an array.
+         The value 'virtualDevice' means if a array is prepared for virtual device,
+         it can be used to create LV, for exampe, it is can be split into a lot of LV,
+         or be a part of LV.
+         The value 'directDevice' means if a array is prepared for direct device,
+         it can be used to create a LV which type is direct.
+         Unlike virtual devices, they cannot be combined or split into multiple logical devices.
+         The value 'serviceEnabledDevice' means if a array is prepared for service-enabled device,
+         it can be used to create a LV which type is service-enabled.
+         Unlike virtual devices, they cannot be combined or split into multiple logical devices.
+         The value 'unassigned' means it is the original status of a array,
+         if a array is unassigned, it can't be used to create LV."
+    ::= { unisRaidManageEntry 8 }
+
+
+
+-- Raid Cache Table
+-- This table described the information of server's array cache resource.
+unisRaidCacheTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisRaidCacheEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table containing some property information and management
+        information of the array cache."
+    ::= { unisRaidMibObjects 4 }
+
+unisRaidCacheEntry OBJECT-TYPE
+    SYNTAX      UnisRaidCacheEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable to particular
+        array cache resource."
+    INDEX
+        {
+            unisRaidUuid
+        }
+
+    ::= { unisRaidCacheTable 1 }
+
+UnisRaidCacheEntry ::= SEQUENCE
+    {
+        unisRaidReadCache                UnisStorageEnableState,
+        unisRaidReadCacheHitPeriod       Integer32,
+        unisRaidReadCacheAverageRate     Integer32,
+        unisRaidReadCachePhaseRate       Integer32,
+        unisRaidWriteCache               UnisStorageEnableState,
+        unisRaidWriteCacheHitPeriod      Integer32,
+        unisRaidWriteCacheAverageRate    Integer32,
+        unisRaidWriteCachePhaseRate      Integer32,
+        unisRaidWriteCacheFlush          UnisStorageActionType
+    }
+
+unisRaidReadCache OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of read cache. If the value of
+        this object is set to 'disable', the associated percentage of cache
+        hit may be invalid."
+    DEFVAL { enable }
+    ::= { unisRaidCacheEntry 1 }
+
+unisRaidReadCacheHitPeriod OBJECT-TYPE
+    SYNTAX      Integer32(1..60)
+    UNITS       "minute"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object describes the period during which how often the
+        date matched with the cache when read. The units is minute."
+    ::= { unisRaidCacheEntry 2 }
+
+unisRaidReadCacheAverageRate OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the average percentage of cache hit when read."
+    ::= { unisRaidCacheEntry 3 }
+
+unisRaidReadCachePhaseRate OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the percentage of cache hit when read during
+        the period set by the unisRaidReadCacheHitPeriod object."
+    ::= { unisRaidCacheEntry 4 }
+
+unisRaidWriteCache OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of write cache. If the value of
+        this object is set to 'disable', the associated percentage of cache
+        hit may be invalid."
+    DEFVAL { enable }
+    ::= { unisRaidCacheEntry 5 }
+
+unisRaidWriteCacheHitPeriod OBJECT-TYPE
+    SYNTAX      Integer32(1..60)
+    UNITS       "minute"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object describes the period during which how often the
+        date matched with the cache when writed. The units is minute."
+    ::= { unisRaidCacheEntry 6 }
+
+unisRaidWriteCacheAverageRate OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the average percentage of cache hit when writed."
+    ::= { unisRaidCacheEntry 7 }
+
+unisRaidWriteCachePhaseRate OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the percentage of cache hit when write during
+        the period set by the unisRaidWriteCacheHitPeriod object."
+    ::= { unisRaidCacheEntry 8 }
+
+unisRaidWriteCacheFlush OBJECT-TYPE
+    SYNTAX      UnisStorageActionType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies an action to flushing the write cache."
+    ::= { unisRaidCacheEntry 9 }
+
+
+
+-- Spare Hot Disk Table
+-- This table described the spare hot disk information.
+unisRaidSpareDiskTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisRaidSpareDiskEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table described the spare hot disk information."
+    ::= { unisRaidMibObjects 5 }
+
+unisRaidSpareDiskEntry OBJECT-TYPE
+    SYNTAX      UnisRaidSpareDiskEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable to a spare
+        hot disk."
+    INDEX
+        {
+            unisRaidUuid,
+            entPhysicalIndex
+        }
+
+    ::= { unisRaidSpareDiskTable 1 }
+
+UnisRaidSpareDiskEntry ::= SEQUENCE
+    {
+        unisRaidSpareDiskRowStatus    RowStatus
+    }
+
+unisRaidSpareDiskRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to create or delete spare hot
+        disk."
+    ::= { unisRaidSpareDiskEntry 1 }
+
+-- Freezed Raid Management Table
+-- This table described the freezed raid management.
+unisFreezeRaidTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisFreezeRaidEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table described the freezed raid management."
+    ::= { unisRaidMibObjects 6 }
+
+unisFreezeRaidEntry OBJECT-TYPE
+    SYNTAX      UnisFreezeRaidEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable to manage
+        the freezed raid."
+    INDEX
+        {
+            unisFreezeRaidUuid
+        }
+
+    ::= { unisFreezeRaidTable 1 }
+
+UnisFreezeRaidEntry ::= SEQUENCE
+    {
+        unisFreezeRaidUuid         UnisRaidIDType,
+        unisFreezeRaidName         OCTET STRING,
+        unisFreezeRaidRowStatus    RowStatus
+    }
+
+unisFreezeRaidUuid OBJECT-TYPE
+    SYNTAX      UnisRaidIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object describes the uuid of the freezed raid."
+    ::= { unisFreezeRaidEntry 1 }
+
+
+unisFreezeRaidName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..31))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the name of the freezed raid."
+    ::= { unisFreezeRaidEntry 2 }
+
+unisFreezeRaidRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to manage the freezed raid.
+        Only the value 'destroy' is supported."
+    ::= { unisFreezeRaidEntry 3 }
+
+-- 3rd Raid Management Table
+-- This table described the 3rd raid management.
+unis3rdRaidTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Unis3rdRaidEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table described the 3rd raid management."
+    ::= { unisRaidMibObjects 7 }
+
+unis3rdRaidEntry OBJECT-TYPE
+    SYNTAX      Unis3rdRaidEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable to manage
+        the 3rd raid."
+    INDEX
+        {
+            unis3rdRaidUuid
+        }
+
+    ::= { unis3rdRaidTable 1 }
+
+Unis3rdRaidEntry ::= SEQUENCE
+    {
+        unis3rdRaidUuid         UnisRaidIDType,
+        unis3rdRaidName         OCTET STRING,
+        unis3rdRaidOwner        OCTET STRING,
+        unis3rdRaidImport       UnisStorageOwnerType,
+        unis3rdRaidRowStatus    RowStatus
+    }
+
+unis3rdRaidUuid OBJECT-TYPE
+    SYNTAX      UnisRaidIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object describes the uuid of the 3rd raid."
+    ::= { unis3rdRaidEntry 1 }
+
+unis3rdRaidName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the name of the 3rd raid."
+    ::= { unis3rdRaidEntry 2 }
+
+unis3rdRaidOwner OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the owner of the 3rd raid."
+    ::= { unis3rdRaidEntry 3 }
+
+unis3rdRaidImport OBJECT-TYPE
+    SYNTAX      UnisStorageOwnerType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the owner for the 3rd raid. When read,
+        the value 'none' will be get.
+        If the action is executed successfully, the 3rd raid will become
+        a primary raid, and this entry will be deleted automatically."
+    ::= { unis3rdRaidEntry 4 }
+
+unis3rdRaidRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to manage the 3rd raid.
+        Only the value 'destroy' is supported."
+    ::= { unis3rdRaidEntry 5 }
+
+END

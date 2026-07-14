@@ -1,0 +1,413 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Segment Routing Traffic Engineering (SR-TE) policy MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2019-12-06 The initial version, created by Xu Jing
+-- =================================================================
+UNIS-SRPOLICY-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    IpAddress, Integer32, Unsigned32, Counter64, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    InterfaceIndex
+        FROM IF-MIB
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+
+unisSrpolicy MODULE-IDENTITY
+    LAST-UPDATED "201912061100Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file provides information about SR-TE policies."
+    REVISION "201912061100Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 186 }
+
+-- SR-TE policies information table
+unisSrpolicyTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSrpolicyEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table provides information about SR-TE policies."
+    ::= { unisSrpolicy 1 }
+
+unisSrpolicyEntry OBJECT-TYPE
+    SYNTAX UnisSrpolicyEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about a policy."
+    INDEX { unisSrpolicyColor, unisSrpolicyEndPoint }
+    ::= { unisSrpolicyTable 1 }
+
+UnisSrpolicyEntry ::=
+    SEQUENCE {
+        unisSrpolicyColor
+            Unsigned32,
+        unisSrpolicyEndPoint
+            IpAddress,
+        unisSrpolicyName
+          OCTET STRING,
+        unisSrpolicyBsid
+            Integer32,
+        unisSrpolicyInPackets
+            Counter64,
+        unisSrpolicyInOctets
+            Counter64,
+        unisSrpolicyOutPackets
+            Counter64,
+        unisSrpolicyOutOctets
+            Counter64
+     }
+
+unisSrpolicyColor OBJECT-TYPE
+    SYNTAX Unsigned32 (1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The color associates the SR-TE Policy with certain intent."
+    ::= { unisSrpolicyEntry 1 }
+
+unisSrpolicyEndPoint OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The endpoint is the destination of the SR-TE policy."
+    ::= { unisSrpolicyEntry 2 }
+
+unisSrpolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..128))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Name of the SR policy."
+    ::= { unisSrpolicyEntry 3 }
+
+unisSrpolicyBsid OBJECT-TYPE
+    SYNTAX Integer32 (16..1048575)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Bound segment ID value of the SR policy."
+    ::= { unisSrpolicyEntry 4 }
+
+unisSrpolicyInPackets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of inbound packets for the bound segment ID."
+    ::= { unisSrpolicyEntry 5 }
+
+unisSrpolicyInOctets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of inbound bytes for the bound segment ID."
+    ::= { unisSrpolicyEntry 6 }
+
+unisSrpolicyOutPackets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of outbound packets for the SR-TE policy."
+    ::= { unisSrpolicyEntry 7 }
+
+unisSrpolicyOutOctets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of outbound bytes for the SR-TE policy."
+    ::= { unisSrpolicyEntry 8 }
+
+
+-- Segment list information table for the policy
+unisSrpSeglistTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSrpSeglistEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table provides information about the segment lists for the SR-TE policy."
+    ::= { unisSrpolicy 2 }
+
+unisSrpSeglistEntry OBJECT-TYPE
+    SYNTAX UnisSrpSeglistEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about segment lists."
+    INDEX { unisSrpSeglistColor, unisSrpSeglistEndPoint, unisSrpSeglistPathProto,
+            unisSrpSeglistPathInst,unisSrpSeglistPathOri, unisSrpSeglistPathDis,
+            unisSrpSeglistId }
+    ::= { unisSrpSeglistTable 1 }
+
+UnisSrpSeglistEntry ::=
+    SEQUENCE {
+        unisSrpSeglistColor
+            Unsigned32,
+        unisSrpSeglistEndPoint
+            IpAddress,
+        unisSrpSeglistPathProto
+            INTEGER,
+        unisSrpSeglistPathInst
+            Integer32,
+        unisSrpSeglistPathOri
+            OCTET STRING,
+        unisSrpSeglistPathDis
+            Unsigned32,
+        unisSrpSeglistId
+            Unsigned32,
+        unisSrpolicySeglistName
+            OCTET STRING,
+        unisSrpSeglistOutPackets
+          Counter64,
+        unisSrpSeglistOutOctets
+            Counter64
+     }
+
+unisSrpSeglistColor OBJECT-TYPE
+    SYNTAX Unsigned32 (1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The color associates the SR-TE Policy with certain intent."
+    ::= { unisSrpSeglistEntry 1 }
+
+unisSrpSeglistEndPoint OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The endpoint is the destination of the SR-TE policy."
+    ::= { unisSrpSeglistEntry 2 }
+
+unisSrpSeglistPathProto OBJECT-TYPE
+    SYNTAX INTEGER{
+                   pcep(10),
+                   bgp(20),
+                   cli(30)
+               }
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Protocol-Origin of a candidate path identifies the protocol that
+         originates or signals the candidate path."
+    ::= { unisSrpSeglistEntry 3 }
+
+unisSrpSeglistPathInst OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The instance is a value of BGP instance number, when
+         the candidate path is originated by BGP."
+    ::= { unisSrpSeglistEntry 4 }
+
+unisSrpSeglistPathOri OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Originator is the identifier of the node that instantiated or signalled
+         the candidate path on the headend."
+    ::= { unisSrpSeglistEntry 5 }
+
+unisSrpSeglistPathDis OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The discriminator uniquely identifies a candidate path from a
+         specific Protocol-Origin."
+    ::= { unisSrpSeglistEntry 6 }
+
+unisSrpSeglistId OBJECT-TYPE
+    SYNTAX Unsigned32 (1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The ID uniquely identifies the segment list."
+    ::= { unisSrpSeglistEntry 7 }
+
+unisSrpolicySeglistName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..128))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The name of the segment list."
+    ::= { unisSrpSeglistEntry 8 }
+
+unisSrpSeglistOutPackets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of outbound packets for the segment list."
+    ::= { unisSrpSeglistEntry 9 }
+
+unisSrpSeglistOutOctets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of outbound bytes for the segment list."
+    ::= { unisSrpSeglistEntry 10 }
+
+
+-- Forwarding paths information table for the policy
+unisSrpForwardingTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSrpForwardingEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table provides information about forwarding paths for the SR-TE policy."
+    ::= { unisSrpolicy 3 }
+
+unisSrpForwardingEntry OBJECT-TYPE
+    SYNTAX UnisSrpForwardingEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about forwarding paths."
+    INDEX { unisSrpFwdColor, unisSrpFwdEndPoint, unisSrpFwdPathProto,
+            unisSrpFwdPathInst, unisSrpFwdPathOri, unisSrpFwdPathDis,
+            unisSrpFwdSeglistId, unisSrpFwdOutIf,  unisSrpFwdNexthop }
+    ::= { unisSrpForwardingTable 1 }
+
+UnisSrpForwardingEntry ::=
+    SEQUENCE {
+        unisSrpFwdColor
+            Unsigned32,
+        unisSrpFwdEndPoint
+            IpAddress,
+        unisSrpFwdPathProto
+            INTEGER,
+        unisSrpFwdPathInst
+            Integer32,
+        unisSrpFwdPathOri
+            OCTET STRING,
+        unisSrpFwdPathDis
+            Unsigned32,
+        unisSrpFwdSeglistId
+            Unsigned32,
+        unisSrpFwdOutIf
+            InterfaceIndex,
+        unisSrpFwdNexthop
+            IpAddress,
+        unisSrpFwdOutPackets
+          Counter64,
+        unisSrpFwdOutOctets
+            Counter64
+     }
+
+unisSrpFwdColor OBJECT-TYPE
+    SYNTAX Unsigned32 (1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The color associates the SR-TE policy with certain intent."
+    ::= { unisSrpForwardingEntry 1 }
+
+unisSrpFwdEndPoint OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The endpoint is the destination of the SR-TE policy."
+    ::= { unisSrpForwardingEntry 2 }
+
+unisSrpFwdPathProto OBJECT-TYPE
+    SYNTAX INTEGER{
+                   pcep(10),
+                   bgp(20),
+                   cli(30)
+               }
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Protocol-Origin of a candidate path identifies the protocol that
+         originates or signals the candidate path."
+    ::= { unisSrpForwardingEntry 3 }
+
+unisSrpFwdPathInst OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The instance is a value of BGP instance number, when
+         the candidate path is originated by BGP."
+    ::= { unisSrpForwardingEntry 4 }
+
+unisSrpFwdPathOri OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Originator is the identifier of the node that instantiated or signalled
+        the candidate path on the headend."
+    ::= { unisSrpForwardingEntry 5 }
+
+unisSrpFwdPathDis OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The discriminator uniquely identifies a candidate path from a
+         specific Protocol-Origin."
+    ::= { unisSrpForwardingEntry 6 }
+
+unisSrpFwdSeglistId OBJECT-TYPE
+    SYNTAX Unsigned32 (1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The ID uniquely identifies the segment list."
+    ::= { unisSrpForwardingEntry 7 }
+
+unisSrpFwdOutIf OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The value of ifIndex for the outbound interface."
+    ::= { unisSrpForwardingEntry 8 }
+
+unisSrpFwdNexthop OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The IP address of the next hop."
+    ::= { unisSrpForwardingEntry 9 }
+
+unisSrpFwdOutPackets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of outbound packets for the outbound interface."
+    ::= { unisSrpForwardingEntry 10 }
+
+unisSrpFwdOutOctets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of outbound bytes for the outbound interface."
+    ::= { unisSrpForwardingEntry 11 }
+
+END
+

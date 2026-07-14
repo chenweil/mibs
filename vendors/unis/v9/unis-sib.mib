@@ -1,0 +1,197 @@
+-- =========================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:  SIB MIB
+-- Reference:  Enterprise MIB
+-- Version: V1.0
+-- History:
+--     V1.0 Initial version 2021-04-12
+-- =========================================================================
+UNIS-SIB-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Counter64
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisSib MODULE-IDENTITY
+    LAST-UPDATED "202104120000Z"        -- April 12, 2021 at 00:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This module defines the objects pertaining to share interface bridge(SIB)."
+    REVISION  "202104120000Z"        -- April 12, 2021 at 00:00 GMT
+    DESCRIPTION "Initial version."
+    ::= { unisCommon 204 }
+
+unisSibNotifications   OBJECT IDENTIFIER ::= { unisSib 0 }
+unisSibObjects         OBJECT IDENTIFIER ::= { unisSib 1 }
+unisSibTables          OBJECT IDENTIFIER ::= { unisSib 2 }
+-- ----------------------------------------------------------------------
+  -- Throughput statistic table
+-- ----------------------------------------------------------------------
+unisSibThroughputTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF UnisSibThroughputEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Throughput statistics."
+    ::= { unisSibTables 1 }
+
+unisSibThroughputEntry OBJECT-TYPE
+    SYNTAX  UnisSibThroughputEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "An entry (conceptual row) representing throughput statistics."
+    INDEX { unisSibThroughputChassis, unisSibThroughputSlot, unisSibThroughputCPUID }
+    ::= { unisSibThroughputTable 1 }
+
+UnisSibThroughputEntry ::= SEQUENCE {
+    unisSibThroughputChassis          Unsigned32,
+    unisSibThroughputSlot             Unsigned32,
+    unisSibThroughputCPUID            Unsigned32,
+    unisSibThroughputDropNum          Counter64,
+    unisSibRealThroughput             Unsigned32,
+    unisSibRealThruputUsage           Unsigned32
+    }
+
+unisSibThroughputChassis   OBJECT-TYPE
+    SYNTAX Unsigned32(0..65534)
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+        "Chassis number."
+    ::= { unisSibThroughputEntry  1 }
+
+unisSibThroughputSlot    OBJECT-TYPE
+    SYNTAX Unsigned32(0..65534)
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+        "Slot number."
+    ::= { unisSibThroughputEntry  2 }
+
+unisSibThroughputCPUID   OBJECT-TYPE
+    SYNTAX Unsigned32(0..7)
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+        "CPU ID."
+    ::= { unisSibThroughputEntry  3 }
+
+unisSibThroughputDropNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of packets dropped because of throughput capability limits on the context."
+    ::= { unisSibThroughputEntry 4 }
+
+unisSibRealThroughput OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Current throughput on the context."
+    ::= { unisSibThroughputEntry 5 }
+
+unisSibRealThruputUsage OBJECT-TYPE
+    SYNTAX      Unsigned32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Percentage of the current throughput to the maximum throughput."
+    ::= { unisSibThroughputEntry 6 }
+
+unisSibThroughputObjects  OBJECT IDENTIFIER ::= { unisSibObjects 1 }
+
+unisSibSetThroughput OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Maximum throughput allowed on the context."
+    ::= { unisSibThroughputObjects 1 }
+
+unisSibSetThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32(0..99)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Throughput usage threshold."
+    ::= { unisSibThroughputObjects 2 }
+
+unisSibThroughputUnit OBJECT-TYPE
+    SYNTAX      INTEGER {invalid(0),kbps(1),pps(2)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Throughput unit. Value 1 represents kbps and value 2 represents pps."
+    ::= { unisSibThroughputObjects 3 }
+
+-- ==================================================================
+--
+-- ======================= trap definition begin ====================
+--
+-- ==================================================================
+unisSibDropTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisSibThroughputChassis,
+            unisSibThroughputSlot,
+            unisSibThroughputCPUID,
+            unisSibThroughputDropNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when the throughput of the context reaches the limit."
+    ::= { unisSibNotifications 1 }
+
+unisSibDropRecoveryTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisSibThroughputChassis,
+            unisSibThroughputSlot,
+            unisSibThroughputCPUID
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when the packet drop conditions are cleared because the throughput of the context drops."
+    ::= { unisSibNotifications 2 }
+
+unisSibThresholdTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisSibThroughputChassis,
+            unisSibThroughputSlot,
+            unisSibThroughputCPUID,
+            unisSibSetThroughput,
+            unisSibRealThroughput,
+            unisSibSetThreshold,
+            unisSibRealThruputUsage
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when the throughput usage of the context reaches the threshold."
+    ::= { unisSibNotifications 3 }
+
+unisSibThrRevoveryTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisSibThroughputChassis,
+            unisSibThroughputSlot,
+            unisSibThroughputCPUID,
+            unisSibSetThroughput,
+            unisSibRealThroughput,
+            unisSibSetThreshold,
+            unisSibRealThruputUsage
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when the throughput usage of the context drops below the threshold."
+    ::= { unisSibNotifications 4 }
+END

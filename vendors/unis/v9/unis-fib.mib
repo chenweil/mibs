@@ -1,0 +1,483 @@
+-- ============================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The purpose of this MIB file is to provide the definition of
+--              the FIB general configuration.
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 2021-12-08
+--   Initial version, created by zhuqiuxue
+-- V1.1 2022-09-08 Modify by yuanyuchen
+--   Add unisFibIPv4MaxNumAlarmTraps, unisFibIPv6MaxNumAlarmTraps,
+--   unisFibPub4OverloadTraps, unisFibPub6OverloadTraps
+--      2022-12-19 Modify by yewenbing
+--   Add unisFibEntryTraps, unisFibEcmpMemberLimitTraps,
+--   unisFibDeliverFailedTraps
+-- ============================================================================
+UNIS-FIB-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        InetAddressType, InetAddress
+    FROM INET-ADDRESS-MIB;
+
+-- Node definitions
+unisFib MODULE-IDENTITY
+    LAST-UPDATED "202212201219Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file defines the Fib trap warning feature only."
+    REVISION "202212201219Z"
+    DESCRIPTION
+        "Add unisFibEntryTraps, unisFibEcmpMemberLimitTraps,
+         unisFibDeliverFailedTraps."
+    REVISION "202209080920Z"
+    DESCRIPTION
+        "Add unisFibIPv4MaxNumAlarmTraps, unisFibIPv6MaxNumAlarmTraps,
+         unisFibPub4OverloadTraps, unisFibPub6OverloadTraps."
+    REVISION "202112081430Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 216}
+
+
+unisFibMsgTraps OBJECT IDENTIFIER ::= { unisFib 1 }
+
+unisFibMsgTrap OBJECT IDENTIFIER ::= { unisFibMsgTraps 0 }
+
+-- unisFibMsgTrap
+unisFibBoardMsgCongest NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibChassisID,
+            unisFibSlotID
+        }
+    STATUS      current
+    DESCRIPTION
+        "The FIB message on the board is congested."
+    ::= { unisFibMsgTrap 1 }
+
+unisFibBoardMsgCongestResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibChassisID,
+            unisFibSlotID
+        }
+    STATUS      current
+    DESCRIPTION
+        "The FIB message congestion is resolved."
+    ::= { unisFibMsgTrap 2 }
+
+
+unisFibMsgTrapbjects OBJECT IDENTIFIER ::= { unisFibMsgTraps 1 }
+
+-- unisFibMsgTrapbjects
+
+unisFibChassisID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+        not a stacked device."
+    ::= { unisFibMsgTrapbjects 1 }
+unisFibSlotID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of slot ID."
+    ::= { unisFibMsgTrapbjects 2 }
+
+unisFibOverloadTraps OBJECT IDENTIFIER ::= { unisFib 2 }
+
+unisFibOverloadTrap OBJECT IDENTIFIER ::= { unisFibOverloadTraps 0 }
+
+-- unisFibOverloadTrap
+unisFibOverloadForward NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibOverloadModule
+        }
+    STATUS      current
+    DESCRIPTION
+        "The system is in the overload forwarding state because the FIB module
+        is overloaded."
+    ::= { unisFibOverloadTrap 1 }
+
+unisFibOverloadForwardResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibOverloadModule
+        }
+    STATUS      current
+    DESCRIPTION
+        "The system changes from the overload forwarding state to the normal
+        state."
+    ::= { unisFibOverloadTrap 2 }
+
+
+unisFibOverloadTrapbjects OBJECT IDENTIFIER ::= { unisFibOverloadTraps 1 }
+
+-- unisFibOverloadTrapbjects
+unisFibOverloadModule OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of FIB module."
+    ::= { unisFibOverloadTrapbjects 1 }
+
+unisFibIPv4MaxNumAlarmTraps OBJECT IDENTIFIER ::= { unisFib 3 }
+
+unisFibIPv4MaxNumAlarmTrap OBJECT IDENTIFIER ::= { unisFibIPv4MaxNumAlarmTraps 0 }
+
+-- unisFibIPv4MaxNumAlarmTrap
+unisFibIPv4MaxNumAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibIPv4MaxNumChassis,
+            unisFibIPv4MaxNumSlot,
+            unisFibIPv4MaxNumCurCount
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of FIB4 entries exceeds the maximum of the slot."
+    ::= { unisFibIPv4MaxNumAlarmTrap 1 }
+
+unisFibIPv4MaxNumResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibIPv4MaxNumChassis,
+            unisFibIPv4MaxNumSlot,
+            unisFibIPv4MaxNumCurCount
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of FIB4 entries drops below the maximum of the slot."
+    ::= { unisFibIPv4MaxNumAlarmTrap 2 }
+
+
+unisFibIPv4MaxNumAlarmObjects OBJECT IDENTIFIER ::= { unisFibIPv4MaxNumAlarmTraps 1 }
+
+-- unisFibIPv4MaxNumAlarmObjects
+unisFibIPv4MaxNumChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+        not a stacked device."
+    ::= { unisFibIPv4MaxNumAlarmObjects 1 }
+
+unisFibIPv4MaxNumSlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of slot."
+    ::= { unisFibIPv4MaxNumAlarmObjects 2 }
+
+unisFibIPv4MaxNumCurCount OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Current count of FIB4 entry."
+    ::= { unisFibIPv4MaxNumAlarmObjects 3 }
+
+unisFibIPv6MaxNumAlarmTraps OBJECT IDENTIFIER ::= { unisFib 4 }
+
+unisFibIPv6MaxNumAlarmTrap OBJECT IDENTIFIER ::= { unisFibIPv6MaxNumAlarmTraps 0 }
+
+-- unisFibIPv6MaxNumAlarmTrap
+unisFibIPv6MaxNumAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibIPv6MaxNumChassis,
+            unisFibIPv6MaxNumSlot,
+            unisFibIPv6MaxNumCurCount
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of FIB6 entries exceeds the maximum of the slot."
+    ::= { unisFibIPv6MaxNumAlarmTrap 1 }
+
+unisFibIPv6MaxNumResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibIPv6MaxNumChassis,
+            unisFibIPv6MaxNumSlot,
+            unisFibIPv6MaxNumCurCount
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of FIB6 entries drops below the maximum of the slot."
+    ::= { unisFibIPv6MaxNumAlarmTrap 2 }
+
+
+unisFibIPv6MaxNumAlarmObjects OBJECT IDENTIFIER ::= { unisFibIPv6MaxNumAlarmTraps 1 }
+
+-- unisFibIPv6MaxNumAlarmObjects
+unisFibIPv6MaxNumChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+        not a stacked device."
+    ::= { unisFibIPv6MaxNumAlarmObjects 1 }
+
+unisFibIPv6MaxNumSlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of slot."
+    ::= { unisFibIPv6MaxNumAlarmObjects 2 }
+
+unisFibIPv6MaxNumCurCount OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Current count of FIB6 entry."
+    ::= { unisFibIPv6MaxNumAlarmObjects 3 }
+
+unisFibPub4OverloadTraps OBJECT IDENTIFIER ::= { unisFib 5 }
+
+unisFibPub4OverloadTrap OBJECT IDENTIFIER ::= { unisFibPub4OverloadTraps 0 }
+
+-- unisFibPub4OverloadTrap
+unisFibPub4OverloadForward NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibPub4OverloadCurCount
+        }
+    STATUS      current
+    DESCRIPTION
+        "The system is in the overload forwarding state because the public FIB4 module
+        is overloaded."
+    ::= { unisFibPub4OverloadTrap 1 }
+
+unisFibPub4OverloadForwardResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibPub4OverloadCurCount
+        }
+    STATUS      current
+    DESCRIPTION
+        "The system changes from the overload forwarding state to the normal
+        state."
+    ::= { unisFibPub4OverloadTrap 2 }
+
+
+unisFibPub4OverloadTrapbjects OBJECT IDENTIFIER ::= { unisFibPub4OverloadTraps 1 }
+
+-- unisFibPub4OverloadTrapbjects
+unisFibPub4OverloadCurCount OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Current count of public FIB4 entry."
+    ::= { unisFibPub4OverloadTrapbjects 1 }
+
+unisFibPub6OverloadTraps OBJECT IDENTIFIER ::= { unisFib 6 }
+
+unisFibPub6OverloadTrap OBJECT IDENTIFIER ::= { unisFibPub6OverloadTraps 0 }
+
+-- unisFibPub6OverloadTrap
+unisFibPub6OverloadForward NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibPub6OverloadCurCount
+        }
+    STATUS      current
+    DESCRIPTION
+        "The system is in the overload forwarding state because the public FIB6 module
+        is overloaded."
+    ::= { unisFibPub6OverloadTrap 1 }
+
+unisFibPub6OverloadForwardResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibPub6OverloadCurCount
+        }
+    STATUS      current
+    DESCRIPTION
+        "The system changes from the overload forwarding state to the normal
+        state."
+    ::= { unisFibPub6OverloadTrap 2 }
+
+
+unisFibPub6OverloadTrapbjects OBJECT IDENTIFIER ::= { unisFibPub6OverloadTraps 1 }
+
+-- unisFibPub6OverloadTrapbjects
+unisFibPub6OverloadCurCount OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Current count of public FIB6 entry."
+    ::= { unisFibPub6OverloadTrapbjects 1 }
+
+unisFibEntryTraps OBJECT IDENTIFIER ::= { unisFib 7 }
+
+unisFibEntryTrap OBJECT IDENTIFIER ::= { unisFibEntryTraps 0 }
+
+-- unisFibEntryTrap
+unisFibEntryConsistencyAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibEntryChassisID,
+            unisFibEntrySlotID
+        }
+    STATUS      current
+    DESCRIPTION
+        "The FIB software entry and hardware entry conflict."
+    ::= { unisFibEntryTrap 1 }
+
+unisFibEntryConsistencyResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibEntryChassisID,
+            unisFibEntrySlotID
+        }
+    STATUS      current
+    DESCRIPTION
+        "The FIB entry has been refreshed."
+    ::= { unisFibEntryTrap 2 }
+
+unisFibEcmpMemberLimitAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibEntryChassisID,
+            unisFibEntrySlotID
+        }
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of ECMP members exceeds the threshold."
+    ::= { unisFibEntryTrap 3 }
+
+unisFibEcmpMemberLimitResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibEntryChassisID,
+            unisFibEntrySlotID
+        }
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of ECMP members drops below the threshold."
+    ::= { unisFibEntryTrap 4 }
+
+unisFibEntryTrapbjects OBJECT IDENTIFIER ::= { unisFibEntryTraps 1 }
+
+-- unisFibEntryTrapbjects
+
+unisFibEntryChassisID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+        not a stacked device."
+    ::= { unisFibEntryTrapbjects 1 }
+
+unisFibEntrySlotID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of slot ID."
+    ::= { unisFibEntryTrapbjects 2 }
+
+unisFibDeliverFailedTraps OBJECT IDENTIFIER ::= { unisFib 8 }
+
+unisFibDeliverFailedTrap OBJECT IDENTIFIER ::= { unisFibDeliverFailedTraps 0 }
+
+-- unisFibDeliverFailedTrap
+unisFibDeliverFailed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibDeliverFailedVrf,
+            unisFibDeliverFailedIPType,
+            unisFibDeliverFailedIPAddress,
+            unisFibDeliverFailedMask,
+            unisFibDeliverFailedReasonId
+        }
+    STATUS      current
+    DESCRIPTION
+        "The route failed to be deliverdf because of internal error."
+    ::= { unisFibDeliverFailedTrap 1 }
+
+unisFibDeliverFailedResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFibDeliverFailedVrf,
+            unisFibDeliverFailedIPType,
+            unisFibDeliverFailedIPAddress,
+            unisFibDeliverFailedMask,
+            unisFibDeliverFailedReasonId
+        }
+    STATUS      current
+    DESCRIPTION
+        "The route success to be delivered in 60 minutes."
+    ::= { unisFibDeliverFailedTrap 2 }
+
+
+unisFibDeliverFailedTrapbjects OBJECT IDENTIFIER ::= { unisFibDeliverFailedTraps 1 }
+
+-- unisFibDeliverFailedTrapbjects
+
+unisFibDeliverFailedVrf OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The VRF of the FIB entry."
+    ::= { unisFibDeliverFailedTrapbjects 1 }
+
+unisFibDeliverFailedIPType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The inet address type of the FIB entry."
+    ::= { unisFibDeliverFailedTrapbjects 2 }
+
+unisFibDeliverFailedIPAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The inet address of the FIB entry."
+    ::= { unisFibDeliverFailedTrapbjects 3 }
+
+unisFibDeliverFailedMask OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The mask of the FIB entry."
+    ::= { unisFibDeliverFailedTrapbjects 4 }
+
+unisFibDeliverFailedReasonId OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            noResource(1),
+            lpmFailed(2)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The reason of the route deliver failed."
+    ::= { unisFibDeliverFailedTrapbjects 5 }
+END

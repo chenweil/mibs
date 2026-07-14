@@ -1,0 +1,96 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Ths mib is extracted from draft-ietf-isis-wg-mib-13.txt.
+--              Because the draft MIB is not proposed as a standard, so the
+--              content of this drafted MIB are moved under Huawei 3Com private
+--              branch and 'unis' is added to all MIB objects as prefixes
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2020-08-05 The initial version, created by Chen ZiChao
+-- =================================================================
+UNIS-ISIS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    Integer32, OBJECT-TYPE, OBJECT-IDENTITY, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+
+unisIsis MODULE-IDENTITY
+    LAST-UPDATED "202008051100Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This document describes a management information base for
+         the IS-IS Routing protocol, as described in ISO 10589,
+         when it is used to construct routing tables for IP networks,
+         as described in RFC 1195.
+
+         This document defines an experimental portion of the
+         Management Information Base (MIB) for use with network
+         management protocols in the Internet community.
+
+         This document is based on a 1994 IETF draft by Chris Gunner.
+         This version has been modified to include MIB-II syntax, to
+         exclude portions of the protocol that are not relevant to IP,
+         and to add management support for current practice."
+    REVISION "202008051100Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 59 }
+
+-- Top-level structure of the MIB
+
+unisIsisObjects             OBJECT IDENTIFIER ::= { unisIsis 1 }
+
+-- OBJECT IDENTIFIER definitions
+
+unisIsisSystem OBJECT-IDENTITY
+    STATUS current
+    DESCRIPTION
+        "The object describes system wide attributes."
+    ::= { unisIsisObjects 1 }
+
+
+unisIsisSysTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisIsisSysEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The set of instance of the Integrated IS-IS
+         protocol existing on the system."
+    ::= { unisIsisSystem 1 }
+
+unisIsisSysEntry OBJECT-TYPE
+    SYNTAX UnisIsisSysEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each row defines information specific to a single
+         instance of the IS-IS protocol existing on the system."
+    REFERENCE "ISIS.poi cLNSISISBasic-P (1)"
+    INDEX { unisIsisSysInstance }
+    ::= { unisIsisSysTable 1 }
+
+UnisIsisSysEntry ::=
+    SEQUENCE {
+        unisIsisSysInstance
+            Integer32
+    }
+
+unisIsisSysInstance OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The unique identifier of the Integrated IS-IS
+         instance to which this row corresponds.
+         This object follows the index behavior."
+    ::= { unisIsisSysEntry 1 }
+
+END

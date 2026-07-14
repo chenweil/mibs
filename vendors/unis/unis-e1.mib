@@ -1,0 +1,445 @@
+-- =============================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+-- Reference: Extension of RFC 1213 and RFC 2233
+-- Version: V1.3
+-- History:
+--   V1.0 2004-12-01
+--        Initial Version  by lizhiyong and fangmin
+--   V1.1 2009-06-08 modified by TONGWEI
+--        Added unise1Table and unise1InterfaceTable
+--   V1.2 2010-04-08 modified by Tong Wei
+--        Modified unise1Table
+--        Added unise1TimeSlotSetTable
+--   V1.3 2012-07-16 modified SYNTAX of unise1Clock by shuaixiaojuan
+-- =============================================================
+UNIS-E1-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        Counter32
+                FROM SNMPv2-SMI
+        TEXTUAL-CONVENTION, RowStatus
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ifIndex
+                FROM RFC1213-MIB
+        unisCommon
+                FROM UNIS-OID-MIB;
+
+
+unisE1  MODULE-IDENTITY
+        LAST-UPDATED    "201207161741Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+             "This MIB provides E1 interface information that are
+             excluded by RFC 1213 and RFC 2233"
+        REVISION        "201207161741Z"
+        DESCRIPTION
+                "To fix bugs in the MIB file."
+        REVISION        "201004081855Z"
+        DESCRIPTION
+                "To fix bugs in the MIB file."
+        REVISION        "200906081741Z"
+        DESCRIPTION
+                "To fix bugs in the MIB file."
+        REVISION        "200412011436Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { unisCommon 28 }
+
+
+unise1InterfaceStatusTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisE1InterfaceStatusEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+         "This  table contains E1 interface packet statistics  "
+        ::= { unisE1 1 }
+
+unise1InterfaceStatusEntry OBJECT-TYPE
+        SYNTAX         UnisE1InterfaceStatusEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+         "This entry contains E1 interface packet statistics.
+         The index of this Entry is ifIndex defined in ifTable
+         of RFC1213-MIB"
+        INDEX { ifIndex }
+        ::= { unise1InterfaceStatusTable 1 }
+
+UnisE1InterfaceStatusEntry ::= SEQUENCE  {
+        unise1InterfaceInErrs            Counter32,
+        unise1InterfaceInRuntsErrs       Counter32,
+        unise1InterfaceInGiantsErrs      Counter32,
+        unise1InterfaceInCrcErrs         Counter32,
+        unise1InterfaceInAlignErrs       Counter32,
+        unise1InterfaceInOverRunsErrs    Counter32,
+        unise1InterfaceInDribblesErrs    Counter32,
+        unise1InterfaceInAbortedSeqErrs  Counter32,
+        unise1InterfaceInNoBufferErrs    Counter32,
+        unise1InterfaceInFramingErrs     Counter32,
+        unise1InterfaceOutputErrs        Counter32,
+        unise1InterfaceOutUnderRunErrs   Counter32,
+        unise1InterfaceOutCollisonsErrs  Counter32,
+        unise1InterfaceOutDeferedErrs    Counter32
+        }
+
+unise1InterfaceInErrs        OBJECT-TYPE
+        SYNTAX          Counter32
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+         "The total number of error received on this interface"
+        ::= { unise1InterfaceStatusEntry 1 }
+
+unise1InterfaceInRuntsErrs   OBJECT-TYPE
+        SYNTAX          Counter32
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+         "The number of Runts Error(too short packet) received on this interface"
+        ::= { unise1InterfaceStatusEntry 2 }
+
+unise1InterfaceInGiantsErrs OBJECT-TYPE
+        SYNTAX          Counter32
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+         "The number of Giants Error(too long packet) received on this interface"
+        ::= { unise1InterfaceStatusEntry 3 }
+
+unise1InterfaceInCrcErrs     OBJECT-TYPE
+        SYNTAX          Counter32
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+         "The number of CRC Error received on this interface"
+        ::= { unise1InterfaceStatusEntry 4 }
+
+unise1InterfaceInAlignErrs   OBJECT-TYPE
+        SYNTAX          Counter32
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+         "The number of Align Error received on this interface"
+        ::= { unise1InterfaceStatusEntry 5 }
+
+unise1InterfaceInOverRunsErrs OBJECT-TYPE
+        SYNTAX           Counter32
+        MAX-ACCESS       read-only
+        STATUS          current
+        DESCRIPTION
+         "The number of Over Runs Error received on this interface"
+        ::= { unise1InterfaceStatusEntry 6 }
+
+unise1InterfaceInDribblesErrs  OBJECT-TYPE
+        SYNTAX            Counter32
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION
+         "The number of dribble packets received"
+        ::= { unise1InterfaceStatusEntry 7 }
+
+unise1InterfaceInAbortedSeqErrs    OBJECT-TYPE
+        SYNTAX                Counter32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "The number of AbortedSeq Error received on this interface"
+        ::= { unise1InterfaceStatusEntry 8 }
+
+unise1InterfaceInNoBufferErrs      OBJECT-TYPE
+        SYNTAX                Counter32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "The number of Error (no buffer available)"
+        ::= { unise1InterfaceStatusEntry 9 }
+
+unise1InterfaceInFramingErrs      OBJECT-TYPE
+        SYNTAX                Counter32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "The number of framing Errors"
+        ::= { unise1InterfaceStatusEntry 10 }
+
+unise1InterfaceOutputErrs          OBJECT-TYPE
+        SYNTAX                Counter32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "The number of total Error transmited on this interface"
+        ::= { unise1InterfaceStatusEntry 11 }
+
+unise1InterfaceOutUnderRunErrs     OBJECT-TYPE
+        SYNTAX                Counter32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "The number of UnderRun Error transmited on this interface"
+        ::= { unise1InterfaceStatusEntry 12 }
+
+unise1InterfaceOutCollisonsErrs    OBJECT-TYPE
+        SYNTAX                Counter32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "The number of Collisions Error transmited on this interface"
+        ::= { unise1InterfaceStatusEntry 13 }
+
+unise1InterfaceOutDeferedErrs      OBJECT-TYPE
+        SYNTAX                Counter32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "The number of Deferred Error transmited on this interface"
+        ::= { unise1InterfaceStatusEntry 14 }
+
+unise1Table OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisE1Entry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+         "A list of E1 interface entries."
+        ::= { unisE1 2 }
+
+unise1Entry OBJECT-TYPE
+        SYNTAX         UnisE1Entry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+         "This entry contains E1 interface management information."
+        INDEX { ifIndex }
+        ::= { unise1Table 1 }
+
+UnisE1TimeSlot ::= TEXTUAL-CONVENTION
+        STATUS      current
+        DESCRIPTION
+            "Each octet within this value specifies a set of time
+            slots, with the first octet specifying time slot 1 through
+            8, the second octet specifying time slots 9 through 16, etc.
+            Within each octet, the most significant bit represents
+            the highest numbered time slot, and the least significant bit
+            represents the lowest numbered time slot.  Thus, each time slot
+            of the E1 is represented by a single bit within the
+            value of this object.  If that bit has a value of '1'
+            then that time slot is included in the set of time slots;
+            the time slot is not included if its bit has a value of '0'."
+        SYNTAX      OCTET STRING(SIZE (4))
+
+UnisE1Entry ::= SEQUENCE  {
+        unise1Type              BITS,
+        unise1Clock             INTEGER,
+        unise1FrameFormat       INTEGER,
+        unise1LineCode          INTEGER,
+        unise1PriSetTimeSlot    UnisE1TimeSlot,
+        unise1DChannelIndex     Integer32,
+        unise1SubScribLineChannelIndex Integer32,
+        unise1FcmChannelIndex Integer32
+        }
+
+unise1Type              OBJECT-TYPE
+        SYNTAX  BITS {
+                    voice(0),
+                    pos(1)
+                }
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+         "Specifies the type of the E1 interface.
+          Now it supports types as follow:
+          voice  voice type
+          pos    POS type"
+        ::= { unise1Entry 1 }
+
+unise1Clock             OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    slave(1),
+                    master(2),
+                    internal(3),
+                    line(4),
+                    linePri(5)
+                }
+        MAX-ACCESS      read-write
+        STATUS          current
+        DESCRIPTION
+         "Specifies the clock type used on the E1 interface."
+        ::= { unise1Entry 2 }
+
+unise1FrameFormat       OBJECT-TYPE
+        SYNTAX   INTEGER {
+                    crc4(1),
+                    nocrc4(2)
+                }
+        MAX-ACCESS      read-write
+        STATUS          current
+        DESCRIPTION
+         "Specifies the frame format used on the E1 interface."
+        DEFVAL { crc4 }
+        ::= { unise1Entry 3 }
+
+unise1LineCode          OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    ami(1),
+                    hdb3(3)
+                }
+        MAX-ACCESS      read-write
+        STATUS          current
+        DESCRIPTION
+         "Specifies the line code type used on the E1 interface."
+        DEFVAL { hdb3 }
+        ::= { unise1Entry 4 }
+
+unise1PriSetTimeSlot    OBJECT-TYPE
+        SYNTAX          UnisE1TimeSlot
+        MAX-ACCESS      read-write
+        STATUS          current
+        DESCRIPTION
+         "This is a bit-map of PRI time slots used on the E1 interface.
+         It needs to administratively shut down the D channel of
+         the E1 interface before cancelling PRI time slots."
+        ::= { unise1Entry 5 }
+
+unise1DChannelIndex      OBJECT-TYPE
+        SYNTAX                Integer32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "This is the ifIndex of the D channel of the E1 interface."
+        ::= { unise1Entry 6 }
+
+unise1SubScribLineChannelIndex      OBJECT-TYPE
+        SYNTAX                Integer32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "This is the ifIndex of the subscriber-line channel of the E1
+         interface."
+        ::= { unise1Entry 7 }
+
+unise1FcmChannelIndex      OBJECT-TYPE
+        SYNTAX                Integer32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "This is the ifIndex of the FCM (Fast Connection Modem) channel
+          of the E1 interface."
+        ::= { unise1Entry 8 }
+
+unise1InterfaceTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisE1InterfaceEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+         "A list of channels of E1 interface entries.
+         Including D channels and subscriber-line channels."
+        ::= { unisE1 3 }
+
+unise1InterfaceEntry OBJECT-TYPE
+        SYNTAX         UnisE1InterfaceEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+         "This entry contains channels of E1 interface management information.
+         Including D channels and subscriber-line channels."
+        INDEX { ifIndex }
+        ::= { unise1InterfaceTable 1 }
+
+UnisE1InterfaceEntry ::= SEQUENCE  {
+        unise1ControllerIndex        Integer32
+        }
+
+unise1ControllerIndex      OBJECT-TYPE
+        SYNTAX                Integer32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "Which E1 interface is this channel belonged to."
+        ::= { unise1InterfaceEntry 1 }
+
+unise1TimeSlotSetTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisE1TimeSlotSetEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+         "A list of time slot set information of E1 interface entries."
+        ::= { unisE1 4 }
+
+unise1TimeSlotSetEntry OBJECT-TYPE
+        SYNTAX         UnisE1TimeSlotSetEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+         "This entry contains time slot set information of E1 interface."
+        INDEX { ifIndex }
+        ::= { unise1TimeSlotSetTable 1 }
+
+UnisE1TimeSlotSetEntry ::= SEQUENCE  {
+        unise1TimeSlotSetGroupId     Integer32,
+        unise1TimeSlotSetSignalType  INTEGER,
+        unise1TimeSlotSetList        UnisE1TimeSlot,
+        unise1TimeSlotSetRowStatus   RowStatus
+        }
+
+unise1TimeSlotSetGroupId             OBJECT-TYPE
+        SYNTAX  Integer32(0..30)
+        MAX-ACCESS      read-create
+        STATUS          current
+        DESCRIPTION
+         "Group ID."
+        ::= { unise1TimeSlotSetEntry 1 }
+
+unise1TimeSlotSetSignalType       OBJECT-TYPE
+        SYNTAX   INTEGER {
+                    unkown(1),
+                    em-delay(2),
+                    em-immediate(3),
+                    em-wink(4),
+                    fxo-ground(5),
+                    fxo-loop(6),
+                    fxs-ground(7),
+                    fxs-loop(8),
+                    r2(9)
+                }
+        MAX-ACCESS      read-create
+        STATUS          current
+        DESCRIPTION
+           "Signal type. Now it supports types as follow:
+            unkown,      unkown
+            em-delay     E&M Delay Dial
+            em-immediate E&M Immediate Start
+            em-wink      E&M Wink Start
+            fxo-ground   FXO Ground Start
+            fxo-loop     FXO Loop Start
+            fxs-ground   FXS Ground Start
+            fxs-loop     FXS Loop Start
+            r2           R2 ITU Q421"
+        ::= { unise1TimeSlotSetEntry 2 }
+
+unise1TimeSlotSetList    OBJECT-TYPE
+        SYNTAX          UnisE1TimeSlot
+        MAX-ACCESS      read-create
+        STATUS          current
+        DESCRIPTION
+         "Time slot bit map."
+        ::= { unise1TimeSlotSetEntry 3 }
+
+unise1TimeSlotSetRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+         "Operation status."
+        ::= { unise1TimeSlotSetEntry 4 }
+
+END

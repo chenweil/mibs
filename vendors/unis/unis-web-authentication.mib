@@ -1,0 +1,187 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: description of Web Authentication
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2008-6-25, Created by dupengfei
+-- =================================================================
+UNIS-WEB-AUTHENTICATION-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    ifDescr
+        FROM RFC1213-MIB
+    OBJECT-TYPE, NOTIFICATION-TYPE, MODULE-IDENTITY, Integer32
+        FROM SNMPv2-SMI
+    MacAddress
+        FROM SNMPv2-TC;
+
+unisWebAuthentication MODULE-IDENTITY
+    LAST-UPDATED "200806250000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for web authentication to send traps."
+    REVISION "200806250000Z"
+    DESCRIPTION
+        "The initial version of unisWebAuthenticationMIB"
+    ::= { unisCommon 93 }
+
+
+unisWaTrapObjects OBJECT IDENTIFIER ::= { unisWebAuthentication 1 }
+
+--
+-- WEB AUTHENTICATION TRAPS OBJECT
+--
+unisWaVlanID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The Vlan ID associate with the port and the MAC address."
+    ::= { unisWaTrapObjects 1 }
+
+unisWaReasonCode OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+         globalNumberMax(1),
+         configNumberMax(2),
+         portNumberMax(3),
+         invalidUsername(4),
+         authFail(5),
+         setACLFail(6),
+         changeVlanFail(7),
+         other(8),
+         onlineOverTime(9),
+         noTransferData(10),
+         cutOperation(11),
+         portDisabled(12),
+         portDown(13),
+         userLogout(14),
+         vlanChanged(15),
+         vlanDelted(16)
+    }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The code indicates the reason for the action of this trap.
+         globalNumberMax:
+            The global number of connections is up to max.
+         configNumberMax:
+            The global number of connections is up to configured max value.
+         portNumberMax:
+            The interface number of connections is up to max.
+         invalidUsername:
+            The username or password is too long or username is empty.
+         authFail:
+            Wrong username or password.
+         setACLFail:
+            Failed to set ACL.
+         changeVlanFail:
+            Failed to set VLAN.
+         other:
+            Other reasons.
+         onlineOverTime:
+            The online time is over the max value.
+         noTransferData:
+            There was no data flow for the connection.
+         cutOperation:
+            There was a cut operation.
+         portDisabled:
+            Web authentication was disabled on interface.
+         portDown:
+            The interface turned down.
+         userLogout:
+            The client required to logout.
+         vlanChanged:
+            The interface VLAN value was changed.
+         vlanDelted:
+            The interface VLAN was deleted."
+    ::= { unisWaTrapObjects 2 }
+
+unisWaActionCode OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        enabled(1),
+        disabled(2)
+    }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The code indicates the system action.
+         enabled:
+            Web authentication turns enabled.
+         disabled:
+            Web authentication turns disabled."
+    ::= { unisWaTrapObjects 3 }
+
+unisWaClientMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The MAC address of the client."
+    ::= { unisWaTrapObjects 4 }
+
+unisWaTrap OBJECT IDENTIFIER ::= { unisWebAuthentication 2 }
+
+unisWaTrapPrefix OBJECT IDENTIFIER ::= { unisWaTrap 0 }
+
+
+unisWaClientLogon NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisWaClientMacAddr,
+            ifDescr,
+            unisWaVlanID
+        }
+    STATUS      current
+    DESCRIPTION
+        "It is generated when a client succeeded to logon."
+    ::= { unisWaTrapPrefix 1 }
+
+unisWaClientLogonFail NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisWaClientMacAddr,
+            ifDescr,
+            unisWaVlanID,
+            unisWaReasonCode
+        }
+    STATUS      current
+    DESCRIPTION
+        "It is generated when a client failed to logon, the unisWaReasonCode
+         shows the failure reason."
+    ::= { unisWaTrapPrefix 2 }
+
+unisWaClientLogout NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisWaClientMacAddr,
+            ifDescr,
+            unisWaVlanID,
+            unisWaReasonCode
+        }
+    STATUS      current
+    DESCRIPTION
+        "It is generated when a client logout, the unisWaReasonCode
+         shows the logout reason."
+    ::= { unisWaTrapPrefix 3 }
+
+unisWaSysAction NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisWaActionCode
+        }
+    STATUS      current
+    DESCRIPTION
+        "It is generated when a system action was occurred, the unisWaActionCode
+         shows the action information."
+    ::= { unisWaTrapPrefix 4 }
+
+END

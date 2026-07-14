@@ -1,0 +1,152 @@
+-- =============================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Multiprotocol Label Switching Resource Reservation Protocol MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2022-06-01 Initial version Created by zhouwan
+-- =============================================================================
+UNIS-MPLSRSVP-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB
+    ;
+
+-- =============================================================================
+-- module identity part
+-- =============================================================================
+unisMplsRsvp MODULE-IDENTITY
+    LAST-UPDATED
+        "202206011900Z"   -- June 01, 2022 at 19:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Multiprotocol Label Switching Resource Reservation Protocol MIB"
+    REVISION
+        "202206011900Z"   -- June 01, 2022 at 19:00 GMT
+    DESCRIPTION
+        "Initial version of this MIB."
+    ::= { unisCommon 229 }
+
+-- =============================================================================
+-- Top level components of this MIB module
+-- =============================================================================
+unisMplsRsvpNotifications OBJECT IDENTIFIER ::= { unisMplsRsvp 0 }
+
+unisMplsRsvpObjects       OBJECT IDENTIFIER ::= { unisMplsRsvp 1 }
+
+unisMplsRsvpScalarGroup   OBJECT IDENTIFIER ::= { unisMplsRsvpObjects 1 }
+
+unisMplsRsvpNbrAddr    OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..127))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The RSVP(Resource Reservation Protocol) Neighbor Address."
+    ::= { unisMplsRsvpScalarGroup 1 }
+
+unisMplsRsvpFrrMainInfo    OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..127))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The Main Tunnel information of RSVP(Resource Reservation Protocol)
+         Fast Reroute."
+    ::= { unisMplsRsvpScalarGroup 2 }
+
+unisMplsRsvpFrrByPassInfo    OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..127))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The Bypass Tunnel information of RSVP(Resource Reservation Protocol)
+         Fast Reroute."
+    ::= { unisMplsRsvpScalarGroup 3 }
+
+-- =============================================================================
+-- Notifications
+-- =============================================================================
+unisMplsRsvpNeighborLost  NOTIFICATION-TYPE
+    OBJECTS { unisMplsRsvpNbrAddr  }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when the RSVP neighbor is lost
+      and hello status went from up to init or idle."
+    ::= { unisMplsRsvpNotifications 1 }
+
+unisMplsRsvpNeighborLostRecovery  NOTIFICATION-TYPE
+     OBJECTS { unisMplsRsvpNbrAddr  }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when the RSVP neighbor is recovered
+      and hello status went from init to up."
+    ::= { unisMplsRsvpNotifications 2 }
+
+unisMplsRsvpAuthFail  NOTIFICATION-TYPE
+    OBJECTS { unisMplsRsvpNbrAddr   }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when the RSVP neighbor authentication
+       is failed."
+    ::= { unisMplsRsvpNotifications 3 }
+
+unisMplsRsvpAuthFailRecovery  NOTIFICATION-TYPE
+    OBJECTS { unisMplsRsvpNbrAddr   }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when the RSVP neighbor authentication
+      failure is recovered."
+    ::= { unisMplsRsvpNotifications 4 }
+
+unisMplsRsvpFrrProtAval  NOTIFICATION-TYPE
+    OBJECTS {
+        unisMplsRsvpFrrMainInfo,
+        unisMplsRsvpFrrByPassInfo
+            }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when the primary tunnel is bound
+      by bypass tunnel."
+    ::= { unisMplsRsvpNotifications 5 }
+
+unisMplsRsvpFrrProtNotAval  NOTIFICATION-TYPE
+    OBJECTS {
+        unisMplsRsvpFrrMainInfo,
+        unisMplsRsvpFrrByPassInfo
+            }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when the primary tunnel is unbound
+      by bypass tunnel."
+    ::= { unisMplsRsvpNotifications 6 }
+
+unisMplsRsvpFrrSwitch  NOTIFICATION-TYPE
+    OBJECTS {
+        unisMplsRsvpFrrMainInfo,
+        unisMplsRsvpFrrByPassInfo
+            }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when tunnel frr is switched."
+    ::= { unisMplsRsvpNotifications 7 }
+
+unisMplsRsvpFrrResume  NOTIFICATION-TYPE
+    OBJECTS {
+        unisMplsRsvpFrrMainInfo,
+        unisMplsRsvpFrrByPassInfo
+            }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when tunnel frr is resumed."
+    ::= { unisMplsRsvpNotifications 8 }
+
+-- =============================================================================
+-- End of notifications.
+-- =============================================================================
+
+END

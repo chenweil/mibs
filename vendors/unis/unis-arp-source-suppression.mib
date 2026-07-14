@@ -1,0 +1,57 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Arp source suppression MIB.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2013-10-14
+--   Initial version, created by yanjun
+-- ============================================================================
+UNIS-ARP-SOURCE-SUPPRESSION-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        Unsigned32, OBJECT-TYPE, MODULE-IDENTITY
+    FROM SNMPv2-SMI
+        TruthValue
+    FROM SNMPv2-TC;
+
+-- Node definitions
+unisARPSourceSuppression MODULE-IDENTITY
+    LAST-UPDATED "201310141800Z"        -- OCT 14, 2013 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file is to provide the definition of the ARP source
+        suppression. "
+    REVISION "201310141800Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 146 }
+
+unisARPSourceSuppressionObjects OBJECT IDENTIFIER ::= { unisARPSourceSuppression 1 }
+
+unisARPSourceSuppressionGlobal OBJECT IDENTIFIER  ::= { unisARPSourceSuppressionObjects 1 }
+
+unisARPSourceSuppressionEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable or disable ARP source suppression function."
+    ::= { unisARPSourceSuppressionGlobal 1 }
+
+unisARPSourceSuppressionLimit OBJECT-TYPE
+    SYNTAX      Unsigned32(2..1024)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Set the maximum number of unresolvable packets that the device
+         can receive from a device in five seconds."
+    DEFVAL { 10 }
+    ::= { unisARPSourceSuppressionGlobal 2 }
+END

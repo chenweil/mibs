@@ -1,0 +1,713 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Multiprotocol Label Switching MIB
+-- Reference:
+-- Version: V1.4
+-- History:
+--   V1.0 2013-06-13 Initial version Created by Neng Yan
+--   V1.1 2014-12-17 Modified by Neng Yan, Added unisMplsExtBfdTable
+--   V1.2 2015-06-16 Modified by Li Yun, Added unisMplsExtVpnStatsTable
+--   V1.3 2017-02-17 Modified by Liu Qingye, Added unisMplsExtVpnTable
+--   V1.4 2018-08-04 Modified by Lin jiang, Added unisMplsExtStaticLspTable
+-- =============================================================================
+UNIS-MPLSEXT-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Unsigned32
+        FROM SNMPv2-SMI
+    RowStatus, TruthValue, DisplayString
+        FROM SNMPv2-TC
+    InetAddressType,InetAddress,InetAddressIPv4
+        FROM INET-ADDRESS-MIB
+    InterfaceIndexOrZero
+        FROM IF-MIB
+    unisCommon
+        FROM UNIS-OID-MIB
+    Counter64
+        FROM SNMPv2-SMI
+    ;
+
+-- =============================================================================
+-- module identity part
+-- =============================================================================
+unisMplsExt MODULE-IDENTITY
+    LAST-UPDATED
+        "201808041800Z"   -- Aug 04, 2018 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Multiprotocol Label Switching MIB"
+    REVISION
+        "201808041800Z"   -- Aug 04, 2018 at 18:00 GMT
+    DESCRIPTION
+        "Added unisMplsExtStaticLspTable."
+    REVISION
+        "201702171800Z"   -- Feb 17, 2017 at 18:00 GMT
+    DESCRIPTION
+        "Added unisMplsExtVpnTable."
+    REVISION
+        "201506161800Z"   -- Jun 16, 2015 at 18:00 GMT
+    DESCRIPTION
+        "Added unisMplsExtVpnStatsTable."
+    REVISION
+        "201412171200Z"   -- Dec 17, 2014 at 18:00 GMT
+    DESCRIPTION
+        "Added unisMplsExtBfdTable."
+    REVISION
+        "201306131800Z"   -- Jan 13, 2013 at 18:00 GMT
+    DESCRIPTION
+        "Initial version of this MIB."
+    ::= { unisCommon 142 }
+
+-- =============================================================================
+-- object definition begin
+-- =============================================================================
+unisMplsExtObjects      OBJECT IDENTIFIER ::= { unisMplsExt 1 }
+
+unisMplsExtScalarGroup  OBJECT IDENTIFIER ::= { unisMplsExtObjects 1 }
+
+unisMplsExtLsrID    OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..32))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The Label Switching Router's Identifier."
+    ::= { unisMplsExtScalarGroup 1 }
+
+unisMplsExtLdpStatus    OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The global configuration of Label Distribution Protocol(LDP)."
+    ::= { unisMplsExtScalarGroup 2 }
+
+-- =============================================================================
+-- unisMplsExtTable Definition
+-- =============================================================================
+unisMplsExtTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMplsExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for configuring
+        Multiprotocol Label Switching(MPLS) parameters."
+    ::= { unisMplsExtObjects 2 }
+
+unisMplsExtEntry   OBJECT-TYPE
+    SYNTAX      UnisMplsExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for configuring MPLS parameters."
+    INDEX
+    {
+        unisMplsExtIndex
+    }
+    ::= { unisMplsExtTable 1 }
+
+UnisMplsExtEntry ::=
+    SEQUENCE
+    {
+        unisMplsExtIndex               Unsigned32,
+        unisMplsExtCapability          TruthValue,
+        unisMplsExtMtu                 Unsigned32,
+        unisMplsExtRowStatus           RowStatus
+    }
+
+unisMplsExtIndex   OBJECT-TYPE
+    SYNTAX      Unsigned32(1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Index of MPLS interface."
+    ::= { unisMplsExtEntry 1 }
+
+unisMplsExtCapability    OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The MPLS capability of an interface."
+    DEFVAL { false }
+    ::= { unisMplsExtEntry 2 }
+
+unisMplsExtMtu     OBJECT-TYPE
+    SYNTAX      Unsigned32(46..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The MPLS Maximum Transmission Unit(MTU) of an interface."
+    ::= { unisMplsExtEntry 3 }
+
+unisMplsExtRowStatus     OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisMplsExtEntry 4 }
+-- =============================================================================
+-- End of unisMplsExtTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisMplsExtLdpTable Definition
+-- =============================================================================
+unisMplsExtLdpTable     OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMplsExtLdpEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for configuring LDP parameters."
+    ::= { unisMplsExtObjects 3 }
+
+unisMplsExtLdpEntry     OBJECT-TYPE
+    SYNTAX      UnisMplsExtLdpEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for configuring LDP parameters."
+    INDEX
+    {
+        unisMplsExtLdpIndex
+    }
+    ::= { unisMplsExtLdpTable 1 }
+
+UnisMplsExtLdpEntry ::=
+    SEQUENCE
+    {
+        unisMplsExtLdpIndex                 Unsigned32,
+        unisMplsExtLdpCapability            TruthValue,
+        unisMplsExtLdpRowStatus             RowStatus
+    }
+
+unisMplsExtLdpIndex     OBJECT-TYPE
+    SYNTAX      Unsigned32(1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Index of LDP interface."
+    ::= { unisMplsExtLdpEntry 1 }
+
+unisMplsExtLdpCapability    OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The LDP capability of an interface."
+    DEFVAL { false }
+    ::= { unisMplsExtLdpEntry 2 }
+
+unisMplsExtLdpRowStatus     OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry.  A row entry cannot
+        be modified when the value of this object is 'active'."
+    ::= { unisMplsExtLdpEntry 3 }
+-- =============================================================================
+-- End of unisMplsExtLdpTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisMplsExtBfdTable Definition
+-- =============================================================================
+unisMplsExtBfdTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMplsExtBfdEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of MPLS Bidirectional Forwarding Detection(BFD) sessions."
+    ::= { unisMplsExtObjects 4 }
+
+unisMplsExtBfdEntry   OBJECT-TYPE
+    SYNTAX      UnisMplsExtBfdEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in this table represents information on a single session."
+    INDEX
+    {
+        unisMplsExtBfdLocalDiscr
+    }
+    ::= { unisMplsExtBfdTable 1 }
+
+UnisMplsExtBfdEntry ::=
+    SEQUENCE
+    {
+        unisMplsExtBfdLocalDiscr            Unsigned32,
+        unisMplsExtBfdType                  INTEGER,
+        unisMplsExtBfdBindIfIndex           InterfaceIndexOrZero,
+        unisMplsExtBfdBindIfName            DisplayString,
+        unisMplsExtBfdXcIndex               OCTET STRING,
+        unisMplsExtBfdPwBackupFlag          INTEGER,
+        unisMplsExtBfdPwId                  Unsigned32,
+        unisMplsExtBfdVsiIndex              Unsigned32,
+        unisMplsExtBfdPwPeerIpType          InetAddressType,
+        unisMplsExtBfdPwPeerIp              InetAddress,
+        unisMplsExtBfdPwSPE                 INTEGER,
+        unisMplsExtBfdPwEncapType           INTEGER
+    }
+
+unisMplsExtBfdLocalDiscr   OBJECT-TYPE
+    SYNTAX      Unsigned32(1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The local discriminator of the BFD session."
+    ::= { unisMplsExtBfdEntry 1 }
+
+unisMplsExtBfdType    OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        lsp(2),
+                        vpwsPw(3),
+                        vplsPw(4),
+                        te(5)
+                     }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The type of the BFD session."
+    ::= { unisMplsExtBfdEntry 2 }
+
+unisMplsExtBfdBindIfIndex   OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object displays tunnel interface index when the value of
+         unisMplsExtBfdType is te(5), and displays interface index of
+         an Attachment Circuit(AC) which is bound to a Pseudowire(PW) when
+         the value of unisMplsExtBfdType is vpwsPw(3).  This object is
+         invalid when the value of unisMplsExtBfdType is not te(5) or
+         vpwsPw(3), then this object contains a zero value."
+    ::= { unisMplsExtBfdEntry 3 }
+
+unisMplsExtBfdBindIfName   OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object displays tunnel interface name when the value of
+         unisMplsExtBfdType is te(5), and displays interface name of
+         an AC which is bound to a PW when the value of unisMplsExtBfdType
+         is vpwsPw(3).  This object is invalid when the value of
+         unisMplsExtBfdType is not te(5) or vpwsPw(3), then this object
+         contains a zero-length string."
+    ::= { unisMplsExtBfdEntry 4 }
+
+unisMplsExtBfdXcIndex   OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..24))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Primary index for MplsOutSegmentEntry.  This object is invalid when
+        the value of unisMplsExtBfdType is not lsp(2), then this object
+        contains a zero-length string."
+    ::= { unisMplsExtBfdEntry 5 }
+
+unisMplsExtBfdPwBackupFlag     OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        none(1),
+                        primary(2),
+                        backup(3)
+                     }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "PW flag."
+    ::= { unisMplsExtBfdEntry 6 }
+
+unisMplsExtBfdPwId     OBJECT-TYPE
+    SYNTAX      Unsigned32(0..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "PW Identifier."
+    DEFVAL { 0 }
+    ::= { unisMplsExtBfdEntry 7 }
+
+unisMplsExtBfdVsiIndex     OBJECT-TYPE
+    SYNTAX      Unsigned32(1..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Virtual Switch Instance(VSI) index."
+    DEFVAL { 4294967295 }
+    ::= { unisMplsExtBfdEntry 8 }
+
+unisMplsExtBfdPwPeerIpType     OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The type of peer address.  Typically, this
+        address type is IPv4 or IPv6, with a prefix length
+        of 32 or 128, respectively."
+    ::= { unisMplsExtBfdEntry 9 }
+
+unisMplsExtBfdPwPeerIp     OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Peer address of the PW."
+    ::= { unisMplsExtBfdEntry 10 }
+
+unisMplsExtBfdPwSPE     OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        none(1),
+                        upe(2),
+                        spe(3)
+                     }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Node information of the Virtual Private Wire Service(VPWS) PW,
+        User facing-Provider Edge(UPE) or Switching Provider Edge(SPE)."
+    ::= { unisMplsExtBfdEntry 11 }
+
+unisMplsExtBfdPwEncapType     OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        frDlciMartini(2),
+                        atmAal5Sdu(3),
+                        atmTransCell(4),
+                        vlan(5),
+                        ethernet(6),
+                        hdlc(7),
+                        ppp(8),
+                        cesom(9),
+                        atmNto1Vcc(10),
+                        atmNto1Vpc(11),
+                        ipInterworking(12),
+                        atm1to1Vcc(13),
+                        atm1to1Vpc(14),
+                        atmAal5Pdu(15),
+                        frPort(16),
+                        cep(17),
+                        satopE1(18),
+                        satopT1(19),
+                        satopE3(20),
+                        satopT3(21),
+                        esopsnBasic(22),
+                        tdmoipAal1Mode(23),
+                        tdmCesopsnWithCas(24),
+                        tdmoipAal2Mode(25),
+                        frDlci(26)
+                     }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Encapsulation type of the PW."
+    ::= { unisMplsExtBfdEntry 12 }
+-- =============================================================================
+-- End of unisMplsExtBfdTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisMplsExtVpnStatsTable Definition
+-- =============================================================================
+unisMplsExtVpnStatsTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMplsExtVpnStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table contains statistical information about packets
+         received from and sent by each VPN."
+    ::= { unisMplsExtObjects 5 }
+
+unisMplsExtVpnStatsEntry   OBJECT-TYPE
+    SYNTAX      UnisMplsExtVpnStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in this table contains statistical
+        information about packets received from and sent by a VPN."
+    INDEX
+    {
+        unisMplsExtVpnStatsVrfIndex
+    }
+    ::= { unisMplsExtVpnStatsTable 1 }
+
+UnisMplsExtVpnStatsEntry ::=
+    SEQUENCE
+    {
+        unisMplsExtVpnStatsVrfIndex            Unsigned32,
+        unisMplsExtVpnStatsVpnName             OCTET STRING,
+        unisMplsExtVpnStatsInOctets            Counter64,
+        unisMplsExtVpnStatsInPackets           Counter64,
+        unisMplsExtVpnStatsInErrors            Counter64,
+        unisMplsExtVpnStatsInDiscards          Counter64,
+        unisMplsExtVpnStatsOutOctets           Counter64,
+        unisMplsExtVpnStatsOutPackets          Counter64,
+        unisMplsExtVpnStatsOutErrors           Counter64,
+        unisMplsExtVpnStatsOutDiscards         Counter64
+    }
+
+unisMplsExtVpnStatsVrfIndex   OBJECT-TYPE
+    SYNTAX      Unsigned32(1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index of a VPN."
+    ::= { unisMplsExtVpnStatsEntry 1 }
+
+unisMplsExtVpnStatsVpnName   OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of a VPN."
+    ::= { unisMplsExtVpnStatsEntry 2 }
+
+unisMplsExtVpnStatsInOctets     OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of octets received from a VPN."
+    ::= { unisMplsExtVpnStatsEntry 3 }
+
+unisMplsExtVpnStatsInPackets   OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of packets received from a VPN."
+    ::= { unisMplsExtVpnStatsEntry 4 }
+
+unisMplsExtVpnStatsInErrors     OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of error packets received from a VPN."
+    ::= { unisMplsExtVpnStatsEntry 5 }
+
+unisMplsExtVpnStatsInDiscards   OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of incoming packets,
+        which were chosen to be discarded by a VPN even
+        though no errors had been detected to prevent their
+        being transmitted."
+    ::= { unisMplsExtVpnStatsEntry 6 }
+
+unisMplsExtVpnStatsOutOctets     OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of octets sent by a VPN."
+    ::= { unisMplsExtVpnStatsEntry 7 }
+
+unisMplsExtVpnStatsOutPackets     OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of packets sent by a VPN."
+    ::= { unisMplsExtVpnStatsEntry 8 }
+
+unisMplsExtVpnStatsOutErrors     OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of packets that could not be sent by a VPN
+        due to errors."
+    ::= { unisMplsExtVpnStatsEntry 9 }
+
+unisMplsExtVpnStatsOutDiscards     OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of outgoing packets which were chosen to be discarded
+        by a VPN even though no errors had been detected to prevent
+        their being transmitted.  One possible reason for
+        discarding such a packet could be to free up
+        buffer space."
+    ::= { unisMplsExtVpnStatsEntry 10 }
+
+-- =============================================================================
+-- End of unisMplsExtVpnStatsTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisMplsExtVpnTable Definition
+-- =============================================================================
+unisMplsExtVpnTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMplsExtVpnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains MPLS VPN information."
+    ::= { unisMplsExtObjects 6 }
+
+unisMplsExtVpnEntry   OBJECT-TYPE
+    SYNTAX      UnisMplsExtVpnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in this table represents information on a single VPN instance."
+    INDEX
+    {
+        unisMplsExtVpnName
+    }
+    ::= { unisMplsExtVpnTable 1 }
+
+UnisMplsExtVpnEntry ::=
+    SEQUENCE
+    {
+        unisMplsExtVpnName                  OCTET STRING,
+        unisMplsExtVrfIndex                 Unsigned32
+    }
+
+unisMplsExtVpnName   OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..31))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The name of a VPN instance."
+    ::= { unisMplsExtVpnEntry 1 }
+
+unisMplsExtVrfIndex   OBJECT-TYPE
+    SYNTAX      Unsigned32(0..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The index of a VPN instance."
+    ::= { unisMplsExtVpnEntry 2 }
+
+-- =============================================================================
+-- End of unisMplsExtVpnTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisMplsExtStaticLspTable Definition
+-- =============================================================================
+unisMplsExtStaticLspTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMplsExtStaticLspEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains MPLS static LSP information."
+    ::= { unisMplsExtObjects 7 }
+
+unisMplsExtStaticLspEntry   OBJECT-TYPE
+    SYNTAX      UnisMplsExtStaticLspEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in this table represents information on a single static LSP."
+    INDEX
+    {
+        unisMplsExtStaticLspName
+    }
+    ::= { unisMplsExtStaticLspTable 1 }
+
+UnisMplsExtStaticLspEntry ::=
+   SEQUENCE
+    {
+        unisMplsExtStaticLspName             OCTET STRING,
+        unisMplsExtStaticLspType             INTEGER,
+        unisMplsExtStaticLspInLabel          Unsigned32,
+        unisMplsExtStaticLspOutLabel         Unsigned32,
+        unisMplsExtStaticLspDestAddr         InetAddressIPv4,
+        unisMplsExtStaticLspDestAddrMaskLen  Unsigned32,
+        unisMplsExtStaticLspNextHopAddr      InetAddressIPv4,
+        unisMplsExtStaticLspOutIfIndex       InterfaceIndexOrZero
+    }
+
+unisMplsExtStaticLspName   OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..15))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The name of the static LSP."
+    ::= { unisMplsExtStaticLspEntry 1 }
+
+unisMplsExtStaticLspType    OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        ingress(1),
+                        transit(2),
+                        egress(3)
+                     }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The type of the static LSP."
+    ::= { unisMplsExtStaticLspEntry 2 }
+
+unisMplsExtStaticLspInLabel   OBJECT-TYPE
+    SYNTAX      Unsigned32(16..1048575)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object represents the incoming label for the static LSP.  This
+         object is invalid when the value of unisMplsExtStaticLspType is
+         ingress."
+    ::= { unisMplsExtStaticLspEntry 3 }
+
+unisMplsExtStaticLspOutLabel   OBJECT-TYPE
+    SYNTAX      Unsigned32(0..1048575)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object represents the outgoing label for the static LSP.  This
+         object is invalid when the value of unisMplsExtStaticLspType is
+         egress."
+    ::= { unisMplsExtStaticLspEntry 4 }
+
+unisMplsExtStaticLspDestAddr   OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The destination address of the static LSP.  This object is invalid when
+         the value of unisMplsExtStaticLspType is transit."
+    ::= { unisMplsExtStaticLspEntry 5 }
+
+unisMplsExtStaticLspDestAddrMaskLen   OBJECT-TYPE
+    SYNTAX      Unsigned32(0..32)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The mask length of the destination address.  This object is invalid when
+         the value of unisMplsExtStaticLspType is transit."
+    ::= { unisMplsExtStaticLspEntry 6 }
+
+unisMplsExtStaticLspNextHopAddr   OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The nexthop address of the static LSP.  This object is invalid when the
+         value of unisMplsExtStaticLspType is egress."
+    ::= { unisMplsExtStaticLspEntry 7 }
+
+unisMplsExtStaticLspOutIfIndex   OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The index of the outgoing interface for this static LSP.  This object
+         is invalid when the value of unisMplsExtStaticLspType is egress, then
+         this object contains a zero value."
+    ::= { unisMplsExtStaticLspEntry 8 }
+
+-- =============================================================================
+-- End of unisMplsExtStaticLspTable Definition
+-- =============================================================================
+
+END
+

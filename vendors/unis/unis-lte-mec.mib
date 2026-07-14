@@ -1,0 +1,195 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description: Multi-access Edge Computing MIB
+-- Reference: IF-MIB
+-- Version: V1.0
+-- History:
+-- V1.0 2019-06-24 created by zhanghaihong
+-- =================================================================
+UNIS-LTE-MEC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    InterfaceIndex
+        FROM IF-MIB
+    MODULE-IDENTITY, NOTIFICATION-TYPE, OBJECT-TYPE, Integer32, Counter64
+        FROM SNMPv2-SMI;
+
+unisLTEMEC MODULE-IDENTITY
+    LAST-UPDATED
+        "201906240000Z"            -- Jun 24, 2019 at 00:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB is to provide the statistics of the MEC.
+        (Multi-access Edge Computing) system."
+    REVISION
+        "201906240000Z"            -- Jun 24, 2019 at 00:00 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 185 }
+
+unisLTEMECObjects OBJECT IDENTIFIER ::= { unisLTEMEC 1 }
+
+unisMecTables OBJECT IDENTIFIER ::= { unisLTEMECObjects 1 }
+
+unisMecIfStatsTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UnisMecIfStatsEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The table contains per-interface traffic statistics that MEC processed."
+    ::= { unisMecTables 1 }
+
+unisMecIfStatsEntry OBJECT-TYPE
+    SYNTAX     UnisMecIfStatsEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An interface statistics entry containing objects for a particular interface."
+    INDEX      { unisMecIfStatsIfIndex }
+    ::= { unisMecIfStatsTable 1 }
+
+UnisMecIfStatsEntry ::= SEQUENCE {
+    unisMecIfStatsIfIndex        InterfaceIndex,
+    unisMecIfStatsGTPUReceive    Counter64,
+    unisMecIfStatsGTPUSend       Counter64,
+    unisMecIfStatsSCTPReceive    Counter64,
+    unisMecIfStatsSCTPSend       Counter64,
+    unisMecIfStatsDecap          Counter64,
+    unisMecIfStatsEncap          Counter64
+}
+
+unisMecIfStatsIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The index value that uniquely identifies the interface to
+         which this entry is applicable.  The interface identified by
+         a particular value of this index is the same interface as
+         identified by the same value of the IF-MIB's InterfaceIndex."
+    ::= { unisMecIfStatsEntry 1 }
+
+unisMecIfStatsGTPUReceive OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of GTP-U packets the interface received."
+    ::= { unisMecIfStatsEntry 2 }
+
+unisMecIfStatsGTPUSend OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of GTP-U packets the interface sent."
+    ::= { unisMecIfStatsEntry 3 }
+
+unisMecIfStatsSCTPReceive OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of SCTP packets the interface received."
+  ::= { unisMecIfStatsEntry 4 }
+
+unisMecIfStatsSCTPSend OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of SCTP packets the interface sent."
+    ::= { unisMecIfStatsEntry 5 }
+
+unisMecIfStatsDecap OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of GTP-U packets decapsulated."
+    ::= { unisMecIfStatsEntry 6 }
+
+unisMecIfStatsEncap OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of IP packets encapsulated in GTP-U."
+    ::= { unisMecIfStatsEntry 7 }
+
+unisMecErrStatsInfo OBJECT IDENTIFIER ::= { unisMecTables 2 }
+
+unisMecErrBadFormat OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of IP packets with the bad format."
+    ::= { unisMecErrStatsInfo 1 }
+
+unisMecErrSend OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets discarded due to physical transmit errors."
+    ::= { unisMecErrStatsInfo 2 }
+
+unisMecErrOutInterface OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets discarded due to invalid outgoing interfaces."
+    ::= { unisMecErrStatsInfo 3 }
+
+unisMecErrFraglimit OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets discarded due to fragment queue limit."
+    ::= { unisMecErrStatsInfo 4 }
+
+unisMecErrFragAttack OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets discarded due to fragment attacks."
+    ::= { unisMecErrStatsInfo 5 }
+
+unisLTEMECTrapObjects OBJECT IDENTIFIER ::= { unisLTEMEC 2 }
+
+unisMecTrapInfo OBJECT IDENTIFIER ::= { unisLTEMECTrapObjects 1 }
+
+unisMecTunnelCacheNumber OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The number of MEC tunnel tables."
+    ::= { unisMecTrapInfo 1 }
+
+unisMecTrap OBJECT IDENTIFIER ::= { unisLTEMECTrapObjects 0 }
+
+unisMecTunnelCacheFullTrap NOTIFICATION-TYPE
+    OBJECTS { unisMecTunnelCacheNumber }
+    STATUS current
+    DESCRIPTION
+        "Send this trap when the MEC tunnel table is full."
+    ::= { unisMecTrap 1 }
+
+unisMecTunnelCacheRecoverTrap NOTIFICATION-TYPE
+    OBJECTS { unisMecTunnelCacheNumber }
+    STATUS current
+    DESCRIPTION
+        "Send this trap when the MEC tunnel table entry falls below the normal value."
+    ::= { unisMecTrap 2 }
+
+END

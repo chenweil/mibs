@@ -1,0 +1,77 @@
+-- =================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Ethernet Operation, Administration,
+--              and Maintenance(ETHOAM) MIB
+-- Reference: IF-MIB
+-- Version: V1.0
+-- History:
+--   V1.0 created by zhengjun
+--     Initial version 2022-05-27
+-- =================================================================
+-- =================================================================
+--
+-- Import and definition
+--
+-- =================================================================
+UNIS-ETHOAM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    dot3OamEventLogTimestamp, dot3OamEventLogOui, dot3OamEventLogType,
+    dot3OamEventLogLocation
+        FROM DOT3-OAM-MIB
+    ifDescr, ifIndex
+        FROM IF-MIB;
+
+unisEthoam MODULE-IDENTITY
+    LAST-UPDATED
+        "202205271522Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB defines objects for managing Ethernet OAM.
+        Ethernet OAM is a tool that monitors Layer 2 link status
+        and addresses common link-related issues on the last mile."
+    REVISION
+        "202205271522Z"
+    DESCRIPTION
+        "Initial revision of the Ethoam MIB module."
+    ::= { unisCommon  227 }
+
+unisEthoamTrap            OBJECT IDENTIFIER ::= { unisEthoam 1 }
+unisEthoamTrapPrefix      OBJECT IDENTIFIER ::= { unisEthoamTrap 0 }
+unisEthoamNonThresholdRecovery NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            dot3OamEventLogTimestamp,
+            dot3OamEventLogOui,
+            dot3OamEventLogType,
+            dot3OamEventLogLocation
+        }
+    STATUS      current
+    DESCRIPTION
+        "A NonThresholdEventRecovery notification is sent when a local
+        or remote non-threshold crossing event is recoverd"
+    ::= { unisEthoamTrapPrefix 1 }
+
+unisEthoamLoopbackFailed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS      current
+    DESCRIPTION
+        "A trap message is generated when a port
+        fails to enable loopback test."
+    ::= { unisEthoamTrapPrefix 2 }
+
+END

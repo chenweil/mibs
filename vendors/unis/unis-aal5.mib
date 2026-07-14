@@ -1,0 +1,191 @@
+-- =============================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This file describes the MIB implementation of ATM
+-- Reference:  extension of RFC 1695
+-- Version: V1.1
+-- History:
+--   V1.0 Initial Version  by lizhiyong
+--   V1.1 Add node unisAal5VccState and Trap unisAal5VccStateChange
+-- =============================================================
+UNIS-AAL5-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        NOTIFICATION-TYPE,
+        Counter32
+    FROM SNMPv2-SMI
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP,
+        NOTIFICATION-GROUP
+    FROM SNMPv2-CONF
+        ifIndex
+    FROM RFC1213-MIB
+        unisAAL5
+    FROM UNIS-OID-MIB;
+
+unisAAL5MIB  MODULE-IDENTITY
+    LAST-UPDATED    "200411041350Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file provides AAL5 specific information
+        that are excluded by RFC 1695 "
+    REVISION        "200411041350Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { unisAAL5 1 }
+
+
+unisAal5MIBObjects OBJECT IDENTIFIER ::= { unisAAL5MIB 1 }
+unisAal5MIBTraps OBJECT IDENTIFIER ::= { unisAAL5MIB 0 }
+
+unisAal5VccTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF UNISAal5VccEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table extends AAL5 VCC performance
+         parameters which definded in aal5VccEntry of RFC1695."
+    ::= { unisAal5MIBObjects 1 }
+
+unisAal5VccEntry OBJECT-TYPE
+    SYNTAX         UNISAal5VccEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "This list contains the additional AAL5 VCC performance
+         parameters which are not definded in aal5VccEntry
+         of RFC1695."
+    INDEX { ifIndex, unisAal5VccVpi, unisAal5VccVci }
+    ::= { unisAal5VccTable 1 }
+
+UNISAal5VccEntry ::= SEQUENCE  {
+    unisAal5VccVpi        Integer32,
+    unisAal5VccVci        Integer32,
+    unisAal5VccInPkts     Counter32,
+    unisAal5VccOutPkts    Counter32,
+    unisAal5VccInOctets   Counter32,
+    unisAal5VccOutOctets  Counter32,
+    unisAal5VccState      INTEGER
+    }
+
+unisAal5VccVpi              OBJECT-TYPE
+    SYNTAX         Integer32  (0..4095)
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "The VPI value of the AAL5 VCC."
+    ::= { unisAal5VccEntry 1 }
+
+unisAal5VccVci             OBJECT-TYPE
+    SYNTAX         Integer32  (0..65535)
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "The VCI value of the AAL5 VCC."
+    ::= { unisAal5VccEntry 2 }
+
+unisAal5VccInPkts          OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The number of AAL5 CPCS PDUs received."
+    ::= { unisAal5VccEntry 3 }
+
+unisAal5VccOutPkts        OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The number of AAL5 CPCS PDUs transmitted."
+    ::= { unisAal5VccEntry 4 }
+
+unisAal5VccInOctets       OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The number of AAL5 CPCS PDU octets received."
+    ::= { unisAal5VccEntry 5 }
+
+unisAal5VccOutOctets     OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The number of AAL5 CPCS PDU octets transmitted."
+    ::= { unisAal5VccEntry 6 }
+
+unisAal5VccState OBJECT-TYPE
+    SYNTAX   INTEGER    {
+                invalid (1),
+                active (2),
+                inactive (3)
+            }
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+        "Indicates whether the particular virtual circuit is
+        operational. 'Active' indicates the particular virtual
+        circuit is operational.  'Inactive' indicates the circuit
+        is temporarily disabled.  'Invalid' indicates the circuit
+        is deleted"
+    DEFVAL { active }
+        ::= { unisAal5VccEntry 7 }
+
+unisAal5VccStateChange   NOTIFICATION-TYPE
+    OBJECTS  { unisAal5VccState }
+    STATUS          current
+    DESCRIPTION
+        "The status of AAL5 VCC."
+    ::= { unisAal5MIBTraps 1 }
+
+
+-- Conformance Information
+
+unisAal5MIBConformance OBJECT IDENTIFIER ::= { unisAAL5MIB 3 }
+unisAal5MIBCompliances OBJECT IDENTIFIER ::= { unisAal5MIBConformance 1 }
+unisAal5MIBGroups      OBJECT IDENTIFIER ::= { unisAal5MIBConformance 2 }
+
+-- Compliance Statement
+unisAal5MIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement."
+    MODULE  -- this module
+    MANDATORY-GROUPS { unisAal5MIBGroup }
+    GROUP       unisAal5NotificationGroup
+    DESCRIPTION
+        "This optional group defines the asynchronous
+        notifications generated by ATM Systems."
+    ::= { unisAal5MIBCompliances 1 }
+
+-- units of conformance:
+
+unisAal5MIBGroup OBJECT-GROUP
+    OBJECTS {
+        unisAal5VccInPkts,
+        unisAal5VccOutPkts,
+        unisAal5VccInOctets,
+        unisAal5VccOutOctets
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of objects."
+    ::= { unisAal5MIBGroups 1 }
+
+unisAal5NotificationGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { unisAal5VccStateChange }
+    STATUS  current
+    DESCRIPTION
+        "Traps which may be used to enhance event driven
+        management of the interface."
+    ::= { unisAal5MIBGroups 2 }
+
+END

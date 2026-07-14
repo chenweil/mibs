@@ -1,0 +1,734 @@
+-- ===========================================================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: VM(Video Management) Feature Configuration management MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 Initial version 2007-04-13 created by zhoujianming
+--- ============================================================================================================
+UNIS-VM-MAN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    entPhysicalAssetID
+        FROM ENTITY-MIB
+    Integer32, Unsigned32,IpAddress, Counter32, OBJECT-TYPE,
+    MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DateAndTime, DisplayString
+        FROM SNMPv2-TC
+    unisSurveillanceMIB
+        FROM UNIS-OID-MIB;
+
+
+unisVMMan MODULE-IDENTITY
+    LAST-UPDATED "200704130000Z"        -- April 13, 2007  GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "VM is one of surveillance features, implementing user authentication,
+        configuration management, network management and control signalling
+        forwarding.
+        This MIB contains objects to manage the VM feature."
+    ::= { unisSurveillanceMIB 1 }
+
+--
+-- Node definitions
+--
+
+unisVMManMIBObjects OBJECT IDENTIFIER ::= { unisVMMan 1 }
+
+unisVMCapabilitySet OBJECT-TYPE
+    SYNTAX BITS
+    {
+        cms(0),
+        css(1),
+        dm(2)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Components included in the VM feature represented by bit fields. VM feature
+        includes three componets: CMS(Central Management Server), CSS(Control Signalling
+        Server) and DM(Data Managment).
+        A bit set to 1 indicates the corresponding component of this bit is included
+        otherwise indicates the corresponding component of this bit is not included. VM
+        can include one or more components at one time.
+        "
+    ::= { unisVMManMIBObjects 1 }
+
+--
+-- statistics
+--
+unisVMStat OBJECT IDENTIFIER ::= { unisVMManMIBObjects 2 }
+
+unisVMStatTotalConnEstablishRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of establishment requests for video connection."
+    ::= { unisVMStat 1 }
+
+unisVMStatSuccConnEstablishRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of successful establishment requests for video connection."
+    ::= { unisVMStat 2 }
+
+unisVMStatFailConnEstablishRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of unsuccessful establishment requests for video connection."
+    ::= { unisVMStat 3 }
+
+unisVMStatTotalConnReleaseRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of release requests for video connection."
+    ::= { unisVMStat 4 }
+
+unisVMStatSuccConnReleaseRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of successful release requests for video connection."
+    ::= { unisVMStat 5 }
+
+unisVMStatFailConnReleaseRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of unsuccessful release requests for video connection."
+    ::= { unisVMStat 6 }
+
+unisVMStatExceptionTerminationConn OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of exceptional termination for video connection."
+    ::= { unisVMStat 7 }
+
+
+--
+-- Notification definitions
+--
+-- =================================================================
+-- Traps are defined below.
+unisVMManMIBTrap OBJECT IDENTIFIER ::= { unisVMMan 2 }
+
+-- All trap definitions should be placed under this object.
+unisVMManTrapPrex OBJECT IDENTIFIER ::= { unisVMManMIBTrap 0 }
+
+unisVMManDeviceOnlineTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManRegDevName
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about the device having been registered to VM."
+    ::= { unisVMManTrapPrex 1 }
+
+unisVMManDeviceOfflineTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManRegDevName
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about the device having been unregistered to VM."
+    ::= { unisVMManTrapPrex 2 }
+
+unisVMManForwardDeviceExternalSemaphoreTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManPUExternalInputAlarmChannelID
+    }
+    STATUS  current
+    DESCRIPTION
+        "Forward a trap about external semaphore alarm, which is created
+        by the third party device."
+    ::= { unisVMManTrapPrex 3 }
+
+unisVMManForwardDeviceVideoLossTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManPUECVideoChannelName
+    }
+    STATUS  current
+    DESCRIPTION
+        "Forward a trap about video loss, which is created by the third
+        party device."
+    ::= { unisVMManTrapPrex 4 }
+
+unisVMManForwardDeviceVideoRecoverTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManPUECVideoChannelName
+    }
+    STATUS  current
+    DESCRIPTION
+        "Forward a trap about video recovery after loss, which is created
+        by the third party device."
+    ::= { unisVMManTrapPrex 5 }
+
+unisVMManForwardDeviceMotionDetectTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManPUECVideoChannelName,
+        unisVMManRegionCoordinateX1,
+        unisVMManRegionCoordinateY1,
+        unisVMManRegionCoordinateX2,
+        unisVMManRegionCoordinateY2
+    }
+    STATUS  current
+    DESCRIPTION
+        "Forward a trap about motion detection, which is created by the
+        third party device."
+    ::= { unisVMManTrapPrex 6 }
+
+unisVMManForwardDeviceCoverTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManPUECVideoChannelName,
+        unisVMManRegionCoordinateX1,
+        unisVMManRegionCoordinateY1,
+        unisVMManRegionCoordinateX2,
+        unisVMManRegionCoordinateY2
+    }
+    STATUS  current
+    DESCRIPTION
+        "Forward a trap about video cover, which is created by the third
+        party device."
+    ::= { unisVMManTrapPrex 7 }
+
+unisVMManForwardDeviceCpuUsageThresholdTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManCpuUsage,
+        unisVMManCpuUsageThreshold
+    }
+    STATUS  current
+    DESCRIPTION
+        "Forward a trap about cpu usage exceeding its threshold, which is
+        created by the third party device."
+    ::= { unisVMManTrapPrex 8 }
+
+unisVMManForwardDeviceMemUsageThresholdTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManMemUsage,
+        unisVMManMemUsageThreshold
+    }
+    STATUS  current
+    DESCRIPTION
+        "Forward a trap about memory usage exceeding its threshold, which is
+        created by the third party device."
+    ::= { unisVMManTrapPrex 9 }
+
+unisVMManForwardDeviceHardDiskUsageThresholdTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManHardDiskUsage,
+        unisVMManHardDiskUsageThreshold
+    }
+    STATUS  current
+    DESCRIPTION
+        "Forward a trap about harddisk usage exceeding its threshold, which is
+        created by the third party device."
+    ::= { unisVMManTrapPrex 10 }
+
+
+unisVMManForwardDeviceTemperatureThresholdTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManTemperature,
+        unisVMManTemperatureThreshold
+    }
+    STATUS  current
+    DESCRIPTION
+        "Forward a trap about temperature exceeding its threshold, which is created
+        by the third party device."
+    ::= { unisVMManTrapPrex 11 }
+
+unisVMManForwardDeviceStartKinescopeTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManPUECVideoChannelName
+    }
+    STATUS  current
+    DESCRIPTION
+        "Forward a trap about starting kinescope, which is created by the third party
+        device."
+    ::= { unisVMManTrapPrex 12 }
+
+unisVMManForwardDeviceStopKinescopeTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManPUECVideoChannelName
+    }
+    STATUS  current
+    DESCRIPTION
+        "Forward a trap about stopping kinescope, which is created by the third party
+        device."
+    ::= { unisVMManTrapPrex 13 }
+
+unisVMManClientReportTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManClientIP,
+        unisVMManUserName,
+        unisVMManReportContent
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about the fault which is reported by clients."
+    ::= { unisVMManTrapPrex 14 }
+
+unisVMManClientRealtimeSurveillanceNoVideoTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManClientIP,
+        unisVMManUserName,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManPUECVideoChannelName
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about no realtime surveillance video stream which is reported by clients.
+        unisVMManRegDevIP, entPhysicalAssetID, unisVMManRegDevName and unisVMManPUECVideoChannelName
+        describe an EC's relative information. "
+    ::= { unisVMManTrapPrex 15 }
+
+unisVMManClientVODNoVideoTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManClientIP,
+        unisVMManUserName,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManPUECVideoChannelName,
+        unisVMManClientVODStart,
+        unisVMManClientVODEnd,
+        unisVMManIPSANDevIP
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about no VOD video stream which is reported by clients. unisVMManRegDevIP,
+        entPhysicalAssetID, unisVMManRegDevName and unisVMManPUECVideoChannelName describe an EC's relative information."
+    ::= { unisVMManTrapPrex 16 }
+
+unisVMManClientRealtimeSurveillanceVideoStreamDiscontinuityTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManClientIP,
+        unisVMManUserName,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManPUECVideoChannelName,
+        unisVMManClientVideoStreamDiscontinuityInterval,
+        unisVMManClientVideoStreamDiscontinuityIntervalThreshold,
+        unisVMManClientStatPeriod
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about the realtime surveillance video stream discontinuity which is reported by clients.
+        entPhysicalAssetID, unisVMManRegDevIP, unisVMManRegDevName and unisVMManPUECVideoChannelName describe an EC's relative
+        information."
+    ::= { unisVMManTrapPrex 17 }
+
+unisVMManClientVODVideoStreamDiscontinuityTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManClientIP,
+        unisVMManUserName,
+        unisVMManRegDevIP,
+        unisVMManRegDevName,
+        unisVMManPUECVideoChannelName,
+        unisVMManClientVODStart,
+        unisVMManClientVODEnd,
+        unisVMManIPSANDevIP,
+        unisVMManClientVideoStreamDiscontinuityInterval,
+        unisVMManClientVideoStreamDiscontinuityIntervalThreshold,
+        unisVMManClientStatPeriod
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about the VOD video stream discontinuity which is reported by clients.
+        unisVMManRegDevIP, entPhysicalAssetID, unisVMManRegDevName and unisVMManPUECVideoChannelName
+        describe an EC's relative information."
+    ::= { unisVMManTrapPrex 18 }
+
+unisVMManClientCtlConnExceptionTerminationTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManClientIP,
+        unisVMManUserName
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about the exceptional termination for control connection. "
+    ::= { unisVMManTrapPrex 19 }
+
+unisVMManClientFrequencyLoginFailTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManClientIP,
+        unisVMManUserName,
+        unisVMManClientLoginFailNum,
+        unisVMManClientLoginFailNumThreshold,
+        unisVMManClientStatPeriod
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about the frequency of client login failure."
+    ::= { unisVMManTrapPrex 20 }
+
+unisVMManClientFrequencyVODFailTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManClientIP,
+        unisVMManUserName,
+        unisVMManClientVODFailNum,
+        unisVMManClientVODFailNumThreshold,
+        unisVMManClientStatPeriod
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about the frequency of client VOD failure."
+    ::= { unisVMManTrapPrex 21 }
+
+-- All DM trap definitions should be placed here.
+unisVMManDMECDisobeyStorageScheduleTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManPUECVideoChannelName
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about EC disobeying storage schedule created by DM."
+    ::= { unisVMManTrapPrex 22 }
+
+unisVMManDMECDisobeyStorageScheduleRecoverTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        entPhysicalAssetID,
+        unisVMManRegDevIP,
+        unisVMManPUECVideoChannelName
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about recovery after EC disobeying storage schedule created by DM."
+    ::= { unisVMManTrapPrex 23 }
+
+
+-- All objects used for TRAP only are defined here.
+unisVMManTrapObjects OBJECT IDENTIFIER ::= { unisVMManMIBTrap 1 }
+
+unisVMManIPSANDevIP OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "IP address of IPSAN Device which can store video data."
+    ::= { unisVMManTrapObjects 1 }
+
+unisVMManRegDevIP OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "IP address of devices which can registered or unregistered to VM."
+    ::= { unisVMManTrapObjects 2 }
+
+unisVMManRegDevName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..64))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Name of devices which can registered or unregistered to VM."
+    ::= { unisVMManTrapObjects 3 }
+
+unisVMManRegionCoordinateX1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The horizontal coordinate of top left point of the motion detection region."
+    ::= { unisVMManTrapObjects 4 }
+
+unisVMManRegionCoordinateY1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The vertical coordinate of top left point of the motion detection region."
+    ::= { unisVMManTrapObjects 5 }
+
+unisVMManRegionCoordinateX2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The horizontal coordinate of botton right point of the motion detection region."
+    ::= { unisVMManTrapObjects 6 }
+
+unisVMManRegionCoordinateY2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The horizontal coordinate of botton right point of the motion detection region."
+    ::= { unisVMManTrapObjects 7 }
+
+unisVMManCpuUsage OBJECT-TYPE
+    SYNTAX      Unsigned32 ( 0..100 )
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The CPU usage for this entity. Generally, the CPU usage
+        will caculate the overall CPU usage on the entity, and it
+        is not sensible with the number of CPU on the entity. "
+    ::= { unisVMManTrapObjects 8 }
+
+unisVMManCpuUsageThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32 ( 0..100 )
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The threshold for the CPU usage. When the CPU usage exceeds
+        the threshold, a notification will be sent."
+    ::= { unisVMManTrapObjects 9 }
+
+unisVMManMemUsage OBJECT-TYPE
+    SYNTAX      Unsigned32 ( 0..100 )
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The memory usage for the entity. This object indicates what
+        percent of memory are used. "
+    ::= { unisVMManTrapObjects 10 }
+
+unisVMManMemUsageThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32 ( 0..100 )
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The threshold for the Memory usage. When the memory usage
+        exceeds the threshold, a notification will be sent. "
+    ::= { unisVMManTrapObjects 11 }
+
+unisVMManHardDiskUsage OBJECT-TYPE
+    SYNTAX      Unsigned32 ( 0..100 )
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The hard disk usage for the entity. This object indicates what
+        percent of hard disk are used. "
+    ::= { unisVMManTrapObjects 12 }
+
+unisVMManHardDiskUsageThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32 ( 0..100 )
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The threshold for the hard disk usage. When the hard disk usage
+        exceeds the threshold, a notification will be sent. "
+    ::= { unisVMManTrapObjects 13 }
+
+unisVMManTemperature OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The temperature for the entity. "
+    ::= { unisVMManTrapObjects 14 }
+
+unisVMManTemperatureThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The threshold for the temperature. When the temperature
+        exceeds the threshold, a notification will be sent. "
+    ::= { unisVMManTrapObjects 15 }
+
+unisVMManClientIP OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The client device IP address."
+    ::= { unisVMManTrapObjects 16 }
+
+unisVMManUserName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..32))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The client user name."
+    ::= { unisVMManTrapObjects 17 }
+
+unisVMManReportContent OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..128))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The details of the fault which reported by clients"
+    ::= { unisVMManTrapObjects 18 }
+
+unisVMManClientVideoStreamDiscontinuityInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Video stream discontinuity interval. "
+    ::= { unisVMManTrapObjects 19 }
+
+unisVMManClientVideoStreamDiscontinuityIntervalThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The threshold for the video stream discontinuity interval. When the
+        discontinuity interval exceeds the threshold, a notification will be sent. "
+    ::= { unisVMManTrapObjects 20 }
+
+unisVMManClientStatPeriod OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The client statistic period. "
+    ::= { unisVMManTrapObjects 21 }
+
+unisVMManClientLoginFailNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The total number of client login failure in last statistic period which is
+        defined by unisVMManClientStatPeriod entity."
+    ::= { unisVMManTrapObjects 22 }
+
+unisVMManClientLoginFailNumThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The threshold for the total number of client login failure in last statistic
+        period. When the number exceeds the threshold, a notification will be sent. "
+    ::= { unisVMManTrapObjects 23 }
+
+unisVMManClientVODFailNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The total number of client VOD failure in last statistic period which is
+        defined by unisVMManClientStatPeriod entity."
+    ::= { unisVMManTrapObjects 24 }
+
+unisVMManClientVODFailNumThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The threshold for the total number of client VOD failure in last statistic
+        period. When the number exceeds the threshold, a notification will be sent. "
+    ::= { unisVMManTrapObjects 25 }
+
+unisVMManClientVODStart OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The start time for VOD."
+    ::= { unisVMManTrapObjects 26 }
+
+unisVMManClientVODEnd OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The end time for VOD."
+    ::= { unisVMManTrapObjects 27 }
+
+unisVMManPUExternalInputAlarmChannelID  OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The ID of the external input alarm channel."
+    ::= { unisVMManTrapObjects 28 }
+
+unisVMManPUECVideoChannelName  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..32))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The name of the video channel. It is suggested that the name includes
+        the channel ID information."
+    ::= { unisVMManTrapObjects 29 }
+
+END

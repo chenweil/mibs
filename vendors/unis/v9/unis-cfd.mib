@@ -1,0 +1,417 @@
+-- =====================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: CFD MIB
+-- Reference:
+-- Version: V1.3
+-- History:
+--   V1.0 Initial version, created by Wang Meng
+--   V1.1 2022-06-28 Updated by Zheng Jun
+--     Add unisCfdUnexpectedMDLevel, unisCfdMismerge, unisCfdLOC
+--     trap info
+--   V1.2 2022-07-18 Updated by Zheng Jun
+--     Add unisCfdUnexpectedMEP, unisCfdUnexpectedPeriod, unisCfdExceptionMACStatus,
+--     unisCfdRDI, unisCfdAisDefectAlarm, unisCfdAisDefectAlarmRecovery,
+--     trap info
+--   V1.3 2022-10-10 Updated by Zheng Jun
+--     Add unisCfdSlmStatisticClear trap info
+-- =====================================================================
+UNIS-CFD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI;
+
+unisCfd MODULE-IDENTITY
+    LAST-UPDATED "202210101139Z"    -- OCT 10, 2022 at 11:39 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Add unisCfdSlmStatisticClear trap info."
+    REVISION "202210101139Z"
+    DESCRIPTION
+        "Add unisCfdUnexpectedMEP, unisCfdUnexpectedPeriod,
+        unisCfdExceptionMACStatus and other trap info."
+    REVISION "202207181021Z"
+    DESCRIPTION
+        "Add unisCfdUnexpectedMDLevel, unisCfdMismerge and unisCfdLOC trap info."
+    REVISION "202206281928Z"
+    DESCRIPTION
+        "The Connectivity Fault Detection(CFD) extend MIB."
+    REVISION "202107191126Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 207 }
+
+-- trap --
+unisCfdTrap      OBJECT IDENTIFIER ::= { unisCfd 1 }
+
+-- All trap definitions should be placed under this object.
+unisCfdTrapPrex OBJECT IDENTIFIER ::= { unisCfdTrap 0 }
+
+unisCfdTwowayDelay NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMepId,
+            unisCfdSrvId,
+            unisCfdTimeThreshold
+        }
+    STATUS       current
+    DESCRIPTION
+        "The result of two-way delay-measurement exceeded the threshold."
+ ::= { unisCfdTrapPrex 1 }
+
+unisCfdTwowayDelayRecovery NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMepId,
+            unisCfdSrvId,
+            unisCfdTimeThreshold
+        }
+    STATUS       current
+    DESCRIPTION
+        "The result of two-way delay-measurement is under the threshold."
+    ::= { unisCfdTrapPrex 2 }
+
+unisCfdSlmStatistic NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdFrameEnd,
+            unisCfdMepId,
+            unisCfdSrvId,
+            unisCfdStatisticThreshold
+        }
+     STATUS       current
+     DESCRIPTION
+         "The result of one-way LM is exceeded the threshold."
+     ::= { unisCfdTrapPrex 3 }
+
+unisCfdUnexpectedMDLevel NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "The MD level carried in a CCM sent by the RMEP
+          was different from that specified on the MEP."
+     ::= { unisCfdTrapPrex 4 }
+
+unisCfdMismerge NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "An MD or MA name carried in a CCM sent by the
+          RMEP was different from that specified on the MEP."
+     ::= { unisCfdTrapPrex 5 }
+
+unisCfdLoc NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId,
+            unisCfdRMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "The MEP received no CCM in an interval of 3.5
+          times the CCM sending interval."
+     ::= { unisCfdTrapPrex 6 }
+
+unisCfdUnexpectedMEP NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "The MEP received a CCM with unexpected MEP."
+     ::= { unisCfdTrapPrex 7 }
+
+unisCfdUnexpectedPeriod NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId,
+            unisCfdRMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "The MEP received a CCM with unexpected period."
+     ::= { unisCfdTrapPrex 8 }
+
+unisCfdExceptionMACStatus NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId,
+            unisCfdRMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "The MEP received a CCM with the Port Status TLV or
+         Interface Status TLV reporting an error status."
+     ::= { unisCfdTrapPrex 9 }
+
+unisCfdRDI NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId,
+            unisCfdRMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "The MEP received a CCM with RDI flag set."
+     ::= { unisCfdTrapPrex 10 }
+
+unisCfdAisDefectAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "MEP enters AIS defect condition."
+     ::= { unisCfdTrapPrex 11 }
+
+unisCfdAisDefectAlarmRecovery NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "MEP exits AIS defect condition."
+     ::= { unisCfdTrapPrex 12 }
+
+unisCfdUnexpectedMDLevelClear NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "MEP did not receive any CCM with
+         unexpected MD level before timeout."
+     ::= { unisCfdTrapPrex 13 }
+
+unisCfdMismergeClear NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "MEP did not receive any CCM with
+         unexpected MEG ID before timeout."
+     ::= { unisCfdTrapPrex 14 }
+
+unisCfdUnexpectedMEPClear NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "MEP did not receive any CCM
+         with unexpected MEP before timeout."
+     ::= { unisCfdTrapPrex 15 }
+
+unisCfdUnexpectedPeriodClear NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId,
+            unisCfdRMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "MEP did not receive any CCM with
+         unexpected period before timeout."
+     ::= { unisCfdTrapPrex 16 }
+
+unisCfdLOCClear NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId,
+            unisCfdRMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "MEP is reconnected with the remote MEP."
+     ::= { unisCfdTrapPrex 17 }
+
+unisCfdRDIClear NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId,
+            unisCfdRMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "MEP received a CCM with RDI flag cleared."
+     ::= { unisCfdTrapPrex 18 }
+
+unisCfdExceptionMACStatusClear NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdMdIndex,
+            unisCfdMdName,
+            unisCfdMaIndex,
+            unisCfdMaName,
+            unisCfdMepId,
+            unisCfdRMepId
+        }
+     STATUS       current
+     DESCRIPTION
+         "MEP received a CCM with the Port Status TLV or
+         Interface Status TLV reporting an error status cleared"
+     ::= { unisCfdTrapPrex 19 }
+
+unisCfdSlmStatisticClear NOTIFICATION-TYPE
+    OBJECTS
+        {   unisCfdFrameEnd,
+            unisCfdMepId,
+            unisCfdSrvId,
+            unisCfdStatisticThreshold
+        }
+     STATUS       current
+     DESCRIPTION
+         "The indexes in the one-way LM result fell blow the threshold."
+     ::= { unisCfdTrapPrex 20 }
+
+-- All objects used for TRAP only are defined here.
+unisCfdTrapOjbects OBJECT IDENTIFIER ::= { unisCfdTrap 1 }
+
+unisCfdMepId OBJECT-TYPE
+    SYNTAX  Integer32(1..8191)
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The MEP ID."
+    ::= { unisCfdTrapOjbects 1 }
+
+unisCfdSrvId OBJECT-TYPE
+    SYNTAX  Integer32(1..32767)
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The service instance ID."
+    ::= { unisCfdTrapOjbects 2 }
+
+unisCfdTimeThreshold OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS "microseconds"
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The delay time threshold."
+    ::= { unisCfdTrapOjbects 3 }
+
+unisCfdFrameEnd OBJECT-TYPE
+    SYNTAX  INTEGER {
+            nearEnd(1),
+            farEnd(2)
+     }
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The loose frame end of MEP.
+        nearEnd: loose frame on source MEP.
+        farEnd: loose frame on target MEP."
+    ::= { unisCfdTrapOjbects 4 }
+
+unisCfdStatisticThreshold OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..8))
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The packet frame threshold in percentage, in the range of 0 to 100.
+        It can contain a maximum of 8 digits, including the dot (.),
+        for example, 1.000001."
+    ::= { unisCfdTrapOjbects 5 }
+
+unisCfdMdIndex OBJECT-TYPE
+    SYNTAX      Unsigned32(1..4294967295)
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The index of the maintenance domain."
+    ::= { unisCfdTrapOjbects 6 }
+
+unisCfdMdName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(1..43))
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The maintenance domain name."
+    ::= { unisCfdTrapOjbects 7 }
+
+unisCfdMaIndex OBJECT-TYPE
+    SYNTAX      Unsigned32(1..4294967295)
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The index of the maintenance association."
+    ::= { unisCfdTrapOjbects 8 }
+
+unisCfdMaName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(1..45))
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The Maintenance association name."
+    ::= { unisCfdTrapOjbects 9 }
+
+unisCfdRMepId OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..8191)
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "Maintenance association end point identifier of a remote MEP."
+    ::= { unisCfdTrapOjbects 10 }
+END

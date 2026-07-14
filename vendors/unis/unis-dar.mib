@@ -1,0 +1,267 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB is designed to get DAR(Deeper Application Recognition)
+--              packet statistic information.
+-- Reference: DAR-MIB
+-- Version: V1.0
+-- History:
+--   V1.0 created by wangchenxiao
+--     Initial version 2010-11-03
+-- =================================================================
+UNIS-DAR-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    ifIndex
+        FROM IF-MIB
+    TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    Counter64, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI;
+
+
+unisDar MODULE-IDENTITY
+    LAST-UPDATED "201011030000Z"            -- Nov. 03, 2010  GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB is designed to get DAR packet statistics."
+    ::= { unisCommon 112 }
+
+UnisDarProtocol   ::= TEXTUAL-CONVENTION
+    STATUS     current
+    DESCRIPTION
+        "The protocols DAR support."
+    SYNTAX INTEGER {
+        invalidProtocol(1),
+        bgp(2),
+        cifs(3),
+        citrix(4),
+        cuseeme(5),
+        dhcp(6),
+        dns(7),
+        egp(8),
+        eigrp(9),
+        exchange(10),
+        fasttrack(11),
+        finger(12),
+        ftp(13),
+        gnutella(14),
+        gopher(15),
+        gre(16),
+        http(17),
+        h323(18),
+        icmp(19),
+        igmp(20),
+        imap(21),
+        ip(22),
+        ipinip(23),
+        ipsec(24),
+        ipv6(25),
+        irc(26),
+        kerberos(27),
+        l2tp(28),
+        ldap(29),
+        mgcp(30),
+        napster(31),
+        netbios(32),
+        netshow(33),
+        nfs(34),
+        nntp(35),
+        notes(36),
+        novadign(37),
+        ntp(38),
+        pcanywhere(39),
+        pop3(40),
+        pptp(41),
+        printer(42),
+        rcmd(43),
+        rip(44),
+        rsvp(45),
+        rtcp(46),
+        rtp(47),
+        rtsp(48),
+        secureftp(49),
+        securehttp(50),
+        secureimap(51),
+        secureirc(52),
+        secureldap(53),
+        securenntp(54),
+        securepop3(55),
+        securetelnet(56),
+        sip(57),
+        skinny (58),
+        smtp(59),
+        snmp(60),
+        socks(61),
+        sqlnet(62),
+        sqlserver(63),
+        ssh(64),
+        streamwork(65),
+        sunrpc(66),
+        syslog(67),
+        tcp(68),
+        tcphandshake(69),
+        telnet(70),
+        tftp(71),
+        total(72),
+        udp(73),
+        unknownothers(74),
+        unknowntcp(75),
+        unknownudp(76),
+        userdefine001(77),
+        userdefine002(78),
+        userdefine003(79),
+        userdefine004(80),
+        userdefine005(81),
+        userdefine006(82),
+        userdefine007(83),
+        userdefine008(84),
+        userdefine009(85),
+        userdefine010(86),
+        vdolive(87),
+        winmx(88),
+        xwindows(89)
+    }
+-- ========================================================================
+-- Node definitions
+-- ========================================================================
+--Begin the node of unisDarIfObjects.
+
+unisDarIfObjects OBJECT IDENTIFIER ::= { unisDar 1 }
+
+--Begin the node of unisDarIfStatisticsObjects.
+
+unisDarIfStatisticsObjects OBJECT IDENTIFIER ::= { unisDarIfObjects 1 }
+
+
+-- ===============================================
+-- Begin the table of unisDarStatisticsTable.
+-- ===============================================
+
+unisDarStatisticsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDarStatisticsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains packet statistics of DAR."
+    ::= { unisDarIfStatisticsObjects 1 }
+
+unisDarStatisticsEntry OBJECT-TYPE
+    SYNTAX UnisDarStatisticsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Entry items."
+    INDEX { ifIndex, unisDarStatisticsProtocolID }
+    ::= { unisDarStatisticsTable 1 }
+
+UnisDarStatisticsEntry ::=
+    SEQUENCE {
+        unisDarStatisticsProtocolID
+            UnisDarProtocol,
+        unisDarStatisticsProtocolName
+            OCTET STRING,
+        unisDarStatisticsInPkts
+            Counter64,
+        unisDarStatisticsInBytes
+            Counter64,
+        unisDarStatisticsInBitRate
+            Counter64,
+        unisDarStatisticsMaxInBitRate
+            Counter64,
+        unisDarStatisticsOutPkts
+            Counter64,
+        unisDarStatisticsOutBytes
+            Counter64,
+        unisDarStatisticsOutBitRate
+            Counter64,
+        unisDarStatisticsMaxOutBitRate
+            Counter64
+    }
+
+unisDarStatisticsProtocolID OBJECT-TYPE
+    SYNTAX UnisDarProtocol
+    MAX-ACCESS  not-accessible
+    STATUS current
+    DESCRIPTION
+        "Protocol id."
+    ::= { unisDarStatisticsEntry 1 }
+
+unisDarStatisticsProtocolName OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS current
+    DESCRIPTION
+        "Protocol name."
+    ::= { unisDarStatisticsEntry 2 }
+
+unisDarStatisticsInPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of incoming packets of the specific protocol."
+    ::= { unisDarStatisticsEntry 3 }
+
+unisDarStatisticsInBytes OBJECT-TYPE
+   SYNTAX Counter64
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+       "The number of incoming octets of the specific protocol."
+   ::= { unisDarStatisticsEntry 4 }
+
+unisDarStatisticsInBitRate OBJECT-TYPE
+   SYNTAX Counter64
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+       "Incoming bitrate of the specific protocol in last 5 minutes."
+   ::= { unisDarStatisticsEntry 5 }
+
+unisDarStatisticsMaxInBitRate OBJECT-TYPE
+   SYNTAX Counter64
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+       "Max incoming bitrate of the specific protocol in last 5 minutes."
+   ::= { unisDarStatisticsEntry 6 }
+
+unisDarStatisticsOutPkts OBJECT-TYPE
+   SYNTAX Counter64
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+       "The number of outgoing packets of the specific protocol."
+   ::= { unisDarStatisticsEntry 7 }
+
+unisDarStatisticsOutBytes OBJECT-TYPE
+   SYNTAX Counter64
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+       "The number of outgoing octets of the specific protocol."
+   ::= { unisDarStatisticsEntry 8 }
+
+unisDarStatisticsOutBitRate OBJECT-TYPE
+   SYNTAX Counter64
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+       "Outgoing bitrate of the specific protocol in last 5 minutes."
+   ::= { unisDarStatisticsEntry 9 }
+
+unisDarStatisticsMaxOutBitRate OBJECT-TYPE
+   SYNTAX Counter64
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+       "Max outgoing bitrate of the specific protocol in last 5 minutes."
+   ::= { unisDarStatisticsEntry 10 }
+
+END

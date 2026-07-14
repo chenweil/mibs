@@ -1,0 +1,206 @@
+-- =====================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--      This MIB module is used for representing fabric login information.
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 Initial version
+--        created by qiaoxinghua 2013-02-27
+-- =====================================================================
+UNIS-FC-FLOGIN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    TruthValue
+        FROM SNMPv2-TC
+    UnisFcNameId, UnisFcAddressId, UnisFcBbCredit,
+    UnisFcClassOfServices, UnisFcRxMTU
+        FROM UNIS-FC-TC-MIB
+    unisSan, unisVsanIndex
+        FROM UNIS-VSAN-MIB
+    ifIndex
+        FROM IF-MIB;
+
+unisFcFLogin MODULE-IDENTITY
+    LAST-UPDATED   "201302271100Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB module is for representing fabric login information."
+    REVISION       "201302271100Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { unisSan 3 }
+
+--
+-- Node definitions
+--
+unisFcFLoginMibObjects OBJECT IDENTIFIER ::= { unisFcFLogin 1 }
+
+unisFcFLoginTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcFLoginEntry
+    MAX-ACCESS         not-accessible
+    STATUS             current
+    DESCRIPTION
+        "A table of Fibre Channel related service parameters
+         used to represent the fabric login information in accord
+         with each Nx_Port attached to a particular Fibre Channel
+         port in a particular VSAN (Virtual Storage Area Network).
+
+         Each entry is created by a fabric switch when an Nx_Port
+         successfully logged in to it explicitly or implicitly,
+         and is deleted when the port logged out."
+    ::= { unisFcFLoginMibObjects 1 }
+
+unisFcFLoginEntry OBJECT-TYPE
+    SYNTAX      UnisFcFLoginEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A group of Fibre Channel related service parameters
+         used to represent fabric login information of a specific
+         Nx_Port."
+    INDEX { ifIndex,
+            unisVsanIndex,
+            unisFcFLoginIndex }
+    ::= { unisFcFLoginTable 1 }
+
+UnisFcFLoginEntry ::=
+    SEQUENCE {
+        unisFcFLoginIndex
+            UnisFcAddressId,
+        unisFcFLoginPortNodeWWN
+            UnisFcNameId,
+        unisFcFLoginPortWWN
+            UnisFcNameId,
+        unisFcFLoginPortFcId
+            UnisFcAddressId,
+        unisFcFLoginRxBbCredit
+            UnisFcBbCredit,
+        unisFcFLoginTxBbCredit
+            UnisFcBbCredit,
+        unisFcFLoginClass2RxMTU
+            UnisFcRxMTU,
+        unisFcFLoginClass3RxMTU
+            UnisFcRxMTU,
+        unisFcFLoginSuppClassRequested
+            UnisFcClassOfServices,
+        unisFcFLoginClass2ReqAgreed
+            TruthValue,
+        unisFcFLoginClass3ReqAgreed
+            TruthValue
+       }
+
+unisFcFLoginIndex OBJECT-TYPE
+    SYNTAX      UnisFcAddressId
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index of current fabric login entry.  The Fibre Channel
+         address identifier is used to identify the associated Nx_Port
+         of this entry."
+    ::= { unisFcFLoginEntry 1 }
+
+unisFcFLoginPortNodeWWN OBJECT-TYPE
+    SYNTAX      UnisFcNameId
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The world wide name of the Remote Node to which the
+         logged-in Nx_Port belongs."
+    ::= { unisFcFLoginEntry 2 }
+
+unisFcFLoginPortWWN OBJECT-TYPE
+    SYNTAX      UnisFcNameId
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The world wide name of the logged-in Nx_Port."
+    ::= { unisFcFLoginEntry 3 }
+
+unisFcFLoginPortFcId OBJECT-TYPE
+    SYNTAX      UnisFcAddressId
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Fibre Channel address identifier that has been
+         assigned by the fabric to the logged-in Nx_Port."
+    ::= { unisFcFLoginEntry 4 }
+
+unisFcFLoginRxBbCredit OBJECT-TYPE
+    SYNTAX      UnisFcBbCredit
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of buffers available for a recipient to
+         receive frames from the logged-in Nx_Port in Class2, Class3.
+         The object is used in the buffer-to-buffer flow control from
+         the logged-in Nx_Port to Fx_Port."
+    ::= { unisFcFLoginEntry 5 }
+
+unisFcFLoginTxBbCredit OBJECT-TYPE
+    SYNTAX      UnisFcBbCredit
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of buffers available for a sender to transmit
+        frames to the logged-in Nx_Port in Class2, Class3.
+        The object is used in the buffer-to-buffer flow control from
+        Fx_Port to the logged-in Nx_Port."
+    ::= { unisFcFLoginEntry 6 }
+
+unisFcFLoginClass2RxMTU OBJECT-TYPE
+    SYNTAX      UnisFcRxMTU
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The object specifies the Maximum Transmission Unit of an
+         Fibre Channel frame that can be received by the logged-in
+         Nx_Port in Class 2 service."
+    ::= { unisFcFLoginEntry 7 }
+
+unisFcFLoginClass3RxMTU OBJECT-TYPE
+    SYNTAX      UnisFcRxMTU
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The object specifies the Maximum Transmission Unit of an
+         Fibre Channel frame that can be received by the logged-in
+         Nx_Port in Class 3 service."
+    ::= { unisFcFLoginEntry 8 }
+
+unisFcFLoginSuppClassRequested OBJECT-TYPE
+    SYNTAX      UnisFcClassOfServices
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The object indicating the supported Classes that the logged-in
+         Nx_Port has requested."
+    ::= { unisFcFLoginEntry 9 }
+
+unisFcFLoginClass2ReqAgreed OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The object indicating whether the Fx_Port has agreed to support
+         Class 2 delivery that the logged-in Nx_Port requested.  It's
+         meaningful only when the Class 2 delivery has been requested."
+    ::= { unisFcFLoginEntry 10 }
+
+unisFcFLoginClass3ReqAgreed OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The object indicating whether the Fx_Port has agreed to support
+         Class 3 delivery that the logged-in Nx_Port requested.  It's
+         meaningful only when the Class 3 delivery has been requested."
+    ::= { unisFcFLoginEntry 11 }
+
+END

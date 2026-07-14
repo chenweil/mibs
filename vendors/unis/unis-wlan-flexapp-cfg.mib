@@ -1,0 +1,1406 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--   The file defines a MIB that provides WLAN application configuration information.
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2015-05-26 Initial version, created by lifei (Richard)
+-- =============================================================================
+UNIS-WLAN-FLEXAPP-CFG-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        TruthValue,
+        MacAddress
+    FROM SNMPv2-TC
+        MODULE-IDENTITY,
+        NOTIFICATION-TYPE,
+        OBJECT-TYPE,
+        Integer32,
+        IpAddress
+    FROM SNMPv2-SMI
+        unisDot11
+    FROM UNIS-DOT11-REF-MIB;
+
+unisWlanFlexAppCFG MODULE-IDENTITY
+    LAST-UPDATED "201505261800Z"        -- May 26, 2015 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB provides information about WLAN application configuration."
+    REVISION "201505261800Z"        -- May 26, 2015 at 18:00 GMT
+    DESCRIPTION
+        "Added new nodes."
+    ::= { unisDot11 19 }
+--
+-- Node definitions
+--
+
+unisWlanModuleConfigGroup OBJECT IDENTIFIER ::= { unisWlanFlexAppCFG 1 }
+--  Module Group has the following children:
+--  unisWlanModuleConfigTable          ::= { unisWlanModuleConfigGroup 1 }
+--  unisWlanModuleInfoTable            ::= { unisWlanModuleConfigGroup 2 }
+
+unisWlanIOTConfigGroup OBJECT IDENTIFIER ::= { unisWlanFlexAppCFG 2 }
+--  IOT Configure Group has the following children:
+--  unisWlanIOTConfigTable             ::= { unisWlanIOTConfigGroup 1 }
+
+unisWlanModuleNotifyGroup OBJECT IDENTIFIER ::= { unisWlanFlexAppCFG 3 }
+--  Module Notify Group has the following children:
+--  unisWlanModuleTraps ::= { unisWlanModuleNotifyGroup 0 }
+--  unisWlanModuleTrapVarObjects ::= { unisWlanModuleNotifyGroup 1 }
+
+unisWlanBLEConfigGroup OBJECT IDENTIFIER ::= { unisWlanFlexAppCFG 4 }
+--  BLE Configure Group has the following children:
+--  unisWlanBLEConfigTable             ::= { unisWlanBLEConfigGroup 1 }
+--  unisWlanBLEModuleConfigTable       ::= { unisWlanBLEConfigGroup 2 }
+
+unisWlanAEConfigGroup OBJECT IDENTIFIER ::= { unisWlanFlexAppCFG 5 }
+--  AE Configure Group has the following children:
+--  unisWlanAEConfigTable               ::= { unisWlanAEConfigGroup 1 }
+--  unisWlanAERadioConfigTable          ::= { unisWlanAEConfigGroup 2 }
+
+unisWlanCommonConfigGroup OBJECT IDENTIFIER ::= { unisWlanFlexAppCFG 6 }
+--  common Configure Group has the following children:
+--  unisWlanCommonConfigTable             ::= { unisWlanCommonConfigGroup 1 }
+
+unisWlanCUPIDConfigGroup OBJECT IDENTIFIER ::= { unisWlanFlexAppCFG 7 }
+--  CUPID Configure Group has the following children:
+--  unisWlanCUPIDConfigTable             ::= { unisWlanCUPIDConfigGroup 1 }
+
+unisWlanFPConfigGroup OBJECT IDENTIFIER ::= { unisWlanFlexAppCFG 8 }
+--  fingerprint Configure Group has the following children:
+--  unisWlanFPConfigTable             ::= { unisWlanFPConfigGroup 1 }
+
+-- *****************************************************************************
+-- *  unisWlanModuleConfigTable Definition
+-- *****************************************************************************
+unisWlanModuleConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisWlanModuleConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Administrators must configure module parameters for a module to operate."
+    ::= { unisWlanModuleConfigGroup 1 }
+
+unisWlanModuleConfigEntry OBJECT-TYPE
+    SYNTAX      UnisWlanModuleConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains module configuration information."
+    INDEX
+        {
+            unisWlanAPSerialID,
+            unisWlanModuleID
+        }
+    ::= { unisWlanModuleConfigTable 1 }
+
+UnisWlanModuleConfigEntry ::= SEQUENCE
+    {
+        unisWlanAPSerialID               OCTET STRING,
+        unisWlanModuleID                 Integer32,
+        unisWlanModuleType               INTEGER,
+        unisWlanModuleStatus             TruthValue,
+        unisWlanModuleReset              INTEGER,
+        unisWlanModuleRstFac             INTEGER,
+        unisWlanModuleUpWareStatus       TruthValue,
+        unisWlanModuleTxPower            Integer32,
+        unisWlanModuleManualUpdate          OCTET STRING
+    }
+
+unisWlanAPSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the serial ID of an AP."
+    ::= { unisWlanModuleConfigEntry 1 }
+
+unisWlanModuleID OBJECT-TYPE
+    SYNTAX      Integer32(1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the module ID of a module."
+    ::= { unisWlanModuleConfigEntry 2 }
+
+unisWlanModuleType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+          none(0),
+          ble(1),
+          iot(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the type of a module."
+    ::= { unisWlanModuleConfigEntry 3 }
+
+unisWlanModuleStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of a module."
+    ::= { unisWlanModuleConfigEntry 4 }
+
+unisWlanModuleReset OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+      none(0),
+      reboot(1)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When read the value from the node
+         none: Represents the module has been rebooted and the status of the module is normal.
+         When write the value to the node
+         reboot: Represents module rebooting.  Other values are not supported."
+    ::= { unisWlanModuleConfigEntry 5 }
+
+unisWlanModuleRstFac OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+      none(0),
+      restore(1)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When read the value from the node
+         none: Represents the module has been restored and the status of the module is normal.
+         When write the value to the node
+         restore: Represents module restoring.  Other values are not supported."
+    ::= { unisWlanModuleConfigEntry 6 }
+
+unisWlanModuleUpWareStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of module auto update."
+    ::= { unisWlanModuleConfigEntry 7 }
+
+unisWlanModuleTxPower OBJECT-TYPE
+    SYNTAX      Integer32(1..4)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the packet transmit power."
+    ::= { unisWlanModuleConfigEntry 8 }
+
+unisWlanModuleManualUpdate OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+        "This object represents the file path for module firmware updating."
+    ::= { unisWlanModuleConfigEntry 9 }
+
+-- *****************************************************************************
+-- * End of unisWlanModuleConfigTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisWlanModuleInfoTable Definition
+-- *****************************************************************************
+unisWlanModuleInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisWlanModuleInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table contains information about each module of an AP."
+    ::= { unisWlanModuleConfigGroup 2 }
+
+unisWlanModuleInfoEntry OBJECT-TYPE
+    SYNTAX      UnisWlanModuleInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains IOT module information."
+    INDEX
+        {
+            unisDot11IOTAPSerialID,
+            unisDot11IOTModuleID
+        }
+    ::= { unisWlanModuleInfoTable 1 }
+
+UnisWlanModuleInfoEntry ::= SEQUENCE
+    {
+        unisDot11IOTAPSerialID          OCTET STRING,
+        unisDot11IOTModuleID            Integer32,
+        unisDot11IOTModuleType          INTEGER,
+        unisDot11IOTModuleModel         OCTET STRING,
+        unisDot11IOTModuleHwVersion     OCTET STRING,
+        unisDot11IOTModuleSwVersion     OCTET STRING,
+        unisDot11IOTModuleSerialId      OCTET STRING
+    }
+
+unisDot11IOTAPSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the serial ID of an AP."
+    ::= { unisWlanModuleInfoEntry 1 }
+
+unisDot11IOTModuleID OBJECT-TYPE
+    SYNTAX      Integer32(1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents a module."
+    ::= { unisWlanModuleInfoEntry 2 }
+
+unisDot11IOTModuleType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+          none(0),
+          h3c(1),
+          iot(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object represents the type of a module."
+    ::= { unisWlanModuleInfoEntry 3 }
+
+unisDot11IOTModuleModel OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object represents the model of a module."
+    ::= { unisWlanModuleInfoEntry 4 }
+
+unisDot11IOTModuleHwVersion OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object represents the hardware version of a module."
+    ::= { unisWlanModuleInfoEntry 5 }
+
+unisDot11IOTModuleSwVersion OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object represents the software version of a module."
+    ::= { unisWlanModuleInfoEntry 6 }
+
+unisDot11IOTModuleSerialId OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object represents the sequence ID of a module."
+    ::= { unisWlanModuleInfoEntry 7 }
+
+-- *****************************************************************************
+-- * End of unisDot11APModuleInfoTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisWlanIOTConfigTable Definition
+-- *****************************************************************************
+unisWlanIOTConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisWlanIOTConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Administrators must configure IOT parameters."
+    ::= { unisWlanIOTConfigGroup 1 }
+
+unisWlanIOTConfigEntry OBJECT-TYPE
+    SYNTAX      UnisWlanIOTConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains module configuration information."
+    INDEX
+        {
+            unisWlanIOTAPSerialID
+        }
+    ::= { unisWlanIOTConfigTable 1 }
+
+UnisWlanIOTConfigEntry ::= SEQUENCE
+    {
+        unisWlanIOTAPSerialID            OCTET STRING,
+        unisWlanIOTEngineAdd             IpAddress,
+        unisWlanIOTEnginePort            Integer32
+    }
+
+unisWlanIOTAPSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the serial ID of an AP."
+    ::= { unisWlanIOTConfigEntry 1 }
+
+unisWlanIOTEngineAdd OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the IPv4 address of the location server."
+    ::= { unisWlanIOTConfigEntry 2 }
+
+unisWlanIOTEnginePort OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the UDP port to listen for IOT messages from the server."
+    ::= { unisWlanIOTConfigEntry 3 }
+
+-- *****************************************************************************
+-- * End of unisWlanIOTConfigTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisWlanModuleTraps Definition
+-- *****************************************************************************
+-- AP Management Notification
+
+unisWlanModuleTraps OBJECT IDENTIFIER
+    ::= { unisWlanModuleNotifyGroup 0 }
+
+unisWlanModuleInsertTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisWlanTrapAPMacAddress,
+            unisWlanTrapModuleID,
+            unisWlanTrapModulePhyType,
+            unisWlanTrapModuleModel,
+            unisWlanTrapModuleHwVersion,
+            unisWlanTrapModuleSwVersion,
+            unisWlanTrapModuleSequenceId
+        }
+    STATUS current
+    DESCRIPTION
+        "This notification will be generated when an IOT module is inserted."
+    ::= { unisWlanModuleTraps 1 }
+
+unisWlanModuleRomveTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisWlanTrapAPMacAddress,
+            unisWlanTrapModuleID,
+            unisWlanTrapModulePhyType,
+            unisWlanTrapModuleModel,
+            unisWlanTrapModuleHwVersion,
+            unisWlanTrapModuleSwVersion,
+            unisWlanTrapModuleSequenceId
+        }
+    STATUS current
+    DESCRIPTION
+        "This notification will be generated when an IOT module is removed."
+    ::= { unisWlanModuleTraps 2 }
+
+unisWlanModuleMissMatch NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisWlanTrapAPMacAddress,
+            unisWlanTrapModuleID,
+            unisWlanTrapModuleCfgType,
+            unisWlanTrapModulePhyType,
+            unisWlanTrapModuleModel
+        }
+    STATUS current
+    DESCRIPTION
+        "This notification will be generated when the configured
+         type doesn't match the module type."
+    ::= { unisWlanModuleTraps 3 }
+
+-- AP Management Notification variable object
+
+unisWlanModuleTrapVarObjects OBJECT IDENTIFIER
+    ::= { unisWlanModuleNotifyGroup 1 }
+
+unisWlanTrapAPMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object represents the MAC address of an AP."
+    ::= {unisWlanModuleTrapVarObjects 1 }
+
+unisWlanTrapModuleID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object represents the ID of a module."
+    ::= { unisWlanModuleTrapVarObjects 2 }
+
+unisWlanTrapModuleCfgType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+          none(0),
+          h3c(1),
+          iot(2)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object represents the configuration type of a module."
+    ::= { unisWlanModuleTrapVarObjects 3 }
+
+unisWlanTrapModulePhyType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+          none(0),
+          h3c(1),
+          iot(2)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object represents the physical type of a module."
+    ::= { unisWlanModuleTrapVarObjects 4 }
+
+unisWlanTrapModuleModel OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object represents the model of a module."
+    ::= { unisWlanModuleTrapVarObjects 5 }
+
+unisWlanTrapModuleHwVersion OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object represents the hardware version of a module."
+    ::= { unisWlanModuleTrapVarObjects 6 }
+
+unisWlanTrapModuleSwVersion OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object represents the software version of a module."
+    ::= { unisWlanModuleTrapVarObjects 7 }
+
+unisWlanTrapModuleSequenceId OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object represents the sequence ID of a module."
+    ::= { unisWlanModuleTrapVarObjects 8 }
+
+-- *****************************************************************************
+-- * End of unisWlanModuleTraps Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisWlanBLEConfigTable Definition
+-- *****************************************************************************
+unisWlanBLEConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisWlanBLEConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Administrators must configure Bluetooth Low Energy (BLE) parameters."
+    ::= { unisWlanBLEConfigGroup 1 }
+
+unisWlanBLEConfigEntry OBJECT-TYPE
+    SYNTAX      UnisWlanBLEConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains BLE location configuration information."
+    INDEX
+        {
+            unisWlanBLEAPSerialID
+        }
+    ::= { unisWlanBLEConfigTable 1 }
+
+UnisWlanBLEConfigEntry ::= SEQUENCE
+    {
+        unisWlanBLEAPSerialID            OCTET STRING,
+        unisWlanBLEStatus                TruthValue,
+        unisWlanBLEEngineAdd             IpAddress,
+        unisWlanBLEEnginePort            Integer32,
+        unisWlanBLEVendorPort            Integer32,
+        unisWlanBLERssiStatus            TruthValue,
+        unisWlanBLERssiThreshold         Integer32,
+        unisWlanBLEConnectPassword       OCTET STRING,
+        unisWlanBLECommandPassword       OCTET STRING,
+        unisWlanBLEReportStatus          TruthValue,
+        unisWlanBLEReportInterval        Integer32,
+        unisWlanBLEAgingTime             Integer32,
+        unisWlanBLERealTimeReportStatus  TruthValue,
+        unisWlanBLERealTimePrefix        OCTET STRING
+    }
+
+unisWlanBLEAPSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the serial ID of an AP."
+    ::= { unisWlanBLEConfigEntry 1 }
+
+unisWlanBLEStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of BLE location."
+    ::= { unisWlanBLEConfigEntry 2 }
+
+unisWlanBLEEngineAdd OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the server's IPv4 address to which BLE messages are sent."
+    ::= { unisWlanBLEConfigEntry 3 }
+
+unisWlanBLEEnginePort OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the UDP port of the location server."
+    ::= { unisWlanBLEConfigEntry 4 }
+
+unisWlanBLEVendorPort OBJECT-TYPE
+    SYNTAX      Integer32(1..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the UDP port to listen for BLE messages from the server."
+    ::= { unisWlanBLEConfigEntry 5 }
+
+unisWlanBLERssiStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of BLE RSSI-based packet filtering."
+    ::= { unisWlanBLEConfigEntry 6 }
+
+unisWlanBLERssiThreshold OBJECT-TYPE
+    SYNTAX      Integer32(5..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the max RSSI value of clients' packets."
+    ::= { unisWlanBLEConfigEntry 7 }
+
+unisWlanBLEConnectPassword OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0|4))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the BLE module connection password."
+    ::= { unisWlanBLEConfigEntry 8 }
+
+unisWlanBLECommandPassword OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0|12))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the BLE module command password."
+    ::= { unisWlanBLEConfigEntry 9 }
+
+unisWlanBLEReportStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of BLE location reporting."
+    ::= { unisWlanBLEConfigEntry 10 }
+
+unisWlanBLEReportInterval OBJECT-TYPE
+    SYNTAX      Integer32(1..86400)
+    UNITS       "Second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the interval at which an AP sends BLE messages to the server."
+    ::= { unisWlanBLEConfigEntry 11 }
+
+unisWlanBLEAgingTime OBJECT-TYPE
+    SYNTAX      Integer32(60..3600)
+    UNITS       "Second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the aging time for iBeacon devices."
+    ::= { unisWlanBLEConfigEntry 12 }
+
+unisWlanBLERealTimeReportStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of BLE realtime reporting."
+    ::= { unisWlanBLEConfigEntry 13 }
+
+unisWlanBLERealTimePrefix OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0|8..18))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the manufacturer prefix of BLE devices to
+         be located.  The prefix must be an even number."
+    ::= { unisWlanBLEConfigEntry 14 }
+
+-- *****************************************************************************
+-- * End of unisWlanBLEConfigTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisWlanBLEModuleConfigTable Definition
+-- *****************************************************************************
+unisWlanBLEModuleConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisWlanBLEModuleConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Administrators must configure BLE module parameters."
+    ::= { unisWlanBLEConfigGroup 2 }
+
+unisWlanBLEModuleConfigEntry OBJECT-TYPE
+    SYNTAX      UnisWlanBLEModuleConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains BLE module configuration information."
+    INDEX
+        {
+            unisWlanBLEModuleAPSerialID,
+            unisWlanBLEModuleID
+        }
+    ::= { unisWlanBLEModuleConfigTable 1 }
+
+UnisWlanBLEModuleConfigEntry ::= SEQUENCE
+    {
+        unisWlanBLEModuleAPSerialID   OCTET STRING,
+        unisWlanBLEModuleID           Integer32,
+        unisWlanBLEAdvReportStatus    TruthValue,
+        unisWlanBLEAdvReportInterval  Integer32,
+        unisWlanBLEAdvUUID            OCTET STRING,
+        unisWlanBLEAdvMajorID         Integer32,
+        unisWlanBLEAdvMinorID         Integer32
+    }
+
+unisWlanBLEModuleAPSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the serial ID of an AP."
+    ::= { unisWlanBLEModuleConfigEntry 1 }
+
+unisWlanBLEModuleID OBJECT-TYPE
+    SYNTAX      Integer32(1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the ID of a module."
+    ::= { unisWlanBLEModuleConfigEntry 2 }
+
+unisWlanBLEAdvReportStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of BLE advertisement reporting."
+    ::= { unisWlanBLEModuleConfigEntry 3 }
+
+unisWlanBLEAdvReportInterval OBJECT-TYPE
+    SYNTAX      Integer32(50..1000)
+    UNITS       "Second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the interval at which a BLE module sends advertisement packets."
+    ::= { unisWlanBLEModuleConfigEntry 4 }
+
+unisWlanBLEAdvUUID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0|32))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the UUID of BLE advertisement packets."
+    ::= { unisWlanBLEModuleConfigEntry 5 }
+
+unisWlanBLEAdvMajorID OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the major ID of BLE advertisement packets."
+    ::= { unisWlanBLEModuleConfigEntry 6 }
+
+unisWlanBLEAdvMinorID OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the minor ID of BLE advertisement packets."
+    ::= { unisWlanBLEModuleConfigEntry 7 }
+
+-- *****************************************************************************
+-- * End of unisWlanBLEModuleConfigTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisWlanAEConfigTable Definition
+-- *****************************************************************************
+unisWlanAEConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisWlanAEConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Administrators must configure AeroScout (AE) parameters."
+    ::= { unisWlanAEConfigGroup 1 }
+
+unisWlanAEConfigEntry OBJECT-TYPE
+    SYNTAX      UnisWlanAEConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains AE location configuration information."
+    INDEX
+        {
+            unisWlanAEAPSerialID
+        }
+    ::= { unisWlanAEConfigTable 1 }
+
+UnisWlanAEConfigEntry ::= SEQUENCE
+    {
+        unisWlanAEAPSerialID          OCTET STRING,
+        unisWlanAEStatus              TruthValue,
+        unisWlanAEEngineAddr          IpAddress,
+        unisWlanAEEnginePort          Integer32,
+        unisWlanAEVendorPort          Integer32,
+        unisWlanAETimeStamp           INTEGER,
+        unisWlanAEVersion             INTEGER,
+        unisWlanAETagMultiAddr        MacAddress,
+        unisWlanAEEngineDetection     INTEGER,
+        unisWlanAEReportMode          INTEGER
+    }
+
+unisWlanAEAPSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the serial ID of an AP."
+    ::= { unisWlanAEConfigEntry 1 }
+
+unisWlanAEStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of AE location."
+    ::= { unisWlanAEConfigEntry 2 }
+
+unisWlanAEEngineAddr OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the server's IPv4 address to which AE messages are sent."
+    ::= { unisWlanAEConfigEntry 3 }
+
+unisWlanAEEnginePort OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the UDP port of the location server."
+    ::= { unisWlanAEConfigEntry 4 }
+
+unisWlanAEVendorPort OBJECT-TYPE
+    SYNTAX      Integer32(1..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the UDP port to listen for AE messages from the server."
+    ::= { unisWlanAEConfigEntry 5 }
+
+unisWlanAETimeStamp OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+          absolute(1),
+          relative(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of timestamp."
+    ::= { unisWlanAEConfigEntry 6 }
+
+unisWlanAEVersion OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+          v2(2),
+          v3(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the version of the AE protocol."
+    ::= { unisWlanAEConfigEntry 7 }
+
+unisWlanAETagMultiAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents Tag's multicast MAC address."
+    ::= { unisWlanAEConfigEntry 8 }
+unisWlanAEEngineDetection OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+          static(1),
+          dynamic(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the location mode."
+    ::= { unisWlanAEConfigEntry 9 }
+unisWlanAEReportMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+          local(1),
+          central(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the report mode."
+    ::= { unisWlanAEConfigEntry 10 }
+
+-- *****************************************************************************
+-- * End of unisWlanAEConfigTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisWlanAERadioConfigTable Definition
+-- *****************************************************************************
+unisWlanAERadioConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisWlanAERadioConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Administrators must configure AE parameters."
+    ::= { unisWlanAEConfigGroup 2 }
+
+unisWlanAERadioConfigEntry OBJECT-TYPE
+    SYNTAX      UnisWlanAERadioConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains AE location configuration information."
+    INDEX
+        {
+            unisWlanAERadioAPSerialID,
+            unisWlanAEAPRadioID
+        }
+    ::= { unisWlanAERadioConfigTable 1 }
+
+UnisWlanAERadioConfigEntry ::= SEQUENCE
+    {
+        unisWlanAERadioAPSerialID     OCTET STRING,
+        unisWlanAEAPRadioID           Integer32,
+        unisWlanAERadioStatus         TruthValue,
+        unisWlanAEMUStatus            TruthValue,
+        unisWlanAETagStatus           TruthValue
+    }
+
+unisWlanAERadioAPSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the serial ID of an AP."
+    ::= { unisWlanAERadioConfigEntry 1 }
+
+unisWlanAEAPRadioID OBJECT-TYPE
+    SYNTAX      Integer32(1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the ID of a radio."
+    ::= { unisWlanAERadioConfigEntry 2 }
+
+unisWlanAERadioStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of radio-based location."
+    ::= { unisWlanAERadioConfigEntry 3 }
+
+unisWlanAEMUStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the status of MU message reporting."
+    ::= { unisWlanAERadioConfigEntry 4 }
+
+unisWlanAETagStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the status of Tag message reporting."
+    ::= { unisWlanAERadioConfigEntry 5 }
+
+-- *****************************************************************************
+-- * End of unisWlanAERadioConfigTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisWlanCommonConfigTable Definition
+-- *****************************************************************************
+unisWlanCommonConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisWlanCommonConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Administrators must configure common parameters."
+    ::= { unisWlanCommonConfigGroup 1 }
+
+unisWlanCommonConfigEntry OBJECT-TYPE
+    SYNTAX      UnisWlanCommonConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains common configuration information."
+    INDEX
+        {
+            unisWlanCommonAPSerialID
+        }
+    ::= { unisWlanCommonConfigTable 1 }
+
+UnisWlanCommonConfigEntry ::= SEQUENCE
+    {
+        unisWlanCommonAPSerialID                 OCTET STRING,
+        unisWlanDilutionStatus                   TruthValue,
+        unisWlanDilutionFactor                   Integer32,
+        unisWlanDilutionTimeout                  Integer32,
+        unisWlanIgnoreBeacon                     TruthValue,
+        unisWlanRateLimitStatus                  TruthValue,
+        unisWlanRateLimitCir                     Integer32,
+        unisWlanRateLimitCbs                     Integer32,
+        unisWlanClientRateLimitStatus            TruthValue,
+        unisWlanClientRateLimitCir               Integer32,
+        unisWlanClientRateLimitCbs               Integer32,
+        unisWlanRssiStatus                       TruthValue,
+        unisWlanRssiThreshold                    Integer32,
+        unisWlanIgnoreApFrame                    TruthValue
+    }
+
+unisWlanCommonAPSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the serial ID of an AP."
+    ::= { unisWlanCommonConfigEntry 1 }
+
+unisWlanDilutionStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of packet dilution."
+    ::= { unisWlanCommonConfigEntry 2 }
+
+unisWlanDilutionFactor OBJECT-TYPE
+    SYNTAX      Integer32(0..10000)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the packet dilution factor."
+    ::= { unisWlanCommonConfigEntry 3 }
+
+unisWlanDilutionTimeout OBJECT-TYPE
+    SYNTAX      Integer32(0..60)
+    UNITS       "Second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the packet dilution timeout."
+    ::= { unisWlanCommonConfigEntry 4 }
+
+unisWlanIgnoreBeacon OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of beacon ignoring."
+    ::= { unisWlanCommonConfigEntry 5 }
+
+unisWlanRateLimitStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of location packet rate limiting."
+    ::= { unisWlanCommonConfigEntry 6 }
+
+unisWlanRateLimitCir OBJECT-TYPE
+    SYNTAX      Integer32(0|8..1300000)
+    UNITS       "Kbps"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the CIR for sending location packets."
+    ::= { unisWlanCommonConfigEntry 7 }
+
+unisWlanRateLimitCbs OBJECT-TYPE
+    SYNTAX      Integer32(0|500..130000000)
+    UNITS       "Bytes"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the CBS for sending location packets."
+    ::= { unisWlanCommonConfigEntry 8 }
+
+unisWlanClientRateLimitStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of client packet rate limiting."
+    ::= { unisWlanCommonConfigEntry 9 }
+
+unisWlanClientRateLimitCir OBJECT-TYPE
+    SYNTAX      Integer32(0..1300000)
+    UNITS       "Kbps"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the CIR for receiving client packets."
+    ::= { unisWlanCommonConfigEntry 10 }
+
+unisWlanClientRateLimitCbs OBJECT-TYPE
+    SYNTAX      Integer32(0|80..130000000)
+    UNITS       "Bytes"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the CBS for receiving client packets."
+    ::= { unisWlanCommonConfigEntry 11 }
+
+unisWlanRssiStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of RSSI-based packet filtering."
+    ::= { unisWlanCommonConfigEntry 12 }
+
+unisWlanRssiThreshold OBJECT-TYPE
+    SYNTAX      Integer32(5..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the max RSSI value of clients' packets."
+    ::= { unisWlanCommonConfigEntry 13 }
+
+unisWlanIgnoreApFrame OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of AP packet ignoring."
+    ::= { unisWlanCommonConfigEntry 14 }
+
+-- *****************************************************************************
+-- * End of unisWlanCommonConfigTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisWlanCUPIDConfigTable Definition
+-- *****************************************************************************
+unisWlanCUPIDConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisWlanCUPIDConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Administrators must configure CUPID parameters."
+    ::= { unisWlanCUPIDConfigGroup 1 }
+
+unisWlanCUPIDConfigEntry OBJECT-TYPE
+    SYNTAX      UnisWlanCUPIDConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains CUPID location configuration information."
+    INDEX
+        {
+            unisWlanCupidAPSerialID
+        }
+    ::= { unisWlanCUPIDConfigTable 1 }
+
+UnisWlanCUPIDConfigEntry ::= SEQUENCE
+    {
+        unisWlanCupidAPSerialID             OCTET STRING,
+        unisWlanCupidStatus                 TruthValue,
+        unisWlanCupidEngineAddr             IpAddress,
+        unisWlanCupidEnginePort             Integer32,
+        unisWlanCupidVendorPort             Integer32,
+        unisWlanCupidReportStatus           TruthValue,
+        unisWlanCupidReportInterval         Integer32,
+        unisWlanCupidUnassSta               TruthValue,
+        unisWlanCupidUnassMeasureSta        TruthValue,
+        unisWlanCupidReportMode             INTEGER,
+        unisWlanCUPIDReportFormat           INTEGER
+    }
+
+unisWlanCupidAPSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the serial ID of an AP."
+    ::= { unisWlanCUPIDConfigEntry 1 }
+
+unisWlanCupidStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the status of CUPID location."
+    ::= { unisWlanCUPIDConfigEntry 2 }
+
+unisWlanCupidEngineAddr OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the IPv4 address of the CUPID location server."
+    ::= { unisWlanCUPIDConfigEntry 3 }
+
+unisWlanCupidEnginePort OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the UDP port of the CUPID location server."
+    ::= { unisWlanCUPIDConfigEntry 4 }
+
+unisWlanCupidVendorPort OBJECT-TYPE
+    SYNTAX      Integer32(1..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the UDP port to listen for CUPID messages from the server."
+    ::= { unisWlanCUPIDConfigEntry 5 }
+
+unisWlanCupidReportStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the status of CUPID location reporting."
+    ::= { unisWlanCUPIDConfigEntry 6 }
+
+unisWlanCupidReportInterval OBJECT-TYPE
+    SYNTAX      Integer32(1..10)
+    UNITS       "Second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the interval for sending CUPID location packets."
+    ::= { unisWlanCUPIDConfigEntry 7 }
+
+unisWlanCupidUnassSta OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the status of unassociated client information
+         reporting for CUPID location."
+    ::= { unisWlanCUPIDConfigEntry 8 }
+
+unisWlanCupidUnassMeasureSta OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the status of CUPID location for unassociated clients."
+    ::= { unisWlanCUPIDConfigEntry 9 }
+
+unisWlanCupidReportMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+          local(1),
+          central(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the report mode."
+    ::= { unisWlanCUPIDConfigEntry 10 }
+
+unisWlanCUPIDReportFormat OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+          general(1),
+          lightweight(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the report format."
+    ::= { unisWlanCUPIDConfigEntry 11 }
+
+-- *****************************************************************************
+-- * End of unisWlanCUPIDConfigTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisWlanFPConfigTable Definition
+-- *****************************************************************************
+unisWlanFPConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisWlanFPConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Administrators must configure RF fingerprinting parameters."
+    ::= { unisWlanFPConfigGroup 1 }
+
+unisWlanFPConfigEntry OBJECT-TYPE
+    SYNTAX      UnisWlanFPConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains RF fingerprinting configuration information."
+    INDEX
+        {
+            unisWlanFPAPSerialID
+        }
+    ::= { unisWlanFPConfigTable 1 }
+
+UnisWlanFPConfigEntry ::= SEQUENCE
+    {
+        unisWlanFPAPSerialID         OCTET STRING,
+        unisWlanFPStatus             TruthValue,
+        unisWlanFPEngineAddr         IpAddress,
+        unisWlanFPEnginePort         Integer32,
+        unisWlanFPVendorPort         Integer32,
+        unisWlanFPRawFrameReport     TruthValue,
+        unisWlanFPMUReport           TruthValue,
+        unisWlanFPReportMode         INTEGER,
+        unisWlanFPReportFormat       INTEGER,
+        unisWlanFPTagMultiAddr       MacAddress
+    }
+
+unisWlanFPAPSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the serial ID of an AP."
+    ::= { unisWlanFPConfigEntry 1 }
+
+unisWlanFPStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the enabled or disabled status of RF fingerprinting."
+    ::= { unisWlanFPConfigEntry 2 }
+
+unisWlanFPEngineAddr OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the IPv4 address of the RF fingerprinting server."
+    ::= { unisWlanFPConfigEntry 3 }
+
+unisWlanFPEnginePort OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the UDP port of the RF fingerprinting server."
+    ::= { unisWlanFPConfigEntry 4 }
+
+unisWlanFPVendorPort OBJECT-TYPE
+    SYNTAX      Integer32(1..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the UDP port to listen for RF fingerprinting
+         packets from the server."
+    ::= { unisWlanFPConfigEntry 5 }
+
+unisWlanFPRawFrameReport OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the status of raw frame reporting for RF fingerprinting."
+    ::= { unisWlanFPConfigEntry 6 }
+
+unisWlanFPMUReport OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the status of MU information reporting for RF fingerprinting."
+    ::= { unisWlanFPConfigEntry 7 }
+
+unisWlanFPReportMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+          local(1),
+          central(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the report mode."
+    ::= { unisWlanFPConfigEntry 8 }
+
+unisWlanFPReportFormat OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+          general(1),
+          lightweight(2),
+          cupidhybrid(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the report format."
+    ::= { unisWlanFPConfigEntry 9 }
+
+unisWlanFPTagMultiAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents Tag's multicast MAC address."
+    ::= { unisWlanFPConfigEntry 10 }
+-- *****************************************************************************
+-- * End of unisWlanFPConfigTable Definition
+-- *****************************************************************************
+
+END

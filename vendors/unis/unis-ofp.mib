@@ -1,0 +1,327 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 created by qiyunsheng.
+-- V1.1 2019-4-11 updated by yizhigao
+--      create unisOfpInstanceFlowTableTable.
+--      create unisOfpMibTrap
+-- ============================================================================
+UNIS-OFP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM  UNIS-OID-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Unsigned32
+        FROM SNMPv2-SMI
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB;
+
+-- ----------------------------------------------------------------------
+-- Node definitions
+-- ----------------------------------------------------------------------
+unisOfp MODULE-IDENTITY
+    LAST-UPDATED "201904111300Z"        -- APRIL 11, 2019 at 13:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB contains information about the OpenFlow module"
+    REVISION "201904111300Z"
+    DESCRIPTION
+        "Add Flow table and trap."
+    REVISION "201702281700Z"
+    DESCRIPTION
+        "Initial version."
+    ::= { unisCommon 167 }
+
+-- ----------------------------------------------------------------------
+-- nodes defined
+-- ----------------------------------------------------------------------
+unisOfpInstanceObjects OBJECT IDENTIFIER ::= { unisOfp 1 }
+
+-- ----------------------------------------------------------------------
+-- Node of unisOfpInstanceControllerTable
+-- ----------------------------------------------------------------------
+unisOfpInstanceControllerTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisOfpInstanceControllerEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Information about OpenFlow controllers."
+    ::= { unisOfpInstanceObjects 1 }
+
+unisOfpInstanceControllerEntry OBJECT-TYPE
+    SYNTAX UnisOfpInstanceControllerEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Define the index of unisOfpInstanceControllerTable."
+    INDEX
+        {
+            unisOfpInstanceID,
+            unisOfpInstanceControllerID
+        }
+    ::= { unisOfpInstanceControllerTable 1 }
+
+UnisOfpInstanceControllerEntry ::=
+    SEQUENCE
+    {
+        unisOfpInstanceID
+            Integer32,
+        unisOfpInstanceControllerID
+            Integer32,
+        unisOfpInstanceControllerRole
+            INTEGER,
+        unisOfpInstanceCtrConnectType
+            INTEGER,
+        unisOfpInstanceCtrConnectState
+            INTEGER,
+        unisOfpInstanceCtrSSLPolicy
+            OCTET STRING,
+        unisOfpInstanceCtrVRFName
+            OCTET STRING,
+        unisOfpInstanceCtrIPType
+            InetAddressType,
+        unisOfpInstanceCtrIPaddress
+            InetAddress,
+        unisOfpInstanceCtrPort
+            Integer32
+     }
+
+unisOfpInstanceID OBJECT-TYPE
+    SYNTAX Integer32 (1..4094)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Index of an OpenFlow instance"
+    ::= { unisOfpInstanceControllerEntry 1 }
+
+unisOfpInstanceControllerID OBJECT-TYPE
+    SYNTAX Integer32 (0..63)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Index of an OpenFlow controller."
+    ::= { unisOfpInstanceControllerEntry 2 }
+
+unisOfpInstanceControllerRole OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        equal(1),
+        master(2),
+        slave(3)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The value of the controller's role."
+    ::= { unisOfpInstanceControllerEntry 3 }
+
+unisOfpInstanceCtrConnectType OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        tcp(1),
+        ssl(2)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The value of the controller's type."
+    ::= { unisOfpInstanceControllerEntry 4 }
+
+unisOfpInstanceCtrConnectState OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        idle(0),
+        established(1)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The value of the controller's state."
+    ::= { unisOfpInstanceControllerEntry 5 }
+
+unisOfpInstanceCtrSSLPolicy OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..31))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "SSL policy name for SSL connection with controller."
+    ::= { unisOfpInstanceControllerEntry 6 }
+
+unisOfpInstanceCtrVRFName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..31))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "VRF name for VPN connection with controller."
+    ::= { unisOfpInstanceControllerEntry 7 }
+
+unisOfpInstanceCtrIPType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The IP addresses type of the Controller's IP Address."
+    ::= { unisOfpInstanceControllerEntry 8 }
+
+unisOfpInstanceCtrIPaddress OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Controller's IP address.
+         The type of this address is determined by the value of
+         unisOfpInstanceCtrIPType.
+        "
+    ::= { unisOfpInstanceControllerEntry 9}
+
+unisOfpInstanceCtrPort OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Controller's port,
+         Default value is 6633."
+    ::= { unisOfpInstanceControllerEntry 10 }
+
+-- ----------------------------------------------------------------------
+-- Node of unisOfpInstanceFlowTableTable
+-- ----------------------------------------------------------------------
+unisOfpInstanceFlowTableTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisOfpInstanceFlowTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Information about OpenFlow flow tables."
+    ::= { unisOfpInstanceObjects 2 }
+
+unisOfpInstanceFlowTableEntry OBJECT-TYPE
+    SYNTAX UnisOfpInstanceFlowTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Define the index of unisOfpInstanceFlowTableTable."
+    INDEX
+        {
+            unisOfpFlowTableInstanceID,
+            unisOfpInstanceTableID
+        }
+    ::= { unisOfpInstanceFlowTableTable 1 }
+
+UnisOfpInstanceFlowTableEntry ::=
+    SEQUENCE
+    {
+        unisOfpFlowTableInstanceID
+            Integer32,
+        unisOfpInstanceTableID
+            Integer32,
+        unisOfpInstanceFlowEntryNumCtrl
+            Unsigned32,
+        unisOfpInstanceFlowEntryTotalNum
+            Unsigned32,
+        unisOfpInstanceFlowEntryLimit
+            Unsigned32
+     }
+
+unisOfpFlowTableInstanceID OBJECT-TYPE
+    SYNTAX Integer32 (1..4094)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Index of an OpenFlow instance"
+    ::= { unisOfpInstanceFlowTableEntry 1 }
+
+unisOfpInstanceTableID OBJECT-TYPE
+    SYNTAX Integer32 (0..254)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Index of an OpenFlow table."
+    ::= { unisOfpInstanceFlowTableEntry 2 }
+
+unisOfpInstanceFlowEntryNumCtrl OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of flow entries added by controllers in an OpenFlow flow table."
+    ::= { unisOfpInstanceFlowTableEntry 3 }
+
+unisOfpInstanceFlowEntryTotalNum OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total number of flow entries in an OpenFlow table."
+    ::= { unisOfpInstanceFlowTableEntry 4 }
+
+unisOfpInstanceFlowEntryLimit OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Flow entry count limit in an OpenFlow table."
+    ::= { unisOfpInstanceFlowTableEntry 5 }
+
+-- ----------------------------------------------------------------------
+-- unisOfpMibTrapOid Table
+-- ----------------------------------------------------------------------
+unisOfpMibTrap OBJECT IDENTIFIER ::= { unisOfp 2 }
+
+unisOfpMibTrapOid OBJECT IDENTIFIER ::= { unisOfpMibTrap 1 }
+
+unisOfpTrapDisconnectReason OBJECT-TYPE
+    SYNTAX Integer32 (0..10)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Reason why this instance is disconnected from a controller
+             0: Unknown reason.
+             1: Undo commands executed
+             2: Echo timeout.
+             3: Hello failed.
+             4: Receiving Hello packets timed out.
+             5: Receiving messages failed.
+             6: Epoll error.
+             7: VRF deleted.
+             8: VRF global port down.
+             9: Failed to recycle the buffer.
+             10: AP down."
+    ::= { unisOfpMibTrapOid 1 }
+
+-- ----------------------------------------------------------------------
+-- unisOfpTraps Table
+-- ----------------------------------------------------------------------
+unisOfpTraps      OBJECT IDENTIFIER ::= { unisOfpMibTrap 2 }
+unisOfpTrapsPrefix      OBJECT IDENTIFIER ::= { unisOfpTraps 0 }
+
+unisOfpControllerDisconnect NOTIFICATION-TYPE
+    OBJECTS {
+                unisOfpInstanceID,
+                unisOfpInstanceControllerID,
+                unisOfpTrapDisconnectReason
+             }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated when the instance is disconnected
+         from the controller.  The disconnection reason is
+         unisOfpTrapDisconnectReason."
+    ::= { unisOfpTrapsPrefix 1 }
+
+unisOfpControllerConnect NOTIFICATION-TYPE
+    OBJECTS {
+                unisOfpInstanceID,
+                unisOfpInstanceControllerID
+             }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated when the instance is connected
+         to the controller."
+    ::= { unisOfpTrapsPrefix 2 }
+END

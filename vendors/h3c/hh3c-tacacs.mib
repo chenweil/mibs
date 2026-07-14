@@ -1,0 +1,153 @@
+-- =================================================================
+-- Copyright (c) 2004-2023 New H3C Tech. Co., Ltd.  All rights reserved.
+--
+-- Description: Terminal Access Controller Access Control System MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--  V1.0 2023-10-17 Initial version, create by jiangzuhuan
+-- =================================================================
+HH3C-TACACS-MIB DEFINITIONS ::= BEGIN
+
+
+IMPORTS
+        hh3cCommon
+            FROM HH3C-OID-MIB
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE,
+        Integer32
+            FROM SNMPv2-SMI
+        DisplayString
+            FROM SNMPv2-TC
+        InetAddressType, InetAddress
+            FROM INET-ADDRESS-MIB;
+
+hh3cTacacs MODULE-IDENTITY
+    LAST-UPDATED "202310171800Z"            -- October 17, 2023 at 18:00 GMT
+    ORGANIZATION
+        "New H3C Technologies Co., Ltd."
+    CONTACT-INFO
+        "No.466 Changhe Road, Binjiang District, Hangzhou, Zhejiang
+         http://www.h3c.com
+         Zip: 310052"
+    DESCRIPTION
+        "The MIB module is used for managing TACACS."
+    REVISION "202310171800Z"        -- October 17, 2023 at 18:00 GMT
+    DESCRIPTION
+         "The initial version."
+
+::= { hh3cCommon 266 }
+
+-- ----------------------------------------------------------------------
+-- hh3cTacacsMibTrapOid Table
+-- ----------------------------------------------------------------------
+hh3cTacacsMibTrap OBJECT IDENTIFIER ::= { hh3cTacacs 1 }
+
+hh3cTacacsMibTrapOid OBJECT IDENTIFIER ::= { hh3cTacacsMibTrap 1 }
+hh3cTacacsTrapOidDefine OBJECT IDENTIFIER ::= { hh3cTacacsMibTrapOid 1 }
+
+hh3cTacacsServerAddressType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "IP addresses type (IPv4 or IPv6) of a TACACS server."
+    ::= { hh3cTacacsTrapOidDefine 1 }
+
+hh3cTacacsServerAddress OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "IP address of the TACACS server."
+    ::= { hh3cTacacsTrapOidDefine 2 }
+
+hh3cTacacsServerPortNumber OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "TCP port used by the client to send request messages to the
+        TACACS server. The default value is 49."
+    ::= { hh3cTacacsTrapOidDefine 3 }
+
+hh3cTacacsServerVpnName OBJECT-TYPE
+    SYNTAX DisplayString(SIZE(0..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "VPN instance name of the TACACS server."
+    ::= { hh3cTacacsTrapOidDefine 4 }
+
+-- ----------------------------------------------------------------------
+-- hh3cTacacsTraps Table
+-- ----------------------------------------------------------------------
+hh3cTacacsTraps      OBJECT IDENTIFIER ::= { hh3cTacacsMibTrap 2 }
+hh3cTacacsTrapsDefine      OBJECT IDENTIFIER ::= { hh3cTacacsTraps 0 }
+
+hh3cTacacsAuthServerDownTrap NOTIFICATION-TYPE
+    OBJECTS { hh3cTacacsServerAddressType,
+              hh3cTacacsServerAddress,
+              hh3cTacacsServerPortNumber,
+              hh3cTacacsServerVpnName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the authentication TACACS server
+        does not respond to the client's requests for a period of time."
+    ::= { hh3cTacacsTrapsDefine 1 }
+
+hh3cTacacsAuthServerUpTrap NOTIFICATION-TYPE
+    OBJECTS { hh3cTacacsServerAddressType,
+              hh3cTacacsServerAddress,
+              hh3cTacacsServerPortNumber,
+              hh3cTacacsServerVpnName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the device finds that the state of the
+        TACACS authentication server changes from unreachable to reachable."
+    ::= { hh3cTacacsTrapsDefine 2 }
+
+hh3cTacacsAuthorServerDownTrap NOTIFICATION-TYPE
+    OBJECTS { hh3cTacacsServerAddressType,
+              hh3cTacacsServerAddress,
+              hh3cTacacsServerPortNumber,
+              hh3cTacacsServerVpnName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the authorization TACACS server
+        does not respond to the client's requests for a period of time."
+    ::= { hh3cTacacsTrapsDefine 3 }
+
+hh3cTacacsAuthorServerUpTrap NOTIFICATION-TYPE
+    OBJECTS { hh3cTacacsServerAddressType,
+              hh3cTacacsServerAddress,
+              hh3cTacacsServerPortNumber,
+              hh3cTacacsServerVpnName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the device finds that the state of the
+        TACACS authorization server changes from unreachable to reachable."
+    ::= { hh3cTacacsTrapsDefine 4 }
+
+hh3cTacacsAccServerDownTrap NOTIFICATION-TYPE
+    OBJECTS { hh3cTacacsServerAddressType,
+              hh3cTacacsServerAddress,
+              hh3cTacacsServerPortNumber,
+              hh3cTacacsServerVpnName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the accounting TACACS server
+        does not respond to the client's requests for a period of time."
+    ::= { hh3cTacacsTrapsDefine 5 }
+
+hh3cTacacsAccServerUpTrap NOTIFICATION-TYPE
+    OBJECTS { hh3cTacacsServerAddressType,
+              hh3cTacacsServerAddress,
+              hh3cTacacsServerPortNumber,
+              hh3cTacacsServerVpnName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the device finds that the state of the
+        TACACS accounting server changes from unreachable to reachable."
+    ::= { hh3cTacacsTrapsDefine 6 }
+
+END

@@ -1,0 +1,94 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: OSPF (Open Shortest Path First) MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2014-12-17 Created by Xu Jing
+-- =================================================================
+UNIS-OSPF-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    IpAddress, Integer32, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+
+unisOspf MODULE-IDENTITY
+    LAST-UPDATED "201412171700Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file provides information about OSPF."
+    REVISION "201412171700Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 161 }
+
+unisOspfNetworkTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisOspfNetworkEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table provides the configured parameters of OSPF networks."
+    ::= { unisOspf 1 }
+
+unisOspfNetworkEntry OBJECT-TYPE
+    SYNTAX UnisOspfNetworkEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information of each configured network."
+    INDEX { unisOspfProcessId, unisOspfAreaId, unisOspfNetworkIpAddr }
+    ::= { unisOspfNetworkTable 1 }
+
+UnisOspfNetworkEntry ::=
+    SEQUENCE {
+        unisOspfProcessId
+            Integer32,
+        unisOspfAreaId
+            IpAddress,
+        unisOspfNetworkIpAddr
+            IpAddress,
+        unisOspfNetworkIpMask
+            IpAddress
+     }
+
+unisOspfProcessId OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The process ID field indicates the OSPF process number."
+    ::= { unisOspfNetworkEntry 1 }
+
+unisOspfAreaId OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A 32-bit integer uniquely identifying an area.
+        Area ID 0.0.0.0 is used for the OSPF backbone."
+    ::= { unisOspfNetworkEntry 2 }
+
+unisOspfNetworkIpAddr OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This field is the address of the network."
+    ::= { unisOspfNetworkEntry 3 }
+
+unisOspfNetworkIpMask OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "This field is the wildcard mask of the network."
+    ::= { unisOspfNetworkEntry 4 }
+
+END

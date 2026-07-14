@@ -1,0 +1,247 @@
+--  =================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB is designed to configure the Enhanced Media Delivery Index.
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 2022-09-01, Du Wei, Initial version
+-- V1.1 2022-12-01, Du Wei,
+--     Added nodes unisEmdiFlowSrcIPType,unisEmdiFlowSrcIP, unisEmdiFlowDstIPType,
+--      unisEmdiFlowDstIP, unisEmdiFlowSrcPort, unisEmdiFlowDstPort, unisEmdiFlowProtocol,
+--      unisEmdiFlowVlanID and unisEmdiFlowVxlanID for unisEmdiFlowConflict trap.
+--     Added nodes unisEmdiChassisID and unisEmdiSlotID for unisEmdiInstanceExceed trap.
+-- =================================================================
+UNIS-EMDI-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB
+    Integer32, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI;
+
+unisEmdi MODULE-IDENTITY
+    LAST-UPDATED "202212010000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The private MIB file includes the network quality information of the
+        device. It is to configure the Enhanced Media Delivery Index."
+    REVISION "202212010000Z"
+    DESCRIPTION
+        "Added nodes unisEmdiFlowSrcIPType, unisEmdiFlowSrcIP, unisEmdiFlowDstIPType,
+         unisEmdiFlowDstIP, unisEmdiFlowSrcPort, unisEmdiFlowDstPort, unisEmdiFlowProtocol,
+         unisEmdiFlowVlanID, and unisEmdiFlowVxlanID for unisEmdiFlowConflict trap.
+         Added nodes unisEmdiChassisID and unisEmdiSlotID for unisEmdiInstanceExceed trap."
+    REVISION "202209010000Z"
+    DESCRIPTION
+        "Initial revision of this MIB module."
+    ::= { unisCommon 251 }
+--
+-- Node definitions
+--
+unisEmdiNotifications OBJECT IDENTIFIER ::= { unisEmdi 1 }
+unisEmdiNotification OBJECT IDENTIFIER ::= { unisEmdiNotifications 0 }
+
+unisEmdiIndicatorOverThres NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisEmdiInstanceID,
+        unisEmdiIndicatorType,
+        unisEmdiIndicatorValue,
+        unisEmdiIndicatorThreshold,
+        unisEmdiSuppressTimes
+    }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the monitored indicator reaches the alarm threshold
+        successively."
+    ::= { unisEmdiNotification 1 }
+
+unisEmdiIndicatorOverThresResume NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisEmdiInstanceID,
+        unisEmdiIndicatorType,
+        unisEmdiIndicatorValue,
+        unisEmdiIndicatorThreshold,
+        unisEmdiSuppressTimes
+    }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the monitored indicator drops below the alarm threshold
+        successively."
+    ::= { unisEmdiNotification 2 }
+
+unisEmdiFlowConflict NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisEmdiInstanceID,
+        unisEmdiFlowSrcIPType,
+        unisEmdiFlowSrcIP,
+        unisEmdiFlowDstIPType,
+        unisEmdiFlowDstIP,
+        unisEmdiFlowSrcPort,
+        unisEmdiFlowDstPort,
+        unisEmdiFlowProtocol,
+        unisEmdiFlowVlanID,
+        unisEmdiFlowVxlanID
+    }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the flow bound to a dynamic instance conflicts with the flow in the existing instance."
+    ::= { unisEmdiNotification 3 }
+
+unisEmdiInstanceExceed NOTIFICATION-TYPE
+    OBJECTS { unisEmdiChassisID, unisEmdiSlotID }
+    STATUS current
+    DESCRIPTION
+        "Maximum number of running instances already reached."
+    ::= { unisEmdiNotification 4 }
+
+unisEmdiNotificationObjects OBJECT IDENTIFIER ::= { unisEmdiNotifications 1 }
+
+unisEmdiInstanceID OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "eMDI instance ID."
+    ::= { unisEmdiNotificationObjects 1 }
+
+unisEmdiIndicatorType OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        rtplr(1),
+        rtpser(2),
+        uplr(3),
+        dplr(4)
+    }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Monitored indicator type."
+    ::= { unisEmdiNotificationObjects 2 }
+
+unisEmdiIndicatorValue OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Monitored indicator value."
+    ::= { unisEmdiNotificationObjects 3 }
+
+unisEmdiIndicatorThreshold OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Alarm threshold for the monitored indicator."
+    ::= { unisEmdiNotificationObjects 4 }
+
+unisEmdiSuppressTimes OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Number of consecutive alarms to be suppressed before alarming."
+    ::= { unisEmdiNotificationObjects 5 }
+
+unisEmdiFlowSrcIPType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Source IP address type of the flow."
+    ::= { unisEmdiNotificationObjects 6 }
+
+unisEmdiFlowSrcIP OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Source IP address of the flow."
+    ::= { unisEmdiNotificationObjects 7 }
+
+unisEmdiFlowDstIPType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Destination IP address type of the flow."
+    ::= { unisEmdiNotificationObjects 8 }
+
+unisEmdiFlowDstIP OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Destination IP address of the flow."
+    ::= { unisEmdiNotificationObjects 9 }
+
+unisEmdiFlowSrcPort OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Source port of the flow."
+    ::= { unisEmdiNotificationObjects 10 }
+
+unisEmdiFlowDstPort OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Destination port of the flow."
+    ::= { unisEmdiNotificationObjects 11 }
+
+unisEmdiFlowProtocol OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        tcp(1),
+        udp(2)
+    }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Transport layer protocol of the flow."
+    ::= { unisEmdiNotificationObjects 12 }
+
+unisEmdiFlowVlanID OBJECT-TYPE
+    SYNTAX Integer32 (1..4094)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "VLAN ID."
+    ::= { unisEmdiNotificationObjects 13 }
+
+unisEmdiFlowVxlanID OBJECT-TYPE
+    SYNTAX Integer32 (0..16777215)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "VXLAN ID."
+    ::= { unisEmdiNotificationObjects 14 }
+
+unisEmdiChassisID OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Chassis ID. If the value is 65535, the device is not a stacked device ."
+    ::= { unisEmdiNotificationObjects 15 }
+
+
+unisEmdiSlotID OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Slot number."
+    ::= { unisEmdiNotificationObjects 16 }
+
+END

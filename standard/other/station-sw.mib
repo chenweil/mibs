@@ -1,0 +1,258 @@
+-- ===========================================================
+-- Description: StationSW-MIB
+-- Reference:
+-- Version: 1.0
+-- History:
+-- ===========================================================
+StationSW-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    enterprises, Integer32, OBJECT-TYPE, MODULE-IDENTITY,
+    NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC;
+
+nari MODULE-IDENTITY
+    LAST-UPDATED "201711220000Z"
+    ORGANIZATION "NARI Group Co., Ltd"
+    CONTACT-INFO
+        "Add: NO.19 Chengxin Avenue, Nanjing, CHINA
+    Postalcode: 211106"
+    DESCRIPTION
+        "Items witch are associated with StationSW project, include some definitions
+        and traps "
+    ::= { enterprises 49763 }
+
+UserTypeEnum ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Device user type."
+    SYNTAX INTEGER {
+        http(1),
+        https(2),
+        snmp(3),
+        telnet(4),
+        ssh(5),
+        cli(6),
+        iec61850(7),
+        console(8)
+    }
+
+UserStatusEnum ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Device user status."
+    SYNTAX INTEGER {
+        logIn(1),
+        logOut(2),
+        changePassword(3),
+        loginFail(4)
+    }
+
+-- ===========================================================
+stationSW OBJECT IDENTIFIER ::= { nari 1 } -- 1.3.6.1.4.1.49763.1
+stationSWMgmt OBJECT IDENTIFIER ::= { stationSW 1 } -- 1.3.6.1.4.1.49763.1.1
+-- ===========================================================
+
+-- OBJECT definitions
+
+-- 1.3.6.1.4.1.49763.1.1.1
+    ucMacChange OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..512))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Describe unicaset mac address change.
+        The format is as follows:
+        port_id<space>macAddress1&macAddress2&...<space>vlan_id1
+        <space>macAddress3&macAddress4&...<space>vlan_id2..."
+    ::= { stationSWMgmt 1 }
+
+-- 1.3.6.1.4.1.49763.1.1.2
+    userTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UserEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Describe all user status."
+    ::= { stationSWMgmt 2 }
+
+-- 1.3.6.1.4.1.49763.1.1.2.1
+userEntry OBJECT-TYPE
+    SYNTAX UserEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Table entry for userTable."
+    INDEX { userIndex }
+    ::= { userTable 1 }
+
+UserEntry ::= SEQUENCE {
+        userIndex       Integer32,
+        userName        DisplayString,
+        userType        UserTypeEnum,
+        userStatus      UserStatusEnum,
+        userModified    DisplayString,
+        userIP          DisplayString
+    }
+
+-- 1.3.6.1.4.1.49763.1.1.2.1.1
+userIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Index of userTable."
+    ::= { userEntry 1 }
+
+-- 1.3.6.1.4.1.49763.1.1.2.1.2
+userName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..64))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Device user name."
+    ::= { userEntry 2 }
+
+-- 1.3.6.1.4.1.49763.1.1.2.1.3
+userType OBJECT-TYPE
+    SYNTAX UserTypeEnum
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Device user type."
+    ::= { userEntry 3 }
+
+-- 1.3.6.1.4.1.49763.1.1.2.1.4
+userStatus OBJECT-TYPE
+    SYNTAX UserStatusEnum
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Device user type."
+    ::= { userEntry 4 }
+
+-- 1.3.6.1.4.1.49763.1.1.2.1.5
+userModified OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..64))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "changePassword: Username who's password was modified.
+        other operation: None."
+    ::= { userEntry 5 }
+
+-- 1.3.6.1.4.1.49763.1.1.2.1.6
+userIP OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..64))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Device user IP. If no IP, use 0.0.0.0."
+    ::= { userEntry 6 }
+
+-- 1.3.6.1.4.1.49763.1.1.3
+userOperTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UserOperEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Describe user operate command."
+    ::= { stationSWMgmt 3 }
+
+-- 1.3.6.1.4.1.49763.1.1.3.1
+userOperEntry OBJECT-TYPE
+    SYNTAX UserOperEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Table entity for userOperTable."
+    INDEX { userOperIndex }
+    ::= { userOperTable 1 }
+
+UserOperEntry ::= SEQUENCE {
+        userOperIndex       Integer32,
+        userOperName        DisplayString,
+        userOperIP          DisplayString,
+        userOperCommand     DisplayString
+    }
+
+-- 1.3.6.1.4.1.49763.1.1.3.1.1
+userOperIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Index of userOperTable."
+    ::= { userOperEntry 1 }
+
+-- 1.3.6.1.4.1.49763.1.1.3.1.2
+userOperName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..64))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Device user name."
+    ::= { userOperEntry 2 }
+
+-- 1.3.6.1.4.1.49763.1.1.3.1.3
+userOperIP OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..64))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Device user IP. If no IP, use 0.0.0.0."
+    ::= { userOperEntry 3 }
+
+-- 1.3.6.1.4.1.49763.1.1.3.1.4
+userOperCommand OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..256))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Device user Command."
+    ::= { userOperEntry 4 }
+
+-- ===========================================================
+-- This part will include all details about StationSW traps.
+stationTrap OBJECT IDENTIFIER ::= { stationSW 2 } -- 1.3.6.1.4.1.49763.1.2
+
+-- 1.3.6.1.4.1.49763.1.2.1
+ucMacChangeTrap NOTIFICATION-TYPE
+    OBJECTS {
+        ucMacChange
+    }
+    STATUS current
+    DESCRIPTION
+        "Traps of unicaset mac address change."
+    ::= { stationTrap 1 }
+
+-- 1.3.6.1.4.1.49763.1.2.2
+userTrap NOTIFICATION-TYPE
+    OBJECTS {
+        userIndex,
+        userName,
+        userType,
+        userStatus,
+        userModified,
+        userIP
+    }
+    STATUS current
+    DESCRIPTION
+    "Traps of user operation."
+    ::= { stationTrap 2 }
+
+-- 1.3.6.1.4.1.49763.1.2.3
+userOperTrap NOTIFICATION-TYPE
+    OBJECTS {
+        userOperIndex,
+        userOperName,
+        userOperIP,
+        userOperCommand
+    }
+    STATUS current
+    DESCRIPTION
+        "Traps of user operate command."
+    ::= { stationTrap 3 }
+
+END

@@ -1,0 +1,410 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Virtual Bridge (VBR) information MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2018-07-11 Initial version by Xuzhihui
+-- ============================================================================
+UNIS-VBR-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        DisplayString, RowStatus, TruthValue
+    FROM SNMPv2-TC;
+-- ==================================================================
+--
+-- Module identity part
+--
+-- ==================================================================
+unisVbr MODULE-IDENTITY
+    LAST-UPDATED "201807111129Z"        -- 11th July, 2018 at 11:29 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB is used to manage port extenders (PEXs) over 802.1BR.
+         This MIB is applicable to products that support PEXs."
+    REVISION
+        "201807111129Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { unisCommon 180 }
+
+--VBR specification information
+unisVbrSpecInfo OBJECT IDENTIFIER ::= { unisVbr 1 }
+
+unisVbrGroupMinId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Lowest PEX group ID that can be used to allocate ECIDs for ports
+        on a PEX."
+    ::= { unisVbrSpecInfo 1 }
+
+unisVbrGroupMaxId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Highest PEX group ID that can be used to allocate ECID for ports
+        on a PEX."
+    ::= { unisVbrSpecInfo 2 }
+
+unisVbrMinAssociateId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Lowest ID that can be assigned to a PEX."
+    ::= { unisVbrSpecInfo 3 }
+
+unisVbrMaxAssociateId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Highest ID that can be assigned to a PEX."
+    ::= { unisVbrSpecInfo 4 }
+
+--End VBR specification information
+
+
+unisVbrTable OBJECT IDENTIFIER ::= { unisVbr 2 }
+
+--VBR group table
+unisVbrGroupTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVbrGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects used to configure PEX groups."
+    ::= { unisVbrTable 1 }
+
+unisVbrGroupEntry OBJECT-TYPE
+    SYNTAX      UnisVbrGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information about a PEX group."
+    INDEX
+        {
+            unisVbrGroupId
+        }
+    ::= { unisVbrGroupTable 1 }
+
+UnisVbrGroupEntry ::= SEQUENCE
+    {
+        unisVbrGroupId               Integer32,
+        unisVbrGroupDescr            DisplayString,
+        unisVbrGroupRowStatus        RowStatus
+    }
+
+unisVbrGroupId OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "ID that can be used to uniquely identify a PEX group.  The value range
+        is unisVbrGroupMinId to unisVbrGroupMaxId."
+    ::= { unisVbrGroupEntry 1 }
+
+unisVbrGroupDescr OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..79))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Description for the PEX group.  The default value is
+        'pex-group XXXX', where 'XXXX' is unisVbrGroupId.
+        Writing a zero-length string to this object resets the value to the
+        default."
+    ::= { unisVbrGroupEntry 2 }
+
+unisVbrGroupRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The control that allows creation and deletion of entries.
+        Values include createAndGo, active, and destroy.
+        If the row to be created or modified already exists,
+        an error message is returned.  If the row to be deleted does not exist,
+        a success message is returned."
+    ::= { unisVbrGroupEntry 3 }
+--End VBR group table
+
+--VBR cascade-port table
+unisVbrCasPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVbrCasPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects used to configure PEX cascade ports."
+    ::= { unisVbrTable 2 }
+
+unisVbrCasPortEntry OBJECT-TYPE
+    SYNTAX      UnisVbrCasPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information about a PEX cascade port."
+    INDEX
+        {
+            unisVbrCasPortIndex
+        }
+    ::= { unisVbrCasPortTable 1 }
+
+UnisVbrCasPortEntry ::= SEQUENCE
+    {
+        unisVbrCasPortIndex         Integer32,
+        unisVbrCasPortAssociateId   Integer32,
+        unisVbrCasPortGroupID       Integer32,
+        unisVbrPEXStatus            INTEGER,
+        unisVbrPEXTier              Integer32,
+        unisVbrPEXDeviceMac         DisplayString,
+        unisVbrPEXSysname           DisplayString,
+        unisVbrPEXBoardType         DisplayString,
+        unisVbrPEXParent            Integer32,
+        unisVbrCasPortRowStatus     RowStatus
+    }
+
+unisVbrCasPortIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Interface index of the cascade port for a PEX."
+    ::= { unisVbrCasPortEntry 1 }
+
+unisVbrCasPortAssociateId OBJECT-TYPE
+    SYNTAX      Integer32(1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "ID assigned to the PEX that is attached to the cascade port.
+        The value range is unisVbrMinAssociateId to unisVbrMaxAssociateId.
+        The value is 0xffff if the PEX is not assigned an ID.
+        For a successful configuration, the ID must be unique among all PEXs in
+        the IRF 3.1 system."
+    DEFVAL { 65535 }
+    ::= { unisVbrCasPortEntry 2 }
+
+unisVbrCasPortGroupID OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "PEX group ID assigned to the PEX that is attached to the cascade port.
+         The value range is unisVbrGroupMinId to unisVbrGroupMaxId."
+    DEFVAL { 65535 }
+    ::= { unisVbrCasPortEntry 3 }
+
+unisVbrPEXStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            offline(1),
+            online(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Status of the PEX.
+        If the value is offline, the PEX is absent or its configuration
+        is incomplete.
+        If the value is online, the PEX is operating correctly."
+    DEFVAL { offline }
+    ::= { unisVbrCasPortEntry 4 }
+
+unisVbrPEXTier OBJECT-TYPE
+    SYNTAX      Integer32(1..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Tier of the PEX.
+        The value is 0xffff if the upper-tier device of the PEX
+        is not online."
+    ::= { unisVbrCasPortEntry 5 }
+
+unisVbrPEXDeviceMac OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..15))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Device MAC address of the PEX."
+    ::= { unisVbrCasPortEntry 6 }
+
+unisVbrPEXSysname OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..64))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Device name of the PEX."
+    ::= { unisVbrCasPortEntry 7 }
+
+unisVbrPEXBoardType OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..64))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Device board type of the PEX."
+    ::= { unisVbrCasPortEntry 8 }
+
+unisVbrPEXParent OBJECT-TYPE
+    SYNTAX      Integer32(1..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Upper-tier device of the PEX.
+        The value is 0xffff if the upper-tier device of the PEX
+        is the parent fabric(CB).
+        In other situations, the value equals to the associated ID
+        of the upper-tier PEX."
+    DEFVAL { 65535 }
+    ::= { unisVbrCasPortEntry 9 }
+
+unisVbrCasPortRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The control that allows creation and deletion of entries.
+        Values include createAndGo, active, and destroy.
+        If the row to be created or modified already exists,
+        an error message is returned.  If the row to be deleted does not exist,
+        a success message is returned."
+    ::= { unisVbrCasPortEntry 10 }
+--End VBR cascade-port table
+
+--VBR upgrade table
+unisVbrUpgradeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVbrUpgradeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects used to upgrade PEX software
+        images or patches."
+    ::= { unisVbrTable 3 }
+
+unisVbrUpgradeEntry OBJECT-TYPE
+    SYNTAX      UnisVbrUpgradeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Upgrade software for PEXs, including upgrading PEX software
+        images by using an IPE file and installing or uninstalling PEX patches
+        by using a patch file.
+        Each time only one of the upgrading operations can be performed.
+        The IPE file or the patch file must be saved in the
+        flash:/pex_images directory on the parent fabric."
+    INDEX
+        {
+            unisVbrUpgradeAssociateId
+        }
+    ::= { unisVbrUpgradeTable 1 }
+
+UnisVbrUpgradeEntry ::= SEQUENCE
+    {
+        unisVbrUpgradeAssociateId   Integer32,
+        unisVbrUpgradeIPEFile       DisplayString,
+        unisVbrUpgradePatchFile     DisplayString,
+        unisVbrUpgradePatchAction   INTEGER,
+        unisVbrUpgradeStatus        INTEGER,
+        unisVbrInitUpgradeStatus    TruthValue
+    }
+
+unisVbrUpgradeAssociateId OBJECT-TYPE
+    SYNTAX      Integer32(1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "ID assigned to a PEX.
+        The value range is unisVbrMinAssociateId to unisVbrMaxAssociateId.
+        If the value is 0xffff,this object will upgrade software for all PEXs."
+    ::= { unisVbrUpgradeEntry 1 }
+
+unisVbrUpgradeIPEFile OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..127))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The IPE file used to upgrade PEX software images.
+        The file must be saved in the flash:/pex_images directory on
+        the parent fabric."
+    ::= { unisVbrUpgradeEntry 2 }
+
+unisVbrUpgradePatchFile OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..127))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The patch file used to install or uninstall PEX patches.
+        The file must be saved in the flash:/pex_images directory on
+        the parent fabric."
+    ::= { unisVbrUpgradeEntry 3 }
+
+unisVbrUpgradePatchAction OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            active(1),
+            inactive(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Action on patches in the patch file.
+        The value active means to install the patches.
+        The value deactive means to uninstall the patches."
+    ::= { unisVbrUpgradeEntry 4 }
+
+unisVbrUpgradeStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            initial(1),
+            downloading(2),
+            upgrading(3),
+            succeeded(4),
+            failed(5)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Result of the upgrading operation."
+    ::= { unisVbrUpgradeEntry 5 }
+
+unisVbrInitUpgradeStatus OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "If you want to initialize the upgrade status, set the value of
+        this object to enable."
+    DEFVAL { false }
+    ::= { unisVbrUpgradeEntry 6 }
+
+--End VBR upgrade table
+
+-- PEX traps
+
+unisVbrTraps OBJECT IDENTIFIER ::= { unisVbr 3 }
+
+unisVbrTrapPrefix OBJECT IDENTIFIER ::= { unisVbrTraps 0 }
+
+unisVbrPEXRemoveOrInsert  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisVbrCasPortIndex,
+            unisVbrCasPortAssociateId,
+            unisVbrPEXStatus
+        }
+    STATUS      current
+    DESCRIPTION
+        "An unisVbrPEXRemoveOrInsert notification is sent when a PEX
+        is removed or inserted."
+    ::= { unisVbrTrapPrefix 1 }
+
+END

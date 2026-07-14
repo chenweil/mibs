@@ -1,0 +1,341 @@
+-- ============================================================================
+-- Copyright (c) 2004-2025 New H3C Tech. Co., Ltd. All rights reserved.
+
+-- Description: The purpose of this MIB file is to provide the definition of
+--              the Software Defined Wide Area Network(SDWAN) trap.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2025-01-16
+--   Initial version, created by sunjy
+-- ============================================================================
+HH3C-SDWAN-TRAP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        hh3cCommon
+    FROM HH3C-OID-MIB
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Unsigned32
+        FROM SNMPv2-SMI
+    TruthValue
+        FROM SNMPv2-TC
+    InetAddressType, InetAddress
+    FROM INET-ADDRESS-MIB;
+
+-- Node definitions
+hh3cSdwan MODULE-IDENTITY
+    LAST-UPDATED "202501161800Z"        -- JAN 16, 2025 at 18:00 GMT
+    ORGANIZATION
+        "New H3C Technologies Co., Ltd."
+    CONTACT-INFO
+        "No.466 Changhe Road, Binjiang District, Hangzhou, Zhejiang
+         http://www.h3c.com
+         Zip: 310052"
+    DESCRIPTION
+        "This MIB file defines the Software Defined Wide Area Network(SDWAN) trap warning feature only."
+    REVISION "202501161800Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { hh3cCommon 272}
+
+-- hh3cSdwanNotifications
+hh3cSdwanNotifications OBJECT IDENTIFIER ::= { hh3cSdwan 2 }
+hh3cSdwanTunnelStatusTrap OBJECT IDENTIFIER  ::= { hh3cSdwanNotifications 1 }
+hh3cSdwanTunnelStatusTraps OBJECT IDENTIFIER  ::= { hh3cSdwanTunnelStatusTrap 0 }
+
+-- hh3cSdwanTunnelStatusTraps
+hh3cSdwanTunnelStatusUpTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cSdwanTrapTunStatusTunIfNo,
+            hh3cSdwanTrapTunStatusSiteId,
+            hh3cSdwanTrapTunStatusDeviceId,
+            hh3cSdwanTrapTunStatusIfId,
+            hh3cSdwanTrapTunStatusSType,
+            hh3cSdwanTrapTunStatusSrcIP
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the status of the SDWAN tunnel changes to up,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { hh3cSdwanTunnelStatusTraps 1 }
+
+hh3cSdwanTunnelStatusDownTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cSdwanTrapTunStatusTunIfNo,
+            hh3cSdwanTrapTunStatusSiteId,
+            hh3cSdwanTrapTunStatusDeviceId,
+            hh3cSdwanTrapTunStatusIfId,
+            hh3cSdwanTrapTunStatusSType,
+            hh3cSdwanTrapTunStatusSrcIP
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the status of the SDWAN tunnel changes to down,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { hh3cSdwanTunnelStatusTraps 2 }
+
+hh3cSdwanObjects OBJECT IDENTIFIER ::= { hh3cSdwan 1 }
+hh3cSdwanTunnelStatusTrapObjects OBJECT IDENTIFIER  ::= { hh3cSdwanObjects 1 }
+
+-- hh3cSdwanTunnelStatusTrapObjects
+hh3cSdwanTrapTunStatusTunIfNo OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "SDWAN tunnel interface number."
+    ::= { hh3cSdwanTunnelStatusTrapObjects 1 }
+
+hh3cSdwanTrapTunStatusSiteId OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..65535)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Site ID."
+    ::= { hh3cSdwanTunnelStatusTrapObjects 2 }
+
+hh3cSdwanTrapTunStatusDeviceId OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..255)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Device ID."
+    ::= { hh3cSdwanTunnelStatusTrapObjects 3 }
+
+hh3cSdwanTrapTunStatusIfId OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..255)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "SDWAN tunnel interface ID."
+    ::= { hh3cSdwanTunnelStatusTrapObjects 4 }
+
+hh3cSdwanTrapTunStatusSType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "SDWAN tunnel source address type."
+    ::= { hh3cSdwanTunnelStatusTrapObjects 5 }
+
+hh3cSdwanTrapTunStatusSrcIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        " SDWAN tunnel source address."
+    ::= { hh3cSdwanTunnelStatusTrapObjects 6 }
+
+hh3cSdwanTteConnectionsTrap OBJECT IDENTIFIER  ::= { hh3cSdwanNotifications 2 }
+hh3cSdwanTteConnectionsTraps OBJECT IDENTIFIER  ::= { hh3cSdwanTteConnectionsTrap 0 }
+
+-- hh3cSdwanTteConnectionsTraps
+hh3cSdwanTteConnAddTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cSdwanTrapTteConnDstSiteId,
+            hh3cSdwanTrapTteConnDstDeviceId,
+            hh3cSdwanTrapTteConnDstIfId,
+            hh3cSdwanTrapTteConnSrcIfId,
+            hh3cSdwanTrapTteConnDstSysIPType,
+            hh3cSdwanTrapTteConnDstSysIP,
+            hh3cSdwanTrapTteConnSrcIPType,
+            hh3cSdwanTrapTteConnSrcIP,
+            hh3cSdwanTrapTteConnDstIPType,
+            hh3cSdwanTrapTteConnDstIP,
+            hh3cSdwanTrapTteConnDstPriIPType,
+            hh3cSdwanTrapTteConnDstPriIP,
+            hh3cSdwanTrapTteConnSrcPort,
+            hh3cSdwanTrapTteConnDstPort,
+            hh3cSdwanTrapTteConnStatus,
+            hh3cSdwanTrapTteConnBandWidth
+        }
+    STATUS      current
+    DESCRIPTION
+        "Add SDWAN Transport Tunnel Endpoint(TTE) connection"
+    ::= { hh3cSdwanTteConnectionsTraps 1 }
+
+hh3cSdwanTteConnDelTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cSdwanTrapTteConnDstSiteId,
+            hh3cSdwanTrapTteConnDstDeviceId,
+            hh3cSdwanTrapTteConnDstIfId,
+            hh3cSdwanTrapTteConnSrcIfId,
+            hh3cSdwanTrapTteConnDstSysIPType,
+            hh3cSdwanTrapTteConnDstSysIP,
+            hh3cSdwanTrapTteConnSrcIPType,
+            hh3cSdwanTrapTteConnSrcIP,
+            hh3cSdwanTrapTteConnDstIPType,
+            hh3cSdwanTrapTteConnDstIP,
+            hh3cSdwanTrapTteConnDstPriIPType,
+            hh3cSdwanTrapTteConnDstPriIP,
+            hh3cSdwanTrapTteConnSrcPort,
+            hh3cSdwanTrapTteConnDstPort,
+            hh3cSdwanTrapTteConnStatus,
+            hh3cSdwanTrapTteConnBandWidth
+        }
+    STATUS      current
+    DESCRIPTION
+        "Delete SDWAN TTE connection"
+    ::= { hh3cSdwanTteConnectionsTraps 2 }
+
+hh3cSdwanTteConnUpdateTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cSdwanTrapTteConnDstSiteId,
+            hh3cSdwanTrapTteConnDstDeviceId,
+            hh3cSdwanTrapTteConnDstIfId,
+            hh3cSdwanTrapTteConnSrcIfId,
+            hh3cSdwanTrapTteConnDstSysIPType,
+            hh3cSdwanTrapTteConnDstSysIP,
+            hh3cSdwanTrapTteConnSrcIPType,
+            hh3cSdwanTrapTteConnSrcIP,
+            hh3cSdwanTrapTteConnDstIPType,
+            hh3cSdwanTrapTteConnDstIP,
+            hh3cSdwanTrapTteConnDstPriIPType,
+            hh3cSdwanTrapTteConnDstPriIP,
+            hh3cSdwanTrapTteConnSrcPort,
+            hh3cSdwanTrapTteConnDstPort,
+            hh3cSdwanTrapTteConnStatus,
+            hh3cSdwanTrapTteConnBandWidth
+        }
+    STATUS      current
+    DESCRIPTION
+        "Update SDWAN TTE connection"
+    ::= { hh3cSdwanTteConnectionsTraps 3 }
+
+hh3cSdwanTteConnTrapObjects OBJECT IDENTIFIER  ::= { hh3cSdwanObjects 2 }
+
+-- hh3cSdwanTteConnTrapObjects
+hh3cSdwanTrapTteConnDstSiteId OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..65535)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Destination site ID."
+    ::= { hh3cSdwanTteConnTrapObjects 1 }
+
+hh3cSdwanTrapTteConnDstDeviceId OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..255)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Destination device ID."
+    ::= { hh3cSdwanTteConnTrapObjects 2 }
+
+hh3cSdwanTrapTteConnDstIfId OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..255)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Destination interface ID."
+    ::= { hh3cSdwanTteConnTrapObjects 3 }
+
+hh3cSdwanTrapTteConnSrcIfId OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..255)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Source interface ID."
+    ::= { hh3cSdwanTteConnTrapObjects 4 }
+
+hh3cSdwanTrapTteConnDstSysIPType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Destination system IP family."
+    ::= { hh3cSdwanTteConnTrapObjects 5 }
+
+hh3cSdwanTrapTteConnDstSysIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Destination system IP address."
+    ::= { hh3cSdwanTteConnTrapObjects 6 }
+
+hh3cSdwanTrapTteConnSrcIPType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Source IP family."
+    ::= { hh3cSdwanTteConnTrapObjects 7 }
+
+hh3cSdwanTrapTteConnSrcIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Source IP address."
+    ::= { hh3cSdwanTteConnTrapObjects 8 }
+
+hh3cSdwanTrapTteConnDstIPType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Destination IP family."
+    ::= { hh3cSdwanTteConnTrapObjects 9 }
+
+hh3cSdwanTrapTteConnDstIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Destination IP address."
+    ::= { hh3cSdwanTteConnTrapObjects 10 }
+
+hh3cSdwanTrapTteConnDstPriIPType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Destination private IP family."
+    ::= { hh3cSdwanTteConnTrapObjects 11 }
+
+hh3cSdwanTrapTteConnDstPriIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Destination private IP address."
+    ::= { hh3cSdwanTteConnTrapObjects 12 }
+
+hh3cSdwanTrapTteConnSrcPort OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..65535)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Source UDP port."
+    ::= { hh3cSdwanTteConnTrapObjects 13 }
+
+hh3cSdwanTrapTteConnDstPort OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..65535)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Destination UDP port."
+    ::= { hh3cSdwanTteConnTrapObjects 14 }
+
+hh3cSdwanTrapTteConnStatus OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Is SDWAN TTE connection accessible."
+    ::= { hh3cSdwanTteConnTrapObjects 15 }
+
+hh3cSdwanTrapTteConnBandWidth OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "SDWAN TTE connection outbound bandwidth."
+    ::= { hh3cSdwanTteConnTrapObjects 16 }
+
+END
+

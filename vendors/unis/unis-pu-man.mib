@@ -1,0 +1,420 @@
+-- ===========================================================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: EC(Encoder) Feature Configuration management MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 Initial version 2007-09-05 created by zhoujianming
+--- ============================================================================================================
+UNIS-PU-MAN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    Unsigned32,IpAddress, Counter32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    TruthValue, DisplayString
+        FROM SNMPv2-TC
+    unisSurveillanceMIB
+        FROM UNIS-OID-MIB;
+
+
+unisPUMan MODULE-IDENTITY
+    LAST-UPDATED "200709050000Z"        -- September 5, 2007  GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The PU includes those device like EC(Encoder), DC(Decoder) and
+        ECR(Encoder Recorder). The PU will survey the remote video and
+        audio. This MIB is defined to manage the PU as our
+        private MIB node according to its specific capability."
+    ::= { unisSurveillanceMIB 2 }
+
+--
+-- EC and DC Common Node definitions
+--
+
+unisPUCommonMan OBJECT IDENTIFIER ::= { unisPUMan 1 }
+
+unisPUCommonManObjects OBJECT IDENTIFIER ::= { unisPUCommonMan 1 }
+
+unisPUisOnline        OBJECT-TYPE
+    SYNTAX       TruthValue
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The PU online status indicates whether the PU is normally
+        registered into the VM. True indicates that the PU is
+        normally registered into the VM."
+    ::= { unisPUCommonManObjects 1 }
+
+unisPUCMSAddr        OBJECT-TYPE
+    SYNTAX       IpAddress
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The IP address of the CMS.
+        All zero address indicates the CMS address is not configured."
+    ::= { unisPUCommonManObjects 2 }
+
+unisPUVersionServerAddr      OBJECT-TYPE
+    SYNTAX       IpAddress
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The IP address of the version server.
+        All zero address indicates the version server is not configured
+        or does not support remote upgrade."
+    ::= { unisPUCommonManObjects 3 }
+
+unisPUCommonManTables OBJECT IDENTIFIER ::= { unisPUCommonMan 2 }
+
+unisPUExternalInputAlarmTable  OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPUExternalInputAlarmEntry
+    MAX-ACCESS not-accessible
+    STATUS   current
+    DESCRIPTION
+        "External input alarm table"
+    ::= { unisPUCommonManTables 1 }
+
+unisPUExternalInputAlarmEntry  OBJECT-TYPE
+    SYNTAX UnisPUExternalInputAlarmEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "External input alarm entry"
+    INDEX   { unisPUExternalInputAlarmChannelID }
+    ::= { unisPUExternalInputAlarmTable 1}
+
+UnisPUExternalInputAlarmEntry ::=
+    SEQUENCE {
+        unisPUExternalInputAlarmChannelID Unsigned32,
+        unisPUExternalInputAlarmStatus    TruthValue
+    }
+unisPUExternalInputAlarmChannelID  OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The ID of the external input alarm channel."
+    ::= { unisPUExternalInputAlarmEntry 1 }
+
+unisPUExternalInputAlarmStatus  OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "True indicates that the current channel has alarm."
+    ::= { unisPUExternalInputAlarmEntry 2 }
+
+unisPUExternalOutputAlarmTable  OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPUExternalOutputAlarmEntry
+    MAX-ACCESS not-accessible
+    STATUS   current
+    DESCRIPTION
+        "External output alarm table"
+    ::= { unisPUCommonManTables 2 }
+
+unisPUExternalOutputAlarmEntry  OBJECT-TYPE
+    SYNTAX UnisPUExternalOutputAlarmEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "External output alarm entry"
+    INDEX   { unisPUExternalOutputAlarmChannelID }
+    ::= { unisPUExternalOutputAlarmTable 1}
+
+UnisPUExternalOutputAlarmEntry ::=
+    SEQUENCE {
+        unisPUExternalOutputAlarmChannelID Unsigned32,
+        unisPUExternalOutputAlarmStatus    TruthValue
+    }
+unisPUExternalOutputAlarmChannelID  OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The ID of the external output alarm channel"
+    ::= { unisPUExternalOutputAlarmEntry 1 }
+
+unisPUExternalOutputAlarmStatus  OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "True indicates that the current channel has alarm."
+    ::= { unisPUExternalOutputAlarmEntry 2 }
+
+--
+-- EC Node definitions
+--
+unisPUECMan OBJECT IDENTIFIER ::= { unisPUMan 2 }
+
+unisPUECManObjects OBJECT IDENTIFIER ::= { unisPUECMan 1 }
+
+unisPUECCameraOnlines    OBJECT-TYPE
+    SYNTAX       Unsigned32 ( 0..100 )
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Number of online cameras connected to an EC."
+    ::= { unisPUECManObjects 1 }
+
+unisPUECCameraAvailRate    OBJECT-TYPE
+    SYNTAX       Unsigned32 ( 0..100 )
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Camera available rate. That is, the ratio of available cameras
+        to total cameras connected to an EC. It ranges from 0 to 100."
+    ::= { unisPUECManObjects 2 }
+
+unisPUECManTables OBJECT IDENTIFIER ::= { unisPUECMan 2 }
+
+unisPUECVideoChannelTable  OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPUECVideoChannelEntry
+    MAX-ACCESS not-accessible
+    STATUS   current
+    DESCRIPTION
+        "Video channel table"
+    ::= { unisPUECManTables 1 }
+
+unisPUECVideoChannelEntry  OBJECT-TYPE
+    SYNTAX UnisPUECVideoChannelEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Video channel entry"
+    INDEX   { unisPUECVideoChannelID }
+    ::= { unisPUECVideoChannelTable 1}
+
+UnisPUECVideoChannelEntry ::=
+    SEQUENCE {
+        unisPUECVideoChannelID            Unsigned32,
+        unisPUECVideoChannelName          DisplayString,
+        unisPUECVideoChannelServiceStatus BITS
+    }
+unisPUECVideoChannelID  OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The ID of the video channel"
+    ::= { unisPUECVideoChannelEntry 1 }
+
+unisPUECVideoChannelName  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..32))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The name of the video channel.
+        It is suggested that the name includes the channel ID
+        information."
+    ::= { unisPUECVideoChannelEntry 2 }
+
+unisPUECVideoChannelServiceStatus  OBJECT-TYPE
+    SYNTAX  BITS
+    {
+        unknown   (0),
+        unused    (1),
+        kinescope (2),
+        snapshot  (3)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The service status of the video channel.
+        0 the status is not known.
+        1 the video is not used or the channel has no signal.
+        2 the camera is kinescoping.
+        3 the camera is take snapshot. "
+    ::= { unisPUECVideoChannelEntry 3 }
+
+--
+-- DC Node definitions
+--
+unisPUDCMan OBJECT IDENTIFIER ::= { unisPUMan 3 }
+
+unisPUDCManObjects OBJECT IDENTIFIER ::= { unisPUDCMan 1 }
+
+unisPUDCRcvVideoPackets    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The total number of video packets which are received from
+        interfaces."
+    ::= { unisPUDCManObjects 1 }
+
+unisPUDCRcvVideoRefFrames    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The total number of video reference frames which are received
+        from interfaces."
+    ::= { unisPUDCManObjects 2 }
+
+unisPUDCVideoPacketsLoss    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The total number of lost video packets."
+    ::= { unisPUDCManObjects 3 }
+
+unisPUDCVideoRefFramesLoss    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The total number of lost video reference frames."
+    ::= { unisPUDCManObjects 4 }
+
+--
+-- Notification definitions
+--
+-- =================================================================
+-- Traps are defined below.
+unisPUECManMIBTrap OBJECT IDENTIFIER ::= { unisPUECMan 3 }
+
+-- All PU trap definitions should be placed under this object.
+unisPUECManTrapPrex OBJECT IDENTIFIER ::= { unisPUECManMIBTrap 0 }
+
+unisPUECManExternalSemaphoreTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisPUExternalInputAlarmChannelID
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about external semaphore alarm."
+    ::= { unisPUECManTrapPrex 1 }
+
+unisPUECManVideoLossTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisPUECVideoChannelName
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about video loss. Video loss is that no video
+        signal is inputted to the EC."
+    ::= { unisPUECManTrapPrex 2 }
+
+unisPUECManVideoRecoverTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisPUECVideoChannelName
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about video recovery after loss."
+    ::= { unisPUECManTrapPrex 3 }
+
+unisPUECManMotionDetectTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisPUECVideoChannelName,
+        unisPUECRegionCoordinateX1,
+        unisPUECRegionCoordinateY1,
+        unisPUECRegionCoordinateX2,
+        unisPUECRegionCoordinateY2
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about motion detection."
+    ::= { unisPUECManTrapPrex 4 }
+
+unisPUECManOnLineFailureTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisPUCMSAddr
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap when EC can not register the CMS."
+    ::= { unisPUECManTrapPrex 5 }
+
+unisPUECManConnectionCMSFailureTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisPUCMSAddr
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap when the connection with the CMS breaks down."
+    ::= { unisPUECManTrapPrex 6 }
+
+unisPUECManConnectionVerSrvFailureTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisPUVersionServerAddr
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap when the connection with the version server breaks
+        down or can not create."
+    ::= { unisPUECManTrapPrex 7 }
+
+unisPUECManFlashFailureTrap NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+        "Send a trap about flash failure."
+    ::= { unisPUECManTrapPrex 8 }
+
+unisPUECManCameraShelterTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisPUECVideoChannelName,
+        unisPUECRegionCoordinateX1,
+        unisPUECRegionCoordinateY1,
+        unisPUECRegionCoordinateX2,
+        unisPUECRegionCoordinateY2
+    }
+    STATUS  current
+    DESCRIPTION
+        "Send a trap when a camera is sheltered."
+    ::= { unisPUECManTrapPrex 9 }
+
+-- All objects used for TRAP only are defined here.
+unisPUECManTrapObjects OBJECT IDENTIFIER ::= { unisPUECManMIBTrap 1 }
+
+unisPUECRegionCoordinateX1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The horizontal coordinate of top left point of the motion
+        detection region."
+    ::= { unisPUECManTrapObjects 1 }
+
+unisPUECRegionCoordinateY1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The vertical coordinate of top left point of the motion
+        detection region."
+    ::= { unisPUECManTrapObjects 2 }
+
+unisPUECRegionCoordinateX2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The horizontal coordinate of botton right point of the
+        motion detection region."
+    ::= { unisPUECManTrapObjects 3 }
+
+unisPUECRegionCoordinateY2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The horizontal coordinate of botton right point of the
+        motion detection region."
+    ::= { unisPUECManTrapObjects 4 }
+
+END

@@ -1,0 +1,146 @@
+-- =================================================================
+-- Copyright (c) 2004-2023 New H3C Tech. Co., Ltd. All rights reserved.
+--
+-- Description: Ethernet Ring Protection Switching (ERPS) MIB
+-- Reference: IF-MIB
+-- Version: V1.1
+-- History:
+--   V1.0 created by zhengjun
+--     Initial version 2022-05-11
+--   V1.1 added hh3cErpsRingStateChange trap by zhengjun 2023-06-10
+-- =================================================================
+-- =================================================================
+--
+-- Import and definition
+--
+-- =================================================================
+HH3C-ERPS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    hh3cCommon
+        FROM HH3C-OID-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    ifDescr, ifIndex
+        FROM IF-MIB;
+
+hh3cErps MODULE-IDENTITY
+    LAST-UPDATED
+        "202305311357Z"
+    ORGANIZATION
+        "New H3C Tech. Co., Ltd."
+    CONTACT-INFO
+        "Platform Team New H3C Tech. Co., Ltd.
+        Hai-Dian District Beijing P.R. China
+        http://www.h3c.com
+        Zip:100085"
+    DESCRIPTION
+        "This MIB defines objects for managing ERPS.
+        ERPS is a feature developed to address the slow convergence
+        issue with STP.
+        It provides link redundancy and fast convergence in
+        a ring network, allowing the backup link to take over quickly
+        when the primary link fails."
+
+    REVISION
+        "202305311357Z"
+    DESCRIPTION
+        "Add the trap for ERPS ring state change."
+    REVISION
+        "202205111153Z"
+    DESCRIPTION
+        "Initial revision of the ERPS MIB module."
+    ::= { hh3cCommon  225 }
+
+hh3cErpsTrap            OBJECT IDENTIFIER ::= { hh3cErps 1 }
+hh3cErpsTrapPrefix      OBJECT IDENTIFIER ::= { hh3cErpsTrap 0 }
+hh3cErpsPortStateForwarding NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            hh3cErpsRingID
+        }
+    STATUS      current
+    DESCRIPTION
+        "A trap message is generated when the status of a port
+        in an ERPS ring changes to forwarding."
+    ::= { hh3cErpsTrapPrefix 1 }
+
+hh3cErpsPortStateDiscarding NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            hh3cErpsRingID
+        }
+    STATUS      current
+    DESCRIPTION
+        "A trap message is generated when the status of a port
+        in an ERPS ring changes to discarding."
+    ::= { hh3cErpsTrapPrefix 2 }
+
+hh3cErpsRingStateChange NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cErpsRingID,
+            hh3cErpsInstanceID,
+            hh3cErpsState
+        }
+    STATUS      current
+    DESCRIPTION
+        "A trap message is generated when the status of an ERPS ring is changed."
+    ::= { hh3cErpsTrapPrefix 3 }
+
+hh3cErpsTrapObjects OBJECT IDENTIFIER ::= { hh3cErpsTrap 1 }
+
+hh3cErpsRingID OBJECT-TYPE
+    SYNTAX Integer32 (1..255)
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "ERPS ring ID."
+    ::= { hh3cErpsTrapObjects 1 }
+
+hh3cErpsInstanceID OBJECT-TYPE
+    SYNTAX Integer32 (1..64)
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "ERPS instance ID."
+    ::= { hh3cErpsTrapObjects 2 }
+
+hh3cErpsState OBJECT-TYPE
+    SYNTAX       INTEGER {
+         undefined(1),
+         init(2),
+         idle(3),
+         protection(4),
+         ms(5),
+         fs(6),
+         pending(7)
+    }
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+
+    DESCRIPTION
+        "The current state of the erps ring state. This object has
+        seven defined values:
+
+        - 'undifined', which indicates that the
+         ERPS ring is not working.
+
+        - 'init', which indicates the ERPS ring is in initial state.
+
+        - 'idle', which indicates the ERPS ring is in stable state.
+
+        - 'protectioin', which indicates the ERPS ring is in protection state.
+
+        - 'ms', which indicates the ERPS ring is in in manual switch state.
+
+        - 'fs', which indicates the ERPS ring is in in forced switch state.
+
+        - 'pending', which indicates the ERPS ring is in pending state."
+    ::= { hh3cErpsTrapObjects 3 }
+
+END

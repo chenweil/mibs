@@ -1,0 +1,78 @@
+-- =============================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Multiprotocol Label Switching BFD MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2023-03-14 Initial version Created by Longlewen
+-- =============================================================================
+UNIS-MPLSBFD-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB
+    ;
+
+-- =============================================================================
+-- module identity part
+-- =============================================================================
+unisMplsBfd MODULE-IDENTITY
+    LAST-UPDATED
+        "202303141400Z"   -- Mar 14, 2023 at 14:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Multiprotocol Label Switching Bfd MIB"
+    REVISION
+        "202303141400Z"   -- Mar 14, 2023 at 14:00 GMT
+    DESCRIPTION
+        "Initial version of this MIB."
+    ::= { unisCommon 261 }
+
+-- =============================================================================
+-- Top level components of this MIB module.
+-- =============================================================================
+unisMplsBfdNotifications OBJECT IDENTIFIER ::= { unisMplsBfd 0 }
+
+unisMplsBfdObjects      OBJECT IDENTIFIER  ::= { unisMplsBfd 1 }
+
+unisMplsBfdScalarGroup   OBJECT IDENTIFIER ::= { unisMplsBfdObjects 1 }
+
+unisMplsBfdBaseInfo    OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..127))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The base information of MPLS Bfd."
+    ::= { unisMplsBfdScalarGroup 1 }
+
+unisMplsBfdExtInfo    OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..127))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The external information of MPLS Bfd."
+    ::= { unisMplsBfdScalarGroup 2 }
+
+-- =============================================================================
+-- Notifications
+-- =============================================================================
+unisMplsBfdTracerouteFailed  NOTIFICATION-TYPE
+    OBJECTS {
+            unisMplsBfdBaseInfo,
+            unisMplsBfdExtInfo
+            }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when the echo reply is failed."
+    ::= { unisMplsBfdNotifications 1 }
+
+-- =============================================================================
+-- End of notifications.
+-- =============================================================================
+
+END

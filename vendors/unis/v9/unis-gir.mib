@@ -1,0 +1,111 @@
+-- =====================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: GIR MIB
+-- Reference:
+-- Version: V1.1
+-- History:
+--   V1.0 Initial version, created by wangmeng
+--   V1.1 Add unisGirMainSysmodeChangeFailed trap by zhengjun, 2023-06-01.
+-- =====================================================================
+UNIS-GIR-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString
+            FROM SNMPv2-TC;
+
+unisGir MODULE-IDENTITY
+    LAST-UPDATED "202306011035Z"    -- June 01, 2023 at 10:35 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "
+        Graceful insertion and removal (GIR) enables you to gracefully isolate
+        the device from the network for device maintenance or upgrade.
+        "
+    REVISION "202306011035Z"
+    DESCRIPTION
+        "Add trap for maintenance system mode change failed."
+    REVISION "202107011126Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 205 }
+
+--
+-- Node definitions
+--
+
+unisGirObjects OBJECT IDENTIFIER ::= { unisGir 1 }
+
+
+unisGirSystemGroup OBJECT IDENTIFIER ::= { unisGirObjects 1 }
+
+
+unisGirSystemMode OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        normal(1),
+        isolation(2),
+        shutdown(3)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "
+        Change system mode.
+        normal-Normal mode(Default).
+        isolation-Maintenance mode by isolation.
+        shutdown-Maintenance mode by shutdown.
+        "
+    ::= { unisGirSystemGroup 1 }
+
+unisGirRevertDelayTime OBJECT-TYPE
+    SYNTAX Integer32 (0 | 5..65535)
+    UNITS "minutes"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "
+        Auto change to normal mode after the specified amount of time in
+        minutes.  If 0 is set, no switchback will be performed.
+        "
+    DEFVAL { 0 }
+    ::= { unisGirSystemGroup 2 }
+
+-- trap --
+unisGirTrap OBJECT IDENTIFIER ::= { unisGir 2 }
+
+
+unisGirTrapPrex OBJECT IDENTIFIER ::= { unisGirTrap 0 }
+
+unisGirMainSysmodeChangeFailed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisGirSystemMode,
+            unisGirCmd
+        }
+    STATUS       current
+    DESCRIPTION
+        "This trap indicates that the system change mode failed
+        due to a specific command line."
+    ::= { unisGirTrapPrex 1 }
+
+-- All objects used for trap only are defined here.
+unisGirTrapObjects OBJECT IDENTIFIER ::= { unisGirTrap 1 }
+
+
+unisGirCmd OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(0..512))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "This value is the gir command line info."
+    ::= { unisGirTrapObjects 1 }
+
+END

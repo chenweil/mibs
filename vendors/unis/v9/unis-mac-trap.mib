@@ -1,0 +1,302 @@
+-- ============================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The purpose of this MIB file is to provide the definition of
+--              the MAC trap.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2022-7-28
+--   Initial version, created by lichao
+-- ============================================================================
+UNIS-MAC-TRAP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        MacAddress
+    FROM SNMPv2-TC;
+
+-- Node definitions
+unisMACTrap MODULE-IDENTITY
+    LAST-UPDATED "202207281800Z"        -- JUL 28, 2022 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file defines the MAC trap warning feature only."
+    REVISION "202207281800Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 245}
+
+-- unisMACTrapEntry
+unisMACTrapEntry OBJECT IDENTIFIER ::= { unisMACTrap 1 }
+
+unisMACTrapsEntry OBJECT IDENTIFIER  ::= { unisMACTrapEntry 0 }
+
+-- unisMACTrapIfThresholdAlarm
+unisMACTrapIfThresholdAlarm  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMACTrapEntryLearnIfName,
+            unisMACTrapEntryLearnThreshold,
+            unisMACTrapEntryChassis,
+            unisMACTrapEntrySlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the numbers of MAC entry learned on the interface exceeds the threshold,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisMACTrapsEntry 1 }
+
+unisMACTrapIfThresholdResume  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMACTrapEntryLearnIfName,
+            unisMACTrapEntryLearnThreshold,
+            unisMACTrapEntryCurLearnCount,
+            unisMACTrapEntryChassis,
+            unisMACTrapEntrySlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the numbers of MAC entry learned by the interface drops below the threshold,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisMACTrapsEntry 2 }
+
+unisMACTrapVlanThresholdAlarm  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMACTrapEntryLearnVlan,
+            unisMACTrapEntryLearnThreshold,
+            unisMACTrapEntryChassis,
+            unisMACTrapEntrySlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the numbers of MAC entry learned on the vlan exceeds the threshold,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisMACTrapsEntry 3 }
+
+unisMACTrapVlanThresholdResume  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMACTrapEntryLearnVlan,
+            unisMACTrapEntryLearnThreshold,
+            unisMACTrapEntryCurLearnCount,
+            unisMACTrapEntryChassis,
+            unisMACTrapEntrySlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the numbers of MAC entry learned by the vlan drops below the threshold,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisMACTrapsEntry 4 }
+
+unisMACTrapVsiThresholdAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMACTrapEntryLearnVsiName,
+            unisMACTrapEntryLearnThreshold,
+            unisMACTrapEntryChassis,
+            unisMACTrapEntrySlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the numbers of MAC entry learned on the vsi exceeds the threshold,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisMACTrapsEntry 5 }
+
+unisMACTrapVsiThresholdResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMACTrapEntryLearnVsiName,
+            unisMACTrapEntryLearnThreshold,
+            unisMACTrapEntryCurLearnCount,
+            unisMACTrapEntryChassis,
+            unisMACTrapEntrySlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the numbers of MAC entry learned by the vsi drops below the threshold,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisMACTrapsEntry 6 }
+
+unisMACTrapEntryObjects OBJECT IDENTIFIER  ::= { unisMACTrapEntry 1 }
+
+-- unisMACTrapEntryObjects
+
+unisMACTrapEntryLearnIfName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE (0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of interface name."
+    ::= { unisMACTrapEntryObjects 1 }
+
+unisMACTrapEntryLearnVlan OBJECT-TYPE
+    SYNTAX      Unsigned32( 1..4094)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "The information of vlan id."
+    ::= { unisMACTrapEntryObjects 2 }
+
+unisMACTrapEntryLearnVsiName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE (1..31))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of vsi name."
+    ::= { unisMACTrapEntryObjects 3 }
+
+unisMACTrapEntryLearnThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Maximum learning limit of MAC table entry."
+    ::= { unisMACTrapEntryObjects 4 }
+
+unisMACTrapEntryCurLearnCount OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The numbers of MAC entry learned."
+    ::= { unisMACTrapEntryObjects 5 }
+
+unisMACTrapEntryChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+        not a stacked device ."
+    ::= { unisMACTrapEntryObjects 6 }
+
+unisMACTrapEntrySlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of slot."
+    ::= { unisMACTrapEntryObjects 7 }
+
+
+unisMACTrapRecIllegalMacPkt OBJECT IDENTIFIER  ::= { unisMACTrap 2 }
+
+unisMACTrapsRecIllegalMacPkt OBJECT IDENTIFIER  ::= { unisMACTrapRecIllegalMacPkt 0 }
+
+unisMACTrapRcvIllegalMacPktAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMACTrapRcvIllegalPktIfName
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the port receives the packet that the source MAC or destination MAC is all 0,
+        a trap message is generated and sent to the remote monitoring device."
+    ::= { unisMACTrapsRecIllegalMacPkt 1 }
+
+unisMACTrapRecIllegalMacPktObjs OBJECT IDENTIFIER  ::= { unisMACTrapRecIllegalMacPkt 1 }
+
+unisMACTrapRcvIllegalPktIfName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE (0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of interface name that receives the
+        packet that the source MAC or destination MAC is all 0."
+    ::= { unisMACTrapRecIllegalMacPktObjs 1 }
+
+unisMACTrapHashConflict OBJECT IDENTIFIER  ::= { unisMACTrap 3 }
+
+unisMACTrapsHashConflict OBJECT IDENTIFIER  ::= { unisMACTrapHashConflict 0 }
+
+unisMACTrapVlanHashConflictAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMACHashConflictMac,
+            unisMACHashConflictMacVlan,
+            unisMACHashConflictMacIfName,
+            unisMACHashConflictChassis,
+            unisMACHashConflictSlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the MAC entries learned are discarded on the vlan due to hash conflicts,
+        a trap message is generated and sent to the remote monitoring device."
+    ::= { unisMACTrapsHashConflict 1 }
+
+unisMACTrapVsiHashConflictAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMACHashConflictMac,
+            unisMACHashConflictMacIfName,
+            unisMACHashConflictMacVsiName,
+            unisMACHashConflictChassis,
+            unisMACHashConflictSlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the MAC entries learned are discarded on the vsi due to hash conflicts,
+        a trap message is generated and sent to the remote monitoring device."
+    ::= { unisMACTrapsHashConflict 2 }
+
+unisMACTrapHashConflictObjs OBJECT IDENTIFIER  ::= { unisMACTrapHashConflict 1 }
+
+unisMACHashConflictMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Hash conflicting MAC address."
+    ::= { unisMACTrapHashConflictObjs 1 }
+
+unisMACHashConflictMacVlan OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4094)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "VLAN corresponding to MAC of hash conflict."
+    ::= { unisMACTrapHashConflictObjs 2 }
+
+unisMACHashConflictMacIfName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE (0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Interface name corresponding to MAC in hash conflict."
+    ::= { unisMACTrapHashConflictObjs 3 }
+
+unisMACHashConflictMacVsiName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE (1..31))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "VSI name corresponding to MAC of hash conflict."
+    ::= { unisMACTrapHashConflictObjs 4 }
+
+unisMACHashConflictChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+        not a stacked device ."
+    ::= { unisMACTrapHashConflictObjs 5 }
+
+unisMACHashConflictSlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of slot."
+    ::= { unisMACTrapHashConflictObjs 6 }
+
+END

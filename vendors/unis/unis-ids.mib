@@ -1,0 +1,342 @@
+-- ==================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: IDS Management MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--     V1.00 2005/08/18 Created by Wang Hanlin
+-- ==================================================================
+UNIS-IDS-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS
+            unisCommon
+                FROM UNIS-OID-MIB
+            Integer32, Unsigned32, OBJECT-TYPE, NOTIFICATION-TYPE, MODULE-IDENTITY
+                FROM SNMPv2-SMI
+            InetAddressType, InetAddress
+                FROM INET-ADDRESS-MIB;
+
+        unisIDSMib MODULE-IDENTITY
+            LAST-UPDATED "200507141942Z"
+            ORGANIZATION
+                "Unisyue Technologies Co., Ltd."
+            CONTACT-INFO
+                ""
+            DESCRIPTION
+                "This MIB describes IDS private information.
+                IDS(Instruction Detecting System) is used to detect intruder activity. "
+            ::= { unisIds 1 }
+
+--
+-- Node definitions
+--
+        unisIds OBJECT IDENTIFIER ::= { unisCommon 47 }
+
+        unisIDSTrapGroup OBJECT IDENTIFIER ::= { unisIDSMib 1 }
+
+        unisIDSTrapInfo OBJECT IDENTIFIER ::= { unisIDSTrapGroup 1 }
+
+        unisIDSTrapIPFragmentQueueLen OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The length of IP fragment queue."
+            ::= { unisIDSTrapInfo 1 }
+
+        unisIDSTrapStatSessionTabLen OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The length of status session table."
+            ::= { unisIDSTrapInfo 2 }
+
+        unisIDSTrapIPAddressType OBJECT-TYPE
+            SYNTAX InetAddressType
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The type of IP Address."
+            ::= { unisIDSTrapInfo 3 }
+
+        unisIDSTrapIPAddress OBJECT-TYPE
+            SYNTAX InetAddress
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "IP Address."
+            ::= { unisIDSTrapInfo 4 }
+
+        unisIDSTrapUserName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE(0..64))
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "User name."
+            ::= { unisIDSTrapInfo 5 }
+
+        unisIDSTrapLoginType OBJECT-TYPE
+            SYNTAX INTEGER {
+                telnet(1),
+                ssh(2),
+                web(3)
+                }
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "Login type, including telnet, ssh and web."
+            ::= { unisIDSTrapInfo 6 }
+
+        unisIDSTrapUpgradeType OBJECT-TYPE
+            SYNTAX INTEGER {
+                programme(1),    -- image file of system
+                crb(2),          -- custom rule base
+                vrb(3)           -- vendor rule base
+                }
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "Upgrade type, including programme(system image),
+                crb(custom rule base, one kind of configuration file),
+                vrb(vendor rule base, one kind of configuration file)."
+            ::= { unisIDSTrapInfo 7 }
+
+        unisIDSTrapCRLName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE(0..64))
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "CRL(Certificate Revoke List) name."
+            ::= { unisIDSTrapInfo 8 }
+
+        unisIDSTrapCertName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE(0..64))
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "Certificate name."
+            ::= { unisIDSTrapInfo 9 }
+
+        unisIDSTrapDetectRuleID OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The rule ID which is a unique identifier for a specified
+                detect rule."
+            ::= { unisIDSTrapInfo 10 }
+
+        unisIDSTrapEngineID OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "A unique number used to identify an interface."
+            ::= { unisIDSTrapInfo 11 }
+
+        unisIDSTrapFileName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE(0..256))
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The file name."
+            ::= { unisIDSTrapInfo 12 }
+
+        unisIDSTrapCfgLineInFile OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The line number in the configuration file."
+            ::= { unisIDSTrapInfo 13 }
+
+        unisIDSTrapReasonForError OBJECT-TYPE
+           SYNTAX OCTET STRING (SIZE(0..256))
+           MAX-ACCESS accessible-for-notify
+           STATUS current
+           DESCRIPTION
+               "The information of the notification. Although the format and
+               content of this object are device specific, they should be
+               defined uniformly in the device."
+           ::= { unisIDSTrapInfo 14 }
+
+        unisIDSTrap OBJECT IDENTIFIER ::= { unisIDSTrapGroup 2 }
+
+        unisIDSTrapPrefix OBJECT IDENTIFIER ::= { unisIDSTrap 0 }
+
+        unisIDSTrapIPFragQueueFull NOTIFICATION-TYPE
+            OBJECTS {
+                unisIDSTrapIPFragmentQueueLen,
+                unisIDSTrapReasonForError
+                }
+            STATUS current
+            DESCRIPTION
+                "This notification will be generated when the IP fragment
+                queue is full.  The unisIDSTrapIPFragmentQueueLen describes
+                the length of current fragment queue.
+                The unisIDSTrapReasonForError describes reason for error."
+            ::= { unisIDSTrapPrefix 1 }
+
+        unisIDSTrapStatSessTabFull NOTIFICATION-TYPE
+            OBJECTS {
+                unisIDSTrapStatSessionTabLen,
+                unisIDSTrapReasonForError
+                }
+            STATUS current
+            DESCRIPTION
+                "This notification will be generated when the status session
+                table is full.  The unisIDSTrapStatSessionTabLen describes the
+                length of current status session table.
+                The unisIDSTrapReasonForError describes reason for error."
+            ::= { unisIDSTrapPrefix 2 }
+
+        unisIDSTrapDetectRuleParseFail NOTIFICATION-TYPE
+            OBJECTS {
+                unisIDSTrapDetectRuleID,
+                unisIDSTrapEngineID,
+                unisIDSTrapReasonForError
+                }
+            STATUS current
+            DESCRIPTION
+                "This notification will be generated when failing to parse
+                the rules for detecting.  The unisIDSTrapDetectRuleID object describes
+                rule ID. The unisIDSTrapEngineID object identifies an interface
+                the rule applies to. The unisIDSTrapReasonForError object
+                describes reason for error."
+            ::= { unisIDSTrapPrefix 3 }
+
+        unisIDSTrapDBConnLost NOTIFICATION-TYPE
+            OBJECTS {
+                unisIDSTrapIPAddressType,
+                unisIDSTrapIPAddress,
+                unisIDSTrapReasonForError
+                }
+            STATUS current
+            DESCRIPTION
+                "This notification will be generated when connecting with
+                database server fails. The unisIDSTrapIPAddressType object describes
+                the IP address type of database server.  The unisIDSTrapIPAddress
+                object describes the IP address of database server. The
+                unisIDSTrapReasonForError describes reason of connecting failure."
+            ::= { unisIDSTrapPrefix 4 }
+
+        unisIDSTrapCRLNeedUpdate NOTIFICATION-TYPE
+            OBJECTS {
+                unisIDSTrapCRLName,
+                unisIDSTrapReasonForError
+                }
+            STATUS current
+            DESCRIPTION
+                "This notification will be generated when IDS device detects
+                that CRL is out of date.  The unisIDSTrapCRLName object
+                describes the CRL(Certificate Revoke List) name.
+                The unisIDSTrapReasonForError object describes reason for error."
+            ::= { unisIDSTrapPrefix 5 }
+
+        unisIDSTrapCertOverdue NOTIFICATION-TYPE
+            OBJECTS {
+                unisIDSTrapCertName,
+                unisIDSTrapReasonForError
+                }
+            STATUS current
+            DESCRIPTION
+                "This notification will be generated when IDS device detects
+                that certificate is overdue.  The unisIDSTrapCertName object
+                describes the certificate name.  The unisIDSTrapReasonForError
+                object describes reason for error."
+            ::= { unisIDSTrapPrefix 6 }
+
+       unisIDSTrapTooManyLoginFail NOTIFICATION-TYPE
+            OBJECTS {
+                unisIDSTrapUserName,
+                unisIDSTrapIPAddressType,
+                unisIDSTrapIPAddress,
+                unisIDSTrapLoginType,
+                unisIDSTrapReasonForError
+                }
+            STATUS current
+            DESCRIPTION
+                "This notification will be generated when the login
+                failure times of a user over a certain number.
+                The unisIDSTrapUserName object describes the user name
+                when logging in.  The unisIDSTrapIPAddressType object
+                describes the IP address type of client. The
+                unisIDSTrapIPAddress object describes the IP address of
+                client.  The unisIDSTrapLoginType object describes
+                login type, including: telnet, ssh, web.
+                The unisIDSTrapReasonForError object describes reason for error."
+            ::= { unisIDSTrapPrefix 7 }
+
+       unisIDSTrapUpgradeError NOTIFICATION-TYPE
+            OBJECTS {
+                unisIDSTrapUpgradeType,
+                unisIDSTrapReasonForError
+                }
+            STATUS current
+            DESCRIPTION
+                "This notification will be generated when upgrading fails.
+                The unisIDSTrapUpgradeType object describes upgrade type,
+                including: programme, vrb. The unisIDSTrapReasonForError
+                object describes reason for error."
+            ::= { unisIDSTrapPrefix 8 }
+
+        unisIDSTrapFileAccessError NOTIFICATION-TYPE
+            OBJECTS {
+                unisIDSTrapFileName,
+                unisIDSTrapReasonForError
+                }
+            STATUS current
+            DESCRIPTION
+                "This notification will be generated when accessing file
+                fails.  The unisIDSTrapFileName object describes the name
+                of file accessed. The unisIDSTrapReasonForError object describes
+                reason for error."
+            ::= { unisIDSTrapPrefix 9 }
+
+        unisIDSTrapConsArithMemLow NOTIFICATION-TYPE
+            OBJECTS {
+                unisIDSTrapReasonForError
+                }
+            STATUS current
+            DESCRIPTION
+                "This notification will be generated when memory used by
+                constructing the arithmetic to seek content is lacking.
+                The unisIDSTrapReasonForError object describes reason for error."
+            ::= { unisIDSTrapPrefix 10 }
+
+        unisIDSTrapSSRAMOperFail NOTIFICATION-TYPE
+            OBJECTS {
+                unisIDSTrapReasonForError
+                }
+            STATUS current
+            DESCRIPTION
+                "This notification will be generated when reading or
+                writing SSRAM of CIE card fails. The unisIDSTrapReasonForError
+                object describes reason for error."
+            ::= { unisIDSTrapPrefix 11 }
+
+        unisIDSTrapPacketProcessDisorder NOTIFICATION-TYPE
+            OBJECTS {
+                unisIDSTrapReasonForError
+                }
+            STATUS current
+            DESCRIPTION
+                "This notification will be generated when packets processed
+                is in disorder. The unisIDSTrapReasonForError object describes
+                reason for error."
+            ::= { unisIDSTrapPrefix 12 }
+
+        unisIDSTrapCfgFileFormatError    NOTIFICATION-TYPE
+            OBJECTS { unisIDSTrapFileName, unisIDSTrapCfgLineInFile }
+            STATUS current
+            DESCRIPTION
+                "When devices startup and load the configuration file,
+                if format error is found, this notification will be generated.
+                The unisIDSTrapFileName object describes the name of
+                configuration file. The unisIDSTrapCfgLineInFile object
+                describes the line number in the file."
+            ::= { unisIDSTrapPrefix 13 }
+
+END

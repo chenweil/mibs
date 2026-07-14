@@ -1,0 +1,742 @@
+-- ==================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: RRPP MIB
+-- Reference:
+-- Version: V1.5
+-- History:
+-- V1.0 2004-12-02 Created by XueCong
+-- V1.1 2006-12-21 Modified by XuPengfei
+--     Add objects: unisRrppPortRXEdgeHello, unisRrppPortRXMajorFault,
+--     unisRrppPortTXEdgeHello, unisRrppPortTXMajorFault, unisRrppMajorFault.
+-- V1.2 2007-03-01 Modified by ZhouXiaodong
+--     Modify the description of unisRrppMajorFault.
+--     Adjust file format.
+-- V1.3 2007-04-26 Modified by GuCe
+--     Add objects: unisRrppDomainInstanceListLow, unisRrppDomainInstanceListHigh.
+-- V1.4 2007-06-18 Modified by SongJianyong
+--     Modify the description of unisRrppDomainInstanceListLow and
+--     unisRrppDomainInstanceListHigh.
+--     Add objects: unisRrppDomainProtectVlanListLow,
+--     unisRrppDomainProtectVlanListHigh, unisRrppProtectVlanConfigMode.
+-- V1.5 2016-01-26 Modified by limeng
+--     Modified the range of unisRrppDomainID in unisRrppDomainTable
+--     Modified the range of unisRrppRingID in unisRrppRingTable
+-- ==================================================================
+UNIS-RRPP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Counter32, Integer32,
+    NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    RowStatus, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisRrpp MODULE-IDENTITY
+    LAST-UPDATED "201601260000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The RRPP (Rapid Ring Protection protocol) provides
+        fast protection switching to layer 2 switches
+        interconnected in an Ethernet ring topology.  When
+        a link in the ring breaks, the RRPP can recover the
+        data path quickly.  Its protection switching is
+        similar to what can be achieved with the Spanning
+        Tree Protocol (STP), but the converging time is less
+        than a second after link failure.
+        This MIB defines management information used on
+        products which support RRPP."
+    REVISION "201601260000Z"
+    DESCRIPTION
+        "Modified the range of unisRrppDomainID in unisRrppDomainTable
+         Modified the range of unisRrppRingID in unisRrppRingTable"
+    ::= { unisCommon  45 }
+
+EnabledStatus ::=  TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "A simple status value for the object."
+    SYNTAX      INTEGER{enabled(1),disabled(2)}
+
+-- ==================================================================
+--
+-- ======================= definition begin =========================
+--
+-- ==================================================================
+
+unisRrppScalarGroup OBJECT IDENTIFIER ::= {  unisRrpp 1  }
+
+unisRrppEnableStatus OBJECT-TYPE
+    SYNTAX      EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Indicating whether the RRPP is enabled on this switch."
+    ::= { unisRrppScalarGroup 1 }
+
+unisRrppPassword OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..16))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Password configured for RRPP nodes to identify the validity
+        of a link-down message.  This value must be set together with
+        unisRrppPasswordType which indicates whether this value can
+        be got.  This value can not be set alone without configuring
+        unisRrppPasswordType."
+    DEFVAL     { '303030464532303346443735'H }
+    ::= { unisRrppScalarGroup 2 }
+
+unisRrppPasswordType OBJECT-TYPE
+    SYNTAX      INTEGER{simple(1),cipher(2)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Indicating whether the unisRrppPassword can be got.
+        simple(1):unisRrppPassword can be got.
+        cipher(2):unisRrppPassword can not be got.
+        This value can not be set alone without configuring
+        unisRrppPassword."
+    ::= { unisRrppScalarGroup 3 }
+
+unisRrppProtectVlanConfigMode OBJECT-TYPE
+    SYNTAX      INTEGER{vlan(1),instance(2)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Indicating the mode in which the protected VLANs of an RRPP
+        domain are configured. The value 'vlan' indicates that
+        unisRrppDomainProtectVlanListLow and unisRrppDomainProtectVlanListHigh
+        can be used for setting protected VLANs, while
+        unisRrppDomainInstanceListLow and unisRrppDomainInstanceListHigh
+        cannot. By contraries, the value 'instance' indicates
+        that 3cRrppDomainInstanceListLow and unisRrppDomainInstanceListHigh
+        can be used for setting protected VLANs while the other two cannot."
+    ::= { unisRrppScalarGroup 4 }
+
+unisRrppTable OBJECT IDENTIFIER ::= {  unisRrpp 2  }
+
+unisRrppDomainTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisRrppDomainEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing information about configurations
+        and status of a RRPP domain."
+    ::= { unisRrppTable  1 }
+
+unisRrppDomainEntry OBJECT-TYPE
+    SYNTAX      UnisRrppDomainEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information of a specified RRPP domain."
+    INDEX
+        {
+            unisRrppDomainID
+        }
+    ::= { unisRrppDomainTable 1 }
+
+UnisRrppDomainEntry  ::= SEQUENCE
+    {
+        unisRrppDomainID               Integer32,
+        unisRrppDomainControlVlanID    Integer32,
+        unisRrppDomainHelloTime        Integer32,
+        unisRrppDomainFailTime         Integer32,
+        unisRrppDomainRowStatus        RowStatus,
+        unisRrppDomainInstanceListLow  OCTET STRING,
+        unisRrppDomainInstanceListHigh OCTET STRING,
+        unisRrppDomainProtectVlanListLow  OCTET STRING,
+        unisRrppDomainProtectVlanListHigh OCTET STRING
+    }
+
+unisRrppDomainID OBJECT-TYPE
+    SYNTAX      Integer32(1..128)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "An index uniquely identifies a RRPP domain,
+        which ranges from 1~128.
+        This value can't be modified after created."
+    ::= { unisRrppDomainEntry 1 }
+
+unisRrppDomainControlVlanID OBJECT-TYPE
+    SYNTAX      Integer32(2..4094|65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Index of the control VLAN specified to a domain.
+        The value 65535 indicates the control VLAN has
+        not been configured.
+        The VLAN assigned to a RRPP Domain must not have
+        been created.
+        This value can't be modified after created."
+    ::= { unisRrppDomainEntry 2 }
+
+unisRrppDomainHelloTime OBJECT-TYPE
+    SYNTAX      Integer32(1..10)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value indicates the interval between two hello
+        packets sent by master-node, and its unit is second.
+        The value ranges from 1s~10s."
+    DEFVAL     { 1 }
+    ::= { unisRrppDomainEntry 3 }
+
+unisRrppDomainFailTime OBJECT-TYPE
+    SYNTAX      Integer32(3..30)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The expiration value of the fail-period timer and its unit
+        is second.  If not receiving hello packets before this
+        expires, the master-node considers the ring is broken.
+        The value of this node ranging from 3s~30s must not be
+        less than triple unisRrppDomainHelloTime's value."
+    DEFVAL     { 3 }
+    ::= { unisRrppDomainEntry 4 }
+
+unisRrppDomainRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is responsible for managing the creation,
+        deletion and modification of rows, which support active
+        status and CreatAndGo, destroy operation."
+    ::= { unisRrppDomainEntry 5 }
+
+unisRrppDomainInstanceListLow OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(256))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Each octet contained in this value specifies an eight-instance
+        group, with the first octet specifying instances 0 through 7,
+        the second octet specifying instances 8 through 15, and so on.
+        Within each octet, the most significant bit represents the
+        highest numbered instance, and the least significant bit represents
+        the lowest numbered instance. Thus, each instance to which the
+        protected VLANs of an RRPP domain are mapped corresponds to a
+        bit within the value of this object. A bit with a value of '1'
+        indicates that the VLANs mapped to the instance are protected
+        VLANs of the RRPP domain. By contraries, the VLANs mapped to the
+        instance are not protected VLANs if the corresponding bit has a
+        value of '0'. The value of this object must be set with
+        unisRrppDomainInstanceListHigh at the same time when a SET
+        operation is performed.
+        This object is valid only when the value of unisRrppProtectVlanConfigMode
+        is 'instance'. If this object is invalid, it does not respond to SET
+        operation, and it returns all '0' bits in response to GET operation."
+    ::= { unisRrppDomainEntry 6 }
+
+unisRrppDomainInstanceListHigh OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(256))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Each octet contained in this value specifies an eight-instance
+        group, with the first octet specifying instances 2048 through
+        2055, the second octet specifying instances 2056 through 2063,
+        and so on. Within each octet, the most significant bit represents
+        the highest numbered instance, and the least significant bit
+        represents the lowest numbered instance. The most significant bit
+        of the last octet is invalid. Thus, each instance to which the
+        protected VLANs of an RRPP domain are mapped corresponds to a bit
+        within the value of this object. A bit with a value of '1' indicates
+        that the VLANs mapped to the instance are protected VLANs of the
+        RRPP domain. By contraries, the VLANs mapped to the instance are
+        not protected VLANs if the corresponding bit has a value of '0'.
+        The value of this object must be set with unisRrppDomainInstanceListLow
+        at the same time when a SET operation is performed.
+        This object is valid only when the value of unisRrppProtectVlanConfigMode
+        is 'instance'. If this object is invalid, it does not respond to SET
+        operation, and it returns all '0' bits in response to GET operation."
+    ::= { unisRrppDomainEntry 7 }
+
+unisRrppDomainProtectVlanListLow OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(256))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Each octet contained in this value specifies an eight-VLAN group,
+        with the first octet specifying VLANs 1 through 7, the second
+        octet specifying VLANs 8 through 15, and so on. Within each octet,
+        the most significant bit represents the highest numbered VLAN, and
+        the least significant bit represents the lowest numbered VLAN.
+        The least significant bit of the first octet is invalid. Thus,
+        each protected VLAN of an RRPP domain corresponds to a bit within
+        the value of this object. A bit with a value of '1' indicates that
+        the corresponding VLAN is a protected VLAN of the RRPP domain.
+        By contraries, the VLAN is not a protected VLAN if the
+        corresponding bit has a value of '0'. The value of this object
+        must be set with unisRrppDomainProtectVlanListHigh at the same time
+        when a SET operation is performed.
+        This object is valid only when the value of unisRrppProtectVlanConfigMode
+        is 'vlan'. If this object is invalid, it does not respond to SET
+        operation, and it returns all '0' bits in response to GET operation."
+    ::= { unisRrppDomainEntry 8 }
+
+unisRrppDomainProtectVlanListHigh OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(256))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Each octet contained in this value specifies an eight-VLAN group,
+        with the first octet specifying VLANs 2048 through 2055, the
+        second octet specifying VLANs 2056 through 2063, and so on. Within
+        each octet, the most significant bit represents the highest
+        numbered VLAN, and the least significant bit represents the lowest
+        numbered VLAN. The most significant bit of the last octet is
+        invalid. Thus, each protected VLAN of an RRPP domain corresponds
+        to a bit within the value of this object. A bit with a value of '1'
+        indicates that the corresponding VLAN is a protected VLAN of the
+        RRPP domain. By contraries, the VLAN is not a protected VLAN if
+        the corresponding bit has a value of '0'. The value of this object
+        must be set with unisRrppDomainProtectVlanListLow at the same time
+        when a SET operation is performed.
+        This object is valid only when the value of unisRrppProtectVlanConfigMode
+        is 'vlan'. If this object is invalid, it does not respond to SET
+        operation, and it returns all '0' bits in response to GET operation."
+    ::= { unisRrppDomainEntry 9 }
+
+unisRrppRingTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisRrppRingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing information about configurations
+        and status of a RRPP Ring."
+    ::= { unisRrppTable  2 }
+
+unisRrppRingEntry OBJECT-TYPE
+    SYNTAX      UnisRrppRingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information of a specified RRPP Ring."
+    INDEX
+        {
+            unisRrppDomainID,
+            unisRrppRingID
+        }
+    ::= { unisRrppRingTable 1 }
+
+UnisRrppRingEntry  ::= SEQUENCE
+    {
+        unisRrppRingID               Integer32,
+        unisRrppRingEnableStatus     EnabledStatus,
+        unisRrppRingActive           INTEGER,
+        unisRrppRingState            INTEGER,
+        unisRrppRingNodeMode         INTEGER,
+        unisRrppRingPrimaryPort      Integer32,
+        unisRrppRingSecondaryPort    Integer32,
+        unisRrppRingLevel            INTEGER,
+        unisRrppRingRowStatus        RowStatus
+    }
+
+unisRrppRingID OBJECT-TYPE
+    SYNTAX      Integer32(1..128)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "An index uniquely identifies a RRPP Ring,
+        which ranges from 1~128.
+        This value can't be modified after created."
+    ::= { unisRrppRingEntry 1 }
+
+unisRrppRingEnableStatus OBJECT-TYPE
+    SYNTAX      EnabledStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Indicating whether the RRPP is enabled on this Ring.
+        NOTE: If major-ring and sub-ring(s) of a domain
+        coexist on a switch, major-ring must be enabled
+        before sub-ring is enabled.  And sub-ring must be
+        disabled before major-ring is disabled."
+    ::= { unisRrppRingEntry 2 }
+
+unisRrppRingActive OBJECT-TYPE
+    SYNTAX      INTEGER{active(1),inactive(2)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "As both unisRrppEnableStatus and unisRrppRingEnableStatus
+        are enabled, the ring is activated.  Whereas either of
+        the two items is disabled, the ring is inactive."
+    ::= { unisRrppRingEntry 3 }
+
+unisRrppRingState OBJECT-TYPE
+    SYNTAX      INTEGER{unknown(1),health(2),fault(3)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The status (i.e. unknown, health or fault) of the Ethernet
+        ring.
+        This is valid only on the master-node."
+    ::= { unisRrppRingEntry 4 }
+
+unisRrppRingNodeMode OBJECT-TYPE
+    SYNTAX      INTEGER{master(1),transit(2),edge(3),assistantEdge(4)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "There are four RRPP node modes for the switch on a RRPP
+        ring, such as master, transit, edge and assistant-edge.
+        Each RRPP ring has a single designated master-node.  All
+        other nodes except edge-node and assistant-edge-node on
+        that ring are referred to as transit-nodes.
+        The node mode of edge and assistant-edge should be
+        configured only on sub-ring.  When there is a common link
+        between a sub-ring and its major-ring, the node mode of
+        the sub-ring must be edge or assistant-edge, and they must
+        be configured in pairs.
+        If node mode is designated as edge or assistant-edge,
+        several points should be noticed:
+        Major-ring must be created before a sub-ring is created;
+        Major-ring can't be deleted unless all its sub-rings are
+        deleted;
+        The node mode of the switch on major-ring must be
+        transit;
+        Major-ring and sub-ring must have only a common port.
+        This value can't be modified after created."
+    ::= { unisRrppRingEntry 5 }
+
+unisRrppRingPrimaryPort OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "If the switch is a master-node or transit-node, this value
+        is the primary port ifIndex; otherwise, if the switch is a
+        edge-node or assistant-edge-node, this value is the common
+        port ifIndex.
+        This value can't be modified after created."
+    ::= { unisRrppRingEntry 6 }
+
+unisRrppRingSecondaryPort OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "If the switch is a master-node or transit-node, this value
+        is the secondary port ifIndex; otherwise, if the switch is
+        an edge-node or assistant-edge-node, this value is the edge
+        port ifIndex.
+        This value can't be modified after created."
+    ::= { unisRrppRingEntry 7 }
+
+unisRrppRingLevel OBJECT-TYPE
+    SYNTAX      INTEGER{majorRing(1),subRing(2)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Level of a ring.  This field should be set 1 on major-ring
+        and 2 on the sub-ring.
+        This value can't be modified after created."
+    ::= { unisRrppRingEntry 8 }
+
+unisRrppRingRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is responsible for managing the creation,
+        deletion and modification of rows, which support active
+        status and CreatAndGo, destroy operation.
+        To create a new row, unisRrppRingNodeMode,
+        unisRrppRingPrimaryPort, unisRrppRingSecondaryPort and
+        unisRrppRingLevel must be specified."
+    ::= { unisRrppRingEntry 9 }
+
+unisRrppPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisRrppPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing information about configurations and
+        status of a RRPP port."
+    ::= { unisRrppTable 3 }
+
+unisRrppPortEntry OBJECT-TYPE
+    SYNTAX      UnisRrppPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information of a specified RRPP port."
+    INDEX
+        {
+            unisRrppDomainID,
+            unisRrppRingID,
+            unisRrppPortID
+        }
+    ::= { unisRrppPortTable 1 }
+
+UnisRrppPortEntry  ::= SEQUENCE
+    {
+        unisRrppPortID                 Integer32,
+        unisRrppPortRole               INTEGER,
+        unisRrppPortState              INTEGER,
+        unisRrppPortRXError            Counter32,
+        unisRrppPortRXHello            Counter32,
+        unisRrppPortRXLinkUp           Counter32,
+        unisRrppPortRXLinkDown         Counter32,
+        unisRrppPortRXCommonFlush      Counter32,
+        unisRrppPortRXCompleteFlush    Counter32,
+        unisRrppPortTXHello            Counter32,
+        unisRrppPortTXLinkUp           Counter32,
+        unisRrppPortTXLinkDown         Counter32,
+        unisRrppPortTXCommonFlush      Counter32,
+        unisRrppPortTXCompleteFlush    Counter32,
+        unisRrppPortRXEdgeHello        Counter32,
+        unisRrppPortRXMajorFault       Counter32,
+        unisRrppPortTXEdgeHello        Counter32,
+        unisRrppPortTXMajorFault       Counter32
+    }
+
+unisRrppPortID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "ifIndex of the port."
+    ::= { unisRrppPortEntry 1 }
+
+unisRrppPortRole OBJECT-TYPE
+    SYNTAX      INTEGER{primary(1),secondary(2),common(3),edge(4)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The RRPP role of the port.
+        (i.e. primary, secondary, common or edge port)."
+    ::= { unisRrppPortEntry 2 }
+
+unisRrppPortState OBJECT-TYPE
+    SYNTAX      INTEGER{unknown(1),unblocked(2),blocked(3),down(4)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "State of RRPP port, including unknown, unblocked, blocked
+        and down."
+    ::= { unisRrppPortEntry 3 }
+
+unisRrppPortRXError OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of illegal RRPP packets received from
+        this port."
+    ::= { unisRrppPortEntry 4 }
+
+unisRrppPortRXHello OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of hello packets received from
+        this port on specified ring."
+    ::= { unisRrppPortEntry 5 }
+
+unisRrppPortRXLinkUp OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of link-up packets received
+        from this port on specified ring."
+    ::= { unisRrppPortEntry 6 }
+
+unisRrppPortRXLinkDown OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of link-down packets received
+        from this port on specified ring."
+    ::= { unisRrppPortEntry 7 }
+
+unisRrppPortRXCommonFlush OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of common-flush packets received from
+        this port on specified ring.
+        Instruction
+        When master-node receives valid link-down packets
+        or link-up packets, it will send common-flush packets,
+        instructing the other nodes on the ring to flush their
+        forwarding database.
+        When the nodes except master-node receive common-flush,
+        they will flush forwarding database.  If there is any
+        port blocked on that node, it won't be unblocked."
+    ::= { unisRrppPortEntry 8 }
+
+unisRrppPortRXCompleteFlush OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of complete-flush packets received
+        from this port on specified ring.
+        Instruction
+        When the ring recovers, master-node will receive its own
+        hello packets.  It will send complete-flush packets,
+        instructing the other nodes on the ring to flush their
+        forwarding database.
+        When the nodes except master-node receive complete-flush,
+        they will flush forwarding database.  If there is any port
+        blocked on that node, it will be unblocked."
+    ::= { unisRrppPortEntry 9 }
+
+unisRrppPortTXHello OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of hello packets sent from
+        this port on specified ring."
+    ::= { unisRrppPortEntry 10 }
+
+unisRrppPortTXLinkUp OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of link-up packets sent
+        from this port on specified ring."
+    ::= { unisRrppPortEntry 11 }
+
+unisRrppPortTXLinkDown OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of link-down packets sent
+        from this port on specified ring."
+    ::= { unisRrppPortEntry 12 }
+
+unisRrppPortTXCommonFlush OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of common-flush packets sent from
+        this port on specified ring."
+    ::= { unisRrppPortEntry 13 }
+
+unisRrppPortTXCompleteFlush OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of complete-flush packets sent
+        from this port on specified ring."
+    ::= { unisRrppPortEntry 14 }
+
+unisRrppPortRXEdgeHello OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of edge-hello packets received
+        from this port on specified ring.
+        When edge-node sends edge-hello packets,
+        assistantEdge-node will receive its own edge-hello
+        packets from the common link and the master ring."
+    ::= { unisRrppPortEntry 15 }
+
+unisRrppPortRXMajorFault OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of major-fault packets received
+        from this port on specified ring.
+        When assistantEdge can't receive edge-hello packets
+        in the specified fault-time,
+        assistantEdge-node will send its own major-fault
+        packets from the edge port around the sub ring.
+        Edge-node will receive the major-fault packets from
+        its edge port. Then Edge-node will block its edge port."
+    ::= { unisRrppPortEntry 16 }
+
+unisRrppPortTXEdgeHello OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of edge-hello packets sent
+        from this port on specified ring."
+    ::= { unisRrppPortEntry 17 }
+
+unisRrppPortTXMajorFault OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The statistics of major-fault packets sent
+        from this port on specified ring."
+    ::= { unisRrppPortEntry 18 }
+
+unisRrppNotifications OBJECT IDENTIFIER ::= {  unisRrpp 3  }
+
+unisRrppRingRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisRrppDomainID,
+            unisRrppRingID
+        }
+    STATUS      current
+    DESCRIPTION
+        "Trap message is generated by master-node on
+        the ring when the ring recovers from fault."
+    ::= { unisRrppNotifications 1 }
+
+unisRrppRingFail NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisRrppDomainID,
+            unisRrppRingID
+        }
+    STATUS      current
+    DESCRIPTION
+        "Trap message is generated by master-node on
+        the ring when the ring fails."
+    ::= { unisRrppNotifications 2 }
+
+unisRrppMultiMaster NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisRrppDomainID,
+            unisRrppRingID
+        }
+    STATUS      current
+    DESCRIPTION
+        "Trap message is generated by master-node when
+        it detects there are more than one master-node
+        on the ring."
+    ::= { unisRrppNotifications 3 }
+
+unisRrppMajorFault NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisRrppDomainID,
+            unisRrppRingID
+        }
+    STATUS      current
+    DESCRIPTION
+        "Trap message is generated by edge-node or assistant-edge-node
+        when it detects major fault."
+    ::= { unisRrppNotifications 4 }
+
+END
+

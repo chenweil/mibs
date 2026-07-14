@@ -1,0 +1,2702 @@
+-- =================================================================
+-- Copyright (c) 2004-2024 New H3C Tech. Co., Ltd.  All rights reserved.
+--
+-- Description: BRAS(Broadband Remote Access Server) access MIB File
+-- Reference:
+-- Version: V1.3
+-- History:
+-- V1.0 2020-11-10 created by wangzhenjun
+-- V1.1 2021-11-1 add hh3cBrasAccOnlineMibTrapOid
+--                add hh3cBrasAccOnlineTrap  by fengshuxiang
+-- V1.2 2022-03-6 add hh3cBrasAccCUTrapCpuID hh3cBrasAccCUTrapCpuThreshold
+--                add hh3cBrasAccCUCpuWarning  hh3cBrasAccCUCpuWarningResume
+--                by guoxiaopeng
+--                Change value range of hh3cBrasAccUPSlotID. by xiahongfei
+--V1.3  2024-06-04 add hh3cBrasAccUserTable hh3cBrasAccUserItaTable hh3cBrasAccUserEdsgTable
+--                 add hh3cBrasAccUserSubUserTable hh3cBrasAccUserBriefTable
+--                 by ningkaifang
+--      2024-12-19 Change hh3cBrasAccUserTable hh3cBrasAccUserItaTable hh3cBrasAccUserEdsgTable
+--                 and hh3cBrasAccUserSubUserTable hh3cBrasAccUserBriefTable
+--                 by ningkaifang
+-- =================================================================
+HH3C-BRAS-ACCESS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    hh3cCommon
+        FROM HH3C-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Integer32, Unsigned32, Counter64
+        FROM SNMPv2-SMI
+    DisplayString, TruthValue, MacAddress
+        FROM SNMPv2-TC
+    InetAddressIPv6, InetAddressIPv4
+        FROM INET-ADDRESS-MIB
+    InterfaceIndexOrZero
+        FROM IF-MIB
+    CounterBasedGauge64
+        FROM HCNUM-TC;
+
+hh3cBrasAcc MODULE-IDENTITY
+    LAST-UPDATED
+        "202412190900Z"
+    ORGANIZATION
+        "New H3C Technologies Co., Ltd."
+    CONTACT-INFO
+        "Platform Team New H3C Technologies Co., Ltd.
+         Hai-Dian District Beijing P.R. China
+         http://www.h3c.com
+         Zip: 100085"
+    DESCRIPTION
+        "This MIB contains objects that manage the information
+        of BRAS access.
+        "
+    REVISION     "202412190900Z"
+    DESCRIPTION
+        "
+        Change hh3cBrasAccUserTable hh3cBrasAccUserItaTable hh3cBrasAccUserEdsgTable
+        and hh3cBrasAccUserSubUserTable hh3cBrasAccUserBriefTable
+        "
+    REVISION     "202406040900Z"
+    DESCRIPTION
+        "
+        Added hh3cBrasAccUserTable, hh3cBrasAccUserItaTable,
+        hh3cBrasAccUserEdsgTable,hh3cBrasAccUserSubUserTable,
+        and hh3cBrasAccUserBriefTable.
+        "
+    REVISION     "202308150900Z"
+    DESCRIPTION
+        "Change value range of hh3cBrasAccUPSlotID."
+    REVISION     "202203060900Z"
+    DESCRIPTION
+        "
+        Added hh3cBrasAccCUTrapCpuID, hh3cBrasAccCUTrapCpuThreshold,
+        hh3cBrasAccCUCpuWarning, and hh3cBrasAccCUCpuWarningResume.
+        "
+    REVISION
+        "202111010927Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { hh3cCommon 200 }
+
+hh3cBrasAccTotalStat OBJECT IDENTIFIER ::= { hh3cBrasAcc 1 }
+
+hh3cBrasAccTotalUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of BRAS access users on the device."
+    ::= { hh3cBrasAccTotalStat 1 }
+
+hh3cBrasAccTotalPPPoEUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of PPPoE users on the device."
+    ::= { hh3cBrasAccTotalStat 2 }
+
+hh3cBrasAccTotalIPoEUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of IPoE users on the device."
+    ::= { hh3cBrasAccTotalStat 3 }
+
+hh3cBrasAccTotalLNSUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of Layer 2 Tunneling Protocol (L2TP) network server (LNS) users on the device."
+    ::= { hh3cBrasAccTotalStat 4 }
+
+hh3cBrasAccTotalLACUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of L2TP access concentrator (LAC) users on the device."
+    ::= { hh3cBrasAccTotalStat 5 }
+
+hh3cBrasAccTotalIPv4UserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of IPv4 users on the device."
+    ::= { hh3cBrasAccTotalStat 6 }
+
+hh3cBrasAccTotalIPv6UserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of IPv6 users on the device."
+    ::= { hh3cBrasAccTotalStat 7 }
+
+hh3cBrasAccTotalDSUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of dual-stack users on the device."
+    ::= { hh3cBrasAccTotalStat 8 }
+
+hh3cBrasAccUPStatTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cBrasAccUPStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A table for BRAS CU(C: control plane, U: user plane)
+                 user statistics."
+    ::= { hh3cBrasAcc 2 }
+
+hh3cBrasAccUPStatEntry  OBJECT-TYPE
+    SYNTAX      Hh3cBrasAccUPStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry for BRAS CU user statistics."
+    INDEX
+    {
+            hh3cBrasAccUPID
+    }
+    ::= { hh3cBrasAccUPStatTable 1 }
+
+Hh3cBrasAccUPStatEntry ::=
+    SEQUENCE
+    {
+            hh3cBrasAccUPID                          Integer32,
+            hh3cBrasAccUPUserNum                     Integer32,
+            hh3cBrasAccUPPPPoEUserNum                Integer32,
+            hh3cBrasAccUPIPoEUserNum                 Integer32,
+            hh3cBrasAccUPLNSUserNum                  Integer32,
+            hh3cBrasAccUPLACUserNum                  Integer32,
+            hh3cBrasAccUPIPv4UserNum                 Integer32,
+            hh3cBrasAccUPIPv6UserNum                 Integer32,
+            hh3cBrasAccUPDSUserNum                   Integer32
+    }
+
+hh3cBrasAccUPID OBJECT-TYPE
+    SYNTAX      Integer32 (1024..2047)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value is UP (user plane) ID."
+    ::= { hh3cBrasAccUPStatEntry 1 }
+
+hh3cBrasAccUPUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of BRAS access users on the
+         specified UP."
+    ::= { hh3cBrasAccUPStatEntry 2 }
+
+hh3cBrasAccUPPPPoEUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of PPPoE users on the specified UP."
+    ::= { hh3cBrasAccUPStatEntry 3 }
+
+hh3cBrasAccUPIPoEUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of IPoE users on the specified UP."
+    ::= { hh3cBrasAccUPStatEntry 4 }
+
+hh3cBrasAccUPLNSUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of LNS users on the specified UP."
+    ::= { hh3cBrasAccUPStatEntry 5 }
+
+hh3cBrasAccUPLACUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of LAC users on the specified UP."
+    ::= { hh3cBrasAccUPStatEntry 6 }
+
+hh3cBrasAccUPIPv4UserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of IPv4 users on the specified UP."
+    ::= { hh3cBrasAccUPStatEntry 7 }
+
+hh3cBrasAccUPIPv6UserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of IPv6 users on the specified UP."
+    ::= { hh3cBrasAccUPStatEntry 8 }
+
+hh3cBrasAccUPDSUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of dual-stack users on the specified UP."
+    ::= { hh3cBrasAccUPStatEntry 9 }
+
+hh3cBrasAccUPSlotStatTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cBrasAccUPSlotStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A table for BRAS CU user statistics on the specific slot."
+    ::= { hh3cBrasAcc 3 }
+
+hh3cBrasAccUPSlotStatEntry  OBJECT-TYPE
+    SYNTAX      Hh3cBrasAccUPSlotStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry for BRAS CU user statistics."
+    INDEX
+    {
+            hh3cBrasAccUPSlotUPID,
+            hh3cBrasAccUPSlotID
+    }
+    ::= { hh3cBrasAccUPSlotStatTable 1 }
+
+Hh3cBrasAccUPSlotStatEntry ::=
+    SEQUENCE
+    {
+            hh3cBrasAccUPSlotUPID                        Integer32,
+            hh3cBrasAccUPSlotID                          Integer32,
+            hh3cBrasAccUPSlotUserNum                     Integer32,
+            hh3cBrasAccUPSlotPPPoEUserNum                Integer32,
+            hh3cBrasAccUPSlotIPoEUserNum                 Integer32,
+            hh3cBrasAccUPSlotLNSUserNum                  Integer32,
+            hh3cBrasAccUPSlotLACUserNum                  Integer32,
+            hh3cBrasAccUPSlotIPv4UserNum                 Integer32,
+            hh3cBrasAccUPSlotIPv6UserNum                 Integer32,
+            hh3cBrasAccUPSlotDSUserNum                   Integer32
+    }
+
+hh3cBrasAccUPSlotUPID OBJECT-TYPE
+    SYNTAX      Integer32 (1024..2047)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value is UP ID."
+    ::= { hh3cBrasAccUPSlotStatEntry 1 }
+
+hh3cBrasAccUPSlotID OBJECT-TYPE
+    SYNTAX      Integer32 (0..255)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value is the slot ID of a UP."
+    ::= { hh3cBrasAccUPSlotStatEntry 2 }
+
+hh3cBrasAccUPSlotUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of BRAS access users on the specified
+         slot of the specified UP."
+    ::= { hh3cBrasAccUPSlotStatEntry 3 }
+
+hh3cBrasAccUPSlotPPPoEUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of PPPoE users on the specified slot of
+         the specified UP."
+    ::= { hh3cBrasAccUPSlotStatEntry 4 }
+
+hh3cBrasAccUPSlotIPoEUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of IPoE users on the specified slot of
+         the specified UP."
+    ::= { hh3cBrasAccUPSlotStatEntry 5 }
+
+hh3cBrasAccUPSlotLNSUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of LNS users on the specified slot of
+         the specified UP."
+    ::= { hh3cBrasAccUPSlotStatEntry 6 }
+
+hh3cBrasAccUPSlotLACUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of LAC users on the specified slot of
+         the specified UP."
+    ::= { hh3cBrasAccUPSlotStatEntry 7 }
+
+hh3cBrasAccUPSlotIPv4UserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of IPv4 users on the specified slot of
+         the specified UP."
+    ::= { hh3cBrasAccUPSlotStatEntry 8 }
+
+hh3cBrasAccUPSlotIPv6UserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of IPv6 users on the specified slot of
+         the specified UP."
+    ::= { hh3cBrasAccUPSlotStatEntry 9 }
+
+hh3cBrasAccUPSlotDSUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of dual-stack users on the specified
+         slot of the specified UP."
+    ::= { hh3cBrasAccUPSlotStatEntry 10 }
+
+hh3cBrasAccIfStatTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cBrasAccIfStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A table for BRAS CU user statistics on the specified
+                 interface."
+    ::= { hh3cBrasAcc 4 }
+
+hh3cBrasAccIfStatEntry  OBJECT-TYPE
+    SYNTAX      Hh3cBrasAccIfStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry for BRAS CU user statistics."
+    INDEX
+    {
+            hh3cBrasAccIfName
+    }
+    ::= { hh3cBrasAccIfStatTable 1 }
+
+Hh3cBrasAccIfStatEntry ::=
+    SEQUENCE
+    {
+            hh3cBrasAccIfName                        DisplayString,
+            hh3cBrasAccIfUserNum                     Integer32,
+            hh3cBrasAccIfPPPoEUserNum                Integer32,
+            hh3cBrasAccIfIPoEUserNum                 Integer32,
+            hh3cBrasAccIfLNSUserNum                  Integer32,
+            hh3cBrasAccIfLACUserNum                  Integer32,
+            hh3cBrasAccIfIPv4UserNum                 Integer32,
+            hh3cBrasAccIfIPv6UserNum                 Integer32,
+            hh3cBrasAccIfDSUserNum                   Integer32
+    }
+
+hh3cBrasAccIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is an interface name. The interface name must be valid
+         or not specified on the getnext operation."
+    ::= { hh3cBrasAccIfStatEntry 1 }
+
+hh3cBrasAccIfUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of BRAS access users on the specified
+         interface."
+    ::= { hh3cBrasAccIfStatEntry 2 }
+
+hh3cBrasAccIfPPPoEUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of PPPoE users on the
+         specified interface."
+    ::= { hh3cBrasAccIfStatEntry 3 }
+
+hh3cBrasAccIfIPoEUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of IPoE users on the
+         specified interface."
+    ::= { hh3cBrasAccIfStatEntry 4 }
+
+hh3cBrasAccIfLNSUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of LNS users on the
+         specified interface."
+    ::= { hh3cBrasAccIfStatEntry 5 }
+
+hh3cBrasAccIfLACUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of LAC users on the
+         specified interface."
+    ::= { hh3cBrasAccIfStatEntry 6 }
+
+hh3cBrasAccIfIPv4UserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of IPv4 users on the
+         specified interface."
+    ::= { hh3cBrasAccIfStatEntry 7 }
+
+hh3cBrasAccIfIPv6UserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of IPv6 users on the
+         specified interface."
+    ::= { hh3cBrasAccIfStatEntry 8 }
+
+hh3cBrasAccIfDSUserNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value is the total number of dual-stack users on the
+         specified interface."
+    ::= { hh3cBrasAccIfStatEntry 9 }
+
+hh3cBrasAccCUMibTrapOid OBJECT IDENTIFIER ::= { hh3cBrasAcc 5 }
+
+hh3cBrasAccCUTrapUPID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The involved UP of trap information."
+    ::= { hh3cBrasAccCUMibTrapOid 1 }
+
+hh3cBrasAccCUTrapSlotID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The involved slot of trap information."
+    ::= { hh3cBrasAccCUMibTrapOid 2 }
+
+hh3cBrasAccCUTrapThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The involved threshold (percentage of online users) of
+         trap information."
+    ::= { hh3cBrasAccCUMibTrapOid 3 }
+
+hh3cBrasAccCUTrapCpuID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The involved CPU of trap information."
+    ::= { hh3cBrasAccCUMibTrapOid 4 }
+
+hh3cBrasAccCUTrapCpuThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The involved CPU threshold (percentage of online users) of
+         trap information."
+    ::= { hh3cBrasAccCUMibTrapOid 5 }
+
+hh3cBrasAccCUTrap OBJECT IDENTIFIER  ::= { hh3cBrasAcc 6 }
+
+hh3cBrasAccCUTrapPrefix OBJECT IDENTIFIER  ::= { hh3cBrasAccCUTrap 0 }
+
+hh3cBrasAccCUUPWarning NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cBrasAccCUTrapUPID,
+        hh3cBrasAccCUTrapThreshold
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the number of online users on the UP
+         reaches the maximum user threshold. Subsequent users are recommended
+         to access the device through another UP."
+    ::= { hh3cBrasAccCUTrapPrefix 1 }
+
+hh3cBrasAccCUUPWarningResume NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cBrasAccCUTrapUPID,
+        hh3cBrasAccCUTrapThreshold
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the number of online users on the UP
+         falls below the maximum user threshold."
+    ::= { hh3cBrasAccCUTrapPrefix 2 }
+
+hh3cBrasAccCUSlotWarning NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cBrasAccCUTrapUPID,
+        hh3cBrasAccCUTrapSlotID,
+        hh3cBrasAccCUTrapThreshold
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the number of online users on the slot of
+         the specified UP reaches the maximum user threshold. Subsequent users
+         are recommended to access the device through another slot of
+         the specified UP."
+    ::= { hh3cBrasAccCUTrapPrefix 3 }
+
+hh3cBrasAccCUSlotWarningResume NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cBrasAccCUTrapUPID,
+        hh3cBrasAccCUTrapSlotID,
+        hh3cBrasAccCUTrapThreshold
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the number of online users on the slot
+         of the specified UP falls below the maximum user threshold."
+    ::= { hh3cBrasAccCUTrapPrefix 4 }
+
+hh3cBrasAccCUCpuWarning NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cBrasAccCUTrapUPID,
+        hh3cBrasAccCUTrapSlotID,
+        hh3cBrasAccCUTrapCpuID,
+        hh3cBrasAccCUTrapCpuThreshold
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the number of online users on the CPU
+        of the specified slot and UP reaches the maximum user threshold."
+    ::= { hh3cBrasAccCUTrapPrefix 5 }
+
+hh3cBrasAccCUCpuWarningResume NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cBrasAccCUTrapUPID,
+        hh3cBrasAccCUTrapSlotID,
+        hh3cBrasAccCUTrapCpuID,
+        hh3cBrasAccCUTrapCpuThreshold
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the number of online users on the CPU
+         of the specified slot and UP falls below the maximum user threshold."
+    ::= { hh3cBrasAccCUTrapPrefix 6 }
+
+hh3cBrasAccOnlineMibTrapOid OBJECT IDENTIFIER ::= { hh3cBrasAcc 7 }
+
+hh3cBrasAccOnlineTrapType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        all(1),
+                        ipoe(2),
+                        ppp(3),
+                        l2tpv2(4)
+                        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The involved type of trap information."
+    ::= { hh3cBrasAccOnlineMibTrapOid 1 }
+
+hh3cBrasAccOnlineTrapSlot OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The involved control plane (CP) slot of trap information."
+    ::= { hh3cBrasAccOnlineMibTrapOid 2 }
+
+hh3cBrasAccOnlineTrapThreshold OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The involved threshold (percentage of online users) of
+         trap information."
+    ::= { hh3cBrasAccOnlineMibTrapOid 3 }
+
+hh3cBrasAccOnlineTrap OBJECT IDENTIFIER  ::= { hh3cBrasAcc 8 }
+
+hh3cBrasAccOnlineTrapPrefix OBJECT IDENTIFIER  ::= { hh3cBrasAccOnlineTrap 0 }
+
+hh3cBrasAccOnlineULimitAlarm NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cBrasAccOnlineTrapType,
+        hh3cBrasAccOnlineTrapSlot,
+        hh3cBrasAccOnlineTrapThreshold
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the number of online users reaches the maximum
+         user threshold. Subsequent users are recommended to access the device"
+    ::= { hh3cBrasAccOnlineTrapPrefix 1 }
+
+hh3cBrasAccOnlineULimitResume NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cBrasAccOnlineTrapType,
+        hh3cBrasAccOnlineTrapSlot,
+        hh3cBrasAccOnlineTrapThreshold
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the number of online users falls below
+         the maximum user threshold."
+    ::= { hh3cBrasAccOnlineTrapPrefix 2 }
+
+hh3cBrasAccOnlineLLimitAlarm NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cBrasAccOnlineTrapType,
+        hh3cBrasAccOnlineTrapSlot,
+        hh3cBrasAccOnlineTrapThreshold
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the number of online users reaches the minimum
+         user threshold. Subsequent users are recommended to access the device"
+    ::= { hh3cBrasAccOnlineTrapPrefix 3 }
+
+hh3cBrasAccOnlineLLimitResume NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cBrasAccOnlineTrapType,
+        hh3cBrasAccOnlineTrapSlot,
+        hh3cBrasAccOnlineTrapThreshold
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the number of online users higher the minimum
+         user threshold."
+    ::= { hh3cBrasAccOnlineTrapPrefix 4 }
+
+hh3cBrasAccOnlineFailEvent NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cBrasAccOnlineTrapSlot,
+        hh3cBrasAccOnlineTrapThreshold
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the number of failed online users on the
+         device reaches the threshold. "
+    ::= { hh3cBrasAccOnlineTrapPrefix 5 }
+
+hh3cBrasAccUserTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cBrasAccUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "This table contains the information about configuring access user info."
+    ::= { hh3cBrasAcc 9 }
+
+hh3cBrasAccUserEntry  OBJECT-TYPE
+    SYNTAX      Hh3cBrasAccUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry for BRAS access user info."
+    INDEX
+    {
+            hh3cBrasAccUserUserID
+    }
+    ::= { hh3cBrasAccUserTable 1 }
+
+Hh3cBrasAccUserEntry ::=
+    SEQUENCE
+    {
+            hh3cBrasAccUserUserID                             Unsigned32,
+            hh3cBrasAccUserUserName                           DisplayString,
+            hh3cBrasAccUserAuthType                           INTEGER,
+            hh3cBrasAccUserIfIndex                            InterfaceIndexOrZero,
+            hh3cBrasAccUserIfName                             DisplayString,
+            hh3cBrasAccUserMacAddr                            MacAddress,
+            hh3cBrasAccUserIpAddr                             InetAddressIPv4,
+            hh3cBrasAccUserIPv6Addr                           InetAddressIPv6,
+            hh3cBrasAccUserVPNInstanceName                    DisplayString,
+            hh3cBrasAccUserServiceVLAN                        Unsigned32,
+            hh3cBrasAccUserCustomerVLAN                       Unsigned32,
+            hh3cBrasAccUserIPv4Pool                           DisplayString,
+            hh3cBrasAccUserIPv6Pool                           DisplayString,
+            hh3cBrasAccUserIPv4PoolGroup                      DisplayString,
+            hh3cBrasAccUserIPv6PoolGroup                      DisplayString,
+            hh3cBrasAccUserPublicIPAddr                       InetAddressIPv4,
+            hh3cBrasAccUserDescription                        DisplayString,
+            hh3cBrasAccUserPPPIndex                           CounterBasedGauge64,
+            hh3cBrasAccUserAuthenDomain                       DisplayString,
+            hh3cBrasAccUserAuthorDomain                       DisplayString,
+            hh3cBrasAccUserIPv4PDNSServer                     InetAddressIPv4,
+            hh3cBrasAccUserIPv4SDNSServer                     InetAddressIPv4,
+            hh3cBrasAccUserIPv6PDNSServer                     InetAddressIPv6,
+            hh3cBrasAccUserIPv6SDNSServer                     InetAddressIPv6,
+            hh3cBrasAccUserIPv6NDPrefix                       InetAddressIPv6,
+            hh3cBrasAccUserIPv6NDPrefixLen                    Unsigned32,
+            hh3cBrasAccUserIPv6PDPrefix                       InetAddressIPv6,
+            hh3cBrasAccUserIPv6PDPrefixLen                    Unsigned32,
+            hh3cBrasAccUserAuthorIPv6Pool                     DisplayString,
+            hh3cBrasAccUserIPv6PrefixPool                     DisplayString,
+            hh3cBrasAccUserIP6NDPrefixPoolGp                  DisplayString,
+            hh3cBrasAccUserDHCPv4LeaseTime                    Unsigned32,
+            hh3cBrasAccUserDHCPv4RemainLease                  Unsigned32,
+            hh3cBrasAccUserDHCPv6LeaseTime                    Unsigned32,
+            hh3cBrasAccUserDHCPv6RemainLease                  Unsigned32,
+            hh3cBrasAccUserAccessType                         INTEGER,
+            hh3cBrasAccUserAgentCircuitID                     DisplayString,
+            hh3cBrasAccUserAgentRemoteID                      DisplayString,
+            hh3cBrasAccUserNASPortID                          DisplayString,
+            hh3cBrasAccUserIPv6CPIfID                         DisplayString,
+            hh3cBrasAccUserIPGateway                          InetAddressIPv4,
+            hh3cBrasAccUserIPv6LinkLocalAddr                  InetAddressIPv6,
+            hh3cBrasAccUserIPv6AddrProtocol                   INTEGER,
+            hh3cBrasAccUserUserBasicIPType                    INTEGER,
+            hh3cBrasAccUserUserState                          INTEGER,
+            hh3cBrasAccUserAuthenState                        INTEGER,
+            hh3cBrasAccUserAuthorState                        INTEGER,
+            hh3cBrasAccUserRealtimeAcctSwith                  INTEGER,
+            hh3cBrasAccUserRTAcctInterval                     Unsigned32,
+            hh3cBrasAccUserLoginTime                          DisplayString,
+            hh3cBrasAccUserAccountStartTime                   DisplayString,
+            hh3cBrasAccUserOnlineTime                         OCTET STRING,
+            hh3cBrasAccUserAcctState                          INTEGER,
+            hh3cBrasAccUserAcctStartFailAct                   INTEGER,
+            hh3cBrasAccUserAcctUpdateFailAct                  INTEGER,
+            hh3cBrasAccUserAcctQuotaOutAct                    INTEGER,
+            hh3cBrasAccUserDualStackAcctMode                  INTEGER,
+            hh3cBrasAccUserIdleCutTime                        Unsigned32,
+            hh3cBrasAccUserIdleCutFlow                        Unsigned32,
+            hh3cBrasAccUserIdleCutDirection                   INTEGER,
+            hh3cBrasAccUserSessionTimeout                     Unsigned32,
+            hh3cBrasAccUserRemainTime                         Unsigned32,
+            hh3cBrasAccUserTrafficQuota                       CounterBasedGauge64,
+            hh3cBrasAccUserRemainTraffi                       CounterBasedGauge64,
+            hh3cBrasAccUserIPv6CPIfIDAssign                   TruthValue,
+            hh3cBrasAccUserRedirectWebURL                     DisplayString,
+            hh3cBrasAccUserRedirectIP6WebURL                  DisplayString,
+            hh3cBrasAccUserITAPolicyName                      DisplayString,
+            hh3cBrasAccUserMRU                                Unsigned32,
+            hh3cBrasAccUserIPv4MTU                            Unsigned32,
+            hh3cBrasAccUserIPv6MTU                            Unsigned32,
+            hh3cBrasAccUserSubscriberID                       Unsigned32,
+            hh3cBrasAccUserUserSessionLimit                   Unsigned32,
+            hh3cBrasAccUserUserSessionCnt                     Unsigned32,
+            hh3cBrasAccUserNSInboundSampler                   DisplayString,
+            hh3cBrasAccUserNSOutboundSampler                  DisplayString,
+            hh3cBrasAccUserCurAuthenMethod                    INTEGER,
+            hh3cBrasAccUserAccountSessionID                   DisplayString,
+            hh3cBrasAccUserIP4MaxMultAddrNum                  Unsigned32,
+            hh3cBrasAccUserIP4MultAddrList                    DisplayString,
+            hh3cBrasAccUserIP6MaxMultAddrNum                  Unsigned32,
+            hh3cBrasAccUserIP6MultAddrList                    DisplayString,
+            hh3cBrasAccUserGpUsrProfName                      DisplayString,
+            hh3cBrasAccUserGpUsrProfStat                      OCTET STRING,
+            hh3cBrasAccUserUserGroupACLName                   DisplayString,
+            hh3cBrasAccUserUserGroupACLState                  OCTET STRING,
+            hh3cBrasAccUserInboundCAR                         Unsigned32,
+            hh3cBrasAccUserInboundPIR                         Unsigned32,
+            hh3cBrasAccUserInboundCBS                         Unsigned32,
+            hh3cBrasAccUserInboundState                       OCTET STRING,
+            hh3cBrasAccUserOutboundCAR                        Unsigned32,
+            hh3cBrasAccUserOutboundPIR                        Unsigned32,
+            hh3cBrasAccUserOutboundCBS                        Unsigned32,
+            hh3cBrasAccUserOutboundState                      OCTET STRING,
+            hh3cBrasAccUserInboundPriLevel                    Unsigned32,
+            hh3cBrasAccUserInboundPriState                    OCTET STRING,
+            hh3cBrasAccUserOutboundPriLevel                   Unsigned32,
+            hh3cBrasAccUserOutboundPriState                   OCTET STRING,
+            hh3cBrasAccUserStartPort                          Unsigned32,
+            hh3cBrasAccUserEndPort                            Unsigned32,
+            hh3cBrasAccUserExtendPortBlock                    OCTET STRING,
+            hh3cBrasAccUserNATInstance                        DisplayString,
+            hh3cBrasAccUserIPv4UpLinkPkts                     Counter64,
+            hh3cBrasAccUserIPv4UpLinkBytes                    Counter64,
+            hh3cBrasAccUserIPv4DownLinkPkts                   Counter64,
+            hh3cBrasAccUserIPv4DownLinkBytes                  Counter64,
+            hh3cBrasAccUserIPv6UpLinkPkts                     Counter64,
+            hh3cBrasAccUserIPv6UpLinkBytes                    Counter64,
+            hh3cBrasAccUserIPv6DownLinkPkts                   Counter64,
+            hh3cBrasAccUserIPv6DownLinkBytes                  Counter64,
+            hh3cBrasAccUserFlowRateStartTime                  DisplayString,
+            hh3cBrasAccUserFlowRateEndTime                    DisplayString,
+            hh3cBrasAccUserIPv4FlowRateStat                   DisplayString,
+            hh3cBrasAccUserIPv6FlowRateStat                   DisplayString,
+            hh3cBrasAccUserSessionID                          Unsigned32,
+            hh3cBrasAccUserLacGroupID                         Unsigned32,
+            hh3cBrasAccUserLacLocalTunnelID                   Unsigned32,
+            hh3cBrasAccUserLacRemoteTunnelID                  Unsigned32,
+            hh3cBrasAccUserLacLocalSessionID                  Unsigned32,
+            hh3cBrasAccUserLacRmtSessionID                    Unsigned32,
+            hh3cBrasAccUserLacLocalIPAddr                     InetAddressIPv4,
+            hh3cBrasAccUserLacRemoteIPAddr                    InetAddressIPv4,
+            hh3cBrasAccUserLacLocalPort                       Unsigned32,
+            hh3cBrasAccUserLacRemotePort                      Unsigned32,
+            hh3cBrasAccUserLacVrfIndex                        Unsigned32,
+            hh3cBrasAccUserLacCallingStation                  DisplayString,
+            hh3cBrasAccUserLnsGroupID                         Unsigned32,
+            hh3cBrasAccUserLnsLocalTunnelID                   Unsigned32,
+            hh3cBrasAccUserLnsRemoteTunnelID                  Unsigned32,
+            hh3cBrasAccUserLnsLocalSessionID                  Unsigned32,
+            hh3cBrasAccUserLnsRmtSessionID                    Unsigned32,
+            hh3cBrasAccUserLnsLocalIPAddr                     InetAddressIPv4,
+            hh3cBrasAccUserLnsRemoteIPAddr                    InetAddressIPv4,
+            hh3cBrasAccUserLnsLocalPort                       Unsigned32,
+            hh3cBrasAccUserLnsRemotePort                      Unsigned32,
+            hh3cBrasAccUserLnsVrfIndex                        Unsigned32,
+            hh3cBrasAccUserLnsCallingStation                  DisplayString,
+            hh3cBrasAccUserTotalSubUsers                      Unsigned32,
+            hh3cBrasAccUserBackUpStatus                       INTEGER,
+            hh3cBrasAccUserBackUpInterface                    DisplayString,
+            hh3cBrasAccUserAccessUPID                         Unsigned32,
+            hh3cBrasAccUserVpnInstance                        INTEGER,
+            hh3cBrasAccUserSwitchOverTime                     DisplayString,
+            hh3cBrasAccUserConnectType                        DisplayString,
+            hh3cBrasAccUserInbSubsGpCAR                       Unsigned32,
+            hh3cBrasAccUserInbSubsGpPIR                       Unsigned32,
+            hh3cBrasAccUserInbSubsGpCBS                       Unsigned32,
+            hh3cBrasAccUserInbSubsGpCarStat                   OCTET STRING,
+            hh3cBrasAccUserInbUsrProfName                     DisplayString,
+            hh3cBrasAccUserInbUsrProfState                    OCTET STRING,
+            hh3cBrasAccUserOutbSbsGpCAR                       Unsigned32,
+            hh3cBrasAccUserOutbSbsGpPIR                       Unsigned32,
+            hh3cBrasAccUserOutbSbsGpCBS                       Unsigned32,
+            hh3cBrasAccUserOutbSbsGpCarStat                   OCTET STRING,
+            hh3cBrasAccUserOutbUsrProfName                    DisplayString,
+            hh3cBrasAccUserOutbUsrProfStat                    OCTET STRING,
+            hh3cBrasAccUserIP4McastProfName                   DisplayString,
+            hh3cBrasAccUserIP6McastProfName                   DisplayString,
+            hh3cBrasAccUserAuthenMethod                       INTEGER,
+            hh3cBrasAccUserInitAccessUPID                     Unsigned32,
+            hh3cBrasAccUserAccountID                          Unsigned32,
+            hh3cBrasAccUserStaticLease                        TruthValue,
+            hh3cBrasAccUserIdleCutEnable                      TruthValue
+    }
+
+hh3cBrasAccUserUserID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User ID of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 1 }
+
+hh3cBrasAccUserUserName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..253))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User name of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 2 }
+
+hh3cBrasAccUserAuthType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        bind(1),
+                        web(2),
+                        ppp(3),
+                        admin(4),
+                        dot1x(5),
+                        portal(6),
+                        preAuth(7),
+                        macAuth(8),
+                        ike(9),
+                        sslvpn(10),
+                        dvpn(11),
+                        webMacAuth(12),
+                        webMacTrigger(13),
+                        webNormal(14)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authentication type of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 3 }
+
+hh3cBrasAccUserIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Interface index of BRAS access user interface."
+    ::= { hh3cBrasAccUserEntry 4 }
+
+hh3cBrasAccUserIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..47))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Interface name of BRAS access user interface."
+    ::= { hh3cBrasAccUserEntry 5 }
+
+hh3cBrasAccUserMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "MAC address of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 6 }
+
+hh3cBrasAccUserIpAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IP address of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 7 }
+
+hh3cBrasAccUserIPv6Addr OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 address of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 8 }
+
+hh3cBrasAccUserVPNInstanceName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized virtual private network (VPN) instance name of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 9 }
+
+hh3cBrasAccUserServiceVLAN OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Service provider virtual local area network (VLAN) of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 10 }
+
+hh3cBrasAccUserCustomerVLAN OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Customer VLAN of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 11 }
+
+hh3cBrasAccUserIPv4Pool OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Point to point protocol (PPP) internet protocol control protocol (IPCP) address pool name of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 12 }
+
+hh3cBrasAccUserIPv6Pool OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "PPP IPv6 address pool name of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 13 }
+
+hh3cBrasAccUserIPv4PoolGroup OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 pool group of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 14 }
+
+hh3cBrasAccUserIPv6PoolGroup OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 pool group of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 15 }
+
+hh3cBrasAccUserPublicIPAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Public IP address of carrier grade network address translation (CGN) users."
+    ::= { hh3cBrasAccUserEntry 16 }
+
+hh3cBrasAccUserDescription OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Description of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 17 }
+
+hh3cBrasAccUserPPPIndex OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "PPP session index."
+    ::= { hh3cBrasAccUserEntry 18 }
+
+hh3cBrasAccUserAuthenDomain OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Domain name for authentication."
+    ::= { hh3cBrasAccUserEntry 19 }
+
+hh3cBrasAccUserAuthorDomain OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Domain name for authorization."
+    ::= { hh3cBrasAccUserEntry 20 }
+
+hh3cBrasAccUserIPv4PDNSServer OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 primary domain name system (DNS) server of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 21 }
+
+hh3cBrasAccUserIPv4SDNSServer OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 secondary DNS server of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 22 }
+
+hh3cBrasAccUserIPv6PDNSServer OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 primary DNS server  of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 23 }
+
+hh3cBrasAccUserIPv6SDNSServer OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 secondary DNS server of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 24 }
+
+hh3cBrasAccUserIPv6NDPrefix OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 ND prefix of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 25 }
+
+hh3cBrasAccUserIPv6NDPrefixLen OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Length of IPv6 ND prefix."
+    ::= { hh3cBrasAccUserEntry 26 }
+
+hh3cBrasAccUserIPv6PDPrefix OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 PD prefix of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 27 }
+
+hh3cBrasAccUserIPv6PDPrefixLen OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Length of IPv6 PD prefix."
+    ::= { hh3cBrasAccUserEntry 28 }
+
+hh3cBrasAccUserAuthorIPv6Pool OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 pool for authorization."
+    ::= { hh3cBrasAccUserEntry 29 }
+
+hh3cBrasAccUserIPv6PrefixPool OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 prefix pool for authorization."
+    ::= { hh3cBrasAccUserEntry 30 }
+
+hh3cBrasAccUserIP6NDPrefixPoolGp OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 ND prefix pool group for authorization."
+    ::= { hh3cBrasAccUserEntry 31 }
+
+hh3cBrasAccUserDHCPv4LeaseTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Lease time of DHCPv4."
+    ::= { hh3cBrasAccUserEntry 32 }
+
+hh3cBrasAccUserDHCPv4RemainLease OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Dynamic host configuration protocol (DHCP) user remaining lease."
+    ::= { hh3cBrasAccUserEntry 33 }
+
+hh3cBrasAccUserDHCPv6LeaseTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Lease time of dynamic host configuration protocol for IPv6 (DHCPv6)."
+    ::= { hh3cBrasAccUserEntry 34 }
+
+hh3cBrasAccUserDHCPv6RemainLease OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "DHCPv6 user remaining lease."
+    ::= { hh3cBrasAccUserEntry 35 }
+
+hh3cBrasAccUserAccessType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        pppoe(0),
+                        pppoa(1),
+                        pppofr(2),
+                        pppophy(3),
+                        vppp(4),
+                        lns(5),
+                        l2IpoeDynamic(6),
+                        l2IpoeStatic(7),
+                        l2IpoeInterfaceLeased(8),
+                        l2IpoeSubnetLeased(9),
+                        l2IpoeLeasedSubusers(10),
+                        l2IpoeL2VPNLeased(11),
+                        l3IpoeDynamic(12),
+                        l3IpoeStatic(13),
+                        l3IpoeInterfaceLeased(14),
+                        l3IpoeSubnetLeased(15),
+                        webAuth(16),
+                        portal(17),
+                        telnet(18),
+                        ssh(19),
+                        http(20),
+                        https(21),
+                        ftp(22),
+                        command(23),
+                        super(24),
+                        pad(25),
+                        terminal(26),
+                        macAuth(27),
+                        dot1x(28),
+                        ike(29),
+                        sslvpn(30),
+                        dvpn(31),
+                        l2IpoeFamilyLeased(32),
+                        pppoegw(33)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Access type of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 36 }
+
+hh3cBrasAccUserAgentCircuitID OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "DHCP circuit ID of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 37 }
+
+hh3cBrasAccUserAgentRemoteID OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "DHCP remote ID of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 38 }
+
+hh3cBrasAccUserNASPortID OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Network access server (NAS) port ID of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 39 }
+
+hh3cBrasAccUserIPv6CPIfID OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..19))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 CP interface ID of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 40 }
+
+hh3cBrasAccUserIPGateway OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 gateway address of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 41 }
+
+hh3cBrasAccUserIPv6LinkLocalAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 link-local address of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 42 }
+
+hh3cBrasAccUserIPv6AddrProtocol OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        none(0),
+                        nd(1),
+                        dhcpv6(2),
+                        dhcpv6pd(3),
+                        dhcpv6pdAndNd(4),
+                        dhcpv6AndDhcpv6pd(5)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 address protocol of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 43 }
+
+hh3cBrasAccUserUserBasicIPType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        none(0),
+                        ipv4(1),
+                        ipv6(2),
+                        pd(3),
+                        ipv4AndIpv6(4),
+                        ipv4AndPd(5),
+                        ipv6AndPd(6),
+                        ipv4AndIpv6AndPd(7)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User basic service IP type of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 44 }
+
+hh3cBrasAccUserUserState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        init(0),
+                        authing(1),
+                        authed(2),
+                        reauth(3),
+                        logout(4),
+                        online(5),
+                        offline(6)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User state of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 45 }
+
+hh3cBrasAccUserAuthenState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        idle(0),
+                        authenticating(1),
+                        authenticated(2),
+                        invalid(3)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authentication state of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 46 }
+
+hh3cBrasAccUserAuthorState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        idle(0),
+                        authorizing(1),
+                        authorized(2),
+                        invalid(3)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorization state of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 47 }
+
+hh3cBrasAccUserRealtimeAcctSwith OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        closed(0),
+                        open(1)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Realtime accounting switch of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 48 }
+
+hh3cBrasAccUserRTAcctInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Realtime accounting interval of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 49 }
+
+hh3cBrasAccUserLoginTime OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..19))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User login time of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 50 }
+
+hh3cBrasAccUserAccountStartTime OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..19))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Accounting start time of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 51 }
+
+hh3cBrasAccUserOnlineTime OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE    (0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Online time of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 52 }
+
+hh3cBrasAccUserAcctState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        stop(0),
+                        accounting(1),
+                        idle(2),
+                        ready(3),
+                        leavingFlowquery(4),
+                        waitAcctStart(5),
+                        waitAcctStop(6)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Accounting state of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 53 }
+
+hh3cBrasAccUserAcctStartFailAct OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        online(0),
+                        offline(1)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Action upon accounting start failure."
+    ::= { hh3cBrasAccUserEntry 54 }
+
+hh3cBrasAccUserAcctUpdateFailAct OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        online(0),
+                        offline(1)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Action upon accounting update failure."
+    ::= { hh3cBrasAccUserEntry 55 }
+
+hh3cBrasAccUserAcctQuotaOutAct OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        online(0),
+                        offline(1),
+                        redirect(2)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Action upon quota exhaustion."
+    ::= { hh3cBrasAccUserEntry 56 }
+
+hh3cBrasAccUserDualStackAcctMode OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        separate(0),
+                        merge(1)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Dual-stack accounting mode."
+    ::= { hh3cBrasAccUserEntry 57 }
+
+hh3cBrasAccUserIdleCutTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Time limit of user idle."
+    ::= { hh3cBrasAccUserEntry 58 }
+
+hh3cBrasAccUserIdleCutFlow OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Flow limit of user idle."
+    ::= { hh3cBrasAccUserEntry 59 }
+
+hh3cBrasAccUserIdleCutDirection OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        both(0),
+                        inbound(1),
+                        outbound(2)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Direction of flow limit."
+    ::= { hh3cBrasAccUserEntry 60 }
+
+hh3cBrasAccUserSessionTimeout OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized time of user online."
+    ::= { hh3cBrasAccUserEntry 61 }
+hh3cBrasAccUserRemainTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Session duration from authentication, authorization, and accounting (AAA)."
+    ::= { hh3cBrasAccUserEntry 62 }
+
+hh3cBrasAccUserTrafficQuota OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized quota of user."
+    ::= { hh3cBrasAccUserEntry 63 }
+
+hh3cBrasAccUserRemainTraffi OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Remaining quota of user."
+    ::= { hh3cBrasAccUserEntry 64 }
+
+hh3cBrasAccUserIPv6CPIfIDAssign OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6CP interface ID assignment of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 65 }
+
+hh3cBrasAccUserRedirectWebURL OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Redirect Web uniform resource location (URL) of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 66 }
+
+hh3cBrasAccUserRedirectIP6WebURL OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Redirect IPv6 Web URL of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 67 }
+
+hh3cBrasAccUserITAPolicyName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Intelligent target accounting (ITA) policy name of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 68 }
+
+hh3cBrasAccUserMRU OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Maximum receive unit (MRU) of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 69 }
+
+hh3cBrasAccUserIPv4MTU OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 maximum transfer unit (MTU) of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 70 }
+
+hh3cBrasAccUserIPv6MTU OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 MTU of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 71 }
+
+hh3cBrasAccUserSubscriberID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Subscriber ID of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 72 }
+
+hh3cBrasAccUserUserSessionLimit OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User session limit of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 73 }
+
+hh3cBrasAccUserUserSessionCnt OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User session count of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 74 }
+
+hh3cBrasAccUserNSInboundSampler OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "NetStream inbound sampler of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 75 }
+
+hh3cBrasAccUserNSOutboundSampler OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "NetStream outbound sampler of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 76 }
+
+hh3cBrasAccUserCurAuthenMethod OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        none(0),
+                        radius(1),
+                        local(2),
+                        tacacs(3),
+                        radiusProxy(4),
+                        invalid(5)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Current authentication method of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 77 }
+
+hh3cBrasAccUserAccountSessionID OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..64))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Accounting session ID of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 78 }
+
+hh3cBrasAccUserIP4MaxMultAddrNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 max multicast address number of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 79 }
+
+hh3cBrasAccUserIP4MultAddrList OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 multicast address list of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 80 }
+
+hh3cBrasAccUserIP6MaxMultAddrNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 max multicast address number of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 81 }
+
+hh3cBrasAccUserIP6MultAddrList OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 multicast address list of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 82 }
+
+hh3cBrasAccUserGpUsrProfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized group user profile name from AAA."
+    ::= { hh3cBrasAccUserEntry 83 }
+
+hh3cBrasAccUserGpUsrProfStat OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE    (0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized group user profile state from AAA."
+    ::= { hh3cBrasAccUserEntry 84 }
+
+hh3cBrasAccUserUserGroupACLName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..32))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User group access control lists (ACL) name."
+    ::= { hh3cBrasAccUserEntry 85 }
+
+hh3cBrasAccUserUserGroupACLState OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE    (0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User group ACL state."
+    ::= { hh3cBrasAccUserEntry 86 }
+
+hh3cBrasAccUserInboundCAR OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized inbound average rate value."
+    ::= { hh3cBrasAccUserEntry 87 }
+
+hh3cBrasAccUserInboundPIR OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized inbound peak rate value."
+    ::= { hh3cBrasAccUserEntry 88 }
+
+hh3cBrasAccUserInboundCBS OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Inbound committed burst size (CBS) of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 89 }
+
+hh3cBrasAccUserInboundState OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE    (0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Inbound state of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 90 }
+
+hh3cBrasAccUserOutboundCAR OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized outbound average rate value."
+    ::= { hh3cBrasAccUserEntry 91 }
+
+hh3cBrasAccUserOutboundPIR OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized outbound peak rate value."
+    ::= { hh3cBrasAccUserEntry 92 }
+
+hh3cBrasAccUserOutboundCBS OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Outbound CBS of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 93 }
+
+hh3cBrasAccUserOutboundState OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE    (0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Outbound state of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 94 }
+
+hh3cBrasAccUserInboundPriLevel OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User inbound priority level of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 95 }
+
+hh3cBrasAccUserInboundPriState OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE    (0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User inbound priority state of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 96 }
+
+hh3cBrasAccUserOutboundPriLevel OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User outbound priority level of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 97 }
+
+hh3cBrasAccUserOutboundPriState OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE    (0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User outbound priority state of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 98 }
+
+hh3cBrasAccUserStartPort OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Start port of port block of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 99 }
+
+hh3cBrasAccUserEndPort OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "End port of port block of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 100 }
+
+hh3cBrasAccUserExtendPortBlock OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE    (0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Extended port blocks of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 101 }
+
+hh3cBrasAccUserNATInstance OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "NAT instance of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 102 }
+
+hh3cBrasAccUserIPv4UpLinkPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 uplink flow statistics in packets."
+    ::= { hh3cBrasAccUserEntry 103 }
+
+hh3cBrasAccUserIPv4UpLinkBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 uplink flow statistics in bytes."
+    ::= { hh3cBrasAccUserEntry 104 }
+
+hh3cBrasAccUserIPv4DownLinkPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 downlink flow statistics in packets."
+    ::= { hh3cBrasAccUserEntry 105 }
+
+hh3cBrasAccUserIPv4DownLinkBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 downlink flow statistics in bytes."
+    ::= { hh3cBrasAccUserEntry 106 }
+
+hh3cBrasAccUserIPv6UpLinkPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 uplink flow statistics in packets."
+    ::= { hh3cBrasAccUserEntry 107 }
+
+hh3cBrasAccUserIPv6UpLinkBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 uplink flow statistics in bytes."
+    ::= { hh3cBrasAccUserEntry 108 }
+
+hh3cBrasAccUserIPv6DownLinkPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 downlink flow statistics in packets."
+    ::= { hh3cBrasAccUserEntry 109 }
+
+hh3cBrasAccUserIPv6DownLinkBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 downlink flow statistics in bytes."
+    ::= { hh3cBrasAccUserEntry 110 }
+
+hh3cBrasAccUserFlowRateStartTime OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..19))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Flow rate calculation start time."
+    ::= { hh3cBrasAccUserEntry 111 }
+
+hh3cBrasAccUserFlowRateEndTime OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..19))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Flow rate calculation end time."
+    ::= { hh3cBrasAccUserEntry 112 }
+
+hh3cBrasAccUserIPv4FlowRateStat OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 flow rate statistics of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 113 }
+
+hh3cBrasAccUserIPv6FlowRateStat OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 flow rate statistics of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 114 }
+
+hh3cBrasAccUserSessionID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Session ID of PPP users."
+    ::= { hh3cBrasAccUserEntry 115 }
+
+hh3cBrasAccUserLacGroupID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LAC group ID."
+    ::= { hh3cBrasAccUserEntry 116 }
+
+hh3cBrasAccUserLacLocalTunnelID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LAC local tunnel ID."
+    ::= { hh3cBrasAccUserEntry 117 }
+
+hh3cBrasAccUserLacRemoteTunnelID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LAC remote tunnel ID."
+    ::= { hh3cBrasAccUserEntry 118 }
+
+hh3cBrasAccUserLacLocalSessionID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LAC local session ID."
+    ::= { hh3cBrasAccUserEntry 119 }
+
+hh3cBrasAccUserLacRmtSessionID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LAC remote session ID."
+    ::= { hh3cBrasAccUserEntry 120 }
+
+hh3cBrasAccUserLacLocalIPAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LAC local IP address."
+    ::= { hh3cBrasAccUserEntry 121 }
+
+hh3cBrasAccUserLacRemoteIPAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LAC remote IP address."
+    ::= { hh3cBrasAccUserEntry 122 }
+
+hh3cBrasAccUserLacLocalPort OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LAC local user datagram protocol (UDP) port."
+    ::= { hh3cBrasAccUserEntry 123 }
+
+hh3cBrasAccUserLacRemotePort OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LAC remote UDP port."
+    ::= { hh3cBrasAccUserEntry 124 }
+
+hh3cBrasAccUserLacVrfIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LAC virtual routing forwarding (VRF) index."
+    ::= { hh3cBrasAccUserEntry 125 }
+
+hh3cBrasAccUserLacCallingStation OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..64))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LAC call station."
+    ::= { hh3cBrasAccUserEntry 126 }
+
+hh3cBrasAccUserLnsGroupID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LNS group ID."
+    ::= { hh3cBrasAccUserEntry 127 }
+
+hh3cBrasAccUserLnsLocalTunnelID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LNS local tunnel ID."
+    ::= { hh3cBrasAccUserEntry 128 }
+
+hh3cBrasAccUserLnsRemoteTunnelID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LNS remote tunnel ID."
+    ::= { hh3cBrasAccUserEntry 129 }
+
+hh3cBrasAccUserLnsLocalSessionID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LNS local session ID."
+    ::= { hh3cBrasAccUserEntry 130 }
+
+hh3cBrasAccUserLnsRmtSessionID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LNS remote session ID."
+    ::= { hh3cBrasAccUserEntry 131 }
+
+hh3cBrasAccUserLnsLocalIPAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LNS local IP address."
+    ::= { hh3cBrasAccUserEntry 132 }
+
+hh3cBrasAccUserLnsRemoteIPAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LNS remote IP address."
+    ::= { hh3cBrasAccUserEntry 133 }
+
+hh3cBrasAccUserLnsLocalPort OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LNS local UDP port."
+    ::= { hh3cBrasAccUserEntry 134 }
+
+hh3cBrasAccUserLnsRemotePort OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LNS remote UDP port."
+    ::= { hh3cBrasAccUserEntry 135 }
+
+hh3cBrasAccUserLnsVrfIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LNS VRF index."
+    ::= { hh3cBrasAccUserEntry 136 }
+
+hh3cBrasAccUserLnsCallingStation OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..64))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "L2TP LNS call station."
+    ::= { hh3cBrasAccUserEntry 137 }
+
+hh3cBrasAccUserTotalSubUsers OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Total subuser count."
+    ::= { hh3cBrasAccUserEntry 138 }
+
+hh3cBrasAccUserBackUpStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        master(0),
+                        backup(1),
+                        down(2),
+                        invalid(3)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Backup status of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 139 }
+
+hh3cBrasAccUserBackUpInterface OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..47))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Backup interface name of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 140 }
+
+hh3cBrasAccUserAccessUPID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Access UP ID of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 141 }
+
+hh3cBrasAccUserVpnInstance OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        default(0),
+                        allVpnInstances(1),
+                        allPublicNetworkInstances(2)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "VPN instances of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 142 }
+
+hh3cBrasAccUserSwitchOverTime OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..19))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User UP switchover time of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 143 }
+
+hh3cBrasAccUserConnectType OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User connection type of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 144 }
+
+hh3cBrasAccUserInbSubsGpCAR OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized inbound subscriber group average rate value."
+    ::= { hh3cBrasAccUserEntry 145 }
+
+hh3cBrasAccUserInbSubsGpPIR OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized inbound subscriber group peak rate value."
+    ::= { hh3cBrasAccUserEntry 146 }
+
+hh3cBrasAccUserInbSubsGpCBS OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Inbound subscriber group CBS."
+    ::= { hh3cBrasAccUserEntry 147 }
+
+hh3cBrasAccUserInbSubsGpCarStat OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE    (0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Inbound subscriber group committed access rate(CAR) state."
+    ::= { hh3cBrasAccUserEntry 148 }
+
+hh3cBrasAccUserInbUsrProfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized inbound user profile name from AAA."
+    ::= { hh3cBrasAccUserEntry 149 }
+
+hh3cBrasAccUserInbUsrProfState OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE    (0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Inbound user profile state."
+    ::= { hh3cBrasAccUserEntry 150 }
+
+hh3cBrasAccUserOutbSbsGpCAR OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized outbound subscriber group average rate value."
+    ::= { hh3cBrasAccUserEntry 151 }
+
+hh3cBrasAccUserOutbSbsGpPIR OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized outbound subscriber group peak rate value."
+    ::= { hh3cBrasAccUserEntry 152 }
+
+hh3cBrasAccUserOutbSbsGpCBS OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Outbound subscriber group CBS."
+    ::= { hh3cBrasAccUserEntry 153 }
+
+hh3cBrasAccUserOutbSbsGpCarStat OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE    (0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Outbound subscriber group CAR state."
+    ::= { hh3cBrasAccUserEntry 154 }
+
+hh3cBrasAccUserOutbUsrProfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized outbound user profile name from AAA."
+    ::= { hh3cBrasAccUserEntry 155 }
+
+hh3cBrasAccUserOutbUsrProfStat OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE    (0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Outbound user profile state."
+    ::= { hh3cBrasAccUserEntry 156 }
+
+hh3cBrasAccUserIP4McastProfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized IPv4 multicast profile name from AAA."
+    ::= { hh3cBrasAccUserEntry 157 }
+
+hh3cBrasAccUserIP6McastProfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (0..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized IPv6 multicast profile name from AAA."
+    ::= { hh3cBrasAccUserEntry 158 }
+
+hh3cBrasAccUserAuthenMethod OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        pap(0),
+                        chap(1),
+                        eap(2),
+                        mschap(3),
+                        mschapv2(4),
+                        invalid(5)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "AAA authentication method of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 159 }
+
+hh3cBrasAccUserInitAccessUPID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Initial access UP ID of BRAS access user."
+    ::= { hh3cBrasAccUserEntry 160 }
+
+hh3cBrasAccUserAccountID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Account ID of user."
+    ::= { hh3cBrasAccUserEntry 161 }
+
+hh3cBrasAccUserStaticLease OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Static leased user."
+    ::= { hh3cBrasAccUserEntry 162 }
+
+hh3cBrasAccUserIdleCutEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Idle cut authorization failed."
+    ::= { hh3cBrasAccUserEntry 163 }
+
+hh3cBrasAccUserItaTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cBrasAccUserItaEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "This table contains the information about ITA user."
+    ::= { hh3cBrasAcc 10 }
+
+hh3cBrasAccUserItaEntry  OBJECT-TYPE
+    SYNTAX      Hh3cBrasAccUserItaEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "This entry contains the information about ITA user."
+    INDEX
+    {
+            hh3cBrasAccUserItaUserID,
+            hh3cBrasAccUserItaLevel
+    }
+    ::= { hh3cBrasAccUserItaTable 1 }
+
+Hh3cBrasAccUserItaEntry ::=
+    SEQUENCE
+    {
+            hh3cBrasAccUserItaUserID            Unsigned32,
+            hh3cBrasAccUserItaLevel             Unsigned32,
+            hh3cBrasAccUserItaIPv4FlowStat      DisplayString,
+            hh3cBrasAccUserItaIPv6FlowStat      DisplayString
+    }
+
+hh3cBrasAccUserItaUserID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User ID of ITA user."
+    ::= { hh3cBrasAccUserItaEntry 1 }
+
+hh3cBrasAccUserItaLevel OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "ITA level of ITA user."
+    ::= { hh3cBrasAccUserItaEntry 2 }
+
+hh3cBrasAccUserItaIPv4FlowStat OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(0..80))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 flow statistics of ITA user."
+    ::= { hh3cBrasAccUserItaEntry 3 }
+
+hh3cBrasAccUserItaIPv6FlowStat OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(0..80))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 flow statistics of ITA user."
+    ::= { hh3cBrasAccUserItaEntry 4 }
+
+hh3cBrasAccUserEdsgTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cBrasAccUserEdsgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "This table contains the information about enhanced dynamic service gateway (EDSG) user."
+    ::= { hh3cBrasAcc 11 }
+
+hh3cBrasAccUserEdsgEntry  OBJECT-TYPE
+    SYNTAX      Hh3cBrasAccUserEdsgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "This entry contains the information about EDSG user."
+    INDEX
+    {
+            hh3cBrasAccUserEdsgUserID,
+            hh3cBrasAccUserEdsgSeviceID
+    }
+    ::= { hh3cBrasAccUserEdsgTable 1 }
+
+Hh3cBrasAccUserEdsgEntry ::=
+    SEQUENCE
+    {
+            hh3cBrasAccUserEdsgUserID                 Unsigned32,
+            hh3cBrasAccUserEdsgSeviceID               Unsigned32,
+            hh3cBrasAccUserEdsgIPv4FlowStat           DisplayString,
+            hh3cBrasAccUserEdsgIPv6FlowStat           DisplayString
+    }
+
+hh3cBrasAccUserEdsgUserID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User ID of EDSG user."
+    ::= { hh3cBrasAccUserEdsgEntry 1 }
+
+hh3cBrasAccUserEdsgSeviceID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Service ID of EDSG user."
+    ::= { hh3cBrasAccUserEdsgEntry 2 }
+
+hh3cBrasAccUserEdsgIPv4FlowStat OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(0..80))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 flow statistics of EDSG user."
+    ::= { hh3cBrasAccUserEdsgEntry 3 }
+
+hh3cBrasAccUserEdsgIPv6FlowStat OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(0..80))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 flow statistics of EDSG user."
+    ::= { hh3cBrasAccUserEdsgEntry 4 }
+
+hh3cBrasAccUserSubUserTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cBrasAccUserSubUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "This table contains the information about leased subuser."
+    ::= { hh3cBrasAcc 12 }
+
+hh3cBrasAccUserSubUserEntry  OBJECT-TYPE
+    SYNTAX      Hh3cBrasAccUserSubUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "This entry contains the information about leased subuser."
+    INDEX
+    {
+            hh3cBrasAccSubUserLeasedUserID,
+            hh3cBrasAccSubUserUserID
+    }
+    ::= { hh3cBrasAccUserSubUserTable 1 }
+
+Hh3cBrasAccUserSubUserEntry ::=
+    SEQUENCE
+    {
+            hh3cBrasAccSubUserLeasedUserID           Unsigned32,
+            hh3cBrasAccSubUserUserID                 Unsigned32,
+            hh3cBrasAccSubUserMacAddr                MacAddress,
+            hh3cBrasAccSubUserIpAddr                 InetAddressIPv4,
+            hh3cBrasAccSubUserIPv6Addr               InetAddressIPv6,
+            hh3cBrasAccSubUserServiceVLAN            Unsigned32,
+            hh3cBrasAccSubUserCustomerVLAN           Unsigned32
+    }
+
+hh3cBrasAccSubUserLeasedUserID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User ID of leased user."
+    ::= { hh3cBrasAccUserSubUserEntry 1 }
+
+hh3cBrasAccSubUserUserID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User ID of leased subuser."
+    ::= { hh3cBrasAccUserSubUserEntry 2 }
+
+hh3cBrasAccSubUserMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "MAC address of leased subuser."
+    ::= { hh3cBrasAccUserSubUserEntry 3 }
+
+hh3cBrasAccSubUserIpAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 address of leased subuser."
+    ::= { hh3cBrasAccUserSubUserEntry 4 }
+
+hh3cBrasAccSubUserIPv6Addr OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 address of leased subuser."
+    ::= { hh3cBrasAccUserSubUserEntry 5 }
+
+hh3cBrasAccSubUserServiceVLAN OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Service provider VLAN of leased subuser."
+    ::= { hh3cBrasAccUserSubUserEntry 6 }
+
+hh3cBrasAccSubUserCustomerVLAN OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Customer VLAN of leased subuser."
+    ::= { hh3cBrasAccUserSubUserEntry 7 }
+
+hh3cBrasAccUserBriefTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cBrasAccUserBriefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "This table contains the brief information about BRAS access user."
+    ::= { hh3cBrasAcc 13 }
+
+hh3cBrasAccUserBriefEntry  OBJECT-TYPE
+    SYNTAX      Hh3cBrasAccUserBriefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "This entry contains the brief information about BRAS access user."
+    INDEX
+    {
+            hh3cBrasAccUserBriefUserID
+    }
+    ::= { hh3cBrasAccUserBriefTable 1 }
+
+Hh3cBrasAccUserBriefEntry ::=
+    SEQUENCE
+    {
+            hh3cBrasAccUserBriefUserID              Unsigned32,
+            hh3cBrasAccUserBriefUserName            DisplayString,
+            hh3cBrasAccUserBriefIfIndex             InterfaceIndexOrZero,
+            hh3cBrasAccUserBriefIfName              DisplayString,
+            hh3cBrasAccUserBriefMacAddr             MacAddress,
+            hh3cBrasAccUserBriefIpAddr              InetAddressIPv4,
+            hh3cBrasAccUserBriefIPv6Addr            InetAddressIPv6,
+            hh3cBrasAccUserBriefServiceVLAN         Unsigned32,
+            hh3cBrasAccUserBriefCustomerVLAN        Unsigned32,
+            hh3cBrasAccUserBriefAccessType          INTEGER
+    }
+
+hh3cBrasAccUserBriefUserID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User ID of BRAS access user."
+    ::= { hh3cBrasAccUserBriefEntry 1 }
+
+hh3cBrasAccUserBriefUserName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(0..253))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User name of BRAS access user."
+    ::= { hh3cBrasAccUserBriefEntry 2 }
+
+hh3cBrasAccUserBriefIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Acess interface index of BRAS access user."
+    ::= { hh3cBrasAccUserBriefEntry 3 }
+
+hh3cBrasAccUserBriefIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(0..47))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Acess interface name of BRAS access user."
+    ::= { hh3cBrasAccUserBriefEntry 4 }
+
+hh3cBrasAccUserBriefMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "MAC address of BRAS access user."
+    ::= { hh3cBrasAccUserBriefEntry 5 }
+
+hh3cBrasAccUserBriefIpAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 address of BRAS access user."
+    ::= { hh3cBrasAccUserBriefEntry 6 }
+
+hh3cBrasAccUserBriefIPv6Addr OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 address of BRAS access user."
+    ::= { hh3cBrasAccUserBriefEntry 7 }
+
+hh3cBrasAccUserBriefServiceVLAN OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Service provider VLAN of BRAS access user."
+    ::= { hh3cBrasAccUserBriefEntry 8 }
+
+hh3cBrasAccUserBriefCustomerVLAN OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Customer VLAN of BRAS access user."
+    ::= { hh3cBrasAccUserBriefEntry 9 }
+
+hh3cBrasAccUserBriefAccessType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        pppoe(0),
+                        pppoa(1),
+                        pppofr(2),
+                        pppophy(3),
+                        vppp(4),
+                        lns(5),
+                        l2IpoeDynamic(6),
+                        l2IpoeStatic(7),
+                        l2IpoeInterfaceLeased(8),
+                        l2IpoeSubnetLeased(9),
+                        l2IpoeLeasedSubusers(10),
+                        l2IpoeL2VPNLeased(11),
+                        l3IpoeDynamic(12),
+                        l3IpoeStatic(13),
+                        l3IpoeInterfaceLeased(14),
+                        l3IpoeSubnetLeased(15),
+                        webAuth(16),
+                        portal(17),
+                        telnet(18),
+                        ssh(19),
+                        http(20),
+                        https(21),
+                        ftp(22),
+                        command(23),
+                        super(24),
+                        pad(25),
+                        terminal(26),
+                        macAuth(27),
+                        dot1x(28),
+                        ike(29),
+                        sslvpn(30),
+                        dvpn(31),
+                        l2IpoeFamilyLeased(32),
+                        pppoegw(33)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Access type of BRAS access user."
+    ::= { hh3cBrasAccUserBriefEntry 10 }
+
+END

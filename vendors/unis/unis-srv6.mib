@@ -1,0 +1,88 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Segment Routing over IPv6 (SRv6) MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2020-08-31 The initial version, created by Chen ZiChao
+-- =================================================================
+UNIS-SRV6-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,OBJECT-TYPE, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    InetAddressIPv6, InetAddressPrefixLength
+        FROM INET-ADDRESS-MIB
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisSrv6 MODULE-IDENTITY
+    LAST-UPDATED "202008310000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+
+    DESCRIPTION
+        "This MIB file provides information about Segment Routing over IPv6 (SRv6)."
+    REVISION "202008310000Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 197 }
+
+-- Top-level structure of MIB
+unisSrv6Notifications  OBJECT IDENTIFIER ::= { unisSrv6 0 }
+unisSrv6Objects    OBJECT IDENTIFIER ::= { unisSrv6 1 }
+
+-- The SRv6 Notification Table
+
+-- The SRv6 Notification Table records fields that are
+-- required for notifications.
+
+unisSrv6NotificationEntry OBJECT IDENTIFIER
+    ::= { unisSrv6Objects 1 }
+
+unisSrv6NotificationSid OBJECT-TYPE
+    SYNTAX       InetAddressIPv6
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The local SRv6 SID."
+    ::= { unisSrv6NotificationEntry 1 }
+
+unisSrv6NotificationSidPrefixLen OBJECT-TYPE
+    SYNTAX       InetAddressPrefixLength
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+    "The prefix length of the local SRv6 SID."
+    ::= { unisSrv6NotificationEntry 2 }
+
+-- Notification Definitions
+
+-- The notifications need to be throttled so as to not overwhelm the
+-- management agent in case of rapid changes to the SRv6 module.
+
+unisSrv6SidRouteConflict NOTIFICATION-TYPE
+    OBJECTS { unisSrv6NotificationSid,
+        unisSrv6NotificationSidPrefixLen
+        }
+    STATUS       current
+    DESCRIPTION
+    "A unisSrv6SidRouteConflict notification signifies that an
+    local SRv6 SID is conflicted with routes in routing table."
+    ::= { unisSrv6Notifications 1 }
+
+unisSrv6SidRouteConflictClear NOTIFICATION-TYPE
+    OBJECTS { unisSrv6NotificationSid,
+        unisSrv6NotificationSidPrefixLen
+        }
+    STATUS       current
+    DESCRIPTION
+    "A unisSrv6SidRouteConflictClear notification signifies that
+    the conflict between the local SRv6 SID and routes in routing table
+    has been resolved."
+    ::= { unisSrv6Notifications 2 }
+
+END

@@ -1,0 +1,659 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--   The file defines a MIB to provide spectrum analysis information.
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 Created by Wang Lu
+--     Initial version 2011-08-05
+-- =============================================================================
+UNIS-DOT11-SA-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        TruthValue,
+        DateAndTime
+    FROM SNMPv2-TC
+        MODULE-IDENTITY,
+        Integer32, Unsigned32, OBJECT-TYPE, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        unisDot11,
+        UnisDot11ChannelScopeType,
+        UnisDot11ObjectIDType,
+        UnisDot11RadioScopeType,
+        UnisDot11SaIntfDevType
+    FROM UNIS-DOT11-REF-MIB;
+
+unisDot11Sa MODULE-IDENTITY
+    LAST-UPDATED "201108262000Z"        -- Aug 26, 2011 at 20:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB module provides spectrum analysis information.
+        The initial revision of this MIB module.
+
+        The spectrum analysis module on APs is able to examine the radio
+        frequency (RF) environment in which the Wi-Fi network is operating,
+        identify interference and classify its sources. An analysis of the
+        results can then be used to quickly isolate issues with packet
+        transmission, channel quality, and traffic congestion caused by
+        contention with other devices operating in the same band or channel."
+    REVISION "201108262000Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisDot11 13 }
+
+-- *****************************************************************************
+-- *  Major sections
+-- *****************************************************************************
+
+unisDot11SaCfgGroup OBJECT IDENTIFIER  ::= { unisDot11Sa 1 }
+unisDot11SaStatusGroup OBJECT IDENTIFIER  ::= { unisDot11Sa 2 }
+unisDot11SaNotifyGroup OBJECT IDENTIFIER  ::= { unisDot11Sa 3 }
+
+-- cfg table
+unisDot11SaCfgTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11SaCfgEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table is used to configure spectrum analysis."
+    ::= { unisDot11SaCfgGroup 1 }
+
+unisDot11SaCfgEntry OBJECT-TYPE
+    SYNTAX UnisDot11SaCfgEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This entry contains the spectrum analysis configuration."
+    INDEX { unisDot11SaCfgRadioType }
+    ::= { unisDot11SaCfgTable 1 }
+
+UnisDot11SaCfgEntry ::= SEQUENCE
+    {
+        unisDot11SaCfgRadioType       INTEGER,
+        unisDot11SaEnable             TruthValue,
+        unisDot11SaRptDevType         BITS,
+        unisDot11SaTrapDevEnable      TruthValue,
+        unisDot11SaTrapDevType        BITS,
+        unisDot11SaTrapAQEnable       TruthValue,
+        unisDot11SaTrapAQThreshold    Integer32,
+        unisDot11SaDrivenRRMEnable    TruthValue,
+        unisDot11SaDrivenRRMSnt       INTEGER
+    }
+
+unisDot11SaCfgRadioType OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        dot11bg(1),
+        dot11a(2)
+    }
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the radio type of the configuration."
+    ::= { unisDot11SaCfgEntry 1 }
+
+unisDot11SaEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents whether spectrum analysis is enabled globally."
+    ::= { unisDot11SaCfgEntry 2 }
+
+unisDot11SaRptDevType OBJECT-TYPE
+    SYNTAX BITS
+        {
+            microwave(0),
+            microwaveInverter(1),
+            bluetooth(2),
+            fixedFreqOthers(3),
+            fixedFreqCordlessPhone(4),
+            fixedFreqVideo(5),
+            fixedFreqAudio(6),
+            freqHopperOthers(7),
+            freqHopperCordlessBase(8),
+            freqHopperCordlessNetwork(9),
+            freqHopperXbox(10),
+            genericInterferer(11)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents which types of interference devices should be reported."
+    ::= { unisDot11SaCfgEntry 3 }
+
+unisDot11SaTrapDevEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents whether the interference device trap is enabled."
+    ::= { unisDot11SaCfgEntry 4 }
+
+unisDot11SaTrapDevType OBJECT-TYPE
+    SYNTAX BITS
+        {
+            microwave(0),
+            microwaveInverter(1),
+            bluetooth(2),
+            fixedFreqOthers(3),
+            fixedFreqCordlessPhone(4),
+            fixedFreqVideo(5),
+            fixedFreqAudio(6),
+            freqHopperOthers(7),
+            freqHopperCordlessBase(8),
+            freqHopperCordlessNetwork(9),
+            freqHopperXbox(10),
+            genericInterferer(11)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents which types of interference device will send traps
+         when the interference device trap is enabled."
+    ::= { unisDot11SaCfgEntry 5 }
+
+unisDot11SaTrapAQEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents whether the air quality trap is enabled."
+    ::= { unisDot11SaCfgEntry 6 }
+
+unisDot11SaTrapAQThreshold OBJECT-TYPE
+    SYNTAX Integer32(1..100)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the air quality trap threshold.  When the air quality
+        is below this value, the air quality trap will be sent."
+    ::= { unisDot11SaCfgEntry 7 }
+
+unisDot11SaDrivenRRMEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configure whether to trigger RRM to run when an access point detects
+         a certain level of interference."
+    ::= { unisDot11SaCfgEntry 8 }
+
+unisDot11SaDrivenRRMSnt OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        low(1),
+        medium(2),
+        high(3)
+    }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configure the threshold at which RRM will be triggered.  When the
+         interference level for the access point rises above the threshold
+         level, RRM initiates a local dynamic channel assignment (DCA) run
+         and changes the channel of the affected access point radio if
+         possible to improve network performance.  Low represents a decreased
+         sensitivity to changes in the environment while high represents an
+         increased sensitivity."
+    ::= { unisDot11SaCfgEntry 9 }
+
+-- fft table
+unisDot11SaRtFFTDataTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11SaRtFFTDataEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains the real-time FFT data for spectrum analysis."
+    ::= { unisDot11SaStatusGroup 1 }
+
+unisDot11SaRtFFTDataEntry OBJECT-TYPE
+    SYNTAX UnisDot11SaRtFFTDataEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This entry contains the real-time FFT data for spectrum analysis."
+    INDEX
+        {
+            unisDot11SaAPID,
+            unisDot11SaRadioID,
+            unisDot11SaRtDataGroupID,
+            unisDot11SaFrequency
+        }
+    ::= { unisDot11SaRtFFTDataTable 1 }
+
+UnisDot11SaRtFFTDataEntry ::= SEQUENCE
+    {
+        unisDot11SaAPID               UnisDot11ObjectIDType,
+        unisDot11SaRadioID            UnisDot11RadioScopeType,
+        unisDot11SaRtDataGroupID      Integer32,
+        unisDot11SaFrequency          Integer32,
+        unisDot11SaRtFreqPower        Integer32,
+        unisDot11SaRtFreqMaxPower     Integer32,
+        unisDot11SaRtFreqDutyCycle    Integer32,
+        unisDot11SaRtFreqDataSeqNo    Unsigned32
+    }
+
+unisDot11SaAPID OBJECT-TYPE
+    SYNTAX UnisDot11ObjectIDType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the serial ID of the AP."
+    ::= { unisDot11SaRtFFTDataEntry 1 }
+
+unisDot11SaRadioID OBJECT-TYPE
+    SYNTAX UnisDot11RadioScopeType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the ID of the radio."
+    ::= { unisDot11SaRtFFTDataEntry 2 }
+
+unisDot11SaRtDataGroupID OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents group ID of the collected data.  Maybe the device collects
+         multiple groups of data at the collected interval."
+    ::= { unisDot11SaRtFFTDataEntry 3 }
+
+unisDot11SaFrequency OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the frequency number in 100 Hz."
+    ::= { unisDot11SaRtFFTDataEntry 4 }
+
+unisDot11SaRtFreqPower OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the power of the frequency point."
+    ::= { unisDot11SaRtFFTDataEntry 5 }
+
+unisDot11SaRtFreqMaxPower OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the max power of the frequency point."
+    ::= { unisDot11SaRtFFTDataEntry 6 }
+
+unisDot11SaRtFreqDutyCycle OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the duty cycle of the frequency point."
+    ::= { unisDot11SaRtFFTDataEntry 7 }
+
+unisDot11SaRtFreqDataSeqNo OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the sequence number of the data."
+    ::= { unisDot11SaRtFFTDataEntry 8 }
+
+-- interfering device table
+unisDot11SaIntfDevTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11SaIntfDevEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains the information of the interfering devices."
+    ::= { unisDot11SaStatusGroup 2 }
+
+unisDot11SaIntfDevEntry OBJECT-TYPE
+    SYNTAX UnisDot11SaIntfDevEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This entry contains the information of the interfering devices."
+    INDEX
+        {
+            unisDot11SaAPID,
+            unisDot11SaRadioID,
+            unisDot11SaDevID
+        }
+    ::= { unisDot11SaIntfDevTable 1 }
+
+UnisDot11SaIntfDevEntry ::= SEQUENCE
+    {
+        unisDot11SaDevID              Integer32,
+        unisDot11SaDevType            UnisDot11SaIntfDevType,
+        unisDot11SaDevSI              Integer32,
+        unisDot11SaDevRSSI            Integer32,
+        unisDot11SaDevDutyCycle       Integer32,
+        unisDot11SaDevAffectedChls    OCTET STRING,
+        unisDot11SaDevDetectedTime    DateAndTime
+    }
+
+unisDot11SaDevID OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the device identification number that uniquely
+         identified the interfering device."
+    ::= { unisDot11SaIntfDevEntry 1 }
+
+unisDot11SaDevType OBJECT-TYPE
+    SYNTAX UnisDot11SaIntfDevType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents type of the interferer."
+    ::= { unisDot11SaIntfDevEntry 2 }
+
+unisDot11SaDevSI OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents severity index of the interfering device.  Severity index
+         is calculated, a positive integer between 0 and 100(with 100 being the
+         most severe)."
+    ::= { unisDot11SaIntfDevEntry 3 }
+
+unisDot11SaDevRSSI OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents receive signal strength indicator (RSSI) of interfering
+         device."
+    ::= { unisDot11SaIntfDevEntry 4 }
+
+unisDot11SaDevDutyCycle OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents proportion of time in percentage during which the
+         interfering device was active."
+    ::= { unisDot11SaIntfDevEntry 5 }
+
+unisDot11SaDevAffectedChls OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents channels that the interfering device affects."
+    ::= { unisDot11SaIntfDevEntry 6 }
+
+unisDot11SaDevDetectedTime OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents time at which the interference was detected."
+    ::= { unisDot11SaIntfDevEntry 7 }
+
+-- air quality table
+unisDot11SaAirQualityTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11SaAirQualityEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains the air quality of the channels."
+    ::= { unisDot11SaStatusGroup 3 }
+
+unisDot11SaAirQualityEntry OBJECT-TYPE
+    SYNTAX UnisDot11SaAirQualityEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This entry contains the air quality of the channels."
+    INDEX
+        {
+            unisDot11SaAPID,
+            unisDot11SaRadioID,
+            unisDot11SaChlNum
+        }
+    ::= { unisDot11SaAirQualityTable 1 }
+
+UnisDot11SaAirQualityEntry ::= SEQUENCE
+    {
+        unisDot11SaChlNum             UnisDot11ChannelScopeType,
+        unisDot11SaAvgQuality         Integer32,
+        unisDot11SaMinQuality         Integer32,
+        unisDot11SaIntfDevNum         Integer32,
+        unisDot11SaWiFiUtil           Integer32,
+        unisDot11SaNonWiFiUtil        Integer32,
+        unisDot11SaNoiseFloor         Integer32
+    }
+
+unisDot11SaChlNum OBJECT-TYPE
+    SYNTAX UnisDot11ChannelScopeType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the radio channel where the air quality is monitored."
+    ::= { unisDot11SaAirQualityEntry 1 }
+
+unisDot11SaAvgQuality OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the average air quality for this radio channel."
+    ::= { unisDot11SaAirQualityEntry 2 }
+
+unisDot11SaMinQuality OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the minimum air quality for this radio channel."
+    ::= { unisDot11SaAirQualityEntry 3 }
+
+unisDot11SaIntfDevNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of interferers detected by the radios
+         on the 802.11a/n or 802.11b/g/n radio band."
+    ::= { unisDot11SaAirQualityEntry 4 }
+
+unisDot11SaWiFiUtil OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the percentage of the channel currently being
+         used by Wi-Fi devices."
+    ::= { unisDot11SaAirQualityEntry 5 }
+
+unisDot11SaNonWiFiUtil OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the percentage of the channel currently being
+         used by non-Wi-Fi interference."
+    ::= { unisDot11SaAirQualityEntry 6 }
+
+unisDot11SaNoiseFloor OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents current noise floor recorded on the channel."
+    ::= { unisDot11SaAirQualityEntry 7 }
+
+--Notify Group
+unisDot11SaTraps OBJECT IDENTIFIER  ::= { unisDot11SaNotifyGroup 0 }
+unisDot11SaIntfDevDetected NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11SaTrapAPID,
+            unisDot11SaTrapRadioID,
+            unisDot11SaTrapDevID,
+            unisDot11SaTrapIntfDevType,
+            unisDot11APTrapDevSI,
+            unisDot11SaTrapDevRSSI,
+            unisDot11APTrapDevDC,
+            unisDot11APTrapDevChls,
+            unisDot11APTrapDevDctTime
+        }
+    STATUS current
+    DESCRIPTION
+        "Interfering device is detected."
+    ::= { unisDot11SaTraps 1 }
+
+unisDot11SaIntfDevDisappear NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11SaTrapAPID,
+            unisDot11SaTrapRadioID,
+            unisDot11SaTrapDevID,
+            unisDot11SaTrapIntfDevType
+        }
+    STATUS current
+    DESCRIPTION
+        "Interfering device disappeared."
+    ::= { unisDot11SaTraps 2 }
+
+unisDot11SaChlQltLow NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11SaTrapAPID,
+            unisDot11SaTrapRadioID,
+            unisDot11SaTrapChlNum,
+            unisDot11SaTrapChlQlt,
+            unisDot11SaTrapChlIntfNum
+        }
+    STATUS current
+    DESCRIPTION
+        "The quality of the channel is below the specified threshold."
+    ::= { unisDot11SaTraps 3 }
+
+unisDot11SaChlQltRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11SaTrapAPID,
+            unisDot11SaTrapRadioID,
+            unisDot11SaTrapChlNum,
+            unisDot11SaTrapChlQlt,
+            unisDot11SaTrapChlIntfNum
+        }
+    STATUS current
+    DESCRIPTION
+        "The quality of the channel recovered from low status."
+    ::= { unisDot11SaTraps 4 }
+
+unisDot11SaTrapVars OBJECT IDENTIFIER  ::= { unisDot11SaNotifyGroup 1 }
+
+unisDot11SaTrapAPID OBJECT-TYPE
+    SYNTAX      UnisDot11ObjectIDType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the identifier of the AP."
+    ::= { unisDot11SaTrapVars 1 }
+
+unisDot11SaTrapRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the identifier of the radio."
+    ::= { unisDot11SaTrapVars 2 }
+
+unisDot11SaTrapDevID OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Represents the device identification number that uniquely
+         identified the interfering device."
+    ::= { unisDot11SaTrapVars 3 }
+
+unisDot11SaTrapIntfDevType OBJECT-TYPE
+    SYNTAX UnisDot11SaIntfDevType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Represents type of the interferer."
+    ::= { unisDot11SaTrapVars 4 }
+
+unisDot11APTrapDevSI OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Represents severity index of the interfering device.  Severity index
+         is calculated, a positive integer between 0 and 100(with 100 being the
+         most severe)."
+    ::= { unisDot11SaTrapVars 5 }
+
+unisDot11SaTrapDevRSSI OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Represents receive signal strength indicator (RSSI) of interfering
+         device."
+    ::= { unisDot11SaTrapVars 6 }
+
+unisDot11APTrapDevDC OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Represents proportion of time in percentage during which the
+         interfering device was active."
+    ::= { unisDot11SaTrapVars 7 }
+
+unisDot11APTrapDevChls OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Represents channels that the interfering device affects."
+    ::= { unisDot11SaTrapVars 8 }
+
+unisDot11APTrapDevDctTime OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Represents time at which the interference was detected."
+    ::= { unisDot11SaTrapVars 9 }
+
+unisDot11SaTrapChlNum OBJECT-TYPE
+    SYNTAX UnisDot11ChannelScopeType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Represents the radio channel where the air quality is monitored."
+    ::= { unisDot11SaTrapVars 10 }
+
+unisDot11SaTrapChlQlt OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Represents the quality for this radio channel."
+    ::= { unisDot11SaTrapVars 11 }
+
+unisDot11SaTrapChlIntfNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Represents the number of interferers detected by the radios
+         on the 802.11a/n or 802.11b/g/n radio band."
+    ::= { unisDot11SaTrapVars 12 }
+END

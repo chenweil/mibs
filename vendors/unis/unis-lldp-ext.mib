@@ -1,0 +1,444 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: There are three standard MIB definitions, "LLDP-MIB", "LLDP-EXT-
+--     DOT1-MIB", "LLDP-EXT-DOT3-MIB", define almost all MIB objects of LLDP.
+--     This document defines more MIB objects privately For LLDP implementation.
+--      1)LLDP default global status is disabled, a management object needed to
+--        enable it.
+--      2)LLDP needs to be compliable with CDP (Non standard IEEE link layer di-
+--        scovery protocol).  A management object needed to enable or disable
+--        compliance.
+--      3)For compliance with CDP, port based control management object is need-
+--        ed.
+--      4)LLDP is able to control the status of a port that connects to a neigh-
+--        bor by matching local neighbor identity information with the informat-
+--        ion in the received chassis ID TLV and port ID TLV.
+-- Reference:
+-- Version: V1.3
+-- History:
+-- V1.0 created by qizhenglin 2009-03-20
+-- V1.1 2015-09-01 Updated by zhaixiaoxiang
+--      Add unislldpPortConfigValidationAction and unislldpPortConfigAgingAction
+--       to unislldpPortConfigTable
+--      Add the unislldpNbIdentityTable, unislldpPortStatusTable, and unislldpN-
+--      otifications tables.
+-- V1.2 2019-03-07 Updated by tuchanyong
+--      Add unislldpRemManAddrTable.
+-- V1.3 2019-09-17 Updated by tongwenxin
+--      The value 'rx(3)' is added for data type 'unislldpPortConfigCDPComplian-
+--      ceStatus'.
+-- ============================================================================
+UNIS-LLDP-EXT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    TruthValue, RowStatus
+        FROM SNMPv2-TC
+    unisCommon
+        FROM UNIS-OID-MIB
+    AddressFamilyNumbers
+        FROM IANA-ADDRESS-FAMILY-NUMBERS-MIB
+    LldpPortNumber, lldpRemTimeMark, lldpRemLocalPortNum, lldpRemIndex,
+    LldpManAddrIfSubtype, lldpRemManAddr, lldpRemManAddrSubtype
+        FROM LLDP-MIB;
+
+unislldp MODULE-IDENTITY
+    LAST-UPDATED "201909170000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "LLDP extended management information."
+    REVISION  "201909170000Z"
+    DESCRIPTION "Add the value of unislldpPortConfigCDPComplian."
+    REVISION  "201903070000Z"
+    DESCRIPTION "Add unislldpRemManAddrTable."
+    REVISION  "201509010000Z"
+    DESCRIPTION "Update this MIB module."
+    REVISION  "200903210000Z"
+    DESCRIPTION "The initial revision of this MIB module."
+    ::= { unisCommon 100 }
+
+unislldpObjects                    OBJECT IDENTIFIER ::= { unislldp 1 }
+unislldpNotifications              OBJECT IDENTIFIER ::= { unislldp 2 }
+--
+-- LLDP extended MIB Objects
+--
+unislldpConfiguration              OBJECT IDENTIFIER ::= { unislldpObjects 1 }
+unislldpRemoteSystemsData          OBJECT IDENTIFIER ::= { unislldpObjects 2 }
+--
+-- LLDP extended global configuration
+--
+unislldpAdminStatus OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The global administratively desired status of the local LLDP agent."
+    ::= { unislldpConfiguration 1 }
+
+unislldpComplianceCDPStatus OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The global administratively desired status of CDP Compliance."
+    ::= { unislldpConfiguration 2 }
+
+--
+-- unislldpPortConfigTable: LLDP configuration on a per port basis
+--
+
+unislldpPortConfigTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnislldpPortConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The port-based table that controls extended functions."
+    ::= { unislldpConfiguration 3 }
+
+unislldpPortConfigEntry   OBJECT-TYPE
+    SYNTAX      UnislldpPortConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "LLDP extended configuration information for a particular port.  This c-
+        onfiguration parameter controls compliance with other non-standard link
+        layer discovery protocol such as CDP."
+    INDEX  { unislldpPortConfigPortNum }
+    ::= { unislldpPortConfigTable 1 }
+
+UnislldpPortConfigEntry ::= SEQUENCE {
+    unislldpPortConfigPortNum         LldpPortNumber,
+    unislldpPortConfigCDPComplianceStatus        INTEGER,
+    unislldpPortConfigValidationAction           Integer32,
+    unislldpPortConfigAgingAction                Integer32 }
+
+unislldpPortConfigPortNum   OBJECT-TYPE
+    SYNTAX      LldpPortNumber
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index value used to identify the port component associated with th-
+         is entry."
+    ::= { unislldpPortConfigEntry 1 }
+
+unislldpPortConfigCDPComplianceStatus  OBJECT-TYPE
+    SYNTAX INTEGER {
+       txAndRx(1),
+       disabled(2),
+       rx(3)
+    }
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "The administratively desired CDP Compliance status of the local LLDP a-
+        gent.  If the associated unislldpPortConfigCDPComplianceStatus object h-
+        as a value of 'txAndRx', then the LLDP agent will receive CDP frames on
+        this port, and will transmit CDP frames only after receiving a CDP fram-
+        es.If the associated lldpPortConfigAdminStatus object has a value of 'd-
+        isabled', LLDP agent will not transmit or receive CDP frames on this po-
+        rt.If the associated unislldpPortConfigCDPComplianceStatus object has a
+        value of 'rx', then the LLDP agent will receive CDP frames on this port,
+        and will not transmit CDP frames."
+    DEFVAL  { disabled }
+    ::= { unislldpPortConfigEntry 2 }
+
+unislldpPortConfigValidationAction  OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "Action that neighbor validation takes on a port.  Bit 1 indicates the
+        block action.  Bit 2 indicates the shutdown action."
+    ::= { unislldpPortConfigEntry 3 }
+
+unislldpPortConfigAgingAction  OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "Action that neighbor aging takes on a port.  Bit 1 indicates the block
+         action.  Bit 2 indicates the shutdown action."
+    ::= { unislldpPortConfigEntry 4 }
+
+--
+-- unislldpNbIdentityTable:
+--
+
+unislldpNbIdentityTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnislldpNbIdentityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains the neighbor identity information of a port."
+    ::= { unislldpConfiguration 4 }
+
+unislldpNbIdentityEntry   OBJECT-TYPE
+    SYNTAX      UnislldpNbIdentityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of objects containing the neighbor identity information of a
+        port."
+    INDEX  { unislldpNbIdentityPortNum }
+    ::= { unislldpNbIdentityTable 1 }
+
+UnislldpNbIdentityEntry ::= SEQUENCE {
+    unislldpNbIdentityPortNum          LldpPortNumber,
+    unislldpNbIdentityChassisIDSubtype INTEGER,
+    unislldpNbIdentityChassisID        OCTET STRING,
+    unislldpNbIdentityPortIDSubtype    INTEGER,
+    unislldpNbIdentityPortID           OCTET STRING,
+    unislldpNbIdentityRowStatus        RowStatus }
+
+unislldpNbIdentityPortNum   OBJECT-TYPE
+    SYNTAX      LldpPortNumber
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Port number."
+    ::= { unislldpNbIdentityEntry 1 }
+
+unislldpNbIdentityChassisIDSubtype  OBJECT-TYPE
+    SYNTAX INTEGER {
+        default(0),
+        chassisComponent(1),
+        interfaceAlias(2),
+        portComponent(3),
+        macAddress(4),
+        networkAddress(5),
+        interfaceName(6),
+        local(7)
+    }
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "Chassis ID subtype.  The value range is 0 to 7, and the default value
+        is 0.  The values 1 to 7 represents the chassis component, interface al-
+        ias, port component, MAC address, network address, interface name, and
+        locally assigned subtypes, respectively."
+    ::= { unislldpNbIdentityEntry 2 }
+
+unislldpNbIdentityChassisID  OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "Chassis ID, a case-insensitive string of 1 to 255 characters.
+        By default, the string is empty.  If the value of
+        unislldpNbIdentityChassisIDSubtype is 4, the chassis ID must be
+        a MAC address in H-H-H format."
+    ::= { unislldpNbIdentityEntry 3 }
+
+unislldpNbIdentityPortIDSubtype  OBJECT-TYPE
+    SYNTAX INTEGER {
+        default(0),
+        interfaceAlias(1),
+        portComponent(2),
+        macAddress(3),
+        networkAddress(4),
+        interfaceName(5),
+        agentCircuitId(6),
+        local(7)
+    }
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "Port ID subtype.  The value range is 0 to 7, and the default
+         value is 0.  The values 1 to 7 represents the interface alias, port co-
+         mponent, MAC address, network address, interface name, agent circuit
+         ID, and locally assigned subtypes, respectively."
+    ::= { unislldpNbIdentityEntry 4 }
+
+unislldpNbIdentityPortID  OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "Port ID, a case-insensitive string of 1 to 255 characters.
+        By default, the string is empty.  If the value of
+        unislldpNbIdentityPortIDSubtype is 3, the port ID must be
+        a MAC address in H-H-H format."
+    ::= { unislldpNbIdentityEntry 5 }
+
+unislldpNbIdentityRowStatus   OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Row status: CreateAndGo, Active, or Destroy."
+    ::= { unislldpNbIdentityEntry 6 }
+
+--
+-- unislldpPortStatusTable
+--
+
+unislldpPortStatusTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnislldpPortStatusEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains the state information of a port."
+    ::= { unislldpConfiguration 5 }
+
+unislldpPortStatusEntry   OBJECT-TYPE
+    SYNTAX      UnislldpPortStatusEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of objects containing the state information of a port."
+    INDEX  { unislldpPortStatusPortNum }
+    ::= { unislldpPortStatusTable 1 }
+
+UnislldpPortStatusEntry ::= SEQUENCE {
+    unislldpPortStatusPortNum      LldpPortNumber,
+    unislldpPortValidationStatus   Integer32,
+    unislldpPortAgingStatus        Integer32
+    }
+
+unislldpPortStatusPortNum   OBJECT-TYPE
+    SYNTAX      LldpPortNumber
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Port number."
+    ::= { unislldpPortStatusEntry 1 }
+
+unislldpPortValidationStatus  OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Neighbor validation protection status of the port.  The default value
+         is 0."
+    ::= { unislldpPortStatusEntry 2 }
+
+unislldpPortAgingStatus  OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Neighbor aging protection status of the port.  The default value is
+         0."
+    ::= { unislldpPortStatusEntry 3 }
+
+--
+-- unislldpRemManAddrTable
+--
+
+unislldpRemManAddrTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnislldpRemManAddrEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains management address information on the remote
+         system."
+    ::= { unislldpRemoteSystemsData 1 }
+
+unislldpRemManAddrEntry OBJECT-TYPE
+    SYNTAX UnislldpRemManAddrEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A list of objects containing management address information."
+    INDEX { lldpRemTimeMark,
+            lldpRemLocalPortNum,
+            lldpRemIndex,
+            lldpRemManAddrSubtype,
+            lldpRemManAddr }
+    ::= { unislldpRemManAddrTable 1 }
+
+UnislldpRemManAddrEntry ::=    SEQUENCE {
+    unislldpRemManAddrSubtype      AddressFamilyNumbers,
+    unislldpRemManAddr             OCTET STRING,
+    unislldpRemManAddrIfSubtype    LldpManAddrIfSubtype,
+    unislldpRemManAddrIfId         Integer32,
+    unislldpRemManAddrOID          OBJECT IDENTIFIER }
+
+unislldpRemManAddrSubtype OBJECT-TYPE
+    SYNTAX AddressFamilyNumbers
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The type of management address identifier."
+    ::= { unislldpRemManAddrEntry 1 }
+
+unislldpRemManAddr OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(1..255))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The management address associated with the remote system.  The value
+        of the management address is a string of 1 to 255 characters.
+
+        If the value of unislldpRemManAddrSubtype is 1, the management address
+        must be a IPv4 address in the dotted-decimal format.  If the value of
+        unislldpRemManAddrSubtype is 2, the management address must be a IPv6
+        address in the most appropriate IPv6 address format."
+    ::= { unislldpRemManAddrEntry 2 }
+
+unislldpRemManAddrIfSubtype OBJECT-TYPE
+    SYNTAX LldpManAddrIfSubtype
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The enumeration value that identifies the interface numbering
+         method used for defining the interface number."
+    ::= { unislldpRemManAddrEntry 3 }
+
+unislldpRemManAddrIfId OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The integer value used to identify the interface number
+         regarding the management address component associated with
+         the remote system."
+    ::= { unislldpRemManAddrEntry 4 }
+
+unislldpRemManAddrOID OBJECT-TYPE
+    SYNTAX OBJECT IDENTIFIER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The OID value used to identify the type of hardware component
+         or protocol entity associated with the management address
+         advertised by the remote system agent."
+    ::= { unislldpRemManAddrEntry 5 }
+
+--
+-- ***********************************************************
+--
+--        L L D P   M I B   N O T I F I C A T I O N S
+--
+-- ***********************************************************
+--
+
+unislldpPortStatusTrap OBJECT IDENTIFIER ::= { unislldpNotifications 0 }
+
+unislldpValidationStatusChange NOTIFICATION-TYPE
+    OBJECTS {
+        unislldpPortStatusPortNum,
+        unislldpPortValidationStatus
+    }
+    STATUS        current
+    DESCRIPTION
+        "This notification will be sent when the neighbor validation
+         protection status of a port is changed."
+    ::= { unislldpPortStatusTrap 1 }
+
+unislldpAgingStatusChange NOTIFICATION-TYPE
+    OBJECTS {
+        unislldpPortStatusPortNum,
+        unislldpPortAgingStatus
+    }
+    STATUS        current
+    DESCRIPTION
+        "This notification will be sent when the neighbor aging protection
+          status of a port is changed."
+    ::= { unislldpPortStatusTrap 2 }
+END

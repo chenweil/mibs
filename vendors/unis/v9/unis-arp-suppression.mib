@@ -1,0 +1,132 @@
+-- ============================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The purpose of this MIB file is to provide the definition of
+--              the ARP suppression feature.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2022-02-08
+--   Initial version, created by qiankangkang
+-- ============================================================================
+
+UNIS-ARP-SUPPRESSION-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        IpAddress, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY
+    FROM SNMPv2-SMI
+        DisplayString, MacAddress
+    FROM SNMPv2-TC;
+
+-- Node definitions
+unisARPSuppression MODULE-IDENTITY
+    LAST-UPDATED "202202071800Z"        -- FEB 07, 2022 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file defines the ARP suppression feature only."
+    REVISION "202202071800Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 220}
+
+unisARPSuppressionVsiTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisARPSuppressionVsiEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for ARP Vsi suppression."
+    ::= { unisARPSuppression 1 }
+
+unisARPSuppressionVsiEntry  OBJECT-TYPE
+    SYNTAX      UnisARPSuppressionVsiEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The ARP Vsi suppression entry info."
+    INDEX
+    {
+        unisARPSuppressionChassis,
+        unisARPSuppressionSlot,
+        unisARPSuppressionVsiName,
+        unisARPSuppressionIpAddr
+    }
+    ::= { unisARPSuppressionVsiTable 1 }
+
+UnisARPSuppressionVsiEntry ::=
+    SEQUENCE
+    {
+        unisARPSuppressionChassis           Unsigned32,
+        unisARPSuppressionSlot              Unsigned32,
+        unisARPSuppressionVsiName           DisplayString,
+        unisARPSuppressionIpAddr            IpAddress,
+        unisARPSuppressionMacAddr           MacAddress,
+        unisARPSuppressionLinkID            Unsigned32,
+        unisARPSuppressionAging             Unsigned32
+    }
+
+
+unisARPSuppressionChassis    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The chassis ID of ARP Vsi suppression.If the device is not a stacked device,
+         the value is 65535.
+        ."
+    ::= { unisARPSuppressionVsiEntry 1 }
+
+unisARPSuppressionSlot    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The slot ID of ARP Vsi suppression."
+    ::= { unisARPSuppressionVsiEntry 2 }
+
+unisARPSuppressionVsiName    OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE (1..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The vsi name of ARP Vsi suppression."
+    ::= { unisARPSuppressionVsiEntry 3 }
+
+unisARPSuppressionIpAddr    OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The ip address of ARP Vsi suppression."
+    ::= { unisARPSuppressionVsiEntry 4 }
+
+unisARPSuppressionMacAddr    OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The mac address of ARP Vsi suppression."
+    ::= { unisARPSuppressionVsiEntry 5 }
+
+unisARPSuppressionLinkID    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The link ID of ARP Vsi suppression."
+    ::= { unisARPSuppressionVsiEntry 6 }
+
+unisARPSuppressionAging    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "minutes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The aging time of ARP Vsi suppression."
+    ::= { unisARPSuppressionVsiEntry 7 }
+
+END

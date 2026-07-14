@@ -1,0 +1,116 @@
+-- =================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: HTTP mib
+-- Reference:
+-- Version: V1.0
+-- History:
+--  V1.0 Created by xiexiang
+--      Initial version 2022-09-13
+-- =================================================================
+UNIS-HTTP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM SNMPv2-TC
+    InetAddressType
+        FROM INET-ADDRESS-MIB
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisHttp MODULE-IDENTITY
+    LAST-UPDATED "202209130000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for HTTP connection notification."
+    REVISION    "202209130000Z"
+    DESCRIPTION    "The initial version."
+    ::= { unisCommon 255 }
+
+-- ==================================================================
+--
+-- HTTP trap object
+--
+-- ==================================================================
+unisHttpObjects OBJECT IDENTIFIER ::= { unisHttp 1 }
+
+unisHttpConnObjects OBJECT IDENTIFIER ::= { unisHttpObjects 1 }
+
+unisHttpUserName OBJECT-TYPE
+    SYNTAX       DisplayString (SIZE(1..80))
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The name of an HTTP user."
+    ::= { unisHttpConnObjects 1 }
+
+unisHttpUserIPAddressType OBJECT-TYPE
+    SYNTAX       InetAddressType
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The IP address type of the HTTP user."
+    ::= { unisHttpConnObjects 2 }
+
+unisHttpUserIPAddress OBJECT-TYPE
+    SYNTAX       DisplayString (SIZE(1..80))
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The IP address of the HTTP user."
+    ::= { unisHttpConnObjects 3 }
+
+unisHttpUserService OBJECT-TYPE
+    SYNTAX       DisplayString (SIZE(1..80))
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The service type of the HTTP user, such as web and soap."
+    ::= { unisHttpConnObjects 4 }
+
+unisHttpTrap OBJECT IDENTIFIER ::= { unisHttp 2 }
+
+unisHttpConnTrapPrefix OBJECT IDENTIFIER ::= { unisHttpTrap 0 }
+
+unisHttpUserLogin NOTIFICATION-TYPE
+    OBJECTS {
+            unisHttpUserName,
+            unisHttpUserIPAddressType,
+            unisHttpUserIPAddress,
+            unisHttpUserService
+        }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when a user logs in successfully through HTTP."
+::= { unisHttpConnTrapPrefix 1 }
+
+unisHttpUserLoginFail NOTIFICATION-TYPE
+    OBJECTS {
+            unisHttpUserName,
+            unisHttpUserIPAddressType,
+            unisHttpUserIPAddress,
+            unisHttpUserService
+        }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when a user fails to log in through HTTP."
+::= { unisHttpConnTrapPrefix 2 }
+
+unisHttpUserLogout NOTIFICATION-TYPE
+    OBJECTS {
+            unisHttpUserName,
+            unisHttpUserIPAddressType,
+            unisHttpUserIPAddress,
+            unisHttpUserService
+        }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when a user logs out successfully through HTTP."
+::= { unisHttpConnTrapPrefix 3 }
+
+END

@@ -1,0 +1,5381 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--   The file defines a MIB to provide WLAN configuration information.
+-- Reference:
+-- Version: V3.5
+-- History:
+--   V1.0 2006-05-10 Initial version, created by shiyang (Richard)
+--   V1.1 2007-02-01 modified by xingjichen(Daniel)
+--        Added unisDot11RadioIntfConfigTable,unisDot11RadioIntfBindTable,
+--        unisDot11StaKeepALiveTimerIntvl,unisDot11StaIdleTimerIntvl,
+--        unisDot11BroadcastProbeReply.
+--   V1.2 2007-04-27 modified by shiyang(Richard)
+--        Replace unisDot11UnicastCipherKeyIndex, unisDot11UnicastCipherKey,
+--        unisDot11BroadcastCipherKeyIndex and unisDot11BroadcastCipherKey
+--        with unisDot11CipherKeyIndex, unisDot11CipherKey as per CLI change.
+--        Delete unisDot11MaxTxLifetime as per CLI change.
+--        Add unisDot11GlobalCountryCode,unisDot11APScanMode.
+--        unisDot11ACCtrlTunnelSecSupport and unisDot11ACDataTunnelSecSupport.
+--        Move unisDot11StaKeepALiveTimerIntvl,unisDot11StaIdleTimerIntvl
+--        and so on to unisDot11GlobeConfigGroup.
+--        Split unisDot11ServicePolicyTable into unisDot11ServicePolicyTable
+--        and unisDot11ServicePolicyExtTable.
+--        For unisDot11SecurityCiphers node,update its description for case of
+--        value equals to zero.
+--   V1.3 2007-06-19 modified by Vikas K
+--        Add new table of unisDot11DataRateConfigTable for AP Configuration
+--        Group.
+--        Add new node of unisDot11APName for unisDot11APTemplateTable.
+--        Modify the unisDot11APScanMode from read-only to read-write.
+--        Add undo functionality to node unisDot11WlanInfBindingID and
+--        unisDot11Description.
+--        Add unisDot11StatisInterv to the unisDot11APTemplateTable.
+--   V1.4 2007-10-9 modified by Jagan K
+--        Add new table unisDot11WlanBssIfTable for WLAN BSS interface
+--        configuration.
+--        Add new table unisDot11WlanEssIfTable for WLAN ESS interface
+--        configuration.
+--        Add new table unisDot11WlanEthernetIfTable for WLAN Ethernet interface
+--        configuration.
+--   V1.5 2007-12-21 modified by wanghao (Kumar)
+--        Add unisDot11ACAutoAPSupport, unisDot11AutoAPName,
+--        unisDot11PersistentName to unisDot11GlobeConfigGroup
+--        Add unisDot11ClientMaxCount to unisDot11ServicePolicyTable
+--        Add unisDot11APBroadcastProbeReply, unisDot11StaIdleTimerInterv,
+--        unisDot11StaKeepAliveTimerInterv, unisDot11APCir, unisDot11APCbs
+--        to unisDot11APTemplateTable.
+--   V1.6 2008-02-25 modified by wanghao (Kumar)
+--        Add unisDot11RdoClientMaxCount to unisDot11RadioPolicyTable.
+--   V1.7 2008-04-01 modified by wangbin
+--        Add unisDot11PortSecurityTable to unisDot11InterfaceConfigGroup.
+--        Add unisDot11PortSecurityMode, unisDot11SecurityUserLoginTxKeyType,
+--        unisDot11SecurityPskKeyMode, unisDot11SecurityPskKeyString
+--        to unisDot11PortSecurityTable.
+--   V1.8 2008-08-01 modified by ChangHuifeng
+--        Add unisDot11ACBackupGroup and
+--        unisDot11RadioElementConfigGroup.
+--        Add unisDot11WlanMeshIfTable to unisDot11InterfaceConfigGroup.
+--        Add unisDot11APPriorityLevel and unisDot11APElementID to
+--        unisDot11APTemplateTable.
+--        Add unisDot11CfgRdElementID to unisDot11RadioToConfigTable.
+--        Add unisDot11APDevDetectEnable to unisDot11APTemplateEntry.
+--        Obsolete unisDot11StatisInterv
+--        Change default value of unisDot11APScanMode to passive.
+--        Change units of unisDot11BeaconInterval and
+--        unisDot11RadioCfgBeaconIntvl to TU.
+--        Remove default value of unisDot11SSIDEncryptionMode.
+--        Change MAC-ACCESS of objects in unisDot11RadioToConfigTable
+--        from read-create to read-write.
+--        Change name of unisDot11IWlanEssRowStatus to unisDot11WlanEssRowStatus.
+--        Change description of unisDot11PortSecurityTable.
+--   V1.9 2008-11-07 modified by Wang Lu and Li Yugang
+--        Add unisDot11IntfTrapThreshold to unisDot11GlobeConfigGroup
+--        Add unisDot11SPInCirMode, unisDot11SPInCirValue, unisDot11SPOutCirMode,
+--        unisDot11SPOutCirValue to unisDot11ServicePolicyTable
+--        Add unisDot11CfgWorkMode to unisDot11RadioToConfigTable
+--        Add unisDot11RadioCfgWorkMode to unisDot11RadioIntfConfigTable.
+--        Add new traps unisDot11CfgCipherChange and unisDot11CfgPSKChange.
+--        Add unisDot11MonitorInterval, unisDot11SampleInterval,
+--        unisDot11ChnlSwitChkInterval, unisDot11APUserUplimit,
+--        unisDot11APL2IsolateEnable to unisDot11GlobeConfigGroup.
+--        Add unisDot11RadioCfgOnly11gEnable to unisDot11RadioIntfConfigTable.
+--        Add unisDot11RadioWDSTable to unisDot11RadioElementConfigGroup.
+--   V2.0 2009-03-20 modified by caizibin
+--        Add value ext(6) to unisDot11PortSecurityMode
+--   V2.1 2009-05-07 modified by Li Yugang, Wang Shaojie, Jin Yi
+--        Add unisDot11APBSSIDSupportNum, unisDot11APLastUpdateStatTime,
+--        unisDot11APDoSProtectEnable, unisDot11MaxAPPerIf to
+--        unisDot11GlobeConfigGroup.
+--        Add unisDot11WlanInfPVID to unisDot11ServicePolicyTable.
+--        Add unisDot11CipherKeyType to unisDot11ServicePolicyExtTable.
+--        Add unisDot11CfgPwrAttValue to unisDot11RadioToConfigTable.
+--        Add new table unisDot11APSysInfoSetTable to unisDot11APConfigGroup.
+--        Add unisDot11SSIDWepIDConflictTrap to unisDot11CfgNotifications.
+--        Add new table unisDot11CfgTrapVarObjects to unisDot11CfgNotifyGroup.
+--   V2.2 2009-07-29 modified by Heziqi
+--        Add new node unisDot11ServiceSetVlanId for unisDot11APServiceSetTable.
+--        Add unisDot11UplinkTrackId to unisDot11GlobeConfigGroup.
+--        Add unisDot11APLimitTable.
+--        Change description of unisDot11StaKeepALiveTimerIntvl.
+--        Add new node unisDot11RadioTxArithmetic for UnisDot11RadioToConfigTable.
+--   V2.3 2009-07-29 modified by Jinyi
+--        Add new table unisDot11APIfSetTable
+--   V2.4 2009-12-01 modified by Wang Shaojie
+--        Add new node unisDot11APGetIPMethod for unisDot11APTemplateTable.
+--        Add new group unisDot11CfgTrapConfigGroup.
+--        Add new table unisDot11CfgSwitchTrapTable to unisDot11CfgTrapConfigGroup.
+--        Add new node unisDot11BeaconIntervalMs to unisDot11RadioPolicyTable.
+--        Add new node unisDot11SPInCirStaticValue, unisDot11SPOutCirStaticValue
+--        to unisDot11ServicePolicyTable.
+--        Modify description of unisDot11SecurityCiphers.
+--        Add new node unisDot11StatisIntervMode to unisDot11APTemplateTable.
+--        Modify SYNTAX of unisDot11APWorkMode.
+--        Modify STATUS of unisDot11StatisInterv.
+--        Add new node unisDot11SmartRateSet to unisDot11DataRateConfigTable.
+--        2010-02-22 modified by Wang Chunsheng
+--        Add new node unisDot11CfgChannelLockStat, unisDot11CfgPowerLockStat,
+--        unisDot11CfgLBRdGroupId, unisDot11CfgRRMSDRdGroupId to unisDot11RadioToConfigTable.
+--        2010-03-15 modified by Wang Lu
+--        Add unisDot11RtCollectSwitch, unisDot11RglCollectIntvl, and
+--        unisDot11RtCollectIntvl to unisDot11GlobeConfigGroup
+--        Add unisDot11SPIsolate to unisDot11ServicePolicyTable
+--        Add unisDot11APServiceVlanTable, unisDot11RadioConfigTable,
+--        unisDot11RadioPolicyExtTable and unisDot11RadioSSIDCfgTable
+--        Remove unisDot11CfgTrapConfigGroup
+--        Add unisDot11SrvPortSecurityTable
+--        2010-06-01 Modified by Wang Shaojie, Yin Junjie
+--        Add unisDot11RCApPowerLevel, unisDot11RCDynamicChlState,
+--        unisDot11RCDynamicPowerState to unisDot11RadioConfigTable.
+--        Add unisDot11APSerialIDTable
+--        Add unisDot11APSTVlanTable
+--        2010-07-08 Modified the index of unisDot11APSysInfoSetTable by jinyi
+--        2010-08-05 Modified by Yin Junjie
+--        Add new table unisDot11SrvPolicyExtendTable
+--        Add unisDot11SPEnable to unisDot11SrvPolicyExtendTable
+--        2010-09-02 Modified by Yin Junjie
+--        Add new node unisDot11AdjIntfTrapThreshold
+--        to unisDot11GlobeConfigGroup
+--        Add unisDot11RCRadioStatus to unisDot11RadioConfigTable
+--   V2.5 2010-09-25 Modified by Wu Xiaopeng
+--        Remove Size list of unisDot11APName.
+--   V2.6 2011-05-23 Modified by Cui Kai
+--        Add new node unisDot11WlanexAuthServerIP to unisDot11ServicePolicyTable
+--        2011-07-08 Modified by Niu Jian
+--        Change type of unisDot11CfgSTNASPortID to OCTET STRING
+--   V2.7 2011-07-13 Modified by Yu Bo
+--        Add new node unisDot11RCRadioRate to unisDot11RadioConfigTable
+--        Add new node unisDot11RCPwrAdjustStepLength to unisDot11RadioConfigTable
+--        2011-08-08 Modified by Xiao Min
+--        Add new table unisDot11nRadioCfg2Table
+--        2011-08-10 Modified by limingjin
+--        Add unisDot11RadioCfgType2 to unisDot11RadioIntfConfigTable
+--        Add unisDot11RCRadioType2 to unisDot11RadioConfigTable
+--        Add unisDot11CfgRadioType2 to unisDot11RadioToConfigTable
+--   V2.8 2011-09-28 Modified by zhanghu
+--        Add unisDot11ApTrapEnabled to unisDot11APTemplateTable
+--        Add unisDot11AllAPMonitorMode to unisDot11APTemplateTable
+--        Add unisDot11SIDAPTemplateName, unisDot11SIDModelAlias, unisDot11SIDAPDescription, unisDot11SIDRowStatus,
+--        unisDot11SIDAPName, unisDot11SIDStatisInterv, unisDot11SIDAPBroadcastProbeReply,
+--        unisDot11SIDAPStaIdleTimerInterv, unisDot11SIDStaKeepAliveTimerInterv,
+--        unisDot11SIDAPCir, unisDot11SIDAPCbs, unisDot11SIDAPPriorityLevel,
+--        unisDot11SIDAPElementID, unisDot11SIDAPDevDetectEnable, unisDot11SIDAPStatisIntervMode
+--        to unisDot11APSerialIDTable
+--        2011-08-28 Modified by Wang Lu
+--        Add unisDot11CfgSaEnable, unisDot11CfgSaBand, unisDot11CfgIDSEnable,
+--        unisDot11CfgSaCltRtFFTData to unisDot11RadioToConfigTable
+--   V2.9 2012-08-10 by Zhang Cong cong
+--        Add new node   unisDot11ConfigureAPMacAddress to unisDot11CfgTrapVarObjects
+--        Add new object unisDot11ConfigureAPMacAddress to unisDot11SSIDWepIDConflictTrap
+--   V3.0 2013-04-15 by Shao Pengfei & Li Shihao
+--        Add new node unisDot11GlobalApFmwUpdState to unisDot11GlobeConfigGroup
+--        Add new node unisDot11ApFmwUpdState to unisDot11APTemplateTable
+--        Add new node unisDot11SPBeaconMeasEnable to unisDot11ServicePolicyTable
+--        Add new node unisDot11SPBeaconMeasType to unisDot11ServicePolicyTable
+--        Add new node unisDot11SPBeaconMeasInterval to unisDot11ServicePolicyTable
+--   V3.1 2013-08-30 by Xiao Mengmeng & Li Qian & Ji Chunyu & Liu Yawen
+--        Add unisDot11AuthenModeCM to unisDot11ServicePolicyTable
+--        Add unisDot11SecIEStatusCM to unisDot11ServicePolicyTable
+--        Add unisDot11SecurityCiphersCM to unisDot11ServicePolicyTable
+--        Add unisDot11SrvPolicyStatusCM to unisDot11ServicePolicyTable
+--        Add unisDot11CfgSTNASID to unisDot11APSTVlanTable
+--        Add unisDot11RCPreambleLenCM to unisDot11RadioConfigTable
+--        Add unisDot11RCDynamicChlStateCM to unisDot11RadioConfigTable
+--        Add unisDot11RCRadioStatusCM to unisDot11RadioConfigTable
+--        Add unisDot11SIDAPWorkModeCM to unisDot11APSerialIDTable
+--        Add unisDot11nRadioCfg2AMpduEnableCM to unisDot11nRadioCfg2Table
+--        Add unisDot11nRadioCfg2ChannelBandCM to unisDot11nRadioCfg2Table
+--        Add unisDot11nRadioCfg2ShortGiEnableCM to unisDot11nRadioCfg2Table
+--        2013-12-24 Modified by Chen Guoxi
+--        Add mode80 to unisDot11nChanelBand and unisDot11nRadioCfg2ChannelBand
+--        Add new node unisDot11nClientDot11acOnly to unisDot11nRadioCfgTable
+--        Add new node unisDot11nRadioCfg2ClientDot11acOnly to unisDot11nRadioCfg2Table
+--   V3.2 2014-02-10 by Zhou Weichao
+--        Add unisDot11ACNasIDCM to unisDot11GlobeConfigGroup
+--        Add unisDot11SSIDHiddenCM to unisDot11ServicePolicyTable
+--        Add unisDot11SPIsolateCM to unisDot11ServicePolicyTable
+--        Add unisDot11RPBeaconIntervalCM to unisDot11RadioPolicyExtTable
+--        Add unisDot11StatisIntervModeCM to unisDot11APTemplateTable
+--        Add unisDot11APNasIDCM to unisDot11APTemplateTable
+--        Add unisDot11RCDynamicPowerStateCM to unisDot11RadioConfigTable
+--        Add unisDot11RCRadioRateCM to unisDot11RadioConfigTable
+--        Add unisDot11nRadioCfg2ClientDot11nOnlyCM to unisDot11nRadioCfg2Table
+--        Modify unisDot11WlanexAuthServerIP
+--        Add unisDot11RadioCfgRssithresholdCM to unisDot11RadioIntfConfigTable
+--        Add unisDot11SrvPortSecurityModeCM to unisDot11SrvPortSecurityTable
+--   V3.3 2014-5-14 Add by yubo
+--        Add unisDot11RCRssiThresholdCM to unisDot11RadioConfigTable
+--   V3.4 2014-9-19 Add by wanglu
+--        Add unisDot11SrvL2AuthenTable
+--        Add unisDot11AkmMode to unisDot11ServicePolicyExtTable
+--        Add unisDot11PskKey to unisDot11ServicePolicyExtTable
+--        Add unisDot11CfgSaRptDevType to unisDot11RadioToConfigTable
+--        Add unisDot11CfgSaTrapDevEnable to unisDot11RadioToConfigTable
+--        Add unisDot11CfgSaTrapDevType to unisDot11RadioToConfigTable
+--        Add unisDot11CfgSaTrapAQEnable to unisDot11RadioToConfigTable
+--        Add unisDot11CfgSaTrapAQThreshold to unisDot11RadioToConfigTable
+--        Add unisDot11CfgSaDrivenRRMEnable to unisDot11RadioToConfigTable
+--        Add unisDot11CfgSaDrivenRRMSnt to unisDot11RadioToConfigTable
+--   V3.5 2016-3-11 Add by wuqinggen
+--        Add unisDot11FwdVlanBitMapLow to unisDot11ServicePolicyTable
+--        Add unisDot11FwdVlanBitMapHigh to unisDot11ServicePolicyTable
+--        Add unisDot11ServicePolicyName to unisDot11ServicePolicyTable
+--        2016-3-11 add by yubo 04460
+--        Add unisDot11ApCoveragetype to unisDot11APTemplateTable
+--        Add unisDot11RCDynamicChlStateSelfDecisiveCM to unisDot11RadioConfigTable
+--        Add unisDot11RCDynamicPowerStateSelfDecisiveCM to unisDot11RadioConfigTable
+--        2016-06-15 Add by zhouwenshuai zkf6157
+--        Add unisDot11LocalACTemplateTable
+--        Add new node unisDot11ACRole to unisDot11GlobeConfigGroup
+--        Add new node unisDot11GlobalLocalACState to unisDot11GlobeConfigGroup
+--        Add new node unisDot11CentralACIPAddress to unisDot11GlobeConfigGroup
+--        Add new node unisDot11CentralACIPv6Address to unisDot11GlobeConfigGroup
+--        Add new node unisDot11APControlAddressState  to unisDot11APTemplateTable
+--        Add new node unisDot11APControlAddressIPv4 to unisDot11APTemplateTable
+--        Add new node unisDot11APControlAddressIPv6 to unisDot11APTemplateTable
+--        Add new node unisDot11APLocalACName to unisDot11APTemplateTable
+--        2016-12-06 Add by zhouwenshuai zkf6157
+--        Add value mode160(4) mode80and80(5) to unisDot11nChanelBand
+--        Add value mode160(4) mode80and80(5) to unisDot11nRadioCfg2ChannelBand
+--        2017-10-09 Add by lixiaoyi, jiaohaina, guozhanhua, chenxueke
+--        Add new node unisDot11APEchoInterval to unisDot11APTemplateTable
+--        Add new node unisDot11SIDEchoInterval to unisDot11APSerialIDTable
+--        Add new node unisDot11SecurityModeCM to unisDot11ServicePolicyTable
+--        Add new node unisDot11PreConflictTemplateSSID,unisDot11CurrConflictTemplateSSID
+--        to unisDot11SSIDWepIDConflictTrap
+--        Add new node unisDot11SPInCbsValue to unisDot11ServicePolicyTable
+--        Add new node unisDot11SPOutCbsValue to unisDot11ServicePolicyTable
+--        Add value mode80(3), mode160(4), mode80and80(5) to unisDot11nRadioCfg2ChannelBandCM
+-- =============================================================================
+UNIS-DOT11-CFG-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        TruthValue,
+        RowStatus,
+        DisplayString,
+        DateAndTime,
+        MacAddress
+    FROM SNMPv2-TC
+        ifIndex
+    FROM RFC1213-MIB
+        MODULE-IDENTITY,
+        NOTIFICATION-TYPE,
+        OBJECT-TYPE,
+        Integer32,
+        Unsigned32,
+        IpAddress
+    FROM SNMPv2-SMI
+        InetAddress
+    FROM INET-ADDRESS-MIB
+        unisDot11,
+        UnisDot11RadioType,
+        UnisDot11TxPwrLevelScopeType,
+        UnisDot11ChannelScopeType,
+        UnisDot11SSIDStringType,
+        UnisDot11AuthenType,
+        UnisDot11RadioScopeType,
+        UnisDot11SSIDEncryptModeType,
+        UnisDot11SecIEStatusType,
+        UnisDot11PreambleType,
+        UnisDot11ServicePolicyIDType,
+        UnisDot11TunnelSecSchemType,
+        UnisDot11RadioElementIndex,
+        UnisDot11WorkMode,
+        UnisDot11CirMode,
+        unisDot11APElementIndex,
+        UnisDot11ObjectIDType,
+        UnisDot11RadioType2,
+        UnisDot11TruthValueCM
+    FROM UNIS-DOT11-REF-MIB;
+
+unisDot11CFG MODULE-IDENTITY
+    LAST-UPDATED "201710091800Z"        -- Oct 09, 2017 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB provides information about WLAN configuration.
+
+        GLOSSARY
+
+        IEEE 802.11
+        Standard to encourage interoperability among
+        wireless networking equipment.
+
+        Access point (AP)
+        Transmitter/receiver (transceiver) device
+        that commonly connects and transports data
+        between a wireless network and a wired network.
+
+        Access control (AC)
+        To control and manage multi-APs, it will bridge
+        wireless and wired network.
+
+        Fat AP
+        Applied in the home, SOHO and so on, and it could
+        work independently without help from AC.
+
+        Fit AP
+        Applied in the enterprise environment, it will work
+        under the control and management from AC.
+
+        Control And Provisioning of Wireless Access Points Protocol
+        The short name of protocol is CAPWAP.  AC will control
+        and manage AP by CAPWAP tunnel protocol defined by IETF.
+        Also, a data tunnel will be set up between AC and AP.
+
+        BSS
+        IEEE 802.11 Basic Service Set (Radio Cell).  The
+        BSS of an AP comprises of the stations directly
+        associating with the AP.
+
+        Radio
+        The chip set to receive and send wireless signal.
+
+        Association
+        The service used to establish access point
+        or station mapping and enable station invocation
+        of the distribution system services.
+        (Wireless clients attempt to connect to
+        access points.)
+
+        Basic Rate
+        A data rate that is mandatory for client
+        devices to support in order for them to achieve
+        successful association.
+
+        MSDU
+        MAC Service Data Unit, it is frame format defined by
+        802.11.
+
+        TU
+        It is 1,024 microseconds (ms), which is about 1
+        millisecond.
+
+        AKM
+        The authentication and key management method defined by
+        802.11i, and which includes 802.1x and pre-shared key."
+    REVISION "201710091800Z"        -- Oct 09, 2017 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes and new table."
+    REVISION "201603111800Z"        -- Mar 11, 2016 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes and new table."
+    REVISION "201409191800Z"        -- Sep 19, 2014 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes and new table."
+    REVISION "201009251800Z"        -- Sep 25, 2010 at 18:00 GMT
+    DESCRIPTION
+        "Modified to remove some issue."
+    REVISION "201009021800Z"        -- Sep 2, 2010 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new node."
+    REVISION "200907291800Z"        -- Jul 29, 2009 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes and new table."
+    REVISION "200905072000Z"        -- May 7, 2009 at 20:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes and new table."
+    REVISION "200903201530Z"        -- Mar 20, 2009 at 15:30 GMT
+    DESCRIPTION
+        "Modified to add new value for appointed node."
+    REVISION "200811071530Z"        -- Nov 07, 2008 at 15:30 GMT
+    DESCRIPTION
+        "Modified to add new nodes and new table."
+    REVISION "200807091800Z"        -- July 09, 2008 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new groups."
+    REVISION "200802251800Z"        -- Feb 25, 2008 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200712211800Z"        -- Dec 21, 2007 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200710091655Z"    -- October 09, 2007 at 16:55 GMT
+    DESCRIPTION
+        "changed for new requirements"
+    REVISION "200706191800Z"        -- June 19, 2007 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new table."
+    REVISION "200704272000Z"        -- Apr 27, 2007 at 20:00 GMT
+    DESCRIPTION
+        "Modified to fix some issue."
+    REVISION "200702012000Z"        -- February 01, 2007 at 20:00 GMT
+    DESCRIPTION
+        "Modified to support fat AP."
+    REVISION "200605101900Z"        -- May 10, 2006 at 19:00 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisDot11 4 }
+
+-- *****************************************************************************
+-- *  Major sections
+-- *****************************************************************************
+--  AP Configuration Group
+--  DEFINED AS "The group to provide the configuration information
+--  for APs.
+unisDot11GlobeConfigGroup OBJECT IDENTIFIER  ::= { unisDot11CFG 1 }
+
+unisDot11PolicyConfigGroup OBJECT IDENTIFIER ::= { unisDot11CFG 2 }
+--  Policy Configuration Group has the following children:
+--  unisDot11RadioPolicyTable            ::= { unisDot11PolicyConfigGroup 1 }
+--  unisDot11ServicePolicyTable          ::= { unisDot11PolicyConfigGroup 2 }
+--  unisDot11ServicePolicyExtTable       ::= { unisDot11PolicyConfigGroup 3 }
+--  unisDot11RadioPolicyExtTable         ::= { unisDot11PolicyConfigGroup 4 }
+--  unisDot11SrvPortSecurityTable        ::= { unisDot11PolicyConfigGroup 5 }
+--  unisDot11SrvPolicyExtendTable        ::= { unisDot11PolicyConfigGroup 6 }
+--  unisDot11SrvL2AuthenTable            ::= { unisDot11PolicyConfigGroup 7 }
+
+unisDot11APConfigGroup OBJECT IDENTIFIER     ::= { unisDot11CFG 3 }
+--  AP Configuration Group has the following children:
+--  unisDot11APTemplateTable                 ::= { unisDot11APConfigGroup 1 }
+--  unisDot11RadioToConfigTable              ::= { unisDot11APConfigGroup 2 }
+--  unisDot11APServiceSetTable               ::= { unisDot11APConfigGroup 3 }
+--  unisDot11APSysInfoSetTable               ::= { unisDot11APConfigGroup 4 }
+--  unisDot11APLimitTable                    ::= { unisDot11APConfigGroup 5 }
+--  unisDot11APSerialIDTable                 ::= { unisDot11APConfigGroup 10 }
+--  unisDot11APSTVlanTable                   ::= { unisDot11APConfigGroup 11 }
+unisDot11RadioIntfConfigGroup OBJECT IDENTIFIER ::= { unisDot11CFG 4 }
+--  Radio Interface Group has the following children:
+--  unisDot11RadioIntfConfigTable          ::= { unisDot11RadioIntfConfigGroup 1 }
+--  unisDot11RadioIntfBindTable            ::= { unisDot11RadioIntfConfigGroup 2 }
+
+unisDot11DataRateConfigGroup OBJECT IDENTIFIER ::= { unisDot11CFG 5 }
+--  Data Rate Config Group has the following children:
+--  unisDot11DataRateConfigTable           ::= { unisDot11DataRateConfigGroup 1 }
+
+unisDot11InterfaceConfigGroup OBJECT IDENTIFIER ::= { unisDot11CFG 6 }
+--  Interface Config Group has the following children:
+--  unisDot11WlanEssIfTable               ::= { unisDot11InterfaceConfigGroup 1 }
+--  unisDot11WlanBssIfTable               ::= { unisDot11InterfaceConfigGroup 2 }
+--  unisDot11WLANEthernetIfTable          ::= { unisDot11InterfaceConfigGroup 3 }
+--  unisDot11PortSecurityTable            ::= { unisDot11InterfaceConfigGroup 4 }
+--  unisDot11WlanMeshIfTable              ::= { unisDot11InterfaceConfigGroup 5 }
+
+unisDot11ACBackupGroup OBJECT IDENTIFIER ::= { unisDot11CFG 7 }
+
+unisDot11RadioElementConfigGroup OBJECT IDENTIFIER ::= { unisDot11CFG 8 }
+--  Radio Element Config Group has the following children:
+--  unisDot11nRadioCfgTable           ::= { unisDot11RadioElementConfigGroup 1 }
+--  unisDot11RadioWDSTable            ::= { unisDot11RadioElementConfigGroup 2 }
+--  unisDot11nRadioCfg2Table          ::= { unisDot11RadioElementConfigGroup 3 }
+
+unisDot11CfgNotifyGroup OBJECT IDENTIFIER ::= { unisDot11CFG 9 }
+
+unisDot11LocalACConfigGroup OBJECT IDENTIFIER     ::= { unisDot11CFG 10 }
+--  LocalAC Configuration Group has the following children:
+--  unisDot11LocalACTemplateTable                 ::= { unisDot11LocalACConfigGroup 1 }
+
+-- *****************************************************************************
+-- *  unisDot11GlobeConfigGroup Definition
+-- *****************************************************************************
+unisDot11GlobalCountryCode OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(3))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the country code for wireless network."
+    ::= { unisDot11GlobeConfigGroup 1 }
+
+unisDot11StaKeepALiveTimerIntvl OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval of the keep alive requests sent between
+        AP and STA.
+        Default value 0 : The keep alive function is disabled."
+    DEFVAL      { 0 }
+    ::= { unisDot11GlobeConfigGroup 2 }
+
+unisDot11StaIdleTimerIntvl OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval for which the link between AP and STA
+        ( power-save or awake ) can be idle."
+    ::= { unisDot11GlobeConfigGroup 3 }
+
+unisDot11BroadcastProbeReply OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents enable the AP to reply broadcast probe or not.
+        'true' : The AP to reply broadcast probe is enabled.
+        'false': The AP to reply broadcast probe is disabled"
+    DEFVAL      { true }
+    ::= { unisDot11GlobeConfigGroup 4 }
+
+unisDot11APScanMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            active(1),
+            passive(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the scanning mode for AP.
+        The following values are supported:
+        active   - AP will actively do scan.
+        passive  - AP will passively do scan."
+    DEFVAL      { passive }
+    ::= { unisDot11GlobeConfigGroup 5 }
+
+unisDot11ACCtrlTunnelSecSupport OBJECT-TYPE
+    SYNTAX      UnisDot11TunnelSecSchemType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents what security schemes are supported for CAPWAP Control
+        tunnel."
+    ::= { unisDot11GlobeConfigGroup 6 }
+
+unisDot11ACDataTunnelSecSupport OBJECT-TYPE
+    SYNTAX      UnisDot11TunnelSecSchemType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents what security schemes are supported for CAPWAP data
+        tunnel.  The cleartxt is the default scheme."
+    DEFVAL      { cleartxt }
+    ::= { unisDot11GlobeConfigGroup 7 }
+
+unisDot11ACAutoAPSupport OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents enable the auto AP functionality or not.
+        'true' : The auto AP functionality is enabled.
+        'false': The auto AP functionality is disabled"
+    DEFVAL      { false }
+    ::= { unisDot11GlobeConfigGroup 8 }
+
+unisDot11AutoAPName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the name of auto AP that needs to be made persistent.
+        When read the value from the node, NULL value be returned."
+    ::= { unisDot11GlobeConfigGroup 9 }
+
+unisDot11PersistentName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the new name of auto AP after being made persistent.
+        When read the value from the node, NULL value be returned."
+    ::= { unisDot11GlobeConfigGroup 10 }
+
+unisDot11IntfTrapThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dbm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents threshold of interference trap.  If signal strength of
+        the device exceeds this threshold, corresponding trap will
+        be sent."
+    ::= { unisDot11GlobeConfigGroup 11 }
+
+unisDot11MonitorInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(0 | 5..15)
+    UNITS       "minute"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the monitoring interval.
+        Default value 0 : The monitoring functionality is changed to
+        real-time mode."
+    DEFVAL      { 0 }
+    ::= { unisDot11GlobeConfigGroup 12 }
+
+unisDot11SampleInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(0 | 10..300)
+    UNITS       "second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the sampling interval.
+        Default value 0 : The sampling functionality is disabled."
+    DEFVAL      { 0 }
+    ::= { unisDot11GlobeConfigGroup 13 }
+
+unisDot11ChnlSwitChkInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(8..180)
+    UNITS       "minute"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the checking interval of channel switch."
+    DEFVAL      { 8 }
+    ::= { unisDot11GlobeConfigGroup 14 }
+
+unisDot11APUserUplimit OBJECT-TYPE
+    SYNTAX      Unsigned32(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the upper limit of user which has access to this AP."
+    ::= { unisDot11GlobeConfigGroup 15 }
+
+unisDot11APL2IsolateEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents enable the layer2 isolation or not.
+        'true' : The layer2 isolation functionality is enabled.
+        'false': The layer2 isolation functionality is disabled."
+    DEFVAL      { false }
+    ::= { unisDot11GlobeConfigGroup 16 }
+
+unisDot11APBSSIDSupportNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the max number of BSSID supported by Current AP."
+    ::= { unisDot11GlobeConfigGroup 17 }
+
+unisDot11APLastUpdateStatTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents date and time update statistic information lately."
+    ::= { unisDot11GlobeConfigGroup 18 }
+
+unisDot11APDoSProtectEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents enable the DOS protection or not.
+        'true' : The DOS protection functionality is enabled.
+        'false': The DOS protection functionality is disabled."
+    DEFVAL      { false }
+    ::= { unisDot11GlobeConfigGroup 19 }
+
+unisDot11MaxAPPerIf OBJECT-TYPE
+    SYNTAX      Unsigned32(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents max AP number that can be connected to AC interface."
+    ::= { unisDot11GlobeConfigGroup 20 }
+
+unisDot11SampleTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the start time of current sample period."
+    ::= { unisDot11GlobeConfigGroup 21 }
+
+unisDot11UplinkTrackId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the track id of AP.
+        Default value 0 : The uplink track function for AP is disabled."
+    DEFVAL      { 0 }
+    ::= { unisDot11GlobeConfigGroup 22 }
+
+unisDot11RtCollectSwitch OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to turn on/off real-time statistics collection
+         between AC and AP.  If the value is true, unisDot11RtCollectIntvl will
+         take effect.  Otherwise, unisDot11RglCollectIntvl will take effect."
+    DEFVAL      { false }
+    ::= { unisDot11GlobeConfigGroup 23 }
+
+unisDot11RglCollectIntvl OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents interval to regularly collect statistics from
+         AC to AP."
+    ::= { unisDot11GlobeConfigGroup 24 }
+
+unisDot11RtCollectIntvl OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents interval to collect real-time statistics from
+         AC to AP."
+    ::= { unisDot11GlobeConfigGroup 25 }
+
+unisDot11AllAPCpuUsageThreshold OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    UNITS       "onepercent"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The CPU usage threshold for all AP."
+    ::= { unisDot11GlobeConfigGroup 26 }
+
+unisDot11AllAPMemUsageThreshold OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    UNITS       "onepercent"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The memory usage threshold for all AP."
+    ::= { unisDot11GlobeConfigGroup 27 }
+
+unisDot11AdjIntfTrapThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dbm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents threshold of adjacent interference trap.  If signal strength
+        of the device exceeds this threshold, corresponding trap will be sent."
+    ::= { unisDot11GlobeConfigGroup 28 }
+
+unisDot11AllAPMonitorMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            normal(1),
+            monitor(2),
+            hybrid(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents what work mode for All AP.
+        The following values are supported:
+        normal,     - AP will supply WLAN service.
+        monitor     - AP will be a monitor to find attack.
+        hybrid      - AP will supply WLAN service and Device detection is
+        enabled."
+    DEFVAL      { normal }
+    ::= { unisDot11GlobeConfigGroup 29 }
+
+unisDot11GlobalApFmwUpdState OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the status of version auto-update for an AP.
+        The following values are supported:
+        enable      - AP version will be updated automatically.
+        disable     - AP version will not be updated automatically."
+    DEFVAL      { enable }
+    ::= { unisDot11GlobeConfigGroup 30 }
+
+unisDot11ACNasIDCM OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the NAS-ID of current AC."
+    ::= { unisDot11GlobeConfigGroup 31 }
+
+unisDot11ACRole OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            normal(1),
+            central(2),
+            local(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Current network status of AC.
+        The following values are supported:
+        normal,     - normal ac.
+        central     - A central AC is an AC where local ACs are
+                      configured, and it establishes CAPWAP tunnels
+                      with the local ACs.
+        local       - Local ACs provide network access to APs
+                      and process client traffic. They are managed
+                      by the central AC."
+    DEFVAL      { normal }
+    ::= { unisDot11GlobeConfigGroup 32 }
+
+unisDot11GlobalLocalACState OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the status of local-ac for an AC.
+        The following values are supported:
+        enable      - LocalAC state will be enabled.
+        disable     - LocalAC state will not be enabled."
+    DEFVAL      { disable }
+    ::= { unisDot11GlobeConfigGroup 33 }
+
+unisDot11CentralACIPAddress OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the CentralAC IP address of LocalAC."
+    ::= { unisDot11GlobeConfigGroup 34 }
+
+unisDot11CentralACIPv6Address OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the CentralAC IPv6 address of LocalAC."
+    ::= { unisDot11GlobeConfigGroup 35 }
+-- *****************************************************************************
+-- * End of unisDot11GlobeConfigGroup Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11RadioPolicyTable Definition
+-- *****************************************************************************
+unisDot11RadioPolicyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11RadioPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table defines the parameters for radio policy, as per
+        radio policy of CLI.
+        One radio policy could be assigned to the different radios (AP)."
+    ::= { unisDot11PolicyConfigGroup 1 }
+
+unisDot11RadioPolicyEntry OBJECT-TYPE
+    SYNTAX      UnisDot11RadioPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of each radio policy."
+    INDEX
+        {
+            IMPLIED unisDot11RadioPolicyName
+        }
+    ::= { unisDot11RadioPolicyTable 1 }
+
+UnisDot11RadioPolicyEntry ::= SEQUENCE
+    {
+        unisDot11RadioPolicyName        OCTET STRING,
+        unisDot11BeaconInterval         Integer32,
+        unisDot11DtimInterval           Integer32,
+        unisDot11RtsThreshold           Integer32,
+        unisDot11FragThreshold          Integer32,
+        unisDot11ShortRetryThreshold    Integer32,
+        unisDot11LongRetryThreshold     Integer32,
+        unisDot11MaxRxLifetime          Unsigned32,
+        unisDot11RdoPolicyRowStatus     RowStatus,
+        unisDot11RdoClientMaxCount      Integer32,
+        unisDot11BeaconIntervalMs       Integer32
+    }
+
+unisDot11RadioPolicyName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the name of radio policy."
+    ::= { unisDot11RadioPolicyEntry 1 }
+
+unisDot11BeaconInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "TU"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval for Beacon management frame."
+    DEFVAL      { 100 }
+    ::= { unisDot11RadioPolicyEntry 2 }
+
+unisDot11DtimInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of beacon intervals that shall elapse
+        between transmission of Beacons frames containing a Traffic
+        Indication Map (TIM) element whose DTIM Count field is 0.
+        This value is transmitted in the Delivery TIM (DTIM) Period
+        field of Beacon frames."
+    DEFVAL      { 1 }
+    ::= { unisDot11RadioPolicyEntry 3 }
+
+unisDot11RtsThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "byte"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the current minimum size, in octets, of the MAC
+        protocol data unit (MPDU), below which a Request to send/Clear
+        to send (RTS/CTS) handshake shall not be performed."
+    DEFVAL      { 2346 }
+    ::= { unisDot11RadioPolicyEntry 4 }
+
+unisDot11FragThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "byte"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the current maximum size, in octets, of the MPDU that
+        may be delivered to the PHY.  A MSDU shall be broken into
+        fragments if its size exceeds the value of this attribute after
+        adding MAC headers and trailers."
+    DEFVAL      { 2346 }
+    ::= { unisDot11RadioPolicyEntry 5 }
+
+unisDot11ShortRetryThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum number of transmission attempts of a
+        frame, the length of which is less than or equal to
+        unisDot11RTSThreshold, which shall be made before a failure
+        condition is indicated."
+    DEFVAL      { 7 }
+    ::= { unisDot11RadioPolicyEntry 6 }
+
+unisDot11LongRetryThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum number of transmission attempts of a
+        frame, the length of which is longer than unisDot11RTSThreshold,
+        that shall be made before a failure condition is indicated."
+    DEFVAL      { 4 }
+    ::= { unisDot11RadioPolicyEntry 7 }
+
+unisDot11MaxRxLifetime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "millisecond"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the elapsed time.  After the time specified by
+        unisDot11MaxRxLifetime, the further attempts to reassemble the
+        MSDU shall be terminated."
+    DEFVAL      { 2000 }
+    ::= { unisDot11RadioPolicyEntry 8 }
+
+unisDot11RdoPolicyRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11RadioPolicyEntry 9 }
+
+unisDot11RdoClientMaxCount OBJECT-TYPE
+    SYNTAX      Integer32(0..2147483647)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represent the maximum number of stations supported by
+        this radio policy."
+    ::= { unisDot11RadioPolicyEntry 10 }
+
+unisDot11BeaconIntervalMs OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "ms"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval for Beacon management frame."
+    ::= { unisDot11RadioPolicyEntry 11 }
+-- *****************************************************************************
+-- * End of unisDot11RadioPolicyTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11ServicePolicyTable Definition
+-- *****************************************************************************
+unisDot11ServicePolicyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11ServicePolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table defines the parameters for ESS, as per service policy
+        of CLI.
+        One service policy could be assigned to the different radios
+        (AP)."
+    ::= { unisDot11PolicyConfigGroup 2 }
+
+unisDot11ServicePolicyEntry OBJECT-TYPE
+    SYNTAX      UnisDot11ServicePolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of each service policy."
+    INDEX
+        {
+            unisDot11ServicePolicyID
+        }
+    ::= { unisDot11ServicePolicyTable 1 }
+
+UnisDot11ServicePolicyEntry ::= SEQUENCE
+    {
+        unisDot11ServicePolicyID       UnisDot11ServicePolicyIDType,
+        unisDot11SSIDName              UnisDot11SSIDStringType,
+        unisDot11SSIDHidden            TruthValue,
+        unisDot11AuthenMode            UnisDot11AuthenType,
+        unisDot11SSIDEncryptionMode    UnisDot11SSIDEncryptModeType,
+        unisDot11WlanInfBindingType    OCTET STRING,
+        unisDot11WlanInfBindingID      Integer32,
+        unisDot11SrvPolicyRowStatus    RowStatus,
+        unisDot11ClientMaxCount        Integer32,
+        unisDot11SPInCirMode           UnisDot11CirMode,
+        unisDot11SPInCirValue          Integer32,
+        unisDot11SPOutCirMode          UnisDot11CirMode,
+        unisDot11SPOutCirValue         Integer32,
+        unisDot11WlanInfPVID           Integer32,
+        unisDot11SPInCirStaticValue    Integer32,
+        unisDot11SPOutCirStaticValue   Integer32,
+        unisDot11SPIsolate             TruthValue,
+        unisDot11WlanexAuthServerIP    IpAddress,
+        unisDot11SPBeaconMeasEnable    TruthValue,
+        unisDot11SPBeaconMeasType      INTEGER,
+        unisDot11SPBeaconMeasInterval  Integer32,
+        unisDot11AuthenModeCM          INTEGER,
+        unisDot11SecIEStatusCM         INTEGER,
+        unisDot11SecurityCiphersCM     INTEGER,
+        unisDot11SrvPolicyStatusCM     INTEGER,
+        unisDot11SSIDHiddenCM          UnisDot11TruthValueCM,
+        unisDot11SPIsolateCM           UnisDot11TruthValueCM,
+        unisDot11FwdVlanBitMapLow      OCTET STRING,
+        unisDot11FwdVlanBitMapHigh     OCTET STRING,
+        unisDot11ServicePolicyName     OCTET STRING,
+        unisDot11SecurityModeCM        INTEGER,
+        unisDot11SPInCbsValue          Integer32,
+        unisDot11SPOutCbsValue         Integer32
+    }
+
+unisDot11ServicePolicyID OBJECT-TYPE
+    SYNTAX      UnisDot11ServicePolicyIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the ID of each service policy."
+    ::= { unisDot11ServicePolicyEntry 1 }
+
+unisDot11SSIDName OBJECT-TYPE
+    SYNTAX      UnisDot11SSIDStringType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the ESS.  As per CLI, the value of
+        service policy name will be SSID."
+    ::= { unisDot11ServicePolicyEntry 2 }
+
+unisDot11SSIDHidden OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This attribute controls whether the SSID will be advertised in
+        the beacon frame.
+        If it is true, then SSID will not be advertised in the beacon
+        frame."
+    DEFVAL      { false }
+    ::= { unisDot11ServicePolicyEntry 3 }
+
+unisDot11AuthenMode OBJECT-TYPE
+    SYNTAX      UnisDot11AuthenType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the Authentication mode defined by 802.11."
+    ::= { unisDot11ServicePolicyEntry 4 }
+
+unisDot11SSIDEncryptionMode OBJECT-TYPE
+    SYNTAX      UnisDot11SSIDEncryptModeType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the encryption mode for this ESS."
+    ::= { unisDot11ServicePolicyEntry 5 }
+
+unisDot11WlanInfBindingType OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the service policy will bind to what kind of
+        data forwarding interface."
+    DEFVAL      { "WLAN-ESS" }
+    ::= { unisDot11ServicePolicyEntry 6 }
+
+unisDot11WlanInfBindingID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the interface ID of the interface that ESS will
+        bind to.
+        If the value is set to -1, the binding will be removed."
+    ::= { unisDot11ServicePolicyEntry 7 }
+
+unisDot11SrvPolicyRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11ServicePolicyEntry 8 }
+
+unisDot11ClientMaxCount OBJECT-TYPE
+    SYNTAX      Integer32(0..2147483647)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represent the maximum number of stations supported by
+        this service policy."
+    ::= { unisDot11ServicePolicyEntry 9 }
+
+unisDot11SPInCirMode OBJECT-TYPE
+    SYNTAX      UnisDot11CirMode
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        CIR(committed information rate) mode of inbound direction.
+        This object is useful only when the corresponding CIR is nonzero.
+        If value of this object is changed, corresponding CIR will be reset."
+    DEFVAL      { static }
+    ::= { unisDot11ServicePolicyEntry 10 }
+
+unisDot11SPInCirValue OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Kbps"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the CIR of inbound direction of this service policy.
+        If the value is 0, it means that no flow control is applied to
+        the service policy, and the corresponding CIR mode is meaningless."
+    DEFVAL      { 0 }
+    ::= { unisDot11ServicePolicyEntry 11 }
+
+unisDot11SPOutCirMode OBJECT-TYPE
+    SYNTAX      UnisDot11CirMode
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        CIR(committed information rate) mode of outbound direction.
+        This object is useful only when the corresponding CIR is nonzero.
+        If value of this object is changed, corresponding CIR will be reset."
+    DEFVAL      { static }
+    ::= { unisDot11ServicePolicyEntry 12 }
+
+unisDot11SPOutCirValue OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Kbps"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the CIR of outbound direction of this service policy.
+        If the value is 0, it means that no flow control is applied to
+        the service policy, and the corresponding CIR mode is meaningless."
+    DEFVAL      { 0 }
+    ::= { unisDot11ServicePolicyEntry 13 }
+
+unisDot11WlanInfPVID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the VLAN ID of SSID."
+    DEFVAL      { 1 }
+    ::= { unisDot11ServicePolicyEntry 14 }
+
+unisDot11SPInCirStaticValue  OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Kbps"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the CIR of inbound direction for static CIR mode."
+    DEFVAL      { 0 }
+        ::= { unisDot11ServicePolicyEntry 15 }
+
+unisDot11SPOutCirStaticValue  OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Kbps"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the CIR of outbound direction for static CIR mode."
+    DEFVAL      { 0 }
+        ::= { unisDot11ServicePolicyEntry 16 }
+
+unisDot11SPIsolate OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "If it is true, then stations connected with the service policy are
+         isolated."
+    DEFVAL      { false }
+    ::= { unisDot11ServicePolicyEntry 17 }
+
+unisDot11WlanexAuthServerIP OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "Represents the IP address of the Wlanex Authentication server"
+    ::= {  unisDot11ServicePolicyEntry 18 }
+
+unisDot11SPBeaconMeasEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "If it is true, then beacon-measurement is enabled."
+    DEFVAL      { false }
+    ::= { unisDot11ServicePolicyEntry 19  }
+
+unisDot11SPBeaconMeasType OBJECT-TYPE
+      SYNTAX      INTEGER
+        {
+            passive(1),
+            active(2),
+            beaconTable(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents what the work mode for BeaconMeasurement type.
+        The following values are supported:
+        passive,      - BeaconMeasurement will use the passive type.
+        active        - BeaconMeasurement will use the active type.
+        beaconTable   - BeaconMeasurement will use the beacon table type."
+    DEFVAL      { beaconTable }
+    ::= { unisDot11ServicePolicyEntry 20 }
+
+unisDot11SPBeaconMeasInterval OBJECT-TYPE
+    SYNTAX      Integer32(10..200)
+    UNITS       "second"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the beacon-measurement interval."
+    DEFVAL      { 60 }
+    ::= { unisDot11ServicePolicyEntry 21 }
+
+unisDot11AuthenModeCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            opensystem(0),
+            sharedkey(1)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the Authentication mode defined by 802.11."
+    ::= { unisDot11ServicePolicyEntry 22 }
+
+unisDot11SecIEStatusCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            none(0),
+            wpa(1),
+            wpa2(2),
+            wlanex(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "To enable the security Information element in the beacon and
+        probe response frames sent by AP."
+    ::= { unisDot11ServicePolicyEntry 23 }
+
+unisDot11SecurityCiphersCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            none(0),
+            wep40(1),
+            wep104(2),
+            tkip(3),
+            aesccmp(4),
+            wpisms4(5)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The WLAN system support the following cipher type for data frame
+        encryption.
+        none
+        wep40
+        wep104
+        tkip
+        aesccmp
+        wpi-SMS4
+        When the value of node equals to zero, it means no configuration or
+        undo operation."
+    ::= { unisDot11ServicePolicyEntry 24 }
+
+unisDot11SrvPolicyStatusCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            off(0),
+            on(1)
+        }
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "The status of the Service Policy."
+    ::= {  unisDot11ServicePolicyEntry 25 }
+
+unisDot11SSIDHiddenCM OBJECT-TYPE
+    SYNTAX      UnisDot11TruthValueCM
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This attribute controls whether the SSID will be advertised in
+        beacon frames.
+        If it is dot11true, the SSID will not be advertised in beacon
+        frames."
+    DEFVAL      { dot11false }
+    ::= { unisDot11ServicePolicyEntry 26 }
+
+unisDot11SPIsolateCM OBJECT-TYPE
+    SYNTAX      UnisDot11TruthValueCM
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "If it is dot11true, the clients connected with the service policy are
+        isolated to each other."
+    DEFVAL      { dot11false }
+    ::= { unisDot11ServicePolicyEntry 27 }
+
+unisDot11FwdVlanBitMapLow OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..256))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Each octet within this value specifies a set of eight
+         VLANs, with the first octet specifying VLANs 1 through 8,
+         the second octet specifying VLANs 9 through 16, etc.
+         Within each octet, the most significant bit represents
+         the highest numbered VLAN, and the least significant bit
+         represents the lowest numbered VLAN. Thus, each untagged
+         VLAN of the hybrid port is represented by a single bit
+         within the value of this object. If that bit has a value
+         of '1' then that VLAN is untagged in the set of VLANs; the
+         VLAN is not untagged if its bit has a value of '0'."
+    ::= { unisDot11ServicePolicyEntry 28 }
+
+unisDot11FwdVlanBitMapHigh OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..256))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Each octet within this value specifies a set of eight
+         VLANs, with the first octet specifying VLANs 1 through 8,
+         the second octet specifying VLANs 9 through 16, etc.
+         Within each octet, the most significant bit represents
+         the highest numbered VLAN, and the least significant bit
+         represents the lowest numbered VLAN. Thus, each untagged
+         VLAN of the hybrid port is represented by a single bit
+         within the value of this object. If that bit has a value
+         of '1' then that VLAN is untagged in the set of VLANs; the
+         VLAN is not untagged if its bit has a value of '0'."
+    ::= { unisDot11ServicePolicyEntry 29 }
+
+unisDot11ServicePolicyName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the name of each service policy."
+    ::= { unisDot11ServicePolicyEntry 30 }
+
+unisDot11SecurityModeCM OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            none(0),
+            psk(1),
+            radius(2),
+            wlanex(3)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Determines the security modes of the WLAN port.
+
+        none  - The default value. No security mode is set.
+
+        psk  - Access to the port is denied until the port client is
+        authorized (by 802.1X key negotiation).
+
+        radius  - Access to the port is denied until the port
+        client is authorized (by 802.1X).
+
+        wlanex  - Access to the port is denied until the port client is
+        authenticated by wlan cert."
+    ::= { unisDot11ServicePolicyEntry 31 }
+
+ unisDot11SPInCbsValue  OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "byte"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the CBS of inbound direction of this service policy.
+        If the value is 0, it means that the CBS is automatically calculated
+        from the value of CIR."
+    DEFVAL      { 0 }
+    ::= { unisDot11ServicePolicyEntry 32 }
+
+unisDot11SPOutCbsValue  OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "byte"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the CBS of outbound direction of this service policy.
+        If the value is 0, it means that the CBS is automatically calculated
+        from the value of CIR."
+    DEFVAL      { 0 }
+    ::= { unisDot11ServicePolicyEntry 33 }
+
+-- *****************************************************************************
+-- * End of unisDot11ServicePolicyTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11ServicePolicyExtTable Definition
+-- *****************************************************************************
+unisDot11ServicePolicyExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11ServicePolicyExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table defines the parameters for ESS, as per service policy
+        of CLI.
+        When the value of unisDot11SSIDEncryptionMode equals to cipher(2),
+        more configuration for a ESS will be put into the table."
+    ::= { unisDot11PolicyConfigGroup 3 }
+
+unisDot11ServicePolicyExtEntry OBJECT-TYPE
+    SYNTAX      UnisDot11ServicePolicyExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of each service policy under cipher(2)
+        mode."
+    INDEX
+        {
+            unisDot11ServicePolicyExtID
+        }
+    ::= { unisDot11ServicePolicyExtTable 1 }
+
+UnisDot11ServicePolicyExtEntry ::= SEQUENCE
+    {
+        unisDot11ServicePolicyExtID       UnisDot11ServicePolicyIDType,
+        unisDot11SecIEStatus              UnisDot11SecIEStatusType,
+        unisDot11SecurityCiphers          Integer32,
+        unisDot11CipherKeyIndex           Integer32,
+        unisDot11CipherKey                OCTET STRING,
+        unisDot11SrvPolicyExtRowStatus    RowStatus,
+        unisDot11CipherKeyType            INTEGER,
+        unisDot11AkmMode                  INTEGER,
+        unisDot11PskKey                   OCTET STRING
+    }
+
+unisDot11ServicePolicyExtID OBJECT-TYPE
+    SYNTAX      UnisDot11ServicePolicyIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the ID of each service policy."
+    ::= { unisDot11ServicePolicyExtEntry 1 }
+
+unisDot11SecIEStatus OBJECT-TYPE
+    SYNTAX      UnisDot11SecIEStatusType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "To enable the security Information element in the beacon and
+        probe response frames sent by AP."
+    ::= { unisDot11ServicePolicyExtEntry 2 }
+
+unisDot11SecurityCiphers OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The WLAN system support the following cipher type for data frame
+        encryption.
+        wep40(2)
+        tkip(4)
+        aesccmp(16)
+        wep104(32)
+        wpisms4(64)
+        wep128(128)
+        For each service policy, it could support multiple cipher types at
+        the same time.  So the value of object could combine multiple value
+        of cipher type above.
+        When the value of node equals to zero, it means no configuration or
+        undo operation."
+    ::= { unisDot11ServicePolicyExtEntry 3 }
+
+unisDot11CipherKeyIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the key index of cipher key for packet.
+        When unisDot11SecurityCiphers value is wep40 or wep104,
+        the configuration will take effective."
+    DEFVAL      { 1 }
+    ::= { unisDot11ServicePolicyExtEntry 4 }
+
+unisDot11CipherKey OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the cipher key for packet.
+        When unisDot11SecurityCiphers value is wep40 or wep104,
+        the configuration will take effective."
+    ::= { unisDot11ServicePolicyExtEntry 5 }
+
+unisDot11SrvPolicyExtRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11ServicePolicyExtEntry 6 }
+
+unisDot11CipherKeyType OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        char(1),
+        hex(2)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the cipher key type of unisDot11CipherKey."
+    DEFVAL    {1}
+    ::= { unisDot11ServicePolicyExtEntry 7 }
+
+unisDot11AkmMode OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        dot1x(1),
+        psk(2)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The authentication and key management mode."
+    DEFVAL    {dot1x}
+    ::= { unisDot11ServicePolicyExtEntry 8 }
+
+unisDot11PskKey OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the preshared key.  This configuration takes effect
+        if the unisDot11AkmMode value is psk."
+    ::= { unisDot11ServicePolicyExtEntry 9 }
+
+-- *****************************************************************************
+-- * End of unisDot11ServicePolicyExtTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11RadioPolicyExtTable Definition
+-- *****************************************************************************
+unisDot11RadioPolicyExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11RadioPolicyExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table defines the radio policy of each radio.
+        It can't be modified if the radio policy is a default radio policy."
+    ::= { unisDot11PolicyConfigGroup 4 }
+
+unisDot11RadioPolicyExtEntry OBJECT-TYPE
+    SYNTAX      UnisDot11RadioPolicyExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of each radio policy."
+    INDEX
+        {
+            unisDot11RPAPSerialID,
+            unisDot11RPRadioID
+        }
+    ::= { unisDot11RadioPolicyExtTable 1 }
+
+UnisDot11RadioPolicyExtEntry ::= SEQUENCE
+    {
+        unisDot11RPAPSerialID             OCTET STRING,
+        unisDot11RPRadioID                UnisDot11RadioScopeType,
+        unisDot11RPBeaconInterval         Integer32,
+        unisDot11RPDtimInterval           Integer32,
+        unisDot11RPRtsThreshold           Integer32,
+        unisDot11RPFragThreshold          Integer32,
+        unisDot11RPShortRetryThreshold    Integer32,
+        unisDot11RPLongRetryThreshold     Integer32,
+        unisDot11RPClientMaxCount         Integer32,
+        unisDot11RPBeaconIntervalCM       Integer32
+    }
+
+unisDot11RPAPSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the Serial ID of AP."
+    ::= { unisDot11RadioPolicyExtEntry 1 }
+
+unisDot11RPRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents each radio."
+    ::= { unisDot11RadioPolicyExtEntry 2 }
+
+unisDot11RPBeaconInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the interval for Beacon management frame."
+    DEFVAL      { 100 }
+    ::= { unisDot11RadioPolicyExtEntry 3 }
+
+unisDot11RPDtimInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the number of beacon intervals that shall elapse
+        between transmissions of Beacons frames containing a Traffic
+        Indication Map (TIM) element whose DTIM count field is 0.
+        This value is transmitted in the Delivery TIM (DTIM) Period
+        field of Beacon frames."
+    DEFVAL      { 1 }
+    ::= { unisDot11RadioPolicyExtEntry 4 }
+
+unisDot11RPRtsThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "byte"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the current minimum size, in octets, of the MAC
+        protocol data unit (MPDU), below which a Request to send/Clear
+        to send (RTS/CTS) handshake shall not be performed."
+    DEFVAL      { 2346 }
+    ::= { unisDot11RadioPolicyExtEntry 5 }
+
+unisDot11RPFragThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "byte"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the current maximum size, in octets, of the MPDU
+         that may be delivered to the PHY.  A MSDU shall be broken into
+        fragments if its size exceeds the value of this attribute after
+        adding MAC headers and trailers."
+    DEFVAL      { 2346 }
+    ::= { unisDot11RadioPolicyExtEntry 6 }
+
+unisDot11RPShortRetryThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the maximum number of transmission attempts of a
+        frame, the length of which is less than or equal to
+        unisDot11RTSThreshold, that shall be made before a failure
+        condition is indicated."
+    DEFVAL      { 7 }
+    ::= { unisDot11RadioPolicyExtEntry 7 }
+
+unisDot11RPLongRetryThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the maximum number of transmission attempts of a
+        frame, the length of which is longer than unisDot11RTSThreshold,
+        and that shall be made before a failure condition is indicated."
+    DEFVAL      { 4 }
+    ::= { unisDot11RadioPolicyExtEntry 8 }
+
+unisDot11RPClientMaxCount OBJECT-TYPE
+    SYNTAX      Integer32(0..2147483647)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the maximum number of stations supported by
+        this radio policy."
+    ::= { unisDot11RadioPolicyExtEntry 9 }
+
+unisDot11RPBeaconIntervalCM OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "timeunit"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents beacon interval."
+    DEFVAL      { 100 }
+    ::= { unisDot11RadioPolicyExtEntry 10 }
+
+-- *****************************************************************************
+-- * End of unisDot11RadioPolicyTable Definition
+-- *****************************************************************************
+-- *****************************************************************************
+-- *  unisDot11ServicePolicyPortSecurityTable Definition
+-- *****************************************************************************
+unisDot11SrvPortSecurityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11SrvPortSecurityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table defines the WLAN security status for ESS, BSS and
+        WLAN-Ethernet interface which binding the crypto service-template.
+        Otherwise, when binding the clear service-template,
+        unisPortSecurityTables should be used to configure port security."
+    ::= { unisDot11PolicyConfigGroup 5 }
+
+unisDot11SrvPortSecurityEntry OBJECT-TYPE
+    SYNTAX      UnisDot11SrvPortSecurityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for service policy."
+    INDEX
+        {
+            unisDot11SecurityServicePolicyID
+        }
+    ::= { unisDot11SrvPortSecurityTable 1 }
+
+UnisDot11SrvPortSecurityEntry ::= SEQUENCE
+    {
+        unisDot11SecurityServicePolicyID           UnisDot11ServicePolicyIDType,
+        unisDot11SrvPortSecurityMode               INTEGER,
+        unisDot11SrvSecurityKeyType                INTEGER,
+        unisDot11SrvSecurityPskKeyMode             INTEGER,
+        unisDot11SrvSecurityPskKeyString           DisplayString,
+        unisDot11SrvPortSecurityModeCM             INTEGER
+    }
+
+unisDot11SecurityServicePolicyID OBJECT-TYPE
+    SYNTAX      UnisDot11ServicePolicyIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the ID of each service policy."
+    ::= { unisDot11SrvPortSecurityEntry 1 }
+
+unisDot11SrvPortSecurityMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            noRestrictions(1),
+            userLoginSecureExt(2),
+            psk(3),
+            macAddressAndPsk(4),
+            userLoginSecureExtOrPsk(5),
+            ext(6)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Determines the security modes of the WLAN port.
+
+        noRestrictions  The default value, no any security mode is set.
+
+        userLoginSecureExt  Access to the port is denied until the port
+        client is authorized (by 802.1X).
+
+        psk  Access to the port is denied until the port client is
+        authorized (by 802.1X key negotiation).
+
+        macAddressAndPsk  The MAC address is first authenticated and only if
+        this succeeds does the psk then attempt user authentication.
+
+        userLoginSecureExtOrPsk  This selects both the userLoginSecureExt and
+        psk modes together such that either is allowed to authorized access.
+        Which mode works for client depends on the client's choice.
+
+        ext  Access to the port is denied until the port client is
+        authenticated (by ext)."
+    ::= { unisDot11SrvPortSecurityEntry 2 }
+
+unisDot11SrvSecurityKeyType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            userLoginTxKeyTypeNone(1),
+            userLoginTxKeyTypeDot11Key(2),
+            userLoginTxKeyTypeRsaRC4Key(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This indicates the key type in the 802.1X EAPOL_Key packet.
+
+        userLoginTxKeyTypeNone  - This means the key type is not set yet.
+
+        userLoginTxKeyTypeDot11Key  - This selects the 802.11 key type.
+
+        userLoginTxKeyTypeRsaRC4Key  - This selects the RC4 key for RSA RC4
+        session encryption."
+    ::= { unisDot11SrvPortSecurityEntry 3 }
+
+unisDot11SrvSecurityPskKeyMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            pskKeyModeNone(1),
+            pskKeyModePassPhrase(2),
+            pskKeyModeRawKey(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This is the password input mode.  When input as pskKeyModePassPhrase,
+        unisDot11SrvSecurityPskKeyString must be 8 to 63 characters;
+        when input as pskKeyModeRawKey, unisDot11SrvSecurityPskKeyString
+        must be 64 characters and each character must be '0'-'9', 'a'-'f' and
+        'A'-'F'."
+    ::= { unisDot11SrvPortSecurityEntry 4 }
+
+unisDot11SrvSecurityPskKeyString OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..64))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This is the password string used for psk authentication."
+    ::= { unisDot11SrvPortSecurityEntry 5 }
+
+unisDot11SrvPortSecurityModeCM OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            none(0),
+            psk(1),
+            radius(2),
+            wlanex(3)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Determines the security modes of the WLAN port.
+
+        none  - The default value, no any security mode is set.
+
+        psk  - Access to the port is denied until the port client is
+        authorized (by 802.1X key negotiation).
+
+        radius  - Access to the port is denied until the port
+        client is authorized (by 802.1X).
+
+        wlanex  - Access to the port is denied until the port client is
+        authenticated by wlan cert."
+    ::= { unisDot11SrvPortSecurityEntry 6 }
+
+unisDot11SrvL2AuthenTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11SrvL2AuthenEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table defines the Layer 2 authentication status of service
+         templates."
+    ::= { unisDot11PolicyConfigGroup 7 }
+
+unisDot11SrvL2AuthenEntry OBJECT-TYPE
+    SYNTAX      UnisDot11SrvL2AuthenEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row for a service template."
+    INDEX
+        {
+            unisDot11SrvL2AuthenID
+        }
+    ::= { unisDot11SrvL2AuthenTable 1 }
+
+UnisDot11SrvL2AuthenEntry ::= SEQUENCE
+    {
+        unisDot11SrvL2AuthenID               UnisDot11ServicePolicyIDType,
+        unisDot11L2AuthenMode                INTEGER,
+        unisDot11L2IntrusProtectEnable       TruthValue,
+        unisDot11L2IntrusProtectOpt          INTEGER,
+        unisDot11TempServiceStopTimer        Integer32,
+        unisDot11TempBlockMACTimer           Integer32,
+        unisDot11L2IgnoreAuthorization       TruthValue,
+        unisDot11L2FailVLAN                  Integer32,
+        unisDot11L2CriticalVLAN              Integer32,
+        unisDot11L2AuthorFailOffline         TruthValue,
+        unisDot11L2AccountFailOffline        TruthValue,
+        unisDot11Dot1xHSEnable               TruthValue,
+        unisDot11Dot1xSecureHSEnable         TruthValue,
+        unisDot11Dot1xReauthenEnable         TruthValue,
+        unisDot11Dot1xMandatoryDomain        OCTET STRING,
+        unisDot11Dot1xMaxUserCount           Integer32,
+        unisDot11MACAuthenDomain             OCTET STRING,
+        unisDot11MACAuthenMaxUserCount       Integer32
+    }
+
+unisDot11SrvL2AuthenID OBJECT-TYPE
+    SYNTAX      UnisDot11ServicePolicyIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the ID of a service template."
+    ::= { unisDot11SrvL2AuthenEntry 1 }
+
+unisDot11L2AuthenMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            bypass(1),
+            macAuthentication(2),
+            macThenDot1xAuthentication(3),
+            dot1xAuthentication(4),
+            dot1xThenMacAuthentication(5),
+            ouiThenDot1x(6)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Authentication mode of the service template.
+
+        bypass  No authentication is required.
+
+        macAuthentication  MAC authentication.
+
+        macThenDot1xAuthentication  MAC authentication is executed first.
+        If MAC authentication fails, 802.1X authentication is executed.
+
+        dot1xAuthentication  Access to the port is denied until the client
+        is authorized by 802.1X.
+
+        dot1xThenMacAuthentication  802.1X authentication is executed first.
+        If 802.1X authentication fails , MAC authentication is executed.
+
+        ouiThenDot1x  OUI authentication is first executed.
+        If OUI authentication fails, 802.1X authentication is executed."
+    ::= { unisDot11SrvL2AuthenEntry 2 }
+
+unisDot11L2IntrusProtectEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enables intrusion protection for the service template."
+    ::= { unisDot11SrvL2AuthenEntry 3 }
+
+unisDot11L2IntrusProtectOpt OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            blockMACTemporarily(1),
+            stopServiceTemporarily(2),
+            stopService(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Operation mode when intrusion is detected."
+    ::= { unisDot11SrvL2AuthenEntry 4 }
+
+unisDot11TempServiceStopTimer OBJECT-TYPE
+    SYNTAX      Integer32(10..300)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Time period for temporarily stopping service."
+    ::= { unisDot11SrvL2AuthenEntry 5 }
+
+unisDot11TempBlockMACTimer OBJECT-TYPE
+    SYNTAX      Integer32(60..300)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Time period for temporarily blocking user MACs."
+    ::= { unisDot11SrvL2AuthenEntry 6 }
+
+unisDot11L2IgnoreAuthorization OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Ignores all authorization information set by the server."
+    ::= { unisDot11SrvL2AuthenEntry 7 }
+
+unisDot11L2FailVLAN OBJECT-TYPE
+    SYNTAX      Integer32(0..4094)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "VLAN for authentication failure.  0 means not configured."
+    ::= { unisDot11SrvL2AuthenEntry 8 }
+
+unisDot11L2CriticalVLAN OBJECT-TYPE
+    SYNTAX      Integer32(0..4094)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "VLAN for server unavailability situation.  0 means not configured."
+    ::= { unisDot11SrvL2AuthenEntry 9 }
+
+unisDot11L2AuthorFailOffline OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Users are logged off if authorization fails."
+    ::= { unisDot11SrvL2AuthenEntry 10 }
+
+unisDot11L2AccountFailOffline OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Users are logged off if accounting fails."
+    ::= { unisDot11SrvL2AuthenEntry 11 }
+
+unisDot11Dot1xHSEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enables 802.1X handshake."
+    ::= { unisDot11SrvL2AuthenEntry 12 }
+
+unisDot11Dot1xSecureHSEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enables secure 802.1X handshake."
+    ::= { unisDot11SrvL2AuthenEntry 13 }
+
+unisDot11Dot1xReauthenEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enables 802.1X reauthentication."
+    ::= { unisDot11SrvL2AuthenEntry 14 }
+
+unisDot11Dot1xMandatoryDomain OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "802.1X authentication domain of users for the service template."
+    ::= { unisDot11SrvL2AuthenEntry 15 }
+
+unisDot11Dot1xMaxUserCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Maximum number of 802.1X users supported by the BSS bound to the service
+        template."
+    ::= { unisDot11SrvL2AuthenEntry 16 }
+
+unisDot11MACAuthenDomain OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "MAC authentication domain of users for the service template."
+    ::= { unisDot11SrvL2AuthenEntry 17 }
+
+unisDot11MACAuthenMaxUserCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Maximum number of MAC authentication users supported by the BSS bound to
+         the service template."
+    ::= { unisDot11SrvL2AuthenEntry 18 }
+-- *****************************************************************************
+-- *  End of unisDot11PortSecurityTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11SrvPolicyExtendTable Definition
+-- *****************************************************************************
+unisDot11SrvPolicyExtendTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11SrvPolicyExtendEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table defines the parameters of each service policy."
+    ::= { unisDot11PolicyConfigGroup 6 }
+
+unisDot11SrvPolicyExtendEntry OBJECT-TYPE
+    SYNTAX      UnisDot11SrvPolicyExtendEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of each service policy."
+    INDEX
+        {
+            unisDot11ServicePolicyID
+        }
+    ::= { unisDot11SrvPolicyExtendTable 1 }
+
+UnisDot11SrvPolicyExtendEntry ::= SEQUENCE
+    {
+        unisDot11SPEnable              INTEGER
+    }
+
+unisDot11SPEnable OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        enable(1),
+        disable(2)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the service policy is enabled."
+    ::= { unisDot11SrvPolicyExtendEntry 1 }
+
+-- *****************************************************************************
+-- *  End of unisDot11ServicePolicyExtendTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11APTemplateTable Definition
+-- *****************************************************************************
+unisDot11APTemplateTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11APTemplateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "By AP template CLI, administrator will configure the parameters of AP
+        by convenience.
+        Before AP boot up and connect to AC by CAPWAP tunnel, administrator
+        will create AP template for each AP.  When AP connect to AC,
+        AC will assign configuration to AP by unisDot11APSerialID
+        information in AP template."
+    ::= { unisDot11APConfigGroup 1 }
+
+unisDot11APTemplateEntry OBJECT-TYPE
+    SYNTAX      UnisDot11APTemplateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains configuration information for each AP."
+    INDEX
+        {
+            unisDot11APTemplateName
+        }
+    ::= { unisDot11APTemplateTable 1 }
+
+UnisDot11APTemplateEntry ::= SEQUENCE
+    {
+        unisDot11APTemplateName             OCTET STRING,
+        unisDot11APSerialID                 OCTET STRING,
+        unisDot11TemplateAPModelAlias       OCTET STRING,
+        unisDot11Description                OCTET STRING,
+        unisDot11APWorkMode                 INTEGER,
+        unisDot11APTemplateRowStatus        RowStatus,
+        unisDot11APName                     OCTET STRING,
+        unisDot11StatisInterv               Integer32,
+        unisDot11APBroadcastProbeReply      TruthValue,
+        unisDot11StaIdleTimerInterv         Integer32,
+        unisDot11StaKeepAliveTimerInterv    Integer32,
+        unisDot11APCir                      Integer32,
+        unisDot11APCbs                      Integer32,
+        unisDot11APPriorityLevel            Integer32,
+        unisDot11APElementID                Integer32,
+        unisDot11APDevDetectEnable          TruthValue,
+        unisDot11APGetIPMethod              INTEGER,
+        unisDot11StatisIntervMode           INTEGER,
+        unisDot11ApTrapEnabled              TruthValue,
+        unisDot11ApFmwUpdState              INTEGER,
+        unisDot11StatisIntervModeCM         INTEGER,
+        unisDot11ApNasIDCM                  OCTET STRING,
+        unisDot11ApCoveragetype             INTEGER,
+        unisDot11APControlAddressState      INTEGER,
+        unisDot11APControlAddressIPv4       IpAddress,
+        unisDot11APControlAddressIPv6       OCTET STRING,
+        unisDot11APLocalACName              OCTET STRING,
+        unisDot11APEchoInterval             Integer32
+    }
+
+unisDot11APTemplateName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the name of AP template."
+    ::= { unisDot11APTemplateEntry 1 }
+
+unisDot11APSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents AP serial id."
+    ::= { unisDot11APTemplateEntry 2 }
+
+unisDot11TemplateAPModelAlias OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the alias of AP model name."
+    ::= { unisDot11APTemplateEntry 3 }
+
+unisDot11Description OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This attribute will give more information about AP.
+        Administrator could suggest the location, owner or
+        other information for each AP.
+        If the value is set to NULL, the description will be removed."
+    ::= { unisDot11APTemplateEntry 4 }
+
+unisDot11APWorkMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            normal(1),
+            monitor(2),
+            hybrid(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents what work mode for AP.
+        The following values are supported:
+        normal      - AP will supply WLAN service.
+        monitor     - AP will be a monitor to find attack.
+        hybrid      - AP will supply WLAN service and Device detection is
+        enabled."
+    DEFVAL      { normal }
+    ::= { unisDot11APTemplateEntry 5 }
+
+unisDot11APTemplateRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11APTemplateEntry 6 }
+
+unisDot11APName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the AP name."
+    ::= { unisDot11APTemplateEntry 7 }
+
+unisDot11StatisInterv OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval of radio statistic."
+    ::= { unisDot11APTemplateEntry 8 }
+
+unisDot11APBroadcastProbeReply OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents enable the AP to reply broadcast probe or not.
+        'true' : The AP to reply broadcast probe is enabled.
+        'false': The AP to reply broadcast probe is disabled"
+    DEFVAL      { true }
+    ::= { unisDot11APTemplateEntry 9 }
+
+unisDot11StaIdleTimerInterv OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval for which the link between AP and STA
+        ( power-save or awake ) can be idle."
+    ::= { unisDot11APTemplateEntry 10 }
+
+unisDot11StaKeepAliveTimerInterv OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval of the keep alive requests sent between
+        AP and STA."
+    ::= { unisDot11APTemplateEntry 11 }
+
+unisDot11APCir OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Kbps"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the committed information rate between AP and AC."
+    ::= { unisDot11APTemplateEntry 12 }
+
+unisDot11APCbs OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Bytes"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the committed burst size between AP and AC."
+    ::= { unisDot11APTemplateEntry 13 }
+
+unisDot11APPriorityLevel OBJECT-TYPE
+    SYNTAX      Integer32 (0..7)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object represents the connection priority for the AP.
+        If the connection priority is 7, the AC is considered as the
+        primary AC for the AP."
+    DEFVAL      { 4 }
+    ::= { unisDot11APTemplateEntry 14 }
+
+unisDot11APElementID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object represents the AP element ID."
+    ::= { unisDot11APTemplateEntry 15 }
+
+unisDot11APDevDetectEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents whether device detection is enabled or not.
+         'true' : Device detection is enabled.
+         'false': Device detection is disabled.
+         If device detection is enabled, the AP will provide both device
+         detection and WLAN data services.
+         By default, the AP only provides WLAN data services.  When an AP works
+         in monitor mode, that is, the value of object unisDot11APWorkMode is
+         monitor, device detection cannot be enabled with object
+         unisDot11APDevDetectEnable."
+    DEFVAL      { false }
+    ::= { unisDot11APTemplateEntry 16 }
+
+unisDot11APGetIPMethod OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        dhcpAlloc(1),
+        static(2)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object represents the method how AP gets IP address."
+    DEFVAL      { dhcpAlloc }
+    ::= { unisDot11APTemplateEntry 17 }
+
+unisDot11StatisIntervMode OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        normal(1),
+        realtime(2)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object represents the mode of statics interval.
+         normal    - statics interval value between 10s to 120s
+         realtime  - statics interval value between 2s to 5s"
+    DEFVAL      { normal }
+    ::= { unisDot11APTemplateEntry 18 }
+
+unisDot11ApTrapEnabled OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the trap status is enabled or not.
+        'true'  : Enable  the trap status;
+        'false' : Disable the trap status."
+    DEFVAL      { true }
+    ::= { unisDot11APTemplateEntry 19 }
+
+unisDot11ApFmwUpdState OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        enable(1),
+        disable(2),
+        inherit(3)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the status of version auto-update for an AP.
+        The following values are supported:
+        enable   - AP version will be updated automatically.
+        disable  - AP version will not be updated automatically.
+        inherit  - The status will inherit value from apgroup-view or system-view."
+    DEFVAL      { inherit }
+    ::= { unisDot11APTemplateEntry 20 }
+
+unisDot11StatisIntervModeCM OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        off(0),
+        on(1)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object represents the mode of statistic interval.
+        off    - statistic interval value between 10s to 120s
+        on     - statistic interval value between 2s to 5s"
+    DEFVAL      { off }
+    ::= { unisDot11APTemplateEntry 21 }
+
+unisDot11ApNasIDCM OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the NAS-ID of current service policy for each
+        specific radio of AP."
+    ::= { unisDot11APTemplateEntry 22 }
+
+unisDot11ApCoveragetype OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        school(1),
+        traffic(2),
+        shopping(3),
+        company(4)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object represents the coverage type of AP.
+        school - the coverage type is school
+        traffic - the coverage type is traffic
+        shop - the coverage type is shop
+        company - the coverage type is company"
+    DEFVAL      { school }
+    ::= { unisDot11APTemplateEntry 23 }
+
+unisDot11APControlAddressState OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the status of control address for an AP.
+        The following values are supported:
+        enable      - AC rediscovery will be enabled.
+        disable     - AC rediscovery will be disabled."
+        DEFVAL      { disable }
+    ::= { unisDot11APTemplateEntry 24 }
+
+unisDot11APControlAddressIPv4 OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents an AC IPv4 address for AC rediscovery."
+    ::= { unisDot11APTemplateEntry 25 }
+
+unisDot11APControlAddressIPv6 OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents an AC IPv6 address for AC rediscovery."
+    ::= { unisDot11APTemplateEntry 26 }
+
+unisDot11APLocalACName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the local AC name the AP belongs to."
+    ::= { unisDot11APTemplateEntry 27 }
+
+unisDot11APEchoInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the echo-interval of the AP."
+    ::= { unisDot11APTemplateEntry 28 }
+
+-- *****************************************************************************
+-- *  End of  unisDot11APTemplateTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11RadioToConfigTable Definition
+-- *****************************************************************************
+unisDot11RadioToConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11RadioToConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Before AP connects to AC, administrator will configure radio
+        parameter to each radio."
+    ::= { unisDot11APConfigGroup 2 }
+
+unisDot11RadioToConfigEntry OBJECT-TYPE
+    SYNTAX      UnisDot11RadioToConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains configuration information for each radio."
+    INDEX
+        {
+            unisDot11APTemplateNameCfg,
+            unisDot11CfgRadioID
+        }
+    ::= { unisDot11RadioToConfigTable 1 }
+
+UnisDot11RadioToConfigEntry ::= SEQUENCE
+    {
+        unisDot11APTemplateNameCfg     OCTET STRING,
+        unisDot11CfgRadioID            UnisDot11RadioScopeType,
+        unisDot11CfgRadioPolicyName    OCTET STRING,
+        unisDot11CfgRadioType          UnisDot11RadioType,
+        unisDot11CfgChannel            UnisDot11ChannelScopeType,
+        unisDot11CfgMaxTxPowerLevel    UnisDot11TxPwrLevelScopeType,
+        unisDot11PreambleLen           UnisDot11PreambleType,
+        unisDot11CfgRadioStatus        TruthValue,
+        unisDot11CfgRdElementID        Unsigned32,
+        unisDot11CfgWorkMode           UnisDot11WorkMode,
+        unisDot11CfgPwrAttValue        Integer32,
+        unisDot11RadioTxArithmetic     INTEGER,
+        unisDot11CfgChannelLockStat    INTEGER,
+        unisDot11CfgPowerLockStat      INTEGER,
+        unisDot11CfgLBRdGroupId        Unsigned32,
+        unisDot11CfgRRMSDRdGroupId     Unsigned32,
+        unisDot11CfgRadioType2         UnisDot11RadioType2,
+        unisDot11CfgIDSEnable          TruthValue,
+        unisDot11CfgSaEnable           TruthValue,
+        unisDot11CfgSaCltRtFFTData     TruthValue,
+        unisDot11CfgSaBand             INTEGER,
+        unisDot11CfgSaRptDevType       BITS,
+        unisDot11CfgSaTrapDevEnable    TruthValue,
+        unisDot11CfgSaTrapDevType      BITS,
+        unisDot11CfgSaTrapAQEnable     TruthValue,
+        unisDot11CfgSaTrapAQThreshold  Integer32,
+        unisDot11CfgSaDrivenRRMEnable  TruthValue,
+        unisDot11CfgSaDrivenRRMSnt     INTEGER
+    }
+
+unisDot11APTemplateNameCfg OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the name of AP template."
+    ::= { unisDot11RadioToConfigEntry 1 }
+
+unisDot11CfgRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents each radio."
+    ::= { unisDot11RadioToConfigEntry 2 }
+
+unisDot11CfgRadioPolicyName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the name of radio policy."
+    ::= { unisDot11RadioToConfigEntry 3 }
+
+unisDot11CfgRadioType OBJECT-TYPE
+    SYNTAX      UnisDot11RadioType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the radio will work with which 802.11 radio type."
+    ::= { unisDot11RadioToConfigEntry 4 }
+
+unisDot11CfgChannel OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the channel allocation of radio."
+    ::= { unisDot11RadioToConfigEntry 5 }
+
+unisDot11CfgMaxTxPowerLevel OBJECT-TYPE
+    SYNTAX      UnisDot11TxPwrLevelScopeType
+    UNITS       "dbm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximal transmit power scope for AP."
+    ::= { unisDot11RadioToConfigEntry 6 }
+
+unisDot11PreambleLen OBJECT-TYPE
+    SYNTAX      UnisDot11PreambleType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether use long or short preamble for 802.11 MAC
+        frame.
+        When unisDot11CfgRadioType is either dot11b or dot11g,
+        then value for unisDot11PreambleLen will be valid.
+        Otherwise, the value for it will be invalid."
+    DEFVAL      { short }
+    ::= { unisDot11RadioToConfigEntry 7 }
+
+unisDot11CfgRadioStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the radio admin status whether is enabled
+        or disabled."
+    ::= { unisDot11RadioToConfigEntry 8 }
+
+unisDot11CfgRdElementID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the element ID of this radio.  It comprises two parts.
+        The highest 24 bits are AP element ID and the lowest 8 bits are
+        radio ID."
+    ::= { unisDot11RadioToConfigEntry 9 }
+
+unisDot11CfgWorkMode OBJECT-TYPE
+    SYNTAX      UnisDot11WorkMode
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents work mode of the radio."
+    ::= { unisDot11RadioToConfigEntry 10 }
+
+unisDot11CfgPwrAttValue OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the value of power attenuation."
+    ::= { unisDot11RadioToConfigEntry 11 }
+
+unisDot11RadioTxArithmetic OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            quality(1),
+            bandwidth(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the transmission arithmetic of the radio.
+        The following values are supported:
+        quality   - Consider the quality first during the transmission.
+        bandwidth - Consider the bandwidth first during the transmission."
+    DEFVAL      { quality }
+    ::= { unisDot11RadioToConfigEntry 12 }
+
+unisDot11CfgChannelLockStat OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            unlocked(1),
+            locked(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents locked status of channel on the radio."
+    DEFVAL      { unlocked }
+    ::= { unisDot11RadioToConfigEntry 13 }
+
+unisDot11CfgPowerLockStat OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            unlocked(1),
+            locked(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents locked status of power on the radio."
+    DEFVAL      { unlocked }
+    ::= { unisDot11RadioToConfigEntry 14 }
+
+unisDot11CfgLBRdGroupId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the load balance group ID allocated for the radio."
+    ::= { unisDot11RadioToConfigEntry 15 }
+
+unisDot11CfgRRMSDRdGroupId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the RRM self-decisive group ID allocated for the radio."
+    ::= { unisDot11RadioToConfigEntry 16 }
+
+unisDot11CfgRadioType2 OBJECT-TYPE
+    SYNTAX      UnisDot11RadioType2
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the radio will work with which 802.11 radio type."
+    ::= { unisDot11RadioToConfigEntry 17 }
+
+unisDot11CfgIDSEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether intrusion detection is enabled for this radio."
+    ::= { unisDot11RadioToConfigEntry 18 }
+
+unisDot11CfgSaEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether spectrum analysis is enabled."
+    ::= { unisDot11RadioToConfigEntry 19 }
+
+unisDot11CfgSaCltRtFFTData OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether to collect real-time FFT data for this radio."
+    ::= { unisDot11RadioToConfigEntry 20 }
+
+unisDot11CfgSaBand OBJECT-TYPE
+    SYNTAX      INTEGER{
+       dot11g(1),
+       dot11aLower(2),
+       dot11aMiddle(3),
+       dot11aUpper(4)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents which band of channels will be monitored when collection
+        real-time FFT data is enabled for this radio.  Detection of
+        interference devices and air quality will also be affected.  Each band
+        responds to the following channels.
+         dot11g (Channels 1-14)
+         dot11aLower (channels 36-64)
+         dot11aMiddle (channels 100-140)
+         dot11aUpper (channels 149-165)."
+    ::= { unisDot11RadioToConfigEntry 21 }
+
+unisDot11CfgSaRptDevType OBJECT-TYPE
+    SYNTAX BITS
+        {
+            microwave(0),
+            microwaveInverter(1),
+            bluetooth(2),
+            fixedFreqOthers(3),
+            fixedFreqCordlessPhone(4),
+            fixedFreqVideo(5),
+            fixedFreqAudio(6),
+            freqHopperOthers(7),
+            freqHopperCordlessBase(8),
+            freqHopperCordlessNetwork(9),
+            freqHopperXbox(10),
+            genericInterferer(11)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents which types of interference devices should be reported."
+    ::= { unisDot11RadioToConfigEntry 22 }
+
+unisDot11CfgSaTrapDevEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents whether trap is enabled for an interference device type."
+    ::= { unisDot11RadioToConfigEntry 23 }
+
+unisDot11CfgSaTrapDevType OBJECT-TYPE
+    SYNTAX BITS
+        {
+            microwave(0),
+            microwaveInverter(1),
+            bluetooth(2),
+            fixedFreqOthers(3),
+            fixedFreqCordlessPhone(4),
+            fixedFreqVideo(5),
+            fixedFreqAudio(6),
+            freqHopperOthers(7),
+            freqHopperCordlessBase(8),
+            freqHopperCordlessNetwork(9),
+            freqHopperXbox(10),
+            genericInterferer(11)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents for which interference device types the AP will send traps
+         when trap sending is enabled."
+    ::= { unisDot11RadioToConfigEntry 24 }
+
+unisDot11CfgSaTrapAQEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents whether the channel quality trap is enabled."
+    ::= { unisDot11RadioToConfigEntry 25 }
+
+unisDot11CfgSaTrapAQThreshold OBJECT-TYPE
+    SYNTAX Integer32(1..100)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the channel quality threshold.  When the channel quality
+        is below this value, the channel quality trap will be sent."
+    ::= { unisDot11RadioToConfigEntry 26 }
+
+unisDot11CfgSaDrivenRRMEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configures whether to run RRM when the AP detects
+         a certain level of interference."
+    ::= { unisDot11RadioToConfigEntry 27 }
+
+unisDot11CfgSaDrivenRRMSnt OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        low(1),
+        medium(2),
+        high(3)
+    }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Configures the threshold for triggering RRM.  When the
+         interference level for the AP exceeds the threshold
+         , RRM initiates local dynamic frequency selection (DFS)
+         and changes the channel of the affected radio
+         to improve network performance.  Low represents a decreased
+         sensitivity to changes in the environment while high represents an
+         increased sensitivity."
+    ::= { unisDot11RadioToConfigEntry 28 }
+
+-- *****************************************************************************
+-- *  End of  unisDot11RadioToConfigTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11APServiceSetTable Definition
+-- *****************************************************************************
+unisDot11APServiceSetTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11APServiceSetEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "For each radio, it could configure multiple service policies.
+        The table describes the relationship between radio and
+        service policies."
+    ::= { unisDot11APConfigGroup 3 }
+
+unisDot11APServiceSetEntry OBJECT-TYPE
+    SYNTAX      UnisDot11APServiceSetEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains service policy information for each
+        specific radio of AP."
+    INDEX
+        {
+            unisDot11APTemplateNameCfg,
+            unisDot11CfgRadioID,
+            unisDot11CfgServicePolicyID
+        }
+    ::= { unisDot11APServiceSetTable 1 }
+
+UnisDot11APServiceSetEntry ::= SEQUENCE
+    {
+        unisDot11CfgServicePolicyID    UnisDot11ServicePolicyIDType,
+        unisDot11SrvSetRowStatus       RowStatus,
+        unisDot11ServiceSetVlanId      Integer32
+    }
+
+unisDot11CfgServicePolicyID OBJECT-TYPE
+    SYNTAX      UnisDot11ServicePolicyIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the ID of each service policy used by the AP."
+    ::= { unisDot11APServiceSetEntry 1 }
+
+unisDot11SrvSetRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11APServiceSetEntry 2 }
+
+unisDot11ServiceSetVlanId OBJECT-TYPE
+    SYNTAX      Integer32(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the Vlan ID of BSS which is generated when service policy
+        is binded with the Radio."
+    ::= { unisDot11APServiceSetEntry 3 }
+-- *****************************************************************************
+-- * End of unisDot11APServiceSetTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11APSTVlanTable Definition
+-- *****************************************************************************
+unisDot11APSTVlanTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11APSTVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "For each service policy, it could be bind to several VLANs.
+        The table describes the relationship between VLAN and
+        service policies."
+    ::= { unisDot11APConfigGroup 11 }
+
+unisDot11APSTVlanEntry OBJECT-TYPE
+    SYNTAX      UnisDot11APSTVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains VLAN and service policy information for each
+        specific radio of AP."
+    INDEX
+        {
+            unisDot11SIDAPSerialID,
+            unisDot11CfgRadioID,
+            unisDot11CfgServicePolicyID
+        }
+    ::= { unisDot11APSTVlanTable 1 }
+
+UnisDot11APSTVlanEntry ::= SEQUENCE
+    {
+        unisDot11CfgSTVLANID           Integer32,
+        unisDot11CfgSTNASPortID        OCTET STRING,
+        unisDot11CfgServiceSetRowStatus    RowStatus,
+        unisDot11CfgSTNASID            OCTET STRING
+    }
+
+unisDot11CfgSTVLANID OBJECT-TYPE
+    SYNTAX      Integer32(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the VLAN that current Service Policy have bind to."
+    ::= { unisDot11APSTVlanEntry 1 }
+
+unisDot11CfgSTNASPortID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the NAS Port ID of current Service Policy for each
+        specific radio of AP."
+    ::= { unisDot11APSTVlanEntry 2 }
+
+unisDot11CfgServiceSetRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11APSTVlanEntry 3 }
+
+unisDot11CfgSTNASID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the NAS ID of current Service Policy for each
+        specific radio of AP."
+    ::= { unisDot11APSTVlanEntry 4 }
+-- *****************************************************************************
+-- * End of unisDot11APSTVlanTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11APSysInfoSetTable Definition
+-- *****************************************************************************
+unisDot11APSysInfoSetTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11APSysInfoSetEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table of the system information for each AP."
+    ::= { unisDot11APConfigGroup 4 }
+
+unisDot11APSysInfoSetEntry OBJECT-TYPE
+    SYNTAX      UnisDot11APSysInfoSetEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The system information configuration for each AP."
+    INDEX
+        {
+            unisDot11SIDAPSerialID
+        }
+    ::= { unisDot11APSysInfoSetTable 1 }
+
+UnisDot11APSysInfoSetEntry ::= SEQUENCE
+    {
+        unisDot11APSysNetID            OCTET STRING,
+        unisDot11APCpuUsageThreshold   Integer32,
+        unisDot11APMemUsageThreshold   Integer32
+    }
+
+unisDot11APSysNetID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the system Net ID for AP."
+    ::= { unisDot11APSysInfoSetEntry 1 }
+
+unisDot11APCpuUsageThreshold OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    UNITS       "onepercent"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The CPU usage threshold for AP."
+    ::= { unisDot11APSysInfoSetEntry 2 }
+
+unisDot11APMemUsageThreshold OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    UNITS       "onepercent"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The memory usage threshold for AP."
+    ::= { unisDot11APSysInfoSetEntry 3 }
+
+-- *****************************************************************************
+-- * End of unisDot11APSysInfoSetTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11APLimitTable Definition
+-- *****************************************************************************
+unisDot11APLimitTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11APLimitEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "For each connected APs, administrator could configure a series of
+        limits.  This table describes the limit information for AP(s)."
+    ::= { unisDot11APConfigGroup 5 }
+
+unisDot11APLimitEntry OBJECT-TYPE
+    SYNTAX      UnisDot11APLimitEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the limit information for each AP."
+    INDEX
+        {
+            unisDot11APElementIndex
+        }
+    ::= { unisDot11APLimitTable 1 }
+
+UnisDot11APLimitEntry ::= SEQUENCE
+    {
+        unisDot11APSsidNumLimit     Integer32,
+        unisDot11APUserCntLimit     Integer32,
+        unisDot11APUserThreshold    Integer32
+    }
+
+unisDot11APSsidNumLimit OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the upper limit of service template binded
+        with this AP.  All radios of AP share this limit.
+        Default value 0 : There is no upper limit of service template
+        binded with this AP."
+    DEFVAL      { 0 }
+    ::= { unisDot11APLimitEntry 1 }
+
+unisDot11APUserCntLimit OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the upper limit of user which has access to this AP.
+        All BSSs binded with AP share this limit.
+        Default value 0 : There is no upper limit of user which has access
+        to this AP."
+    DEFVAL      { 0 }
+    ::= { unisDot11APLimitEntry 2 }
+
+unisDot11APUserThreshold OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the threshold of user which has access to this
+        AP.  All BSSs binded with AP share this limit.  If the user counter
+        is overflow, the trap will be sent.
+        Default value 0 : There is no threshold of user which has access
+        to this AP."
+    DEFVAL      { 0 }
+    ::= { unisDot11APLimitEntry 3 }
+-- *****************************************************************************
+-- * End of unisDot11APLimitTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- * unisDot11APIfSetTable Definition
+-- *****************************************************************************
+unisDot11APIfSetTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11APIfSetEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table of the interface information for each AP."
+    ::= { unisDot11APConfigGroup 6 }
+
+unisDot11APIfSetEntry OBJECT-TYPE
+    SYNTAX      UnisDot11APIfSetEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The interface information configuration for each AP."
+    INDEX
+        {
+            unisDot11APElementIndex,
+            unisDot11APSetIfIndex
+        }
+    ::= { unisDot11APIfSetTable 1 }
+
+UnisDot11APIfSetEntry ::= SEQUENCE
+    {
+        unisDot11APSetIfIndex      Integer32,
+        unisDot11APIfAlias         DisplayString
+    }
+
+unisDot11APSetIfIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the index for a interface."
+    ::= { unisDot11APIfSetEntry 1 }
+
+unisDot11APIfAlias OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is an 'alias' name for the interface as specified
+        by a network manager for AP."
+    ::= { unisDot11APIfSetEntry 2 }
+
+-- *****************************************************************************
+-- * End of unisDot11APIfSetTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11APServiceVlanTable Definition
+-- *****************************************************************************
+unisDot11APServiceVlanTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11APServiceVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "For all the radios on the AP, it could configure multiple service policies.
+        The table describes the relationship between AP and
+        service policies."
+    ::= { unisDot11APConfigGroup 7 }
+
+unisDot11APServiceVlanEntry OBJECT-TYPE
+    SYNTAX      UnisDot11APServiceVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains service policy information for each AP."
+    INDEX
+        {
+            unisDot11APServiceVlanSerialID,
+            unisDot11APServiceVlanSPID
+        }
+    ::= { unisDot11APServiceVlanTable 1 }
+
+UnisDot11APServiceVlanEntry ::= SEQUENCE
+    {
+        unisDot11APServiceVlanSerialID          OCTET STRING,
+        unisDot11APServiceVlanSPID              UnisDot11ServicePolicyIDType,
+        unisDot11APServiceVlanId                Integer32,
+        unisDot11APServiceVlanRowStatus         RowStatus
+
+    }
+
+unisDot11APServiceVlanSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents AP serial id."
+    ::= { unisDot11APServiceVlanEntry 1 }
+
+unisDot11APServiceVlanSPID OBJECT-TYPE
+    SYNTAX      UnisDot11ServicePolicyIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the ID of each service policy used by the AP."
+    ::= { unisDot11APServiceVlanEntry 2 }
+
+unisDot11APServiceVlanId OBJECT-TYPE
+    SYNTAX      Integer32(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object represents the VLAN ID of BSS which is generated when the
+         service policy is bound to the radio."
+    ::= { unisDot11APServiceVlanEntry 3 }
+
+unisDot11APServiceVlanRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object represents the status of this table entry."
+    ::= { unisDot11APServiceVlanEntry 4 }
+
+-- *****************************************************************************
+-- * End of unisDot11APServiceSetTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11RadioConfigTable Definition
+-- *****************************************************************************
+unisDot11RadioConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11RadioConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Before AP connects to AC, administrator will configure radio
+        parameter to each radio."
+    ::= { unisDot11APConfigGroup 8 }
+
+unisDot11RadioConfigEntry OBJECT-TYPE
+    SYNTAX      UnisDot11RadioConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains configuration information for each radio."
+    INDEX
+        {
+            unisDot11RCAPSerialID,
+            unisDot11RCRadioID
+        }
+    ::= { unisDot11RadioConfigTable 1 }
+
+UnisDot11RadioConfigEntry ::= SEQUENCE
+    {
+        unisDot11RCAPSerialID               OCTET STRING,
+        unisDot11RCRadioID                  UnisDot11RadioScopeType,
+        unisDot11RCRadioType                UnisDot11RadioType,
+        unisDot11RCChannel                  UnisDot11ChannelScopeType,
+        unisDot11RCPreambleLen              UnisDot11PreambleType,
+        unisDot11RCPwrAttValue              Integer32,
+        unisDot11RCApPowerLevel             UnisDot11TxPwrLevelScopeType,
+        unisDot11RCDynamicChlState          TruthValue,
+        unisDot11RCDynamicPowerState        TruthValue,
+        unisDot11RCRadioStatus              TruthValue,
+        unisDot11RCRadioRate                OCTET STRING,
+        unisDot11RCPwrAdjustStepLength      Integer32,
+        unisDot11RCRadioType2               UnisDot11RadioType2,
+        unisDot11RCPreambleLenCM            INTEGER,
+        unisDot11RCDynamicChlStateCM        INTEGER,
+        unisDot11RCRadioStatusCM            INTEGER,
+        unisDot11RCRadioRateCM              OCTET STRING,
+        unisDot11RCDynamicPowerStateCM      UnisDot11TruthValueCM,
+        unisDot11RCRssiThresholdCM          Integer32,
+        unisDot11RCDynamicChlStateSelfDecisiveCM    UnisDot11TruthValueCM,
+        unisDot11RCDynamicPowerStateSelfDecisiveCM  UnisDot11TruthValueCM
+    }
+
+unisDot11RCAPSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the Serial ID of AP."
+    ::= { unisDot11RadioConfigEntry 1 }
+
+unisDot11RCRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents each radio."
+    ::= { unisDot11RadioConfigEntry 2 }
+
+unisDot11RCRadioType OBJECT-TYPE
+    SYNTAX      UnisDot11RadioType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the radio will work with which 802.11 radio
+         type."
+    ::= { unisDot11RadioConfigEntry 3 }
+
+unisDot11RCChannel OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the channel allocation of radio."
+    ::= { unisDot11RadioConfigEntry 4 }
+
+unisDot11RCPreambleLen OBJECT-TYPE
+    SYNTAX      UnisDot11PreambleType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents whether use long or short preamble for 802.11
+         MAC frame.
+        When unisDot11CfgRadioType is either dot11b or dot11g,
+        then value for unisDot11PreambleLen will be valid.
+        Otherwise, the value for it will be invalid."
+    DEFVAL      { short }
+    ::= { unisDot11RadioConfigEntry 5 }
+
+unisDot11RCPwrAttValue OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the value of power attenuation."
+    ::= { unisDot11RadioConfigEntry 6 }
+
+unisDot11RCApPowerLevel OBJECT-TYPE
+    SYNTAX      UnisDot11TxPwrLevelScopeType
+    UNITS       "dbm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximal transmit power scope for AP."
+    ::= { unisDot11RadioConfigEntry 7 }
+
+unisDot11RCDynamicChlState OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable/Disable dynamic channel selection."
+    ::= { unisDot11RadioConfigEntry 8 }
+
+unisDot11RCDynamicPowerState OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable/Disable dynamic power selection for the band."
+    ::= { unisDot11RadioConfigEntry 9 }
+
+unisDot11RCRadioStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the radio admin status whether is enabled
+        or disabled."
+    ::= { unisDot11RadioConfigEntry 10 }
+
+unisDot11RCRadioRate OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Set data transmit rates for the radio, in the format of 1,2,5.5...
+        For 802.11n radios, the format can be MCS X.  The data transmit rates
+        between AP and STA must fall into the configured rates.
+        (Note: For 802.11n radios, the first value will be treated as a mandatory rate,
+        and the second value will be treated as a supported rate.
+        If you configure more than two rates, the configuration cannot take effect.
+        If you configure only one rate, it is considered as the mandatory rate by default.)"
+    ::= { unisDot11RadioConfigEntry 11 }
+
+unisDot11RCPwrAdjustStepLength OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Power adjustment step-length in dBm."
+    ::= { unisDot11RadioConfigEntry 12 }
+
+unisDot11RCRadioType2 OBJECT-TYPE
+    SYNTAX      UnisDot11RadioType2
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the radio will work with which 802.11 radio
+         type."
+    ::= { unisDot11RadioConfigEntry 13 }
+
+unisDot11RCPreambleLenCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            long(0),
+            short(1)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents whether use long or short preamble for 802.11
+         MAC frame.
+        When unisDot11CfgRadioType is either dot11b or dot11g,
+        then value for unisDot11PreambleLenCM will be valid.
+        Otherwise, the value for it will be invalid."
+    DEFVAL      { short }
+    ::= { unisDot11RadioConfigEntry 14 }
+
+unisDot11RCDynamicChlStateCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            off(0),
+            on(1)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable/Disable dynamic channel selection."
+    ::= { unisDot11RadioConfigEntry 15 }
+
+unisDot11RCRadioStatusCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            up(1),
+            down(2),
+            testing(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the radio admin status whether is enabled
+        or disabled."
+    ::= { unisDot11RadioConfigEntry 16 }
+
+unisDot11RCRadioRateCM OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Set data transmit rates for the radio, in the format of 1,2,5.5...
+        For 802.11n radios, the format of each value can be MCS X.  The data transmit
+        rates between AP and client should be one of the configured rates.
+        (Note: For 802.11n radios, the first value is mandatory rate, and the second
+        value is supported rate.  If more than two rate values are configured, the
+        configuration will not take effect.  If only one rate value is configured,
+        the mandatory rate will be set to the default value.)"
+    ::= { unisDot11RadioConfigEntry 17 }
+
+unisDot11RCDynamicPowerStateCM OBJECT-TYPE
+    SYNTAX      UnisDot11TruthValueCM
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable/disable dynamic power selection for the band."
+    ::= { unisDot11RadioConfigEntry 18 }
+
+unisDot11RCRssiThresholdCM OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the minimum value of the RSSI.
+        The clients with RSSI below this value will be refused to associate."
+    DEFVAL { 1 }
+    ::= { unisDot11RadioConfigEntry 19 }
+
+unisDot11RCDynamicChlStateSelfDecisiveCM OBJECT-TYPE
+    SYNTAX      UnisDot11TruthValueCM
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable/disable dynamic channel selection self decisive for the band."
+    ::= { unisDot11RadioConfigEntry 20 }
+
+unisDot11RCDynamicPowerStateSelfDecisiveCM OBJECT-TYPE
+    SYNTAX      UnisDot11TruthValueCM
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable/disable dynamic power selection self decisive for the band."
+    ::= { unisDot11RadioConfigEntry 21 }
+
+-- *****************************************************************************
+-- * End of unisDot11RadioConfigTable Definition
+-- *****************************************************************************
+
+unisDot11RadioSSIDCfgTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11RadioSSIDCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "For each radio, it could configure multiple service policies.
+        The table describes the relationship between radio and
+        service policies."
+    ::= { unisDot11APConfigGroup 9 }
+
+unisDot11RadioSSIDCfgEntry OBJECT-TYPE
+    SYNTAX      UnisDot11RadioSSIDCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains SSID configuration information for each radio."
+    INDEX
+        {
+            unisDot11RadioSSIDSerialID,
+            unisDot11RadioSSIDRadioID,
+            unisDot11RadioSSIDWLANID
+        }
+    ::= { unisDot11RadioSSIDCfgTable 1 }
+
+UnisDot11RadioSSIDCfgEntry ::= SEQUENCE
+    {
+        unisDot11RadioSSIDSerialID    UnisDot11ObjectIDType,
+        unisDot11RadioSSIDRadioID     UnisDot11RadioScopeType,
+        unisDot11RadioSSIDWLANID      Integer32,
+        unisDot11RadioSSIDIndex       UnisDot11ServicePolicyIDType,
+        unisDot11RadioBSSID           MacAddress,
+        unisDot11RadioSSIDRowStatus   RowStatus
+    }
+
+unisDot11RadioSSIDSerialID OBJECT-TYPE
+    SYNTAX      UnisDot11ObjectIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the serial ID of AP."
+    ::= { unisDot11RadioSSIDCfgEntry 1 }
+
+unisDot11RadioSSIDRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents each radio."
+    ::= { unisDot11RadioSSIDCfgEntry 2 }
+
+unisDot11RadioSSIDWLANID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the WLAN ID of the BSSID."
+    ::= { unisDot11RadioSSIDCfgEntry 3 }
+
+unisDot11RadioSSIDIndex OBJECT-TYPE
+    SYNTAX      UnisDot11ServicePolicyIDType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object represents the ID of each service policy used by the
+         radio."
+    ::= { unisDot11RadioSSIDCfgEntry 4 }
+
+unisDot11RadioBSSID OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "As MAC address format, it is used to identify BSS."
+    ::= { unisDot11RadioSSIDCfgEntry 5 }
+
+unisDot11RadioSSIDRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus."
+    ::= { unisDot11RadioSSIDCfgEntry 6 }
+
+-- *****************************************************************************
+-- *  unisDot11APSerialIDTable Definition
+-- *****************************************************************************
+
+unisDot11APSerialIDTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11APSerialIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table will provide the general information about APs."
+    ::= { unisDot11APConfigGroup 10 }
+
+unisDot11APSerialIDEntry OBJECT-TYPE
+    SYNTAX      UnisDot11APSerialIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the general information of an AP."
+    INDEX
+        {
+            unisDot11SIDAPSerialID
+        }
+    ::= { unisDot11APSerialIDTable 1 }
+
+UnisDot11APSerialIDEntry ::= SEQUENCE
+    {
+        unisDot11SIDAPSerialID               OCTET STRING,
+        unisDot11SIDAPWorkMode               INTEGER,
+        unisDot11SIDAPGetIPMethod            INTEGER,
+        unisDot11SIDAPTemplateName           OCTET STRING,
+        unisDot11SIDModelAlias               OCTET STRING,
+        unisDot11SIDAPDescription            OCTET STRING,
+        unisDot11SIDRowStatus                RowStatus,
+        unisDot11SIDAPName                   OCTET STRING,
+        unisDot11SIDStatisInterv             Integer32,
+        unisDot11SIDAPBroadcastProbeReply    TruthValue,
+        unisDot11SIDAPStaIdleTimerInterv     Integer32,
+        unisDot11SIDStaKeepAliveTimerInterv  Integer32,
+        unisDot11SIDAPCir                    Integer32,
+        unisDot11SIDAPCbs                    Integer32,
+        unisDot11SIDAPPriorityLevel          Integer32,
+        unisDot11SIDAPElementID              Integer32,
+        unisDot11SIDAPDevDetectEnable        TruthValue,
+        unisDot11SIDAPStatisIntervMode       INTEGER,
+        unisDot11SIDAPWorkModeCM             INTEGER,
+        unisDot11SIDEchoInterval             Integer32
+    }
+
+unisDot11SIDAPSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents AP serial id."
+    ::= { unisDot11APSerialIDEntry 1 }
+
+unisDot11SIDAPWorkMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            normal(1),
+            monitor(2),
+            hybrid(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents what work mode for AP.
+        The following values are supported:
+        normal   - AP will supply WLAN service.
+        monitor  - AP will be a monitor to find attack.
+        hybrid   - AP will supply WLAN service and Device detection is
+        enabled."
+    DEFVAL      { normal }
+    ::= { unisDot11APSerialIDEntry 2 }
+
+unisDot11SIDAPGetIPMethod OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        dhcpAlloc(1),
+        static(2)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object represents the method how AP gets IP address."
+    DEFVAL      { dhcpAlloc }
+    ::= { unisDot11APSerialIDEntry 3 }
+unisDot11SIDAPTemplateName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the name of AP template."
+    ::= { unisDot11APSerialIDEntry 4 }
+unisDot11SIDModelAlias OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the alias of AP model name."
+    ::= { unisDot11APSerialIDEntry 5 }
+
+unisDot11SIDAPDescription OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This attribute will give more information about AP.
+        Administrator could suggest the location, owner or
+        other information for each AP.
+        If the value is set to NULL, the description will be removed."
+    ::= { unisDot11APSerialIDEntry 6 }
+
+unisDot11SIDRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11APSerialIDEntry 7 }
+
+unisDot11SIDAPName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the AP name."
+    ::= { unisDot11APSerialIDEntry 8 }
+
+unisDot11SIDStatisInterv OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval of radio statistic."
+    ::= { unisDot11APSerialIDEntry 9 }
+
+unisDot11SIDAPBroadcastProbeReply OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents enable the AP to reply broadcast probe or not.
+        'true' : The AP to reply broadcast probe is enabled.
+        'false': The AP to reply broadcast probe is disabled"
+    DEFVAL      { true }
+    ::= { unisDot11APSerialIDEntry 10 }
+
+unisDot11SIDAPStaIdleTimerInterv OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval for which the link between AP and STA
+        ( power-save or awake ) can be idle."
+    ::= { unisDot11APSerialIDEntry 11 }
+
+unisDot11SIDStaKeepAliveTimerInterv OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval of the keep alive requests sent between
+        AP and STA."
+    ::= { unisDot11APSerialIDEntry 12 }
+
+unisDot11SIDAPCir OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Kbps"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the committed information rate between AP and AC."
+    ::= { unisDot11APSerialIDEntry 13 }
+
+unisDot11SIDAPCbs OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Bytes"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the committed burst size between AP and AC."
+    ::= { unisDot11APSerialIDEntry 14 }
+
+unisDot11SIDAPPriorityLevel OBJECT-TYPE
+    SYNTAX      Integer32 (0..7)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object represents the connection priority for the AP.
+        If the connection priority is 7, the AC is considered as the
+        primary AC for the AP."
+    DEFVAL      { 4 }
+    ::= { unisDot11APSerialIDEntry 15 }
+
+unisDot11SIDAPElementID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object represents the AP element ID."
+    ::= { unisDot11APSerialIDEntry 16 }
+
+unisDot11SIDAPDevDetectEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents whether device detection is enabled or not.
+         'true' : Device detection is enabled.
+         'false': Device detection is disabled.
+         If device detection is enabled, the AP will provide both device
+         detection and WLAN data services.
+         By default, the AP only provides WLAN data services.  When an AP works
+         in monitor mode, that is, the value of object unisDot11APWorkMode is
+         monitor, device detection can not be enabled with object
+         unisDot11SIDAPDevDetectEnable."
+    DEFVAL      { false }
+    ::= { unisDot11APSerialIDEntry 17 }
+
+unisDot11SIDAPStatisIntervMode OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        normal(1),
+        realtime(2)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object represents the mode of statics interval.
+         normal    - statics interval value between 10s to 120s
+         realtime  - statics interval value between 2s to 5s"
+    DEFVAL      { normal }
+    ::= { unisDot11APSerialIDEntry 18 }
+
+unisDot11SIDAPWorkModeCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            normal(0),
+            monitor(1),
+            semimonitor(2)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents what work mode for AP.
+        The following values are supported:
+        normal   - AP will supply WLAN service.
+        monitor  - AP will be a monitor to find attack.
+        SemiMonitor   - AP will supply WLAN service and Device detection is
+        enabled."
+    DEFVAL      { normal }
+    ::= { unisDot11APSerialIDEntry 19 }
+
+unisDot11SIDEchoInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval for send echo requests."
+    ::= { unisDot11APSerialIDEntry 20 }
+
+-- *****************************************************************************
+-- *  unisDot11RadioIntfConfigTable Definition
+-- *****************************************************************************
+unisDot11RadioIntfConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11RadioIntfConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table defines the parameters for radio in AP, as per
+        radio."
+    ::= { unisDot11RadioIntfConfigGroup 1 }
+
+unisDot11RadioIntfConfigEntry OBJECT-TYPE
+    SYNTAX      UnisDot11RadioIntfConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of each radio in AP."
+    INDEX
+        {
+            unisDot11RadioIfIdx
+        }
+    ::= { unisDot11RadioIntfConfigTable 1 }
+
+UnisDot11RadioIntfConfigEntry ::= SEQUENCE
+    {
+        unisDot11RadioIfIdx               Integer32,
+        unisDot11RadioCfgBeaconIntvl      Integer32,
+        unisDot11RadioCfgDtimIntvl        Integer32,
+        unisDot11RadioCfgRtsThreshold     Integer32,
+        unisDot11RadioCfgFragThreshold    Integer32,
+        unisDot11RadioCfgShtRetryThld     Integer32,
+        unisDot11RadioCfglongRtrThld      Integer32,
+        unisDot11RadioCfgMaxRxLifetime    Unsigned32,
+        unisDot11RadioCfgType             UnisDot11RadioType,
+        unisDot11RadioCfgChannel          UnisDot11ChannelScopeType,
+        unisDot11RadioCfgMaxTxPwrLvl      UnisDot11TxPwrLevelScopeType,
+        unisDot11RadioCfgPreambleLen      UnisDot11PreambleType,
+        unisDot11RadioCfgWorkMode         UnisDot11WorkMode,
+        unisDot11RadioCfgOnly11gEnable    TruthValue,
+        unisDot11RadioCfgType2            UnisDot11RadioType2,
+        unisDot11RadioCfgRssithresholdCM  Integer32
+    }
+
+unisDot11RadioIfIdx OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the Radio IfIndex of radio in AP."
+    ::= { unisDot11RadioIntfConfigEntry 1 }
+
+unisDot11RadioCfgBeaconIntvl OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "TU"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval for Beacon management frame."
+    DEFVAL { 100 }
+    ::= { unisDot11RadioIntfConfigEntry 2 }
+
+unisDot11RadioCfgDtimIntvl OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of beacon intervals that shall elapse
+        between transmission of Beacons frames containing a Traffic
+        Indication Map (TIM) element whose DTIM Count field is 0.
+        This value is transmitted in the Delivery TIM (DTIM) Period
+        field of Beacon frames."
+    DEFVAL { 1 }
+    ::= { unisDot11RadioIntfConfigEntry 3 }
+
+unisDot11RadioCfgRtsThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Byte"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the current minimum size,in octets,of the MAC
+        protocol data unit (MPDU), below which a Request to send/Clear
+        to send (RTS/CTS) handshake shall not be performed."
+    DEFVAL { 2346 }
+    ::= { unisDot11RadioIntfConfigEntry 4 }
+
+unisDot11RadioCfgFragThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Byte"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the current maximum size, in octets, of the MPDU that
+        may be delivered to the PHY.  A MSDU shall be broken into
+        fragments if its size exceeds the value of this attribute after
+        adding MAC headers and trailers."
+    DEFVAL { 2346 }
+    ::= { unisDot11RadioIntfConfigEntry 5 }
+
+unisDot11RadioCfgShtRetryThld OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum number of transmission attempts of a
+        frame, the length of which is less than or equal to
+        unisDot11RadioRTSThreshold, that shall be made before a failure
+        condition is indicated."
+    DEFVAL { 5 }
+    ::= { unisDot11RadioIntfConfigEntry 6 }
+
+unisDot11RadioCfglongRtrThld OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum number of transmission attempts of a
+        frame, the length of which is longer than
+        unisDot11RadioRTSThreshold, that shall be made before a
+        failure condition is indicated."
+    DEFVAL { 5 }
+    ::= { unisDot11RadioIntfConfigEntry 7 }
+
+unisDot11RadioCfgMaxRxLifetime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "millisecond"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the elapsed time.  After the time specified by
+        unisDot11RadioCfgMaxRxLifetime, the further attempts to reassemble
+        the MSDU shall be terminated."
+    DEFVAL { 2000 }
+    ::= { unisDot11RadioIntfConfigEntry 8 }
+
+unisDot11RadioCfgType OBJECT-TYPE
+    SYNTAX      UnisDot11RadioType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the radio will work with which 802.11 radio type."
+    ::= { unisDot11RadioIntfConfigEntry 9 }
+
+unisDot11RadioCfgChannel OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the channel allocation of radio."
+    DEFVAL { 1 }
+    ::= { unisDot11RadioIntfConfigEntry 10 }
+
+unisDot11RadioCfgMaxTxPwrLvl OBJECT-TYPE
+    SYNTAX      UnisDot11TxPwrLevelScopeType
+    UNITS       "dbm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximal transmit power scope for AP."
+    ::= { unisDot11RadioIntfConfigEntry 11 }
+
+unisDot11RadioCfgPreambleLen OBJECT-TYPE
+    SYNTAX      UnisDot11PreambleType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether use long or short preamble for 802.11 MAC
+        frame."
+    DEFVAL { short }
+    ::= { unisDot11RadioIntfConfigEntry 12 }
+
+unisDot11RadioCfgWorkMode OBJECT-TYPE
+    SYNTAX      UnisDot11WorkMode
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents work mode of the radio."
+    ::= { unisDot11RadioIntfConfigEntry 13 }
+
+unisDot11RadioCfgOnly11gEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether enable only 802.11g radio mode or not.
+        'true' : Only 802.11g radio mode is enabled.
+        'false': Only 802.11g radio mode is disabled."
+    DEFVAL { false }
+    ::= { unisDot11RadioIntfConfigEntry 14 }
+
+unisDot11RadioCfgType2 OBJECT-TYPE
+    SYNTAX      UnisDot11RadioType2
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the radio will work with which 802.11 radio type."
+    ::= { unisDot11RadioIntfConfigEntry 15 }
+
+unisDot11RadioCfgRssithresholdCM OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the minimum value of the RSSI.
+        The clients with RSSI below this value will be refused to associate."
+    DEFVAL { 1 }
+    ::= { unisDot11RadioIntfConfigEntry 16 }
+
+-- *****************************************************************************
+-- *  End of unisDot11RadioIntfConfigTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11RadioIntfBindTable Definition
+-- *****************************************************************************
+unisDot11RadioIntfBindTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11RadioIntfBindEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table defines the binding information for each radio in AP.
+        "
+    ::= { unisDot11RadioIntfConfigGroup 2 }
+
+unisDot11RadioIntfBindEntry OBJECT-TYPE
+    SYNTAX      UnisDot11RadioIntfBindEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the radio interface binding information
+        in AP."
+    INDEX
+        {
+            unisDot11RadioIfIdx,
+            unisDot11RadioIntfBindSvcPlcyID
+        }
+    ::= { unisDot11RadioIntfBindTable 1 }
+
+UnisDot11RadioIntfBindEntry ::= SEQUENCE
+    {
+        unisDot11RadioIntfBindSvcPlcyID    UnisDot11ServicePolicyIDType,
+        unisDot11RadioIntfBindIfIdx        Unsigned32,
+        unisDot11RadioIntfBindRowStatus    RowStatus
+    }
+
+unisDot11RadioIntfBindSvcPlcyID OBJECT-TYPE
+    SYNTAX      UnisDot11ServicePolicyIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the ID of each service policy."
+    ::= { unisDot11RadioIntfBindEntry 1 }
+
+unisDot11RadioIntfBindIfIdx OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the Ifindex of interface which is binded to
+        the radio."
+    ::= { unisDot11RadioIntfBindEntry 2 }
+
+unisDot11RadioIntfBindRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11RadioIntfBindEntry 3 }
+-- *****************************************************************************
+-- *  End of unisDot11RadioIntfBindTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11DataRateConfigTable Definition
+-- *****************************************************************************
+unisDot11DataRateConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11DataRateConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Table will provide data rate configuration for a specific radio type."
+    ::= { unisDot11DataRateConfigGroup 1 }
+
+unisDot11DataRateConfigEntry OBJECT-TYPE
+    SYNTAX      UnisDot11DataRateConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry of the table will provide data rate configuration for a
+        specific radio type."
+    INDEX
+        {
+            unisDot11RadioTypeID
+        }
+    ::= { unisDot11DataRateConfigTable 1 }
+
+UnisDot11DataRateConfigEntry ::= SEQUENCE
+    {
+        unisDot11RadioTypeID         UnisDot11RadioType,
+        unisDot11SupportedRateSet    OCTET STRING,
+        unisDot11MandatoryRateSet    OCTET STRING,
+        unisDot11DisabledRateSet     OCTET STRING,
+        unisDot11SmartRateSet        OCTET STRING
+    }
+
+unisDot11RadioTypeID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the radio type."
+    ::= { unisDot11DataRateConfigEntry 1 }
+
+unisDot11SupportedRateSet OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the supported rate set of a particular radio type."
+    ::= { unisDot11DataRateConfigEntry 2 }
+
+unisDot11MandatoryRateSet OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the mandatory rate set of a particular radio type."
+    ::= { unisDot11DataRateConfigEntry 3 }
+
+unisDot11DisabledRateSet OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the disabled rate set of a particular radio type."
+    ::= { unisDot11DataRateConfigEntry 4 }
+
+unisDot11SmartRateSet OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the rate set of a particular radio type."
+    ::= { unisDot11DataRateConfigEntry 5 }
+-- *****************************************************************************
+-- *  End of unisDot11DataRateConfigTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WlanEssIfTable Definition
+-- *************************************************************************
+
+unisDot11WlanEssIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WlanEssIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is used to configure WLAN ESS interface."
+    ::= { unisDot11InterfaceConfigGroup 1 }
+
+unisDot11WlanEssIfEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WlanEssIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the WLAN ESS interface configuration."
+    INDEX
+        {
+            unisDot11WlanEssIfNumber
+        }
+    ::= { unisDot11WlanEssIfTable 1 }
+
+UnisDot11WlanEssIfEntry ::= SEQUENCE
+    {
+        unisDot11WlanEssIfNumber      Integer32,
+        unisDot11WlanEssIfIndex       Integer32,
+        unisDot11WlanEssRowStatus     RowStatus
+    }
+
+unisDot11WlanEssIfNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This node represents the WLAN ESS interface number."
+    ::= { unisDot11WlanEssIfEntry 1 }
+
+unisDot11WlanEssIfIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This node represents the ifIndex of WLAN-ESS interface."
+    ::= { unisDot11WlanEssIfEntry 2 }
+
+unisDot11WlanEssRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This node represents the WLAN ESS interface row status."
+    ::= { unisDot11WlanEssIfEntry 3 }
+
+-- *****************************************************************************
+-- *  End of unisDot11WlanEssIfTable  Definition
+-- *****************************************************************************
+-- *****************************************************************************
+-- *  unisDot11WlanBssIfTable Definition
+-- *************************************************************************
+
+unisDot11WlanBssIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WlanBssIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is used to configure WLAN BSS interface."
+    ::= { unisDot11InterfaceConfigGroup 2 }
+
+unisDot11WlanBssIfEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WlanBssIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the WLAN BSS interface configuration."
+    INDEX
+        {
+            unisDot11WlanBssIfNumber
+        }
+    ::= { unisDot11WlanBssIfTable 1 }
+
+UnisDot11WlanBssIfEntry ::= SEQUENCE
+    {
+        unisDot11WlanBssIfNumber     Integer32,
+        unisDot11WlanBssIfIndex      Integer32,
+        unisDot11WlanBssRowStatus    RowStatus
+    }
+
+unisDot11WlanBssIfNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This node represents the WLAN BSS interface number."
+    ::= { unisDot11WlanBssIfEntry 1 }
+
+unisDot11WlanBssIfIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This node represents the ifIndex of WLAN-BSS interface."
+    ::= { unisDot11WlanBssIfEntry 2 }
+
+unisDot11WlanBssRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This node represents the WLAN BSS interface row status."
+    ::= { unisDot11WlanBssIfEntry 3 }
+
+-- *****************************************************************************
+-- *  End of unisDot11WlanBssIfTable Definition
+-- *****************************************************************************
+-- *****************************************************************************
+-- *  unisDot11WLANEthernetIfTable Definition
+-- *************************************************************************
+
+unisDot11WLANEthernetIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WLANEthernetIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is used to configure WLAN Ethernet interface."
+    ::= { unisDot11InterfaceConfigGroup 3 }
+
+unisDot11WLANEthernetIfEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WLANEthernetIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the WLAN Ethernet interface configuration."
+    INDEX
+        {
+            unisDot11WlanEthernetIfNumber
+        }
+    ::= { unisDot11WLANEthernetIfTable 1 }
+
+UnisDot11WLANEthernetIfEntry ::= SEQUENCE
+    {
+        unisDot11WlanEthernetIfNumber     Integer32,
+        unisDot11WLANEthernetIfIndex      Integer32,
+        unisDot11WlanEthernetRowStatus    RowStatus
+    }
+
+unisDot11WlanEthernetIfNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This node represents the WLAN Ethernet interface number."
+    ::= { unisDot11WLANEthernetIfEntry 1 }
+
+unisDot11WLANEthernetIfIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This node represents the ifIndex of WLAN-Ethernet interface."
+    ::= { unisDot11WLANEthernetIfEntry 2 }
+
+unisDot11WlanEthernetRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This node represents the Wlan Ethernet interface row status."
+    ::= { unisDot11WLANEthernetIfEntry 3 }
+
+-- *****************************************************************************
+-- *  End of unisDot11DataRateConfigTable Definition
+-- *****************************************************************************
+-- *****************************************************************************
+-- *  unisDot11PortSecurityTable Definition
+-- *****************************************************************************
+unisDot11PortSecurityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11PortSecurityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table defines the WLAN security status for ESS, BSS, mesh and
+        WLAN-Ethernet interface which binding the crypto service-template.
+        Otherwise, when binding the clear service-template,
+        unisPortSecurityTables should be used to configure port security."
+    ::= { unisDot11InterfaceConfigGroup 4 }
+
+unisDot11PortSecurityEntry OBJECT-TYPE
+    SYNTAX      UnisDot11PortSecurityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for each ESS, BSS and WLAN-Ethernet
+        interface.It is indexed using the object ifIndex in RFC1213-MIB."
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisDot11PortSecurityTable 1 }
+
+UnisDot11PortSecurityEntry ::= SEQUENCE
+    {
+        unisDot11PortSecurityMode                 INTEGER,
+        unisDot11SecurityUserLoginTxKeyType       INTEGER,
+        unisDot11SecurityPskKeyMode               INTEGER,
+        unisDot11SecurityPskKeyString             DisplayString
+    }
+
+unisDot11PortSecurityMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            noRestrictions(1),
+            userLoginSecureExt(2),
+            psk(3),
+            macAddressAndPsk(4),
+            userLoginSecureExtOrPsk(5),
+            ext(6)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Determines the security modes of the WLAN port.
+
+        noRestrictions  - The default value,no any security mode is set.
+
+        userLoginSecureExt  - Access to the port is denied until the port
+        client is authorized (by 802.1X).
+
+        psk  - Access to the port is denied until the port client is
+        authorized (by 802.1X key negotiation).
+
+        macAddressAndPsk  - The MAC address is first authenticated and only if
+        this succeeds does the psk then attempt user authentication.
+
+        userLoginSecureExtOrPsk  - This selects both the userLoginSecureExt and
+        psk modes together such that either is allowed to authorized access.
+        Which mode works for client depends on the client's choice.
+
+        ext  - Access to the port is denied until the port client is
+        authenticated (by ext).
+        "
+    ::= { unisDot11PortSecurityEntry 1 }
+
+unisDot11SecurityUserLoginTxKeyType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            userLoginTxKeyTypeNone(1),
+            userLoginTxKeyTypeDot11Key(2),
+            userLoginTxKeyTypeRsaRC4Key(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This indicates the key type in the 802.1X EAPOL_Key packet.
+
+        userLoginTxKeyTypeNone  - This means the key type is not set yet.
+
+        userLoginTxKeyTypeDot11Key  - This selects the 802.11 key type.
+
+        userLoginTxKeyTypeRsaRC4Key  - This selects the RC4 key for RSA RC4
+        session encryption."
+    ::= { unisDot11PortSecurityEntry 2 }
+
+unisDot11SecurityPskKeyMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            pskKeyModeNone(1),
+            pskKeyModePassPhrase(2),
+            pskKeyModeRawKey(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This is the password input mode.  When input as pskKeyModePassPhrase,
+        unisDot11SecurePskKeyString must be 8 to 63 characters; when input as
+        pskKeyModeRawKey, unisDot11SecurePskKeyString must be 64 characters and
+        each character must be '0'-'9', 'a'-'f' and 'A'-'F'."
+    ::= { unisDot11PortSecurityEntry 3 }
+
+unisDot11SecurityPskKeyString OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This is the password string used for psk authentication."
+    ::= { unisDot11PortSecurityEntry 4 }
+
+-- *****************************************************************************
+-- *  End of unisDot11PortSecurityTable Definition
+-- *****************************************************************************
+-- *****************************************************************************
+-- *  unisDot11WlanMeshIfTable Definition
+-- *************************************************************************
+
+unisDot11WlanMeshIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WlanMeshIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is used to configure WLAN mesh interface."
+    ::= { unisDot11InterfaceConfigGroup 5 }
+
+unisDot11WlanMeshIfEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WlanMeshIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the WLAN mesh interface configuration."
+    INDEX
+        {
+            unisDot11WlanMeshIfNumber
+        }
+    ::= { unisDot11WlanMeshIfTable 1 }
+
+UnisDot11WlanMeshIfEntry ::= SEQUENCE
+    {
+        unisDot11WlanMeshIfNumber    Integer32,
+        unisDot11WlanMeshIfIndex     Integer32,
+        unisDot11WlanMeshRowStatus   RowStatus
+    }
+
+unisDot11WlanMeshIfNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This node represents the WLAN mesh interface number."
+    ::= { unisDot11WlanMeshIfEntry 1 }
+
+unisDot11WlanMeshIfIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This node represents the index of WLAN mesh interface."
+    ::= { unisDot11WlanMeshIfEntry 2 }
+
+unisDot11WlanMeshRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This node represents the WLAN mesh interface row status."
+    ::= { unisDot11WlanMeshIfEntry 3 }
+
+-- *****************************************************************************
+-- *  End of unisDot11WlanMeshIfTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11ACBackupGroup Definition
+-- *****************************************************************************
+unisDot11BackupACAdrssIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the backup AC IP address.
+        If the backup AC IP address is not configured,
+        the object value is 0.0.0.0."
+    ::= { unisDot11ACBackupGroup 1 }
+
+unisDot11BackupACAdrssIPv6 OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object represents the backup AC IPv6 address.
+         If the backup AC IPv6 address is not configured,
+         the object value is 0::0."
+    ::= { unisDot11ACBackupGroup 2 }
+
+-- *****************************************************************************
+-- *  End of unisDot11ACBackupGroup Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11RadioElementConfigGroup Definition
+-- *****************************************************************************
+
+unisDot11nRadioCfgTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11nRadioCfgEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table is used to configure dot11n on the radio."
+    ::= { unisDot11RadioElementConfigGroup 1 }
+
+unisDot11nRadioCfgEntry OBJECT-TYPE
+    SYNTAX UnisDot11nRadioCfgEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This entry contains the dot11n configuration on the radio."
+    INDEX { unisDot11nRadioCfgIndex }
+    ::= { unisDot11nRadioCfgTable 1 }
+
+UnisDot11nRadioCfgEntry ::= SEQUENCE
+    {
+        unisDot11nRadioCfgIndex       UnisDot11RadioElementIndex,
+        unisDot11nAMpduEnable         TruthValue,
+        unisDot11nAMsduEnable         TruthValue,
+        unisDot11nClientDot11nOnly    TruthValue,
+        unisDot11nChanelBand          INTEGER,
+        unisDot11nShortGiEnable       TruthValue,
+        unisDot11nClientDot11acOnly   TruthValue,
+        unisDot11nSupportMaxMcs       Integer32,
+        unisDot11nMandatoryMaxMcs     Integer32
+    }
+
+unisDot11nRadioCfgIndex OBJECT-TYPE
+    SYNTAX UnisDot11RadioElementIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents index of the radio."
+    ::= { unisDot11nRadioCfgEntry 1 }
+
+unisDot11nAMpduEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Enable the function of A-MPDU."
+        DEFVAL { true }
+    ::= { unisDot11nRadioCfgEntry 2 }
+
+unisDot11nAMsduEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Enable the function of A-MSDU."
+    DEFVAL { true }
+    ::= { unisDot11nRadioCfgEntry 3 }
+
+unisDot11nClientDot11nOnly OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "If radio type is 802.11an or 802.11gn, only permit clients of 11n mode.
+         If radio type is 802.11ac, permit clients of 11n and 11ac mode."
+    DEFVAL { false }
+    ::= { unisDot11nRadioCfgEntry 4 }
+
+unisDot11nChanelBand OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        mode20(1),
+        mode40(2),
+        mode80(3),
+        mode160(4),
+        mode80and80(5)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the bandwidth mode."
+    DEFVAL { mode40 }
+    ::= { unisDot11nRadioCfgEntry 5 }
+
+unisDot11nShortGiEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The function of Short GI."
+    DEFVAL { true }
+    ::= { unisDot11nRadioCfgEntry 6 }
+
+unisDot11nClientDot11acOnly OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Only permit clients of 11ac mode."
+    DEFVAL { false }
+    ::= { unisDot11nRadioCfgEntry 7 }
+
+unisDot11nSupportMaxMcs OBJECT-TYPE
+    SYNTAX Integer32 (0..76)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the maximum Modulation and Coding Scheme (MCS) index for
+        802.11n supported rates.
+        The specified maximum MCS index for 802.11n supported rates must be no
+        less than the specified maximum MCS index for 802.11n mandatory rates."
+    DEFVAL { 76 }
+    ::= { unisDot11nRadioCfgEntry 8 }
+
+unisDot11nMandatoryMaxMcs OBJECT-TYPE
+    SYNTAX Integer32 (0..76 | 255)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the maximum modulation and coding scheme (MCS) index for
+        802.11n mandatory rates.
+        The value 255 indicates that no maximum MCS index
+        is specified.  No maximum MCS index is specified for 802.11n
+        mandatory rates by default.
+        Besides 255, the specified maximum MCS index for 802.11n supported
+        rates must be no less than the specified maximum MCS index for 802.11n
+        mandatory rates."
+    DEFVAL { 255 }
+    ::= { unisDot11nRadioCfgEntry 9 }
+
+-- *****************************************************************************
+-- *  End of unisDot11RadioElementConfigGroup Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11RadioWDSTable Definition
+-- *****************************************************************************
+
+unisDot11RadioWDSTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11RadioWDSEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is used to configure WDS on the radio."
+    ::= { unisDot11RadioElementConfigGroup 2 }
+
+unisDot11RadioWDSEntry OBJECT-TYPE
+    SYNTAX      UnisDot11RadioWDSEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the WDS configuration on the radio."
+    INDEX
+        {
+            unisDot11RadioWDSIndex
+        }
+    ::= { unisDot11RadioWDSTable 1 }
+
+UnisDot11RadioWDSEntry ::= SEQUENCE
+    {
+        unisDot11RadioWDSIndex            UnisDot11RadioElementIndex,
+        unisDot11RadioWDSMode             INTEGER,
+        unisDot11RadioWDSNetWorkID        OCTET STRING,
+        unisDot11WDSSecPskKeyMode         INTEGER,
+        unisDot11WDSSecPskKeyString       DisplayString
+    }
+
+unisDot11RadioWDSIndex OBJECT-TYPE
+    SYNTAX      UnisDot11RadioElementIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the element index of radio."
+    ::= { unisDot11RadioWDSEntry 1 }
+
+unisDot11RadioWDSMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            nowds(1),
+            wds(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents enable the WDS mode or not.
+        nowds: The WDS mode is disabled.
+        wds  : The WDS mode is enabled"
+    DEFVAL      { nowds }
+    ::= { unisDot11RadioWDSEntry 2 }
+
+unisDot11RadioWDSNetWorkID OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..32))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the mesh ID of WDS."
+    DEFVAL      { "" }
+    ::= { unisDot11RadioWDSEntry 3 }
+
+unisDot11WDSSecPskKeyMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+          pskKeyModeNone(1),
+          pskKeyModePassPhrase(2),
+          pskKeyModeRawKey(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the PSK mode of WDS."
+    DEFVAL      { pskKeyModeNone }
+    ::= { unisDot11RadioWDSEntry 4 }
+
+unisDot11WDSSecPskKeyString OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the PSK value of WDS."
+    DEFVAL      { "" }
+    ::= { unisDot11RadioWDSEntry 5 }
+
+-- *****************************************************************************
+-- *  End of unisDot11RadioWDSTable  Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11nRadioCfg2Table Definition
+-- *****************************************************************************
+
+unisDot11nRadioCfg2Table OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11nRadioCfg2Entry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table is used to configure dot11n on the radio."
+    ::= { unisDot11RadioElementConfigGroup 3 }
+
+unisDot11nRadioCfg2Entry OBJECT-TYPE
+    SYNTAX UnisDot11nRadioCfg2Entry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This entry contains the dot11n configuration on the radio."
+    INDEX {
+              unisDot11nRadioCfg2APIDIndex,
+              unisDot11nRadioCfg2RadioIDIndex
+          }
+    ::= { unisDot11nRadioCfg2Table 1 }
+
+UnisDot11nRadioCfg2Entry ::= SEQUENCE
+    {
+        unisDot11nRadioCfg2APIDIndex           UnisDot11ObjectIDType,
+        unisDot11nRadioCfg2RadioIDIndex        UnisDot11RadioScopeType,
+        unisDot11nRadioCfg2AMpduEnable         TruthValue,
+        unisDot11nRadioCfg2AMsduEnable         TruthValue,
+        unisDot11nRadioCfg2ClientDot11nOnly    TruthValue,
+        unisDot11nRadioCfg2ChannelBand          INTEGER,
+        unisDot11nRadioCfg2ShortGiEnable       TruthValue,
+        unisDot11nRadioCfg2AMpduEnableCM        INTEGER,
+        unisDot11nRadioCfg2ChannelBandCM        INTEGER,
+        unisDot11nRadioCfg2ShortGiEnableCM      INTEGER,
+        unisDot11nRadioCfg2ClientDot11acOnly   TruthValue,
+        unisDot11nRadioCfg2ClientDot11nOnlyCM   UnisDot11TruthValueCM,
+        unisDot11nRadioCfg2SupportMaxMcs       Integer32,
+        unisDot11nRadioCfg2MandatoryMaxMcs     Integer32
+    }
+
+unisDot11nRadioCfg2APIDIndex OBJECT-TYPE
+    SYNTAX UnisDot11ObjectIDType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents index of the AP."
+    ::= { unisDot11nRadioCfg2Entry 1 }
+
+unisDot11nRadioCfg2RadioIDIndex OBJECT-TYPE
+    SYNTAX UnisDot11RadioScopeType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents index of the radio."
+    ::= { unisDot11nRadioCfg2Entry 2 }
+
+unisDot11nRadioCfg2AMpduEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Enable the function of A-MPDU."
+        DEFVAL { true }
+    ::= { unisDot11nRadioCfg2Entry 3 }
+
+unisDot11nRadioCfg2AMsduEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Enable the function of A-MSDU."
+    DEFVAL { true }
+    ::= { unisDot11nRadioCfg2Entry 4 }
+
+unisDot11nRadioCfg2ClientDot11nOnly OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "If radio type is 802.11an or 802.11gn, only permit clients of 11n mode.
+         If radio type is 802.11ac, permit clients of 11n and 11ac mode."
+    DEFVAL { false }
+    ::= { unisDot11nRadioCfg2Entry 5 }
+
+unisDot11nRadioCfg2ChannelBand OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            mode20(1),
+            mode40(2),
+            mode80(3),
+            mode160(4),
+            mode80and80(5)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the bandwidth mode."
+    ::= { unisDot11nRadioCfg2Entry 6 }
+
+unisDot11nRadioCfg2ShortGiEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Enable the function of Short GI."
+    DEFVAL { true }
+    ::= { unisDot11nRadioCfg2Entry 7 }
+
+unisDot11nRadioCfg2AMpduEnableCM OBJECT-TYPE
+    SYNTAX   INTEGER
+        {
+            off(0),
+            on(1)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Enable the function of A-MPDU."
+        DEFVAL { on }
+    ::= { unisDot11nRadioCfg2Entry 8 }
+
+unisDot11nRadioCfg2ChannelBandCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            mode40(1),
+            mode20(2),
+            mode80(3),
+            mode160(4),
+            mode80and80(5)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the bandwidth mode."
+    ::= { unisDot11nRadioCfg2Entry 9 }
+
+unisDot11nRadioCfg2ShortGiEnableCM OBJECT-TYPE
+    SYNTAX    INTEGER
+        {
+            off(0),
+            on(1)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Enable the function of Short GI."
+    DEFVAL { on }
+    ::= { unisDot11nRadioCfg2Entry 10 }
+
+unisDot11nRadioCfg2ClientDot11acOnly OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Only permit clients of 11ac mode."
+    DEFVAL { false }
+    ::= { unisDot11nRadioCfg2Entry 11 }
+
+unisDot11nRadioCfg2ClientDot11nOnlyCM OBJECT-TYPE
+    SYNTAX UnisDot11TruthValueCM
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "If radio type is 802.11an or 802.11gn, permit only clients of 11n mode.
+        If radio type is 802.11ac, permit clients of both 11n and 11ac mode."
+    DEFVAL { dot11false }
+    ::= { unisDot11nRadioCfg2Entry 12 }
+
+unisDot11nRadioCfg2SupportMaxMcs OBJECT-TYPE
+    SYNTAX Integer32 (0..76)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the maximum Modulation and Coding Scheme (MCS) index for
+        802.11n supported rates.
+        The specified maximum MCS index for 802.11n supported rates must be no
+        less than the specified maximum MCS index for 802.11n mandatory rates."
+    DEFVAL { 76 }
+    ::= { unisDot11nRadioCfg2Entry 13 }
+
+unisDot11nRadioCfg2MandatoryMaxMcs OBJECT-TYPE
+    SYNTAX Integer32 (0..76 | 255)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the maximum modulation and coding scheme (MCS) index for
+        802.11n mandatory rates.
+        The value 255 indicates that no maximum MCS index
+        is specified.  No maximum MCS index is specified for 802.11n
+        mandatory rates by default.
+        Besides 255, the specified maximum MCS index for 802.11n supported
+        rates must be no less than the specified maximum MCS index for 802.11n
+        mandatory rates."
+    DEFVAL { 255 }
+    ::= { unisDot11nRadioCfg2Entry 14 }
+
+-- *****************************************************************************
+-- *  End of unisDot11nRadioCfg2Table Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11CfgNotifyGroup Definition
+-- *****************************************************************************
+unisDot11CfgNotifications OBJECT IDENTIFIER ::= { unisDot11CfgNotifyGroup 0 }
+
+unisDot11CfgCipherChange NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDot11SSIDName,
+        unisDot11SecurityCiphers
+    }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent when cipher type of corresponding service
+        template is changed."
+    ::= { unisDot11CfgNotifications 1 }
+
+unisDot11CfgPSKChange NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDot11SSIDName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent when pre-shared key of corresponding
+        service template is changed."
+    ::= { unisDot11CfgNotifications 2 }
+
+unisDot11SSIDWepIDConflictTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDot11PreConflictTemplateNum,
+        unisDot11CurrConflictTemplateNum,
+        unisDot11ConflictCipherIdx,
+        unisDot11ConfigureAPID,
+        unisDot11ConfigureRadioID,
+        unisDot11ConfigureAPMacAddress,
+        unisDot11PreConflictTemplateSSID,
+        unisDot11CurrConflictTemplateSSID
+    }
+    STATUS      current
+    DESCRIPTION
+        "This notification will be sent when the same wep ID is configured
+         on two service policies."
+    ::= { unisDot11CfgNotifications 3 }
+
+-- CFG Notification variable object
+
+unisDot11CfgTrapVarObjects OBJECT IDENTIFIER
+    ::= { unisDot11CfgNotifyGroup 1 }
+
+unisDot11PreConflictTemplateNum OBJECT-TYPE
+    SYNTAX      Integer32 (1..1024)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents previous service policy ID when radio bind service policy
+         and current service policy conflict with previous service policy
+         in cipher configuration."
+    ::= { unisDot11CfgTrapVarObjects 1 }
+
+unisDot11CurrConflictTemplateNum OBJECT-TYPE
+    SYNTAX      Integer32 (1..1024)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents current service policy ID when radio bind service policy
+         and current service policy conflict with previous service policy
+         in cipher configuration."
+    ::= { unisDot11CfgTrapVarObjects 2 }
+
+unisDot11ConflictCipherIdx OBJECT-TYPE
+    SYNTAX      Integer32 (1..4)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents wep ID that conflicted with."
+    ::= { unisDot11CfgTrapVarObjects 3 }
+
+unisDot11ConfigureAPID OBJECT-TYPE
+    SYNTAX      UnisDot11ObjectIDType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents which AP is configured."
+    ::= { unisDot11CfgTrapVarObjects 4 }
+
+unisDot11ConfigureRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents which radio in AP is configured."
+    ::= { unisDot11CfgTrapVarObjects 5 }
+
+unisDot11ConfigureAPMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents MAC Address of AP."
+    ::= { unisDot11CfgTrapVarObjects 6 }
+
+unisDot11PreConflictTemplateSSID OBJECT-TYPE
+    SYNTAX      UnisDot11SSIDStringType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the previous SSID of the AP."
+    ::= { unisDot11CfgTrapVarObjects 7 }
+
+unisDot11CurrConflictTemplateSSID OBJECT-TYPE
+    SYNTAX      UnisDot11SSIDStringType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the current SSID of the AP."
+    ::= { unisDot11CfgTrapVarObjects 8 }
+
+-- *****************************************************************************
+-- *  End of unisDot11CfgNotifyGroup Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11LocalACTemplateTable Definition
+-- *****************************************************************************
+unisDot11LocalACTemplateTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11LocalACTemplateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "By local AC template CLI, administrator will configure the parameters of LocalAC
+        by convenience.
+        Before local AC boot up and connect to AC by CAPWAP tunnel, administrator
+        will create local AC template for each local AC. When local AC connect to AC,
+        AC will assign configuration to local AC by unisDot11LocalACSerialID
+        information in local AC template."
+    ::= { unisDot11LocalACConfigGroup 1 }
+
+unisDot11LocalACTemplateEntry OBJECT-TYPE
+    SYNTAX      UnisDot11LocalACTemplateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains configuration information for each LocalAC."
+    INDEX
+        {
+            unisDot11LocalACTemplateName
+        }
+    ::= { unisDot11LocalACTemplateTable 1 }
+
+UnisDot11LocalACTemplateEntry ::= SEQUENCE
+    {
+        unisDot11LocalACTemplateName             OCTET STRING,
+        unisDot11LocalACName                     OCTET STRING,
+        unisDot11LocalACSerialID                 OCTET STRING,
+        unisDot11TemLocalACModelAlias            OCTET STRING,
+        unisDot11LocalACTempRowStatus            RowStatus,
+        unisDot11LocalACStatus                   INTEGER,
+        unisDot11LocalACIPAddress                IpAddress,
+        unisDot11LocalACIPv6Address              OCTET STRING,
+        unisDot11EchoInterval                    Integer32,
+        unisDot11RetransInterval                 Integer32,
+        unisDot11RetransCount                    Integer32,
+        unisDot11FirmwareUpgrade                 INTEGER
+    }
+
+unisDot11LocalACTemplateName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the name of LocalAC template."
+    ::= { unisDot11LocalACTemplateEntry 1 }
+
+unisDot11LocalACName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the LocalAC name."
+    ::= { unisDot11LocalACTemplateEntry 2 }
+
+unisDot11LocalACSerialID OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents LocalAC serial id."
+    ::= { unisDot11LocalACTemplateEntry 3 }
+
+unisDot11TemLocalACModelAlias OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the alias of LocalAC model name."
+    ::= { unisDot11LocalACTemplateEntry 4 }
+
+unisDot11LocalACTempRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11LocalACTemplateEntry 5 }
+
+unisDot11LocalACStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            join(1),
+            joinConfirm(2),
+            download(3),
+            config(4),
+            run(5),
+            idle(6)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the capwap status of local AC.
+        The following values are supported:
+        join         - local AC is joining to cnetral AC.
+        joinConfirm  - cnetral AC confirm whether permit local AC to
+        - join.
+        download     - local AC is downloading software from cnetral
+        - AC.
+        config       - local AC and cnetral AC exchange configuration
+        - before local AC provide WLAN service.
+        run          - The local AC is run.
+        idle         - The local AC is idle."
+    ::= { unisDot11LocalACTemplateEntry 6 }
+
+unisDot11LocalACIPAddress OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the IP address of an LocalAC."
+    ::= { unisDot11LocalACTemplateEntry 7 }
+
+unisDot11LocalACIPv6Address OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the IPv6 address of LocalAC."
+    ::= { unisDot11LocalACTemplateEntry 8 }
+
+unisDot11EchoInterval OBJECT-TYPE
+    SYNTAX      Integer32(5..80)
+    UNITS       "second"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval of echo."
+    DEFVAL      { 10 }
+    ::= { unisDot11LocalACTemplateEntry 9 }
+
+unisDot11RetransInterval OBJECT-TYPE
+    SYNTAX      Integer32(3..8)
+    UNITS       "second"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval of retransmit."
+    DEFVAL      { 5 }
+    ::= { unisDot11LocalACTemplateEntry 10 }
+
+unisDot11RetransCount OBJECT-TYPE
+    SYNTAX      Integer32(2..5)
+    UNITS       "second"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum of retransmit."
+    DEFVAL      { 3 }
+    ::= { unisDot11LocalACTemplateEntry 11 }
+
+unisDot11FirmwareUpgrade OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the status of firmware upgrade for an local AC.
+        The following values are supported:
+        enable      - local AC firmware upgrade will be enabled.
+        disable     - local AC firmware upgrade will be disabled."
+        DEFVAL      { enable }
+    ::= { unisDot11LocalACTemplateEntry 12 }
+
+-- *****************************************************************************
+-- *  End of  unisDot11LocalACTemplateTable Definition
+-- *****************************************************************************
+
+END

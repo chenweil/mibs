@@ -1,0 +1,103 @@
+-- ============================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This MIB is used for configuration of SECP (security policy).
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 created by jinzheyuan.
+-- ============================================================================
+UNIS-SECP-V9-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM  UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY,
+    Unsigned32, Counter64
+        FROM SNMPv2-SMI
+    CounterBasedGauge64
+        FROM HCNUM-TC;
+
+--
+-- Node definitions
+--
+
+unisSecpV9 MODULE-IDENTITY
+    LAST-UPDATED "202205091725Z"        -- May 09, 2022 at 17:25 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Security policy management information base for managing devices
+        that support security policy.
+        "
+    REVISION "202205091725Z"             -- May 09, 2022 at 17:25 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 224 }
+
+--
+-- Nodes of unisSecpV9Objects
+--
+unisSecpV9Objects OBJECT IDENTIFIER ::= { unisSecpV9 1 }
+
+--
+-- Nodes of unisSecpV9RunningInfoTable
+--
+unisSecpV9RunningInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisSecpV9RunningInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Security policy running information base."
+    ::= { unisSecpV9Objects 1 }
+
+unisSecpV9RunningInfoEntry OBJECT-TYPE
+    SYNTAX UnisSecpV9RunningInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Security policy running information entry."
+    INDEX
+    {
+        unisSecpV9RuleID
+    }
+    ::= { unisSecpV9RunningInfoTable 1 }
+
+UnisSecpV9RunningInfoEntry ::=
+    SEQUENCE
+    {
+        unisSecpV9RuleID
+            Unsigned32,
+        unisSecpV9MatchPacketCount
+            Counter64,
+        unisSecpV9LastMatchTime
+            CounterBasedGauge64
+    }
+
+unisSecpV9RuleID OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Rule ID of security policy."
+    ::= { unisSecpV9RunningInfoEntry 1 }
+
+unisSecpV9MatchPacketCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of packets matching the rule."
+    ::= { unisSecpV9RunningInfoEntry 2 }
+
+unisSecpV9LastMatchTime OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Time elapsed since 1970/1/1 00:00:00 to the most recent match."
+    ::= { unisSecpV9RunningInfoEntry 3 }
+
+END

@@ -1,0 +1,66 @@
+-- =============================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: vlan-group mib
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2018-10-26
+--        Initial Version by mazhixing
+-- =============================================================
+UNIS-VLANGROUP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+            FROM UNIS-OID-MIB
+    MODULE-IDENTITY, OBJECT-TYPE
+            FROM SNMPv2-SMI;
+
+unisVlanGroup  MODULE-IDENTITY
+    LAST-UPDATED    "201810241436Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+         "This MIB provides VLAN group information."
+    REVISION        "201810241436Z"
+    DESCRIPTION
+            "Initial version of this MIB module.
+             Added unisVlanGroupTable"
+    ::= { unisCommon 178 }
+
+-- unisVlanGroupTable:
+
+unisVlanGroupTable     OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVlanGroupEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+     "A list of VLAN groups."
+    ::= { unisVlanGroup 1 }
+
+unisVlanGroupEntry     OBJECT-TYPE
+    SYNTAX         UnisVlanGroupEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+     "This entry contains VLAN group information."
+    INDEX {
+            unisVlanGroupName
+    }
+    ::= { unisVlanGroupTable 1 }
+
+UnisVlanGroupEntry ::= SEQUENCE  {
+    unisVlanGroupName          OCTET STRING
+    }
+
+unisVlanGroupName      OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..31))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+     "Name of the VLAN group."
+    ::= { unisVlanGroupEntry 1 }
+
+END

@@ -1,0 +1,123 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: protocol priority mib
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 created by zhuangyu
+--     The initial version, 2005-01-17
+-- =================================================================
+UNIS-PROT-PRIORITY-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        unisCommon
+            FROM UNIS-OID-MIB
+        Integer32, OBJECT-TYPE, MODULE-IDENTITY
+            FROM SNMPv2-SMI
+        RowStatus
+            FROM SNMPv2-TC;
+
+    unisProtocolPriority MODULE-IDENTITY
+        LAST-UPDATED "200501171633Z"        -- January 17, 2005 at 16:33 GMT
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "This MIB is used to manage and configure the priority of specified protocol.
+            This MIB is applicable to routers, switches and other products.
+            "
+        REVISION "200501171633Z"        -- January 17, 2005 at 16:33 GMT
+        DESCRIPTION
+            "The initial revision of this MIB module."
+        ::= { unisCommon 37 }
+
+
+--
+-- Node definitions
+--
+    unisProtocolPriorityObjects OBJECT IDENTIFIER ::= { unisProtocolPriority 1 }
+
+    unisPPri OBJECT IDENTIFIER ::= { unisProtocolPriorityObjects 1 }
+
+    unisProtocolPriorityTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisProtocolPriorityEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table is used to configure the priority of the protocol."
+        ::= { unisPPri 1 }
+
+    unisProtocolPriorityEntry OBJECT-TYPE
+        SYNTAX UnisProtocolPriorityEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry containing information about the priority of the protocol."
+        INDEX { unisPPriProtocolType }
+        ::= { unisProtocolPriorityTable 1 }
+
+    UnisProtocolPriorityEntry ::=
+        SEQUENCE {
+            unisPPriProtocolType
+                INTEGER,
+            unisPPriPriorityType
+                INTEGER,
+            unisPPriPriorityVlaue
+                Integer32,
+            unisPPriRowStatus
+                RowStatus
+        }
+
+    unisPPriProtocolType OBJECT-TYPE
+        SYNTAX INTEGER
+               {
+               ospf(1),
+               telnet(2),
+               snmp(3),
+               icmp(4),
+               bgp(5),
+               ldp(6)
+               }
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Protocol type."
+        ::= { unisProtocolPriorityEntry 1 }
+
+    unisPPriPriorityType OBJECT-TYPE
+        SYNTAX INTEGER
+               {
+               ipPrecedence(1),
+               dscp(2)
+               }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Priority type."
+        ::= { unisProtocolPriorityEntry 2 }
+
+    unisPPriPriorityVlaue OBJECT-TYPE
+        SYNTAX Integer32 (0..63)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Priority value.
+            If setting unisPPriPriorityType to ip-precedence(1),
+            the range of unisPPriPriorityVlaue is from 0 to 7.
+            If setting unisPPriPriorityType to dscp(2),
+            the range of unisPPriPriorityVlaue is from 0 to 63."
+        ::= { unisProtocolPriorityEntry 3 }
+
+    unisPPriRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "RowStatus, Now support createAndGo,active and destroy.
+            To create a new row, unisPPriPriorityType and unisPPriPriorityValue must be specified.
+            To modify a row,unisPPriPriorityType and unisPPriPriorityValue
+            must change at the same time and the unisPPriRowStatus is active ."
+        ::= { unisProtocolPriorityEntry 4 }
+END

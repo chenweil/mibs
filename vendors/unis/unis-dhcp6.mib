@@ -1,0 +1,221 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:  DHCPv6 mib for server and relay
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2018-11-16 Initial version Created by l08263
+-- =================================================================
+UNIS-DHCP6-MIB DEFINITIONS ::= BEGIN
+
+-- =============================================================================
+-- Imported variables and types
+-- =============================================================================
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    RowStatus
+        FROM SNMPv2-TC
+    OBJECT-TYPE, MODULE-IDENTITY, Unsigned32, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI;
+
+-- =============================================================================
+-- Module identity
+-- =============================================================================
+unisDhcp6 MODULE-IDENTITY
+    LAST-UPDATED "201811160000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "DHCPv6 MIB."
+    REVISION
+        "201811160000Z"
+    DESCRIPTION
+        "Initial version."
+    ::= { unisCommon 179 }
+
+-- =============================================================================
+-- DHCPV6 server table definition.
+-- =============================================================================
+    unisDhcp6Server2Tables OBJECT IDENTIFIER ::= { unisDhcp6 1 }
+
+-- =================================================================
+-- 1st Table of unisDhcp6Server2Tables: unisDhcp6Server2PoolTable
+-- =================================================================
+unisDhcp6Server2PoolTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcp6Server2PoolEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for creating DHCPv6 address pools."
+    ::= { unisDhcp6Server2Tables 1 }
+
+unisDhcp6Server2PoolEntry OBJECT-TYPE
+    SYNTAX      UnisDhcp6Server2PoolEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing objects for creating or
+        deleting a DHCPv6 address pool."
+    INDEX { unisDhcp6Server2PoolIndex }
+    ::= { unisDhcp6Server2PoolTable 1 }
+
+UnisDhcp6Server2PoolEntry ::=
+    SEQUENCE
+        {
+            unisDhcp6Server2PoolIndex     Unsigned32,
+            unisDhcp6Server2PoolName      OCTET STRING,
+            unisDhcp6Server2PoolRowStatus RowStatus
+        }
+
+unisDhcp6Server2PoolIndex OBJECT-TYPE
+    SYNTAX      Unsigned32(1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "DHCPv6 server pool index."
+    ::= { unisDhcp6Server2PoolEntry 1 }
+
+unisDhcp6Server2PoolName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..63))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "DHCPv6 pool name.
+         Once this object is created, the value of this object cannot
+         be modified."
+    ::= { unisDhcp6Server2PoolEntry 2 }
+
+unisDhcp6Server2PoolRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active,
+         createAndGo, destroy."
+    ::= { unisDhcp6Server2PoolEntry 3 }
+
+-- =================================================================
+-- 2th Table of unisDhcp6Server2Tables: unisDhcp6Server2PoolStatTable
+-- =================================================================
+unisDhcp6Server2PoolStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDhcp6Server2PoolStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The statistics of each DHCPv6 address pool."
+    ::= { unisDhcp6Server2Tables 2 }
+
+unisDhcp6Server2PoolStatEntry OBJECT-TYPE
+    SYNTAX      UnisDhcp6Server2PoolStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing the statistics of each DHCPv6 address pool."
+    INDEX { unisDhcp6Server2PoolIndex }
+    ::= { unisDhcp6Server2PoolStatTable 1 }
+
+UnisDhcp6Server2PoolStatEntry ::=
+    SEQUENCE
+        {
+            unisDhcp6Server2PoolIPIdleNum          Unsigned32,
+            unisDhcp6Server2PoolIPUsedNum          Unsigned32,
+            unisDhcp6Server2PoolPrefixIdleNum      Unsigned32,
+            unisDhcp6Server2PoolPrefixUsedNum      Unsigned32
+        }
+
+unisDhcp6Server2PoolIPIdleNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of idle IPv6 addresses in the
+         DHCPv6 address pool."
+    ::= { unisDhcp6Server2PoolStatEntry 1 }
+
+unisDhcp6Server2PoolIPUsedNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of used IPv6 addresses in the
+         DHCPv6 address pool."
+    ::= { unisDhcp6Server2PoolStatEntry 2 }
+
+unisDhcp6Server2PoolPrefixIdleNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of idle IPv6 prefixes in the
+         DHCPv6 address pool."
+    ::= { unisDhcp6Server2PoolStatEntry 3 }
+
+unisDhcp6Server2PoolPrefixUsedNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of used IPv6 prefixes in the
+         DHCPv6 address pool."
+    ::= { unisDhcp6Server2PoolStatEntry 4 }
+
+-- =============================================================================
+-- DHCPv6 server trap objects definition.
+-- =============================================================================
+unisDhcp6Server2Traps OBJECT IDENTIFIER ::= { unisDhcp6 2 }
+
+unisDhcp6Server2TrapNotify OBJECT IDENTIFIER ::= { unisDhcp6Server2Traps 0 }
+
+unisDhcp6Server2AddrExhaust NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDhcp6Server2PoolIndex,
+        unisDhcp6Server2PoolName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when IPv6 addresses are exhausted
+         in the DHCPv6 address pool."
+    ::= { unisDhcp6Server2TrapNotify 1 }
+
+unisDhcp6Server2AddrExhaustRecov NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDhcp6Server2PoolIndex,
+        unisDhcp6Server2PoolName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the DHCPv6 address pool recovers from
+         IPv6 address exhaustion."
+    ::= { unisDhcp6Server2TrapNotify 2 }
+
+unisDhcp6Server2IpUsageOverflow NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDhcp6Server2PoolIndex,
+        unisDhcp6Server2PoolName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the IPv6 address usage of DHCPv6
+         address pool is above the threshold."
+    ::= { unisDhcp6Server2TrapNotify 3 }
+
+unisDhcp6Server2IpUsageOverflowRecov NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDhcp6Server2PoolIndex,
+        unisDhcp6Server2PoolName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the IPv6 address usage of DHCPv6
+         address pool drops down to 90% of the threshold."
+    ::= { unisDhcp6Server2TrapNotify 4 }
+
+END

@@ -1,0 +1,2860 @@
+-- ===========================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Epon MIB
+-- Reference:  IF-MIB
+-- Version:  V2.0
+-- History:
+-- V1.0 created by liuhongxu.
+--   Initial version 2006-01-10
+-- V1.1 Updated by chenzhaojie
+--   Add enumeration values to unisEponUniVlanType
+-- V1.2 Updated by chenzhaojie 2006-08-02
+--   Add unisEponUniOutDroppedFrames
+-- V1.3 Updated by chenzhaojie 2007-05-21
+--   Add unisEponUniScalarGroup
+--   Add enumeration values to unisEponUniVlanType
+--   Add unisEponUniPortIsolate, unisEponUniVlanConfiguration
+--   unisEponUniAutoNegotiation, unisEponUniRestartAutoNeg,
+--   unisEponUniLinkStatus, unisEponUniInterfaceType
+--   to unisEponUniSysManTable.
+--   Add unisEponUniPortPolicyTable, unisEponUniMulticastTable.
+--   Add unisEponUniMulticastControlTable, unisEponUniQosConfIndexNextTable,
+--   unisEponUniQosConfTable, unisEponUniQosRuleTable.
+-- V1.4 Updated by liuhongxu,andapeng 2007-10-13
+--   Add unisEponUniMulticastFastleave to unisEponUniMulticastTable
+--   Add unisEponUniMulticastIndex to unisEponUniMulticastControlTable
+--   Add unisEponUniVitualCableTest to unisEponUniSysManTable
+--   Add unisEponUniMirrorGroupTable, unisEponUniMirrorGroupIdNextTable
+--   Add unisEponUniMulticastCtrlInfoTable
+--   Add unisEponUniPortPolicyInboundCir,unisEponUniPortPolicyInboundBucketDepth,
+--   unisEponUniPortPolicyInboundExtraBurst,unisEponUniPortPolicyOutboundCir
+--   to unisEponUniPortPolicyTable.
+--   Add unisEponUniMulticastIndexNextTable
+--   Modify unisEponUniInterfaceType
+-- V1.5 Updated by maguoqiang,wangke,zhaodan 2008-1-14
+-- Deleted default values of these leaves:
+--      unisEponUniMdi, unisEponUniPriority, unisEponUniVlanType, unisEponUniFlowControl,
+--      unisEponUniDuplex, unisEponUniVlanVPNStatus, unisEponUniPortIsolate,
+--      unisEponUniAutoNegotiation, unisEponUniVitualCableTest
+--   Add unisEponUniMulticastSourceIpList to unisEponUniMulticastControlTable
+--   Add unisEponUniMulticastResetInterval to unisEponUniMulticastControlTable
+--   Modify unisEponUniVCTCableStatus and add 9 nodes:
+--   Add    unisEponUniVCTCableLength
+--          unisEponUniVCTImpedanceMismatch
+--          unisEponUniVCTPairSkew
+--          unisEponUniVCTPairSwap
+--          unisEponUniVCTPolaritySwap
+--          unisEponUniVCTInsertionLoss
+--          unisEponUniVCTReturnLoss
+--          unisEponUniVCTNearendCrosstalk to unisEponUniSysManTable
+-- V1.6 Updated by zoudian 2008-3-17
+--   Add    unisEponUniPortPolicyOutboundPir to unisEponUniPortPolicyTable
+--   Modify unisEponUniPortPolicyOutboundCir
+-- V1.7 Updated by zhaodan 2008-06-04
+--   Add unisEponUniLinkUpTrap and unisEponUniLinkDownTrap.
+--   Modify the MAX-ACCESS of unisEponUniIndex to accessible-for-notify.
+-- V1.8 Updated by chenchao 2012-11-16
+--   Add unisEponUniLoopBackDetectedTrap and unisEponUniLoopBackRecoveredTrap.
+-- V1.9 Updated by zhuhaifeng 2018-02-02.
+--   Add unisEponCTCAlarmTable and unisEponUniErrorInfo.
+--   Add unisEponCTCAlarmTrap and unisEponCTCAlarmRecoverTrap.
+--   Add unisUniStatisticsTable.
+--   Add unisEponUniMacMax to unisEponUniSysManTable.
+--   Modify unisEponUniVlanType and unisEponUniVlanConfiguration to unisEponUniSysManTable.
+-- V2.0 Updated by zhuhaifeng 2018-11-28.
+--   Add unisUniPoeTable, unisUniPoeInfoTable.
+-- =================================================================
+UNIS-EPON-UNI-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisEpon
+    FROM UNIS-OID-MIB
+        ifIndex, ifDescr
+    FROM IF-MIB
+        Integer32, Unsigned32, IpAddress, OBJECT-TYPE, MODULE-IDENTITY,
+        NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        MacAddress, TruthValue, RowStatus
+    FROM SNMPv2-TC;
+
+unisEponUni MODULE-IDENTITY
+    LAST-UPDATED "201811281049Z"  -- November 28, 2018
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The objects in this MIB module are used to manage and
+        display current configuration of UNI (user network interface)
+        which is based on the ONU(Optical Network Unit)."
+    REVISION    "201811281049Z"  -- November 28, 2018
+    DESCRIPTION "Add unisUniPoeTable, unisUniPoeInfoTable."
+    REVISION    "201706061145Z"  -- June 06, 2017
+    DESCRIPTION "Add unisEponUniMacMax to unisEponUniSysManTable."
+    REVISION    "201703061145Z"  -- March 06, 2017
+    DESCRIPTION "Add the objects of unisEponCTCAlarmTable, unisEponUniErrorInfo,
+                 unisEponCTCAlarmTrap, unisEponCTCAlarmRecoverTrap, and unisUniStatisticsTable."
+    ::= { unisEpon 5 }
+
+unisEponUniSysMan OBJECT IDENTIFIER ::= { unisEponUni 1 }
+
+unisEponUniSysManTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniSysManEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table defines several UNI system parameters."
+    ::= { unisEponUniSysMan 1 }
+
+unisEponUniSysManEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniSysManEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The entry of unisEponUniSysManTable."
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex
+        }
+    ::= { unisEponUniSysManTable 1 }
+
+
+UnisEponUniSysManEntry ::= SEQUENCE
+    {
+        unisEponUniIndex                     Integer32,
+        unisEponUniDescr                     OCTET STRING,
+        unisEponUniAdminStatus               INTEGER,
+        unisEponUniMdi                       INTEGER,
+        unisEponUniPriority                  Integer32,
+        unisEponUniVlanType                  INTEGER,
+        unisEponUniAccessVlan                Integer32,
+        unisEponUniTrunkPvid                 INTEGER,
+        unisEponUniVLANTrunkAllowListLow     OCTET STRING,
+        unisEponUniVLANTrunkAllowListHigh    OCTET STRING,
+        unisEponUniInboundLineRate           Integer32,
+        unisEponUniOutboundLineRate          Integer32,
+        unisEponUniFlowControl               TruthValue,
+        unisEponUniSpeed                     INTEGER,
+        unisEponUniDuplex                    INTEGER,
+        unisEponUniVlanVPNStatus             TruthValue,
+        unisEponUniCountReset                INTEGER,
+        unisEponUniPortIsolate               INTEGER,
+        unisEponUniVlanConfiguration         OCTET STRING,
+        unisEponUniAutoNegotiation           INTEGER,
+        unisEponUniRestartAutoNeg            INTEGER,
+        unisEponUniLinkStatus                INTEGER,
+        unisEponUniInterfaceType             INTEGER,
+        unisEponUniVitualCableTest           INTEGER,
+        unisEponUniVCTCableStatus            INTEGER,
+        unisEponUniVCTCableLength            Integer32,
+        unisEponUniVCTImpedanceMismatch      INTEGER,
+        unisEponUniVCTPairSkew               Integer32,
+        unisEponUniVCTPairSwap               INTEGER,
+        unisEponUniVCTPolaritySwap           INTEGER,
+        unisEponUniVCTInsertionLoss          Integer32,
+        unisEponUniVCTReturnLoss             Integer32,
+        unisEponUniVCTNearendCrosstalk       Integer32,
+        unisEponUniVlan                      Integer32,
+        unisEponUniMacMax                    Integer32
+    }
+
+unisEponUniIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The index value which uniquely identifies the FE(fast Ethernet)
+        interface of the ONU."
+    ::= { unisEponUniSysManEntry 1 }
+
+unisEponUniDescr OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A textual string containing information about the interface.  This
+        string should include the name of the manufacturer, the product name
+        and the version of the interface hardware and software."
+    ::= { unisEponUniSysManEntry 2 }
+
+unisEponUniAdminStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            up(1),
+            down(2),
+            testing(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The desired state of the user network interface. When a managed
+        system initializes, all user network interfaces start with down(2)
+        state. The testing(3)state indicates that no operational packets
+        can be passed. As a result of either explicit management action or
+        per configuration information retained by the managed system,
+        unisEponUniAdminStatus is then changed to either the up(1) or
+        testing(3) states (or remains in the down(2) state)."
+    ::= { unisEponUniSysManEntry 3 }
+
+unisEponUniMdi OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            mdi-ii(1),
+            mdi-x(2),
+            mdi-auto(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Type of the line connected to UNI interface:
+        mdi-ii(straight-through cable),
+        mdi-x (crossover cable),
+        mdi-auto (auto-sensing)."
+    ::= { unisEponUniSysManEntry 4 }
+
+unisEponUniPriority OBJECT-TYPE
+    SYNTAX      Integer32(0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The priority of user network interface.  If the value is larger,
+        the priority will be higher."
+    ::= { unisEponUniSysManEntry 5 }
+
+unisEponUniVlanType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            vlantrunk(1),
+            access(2),
+            hybrid(3),
+            untagged(4),
+            transparent(5),
+            doubletagged(6),
+            tag(7),
+            translation(8),
+            aggregation(9)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "UNI vlan types."
+    ::= { unisEponUniSysManEntry 6 }
+
+unisEponUniAccessVlan OBJECT-TYPE
+    SYNTAX      Integer32(1..4094)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The vlan ID assigned to untagged frames or Priority-Tagged
+        frames received on user network interface."
+    ::= { unisEponUniSysManEntry 7 }
+
+unisEponUniTrunkPvid OBJECT-TYPE
+    SYNTAX      INTEGER(1..4094)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "PVID(port vlan ID), the vlan ID assigned to untagged frames or
+        Priority-Tagged frames received on user network interface."
+    ::= { unisEponUniSysManEntry 8 }
+
+unisEponUniVLANTrunkAllowListLow OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each octet within this value specifies a set of eight VLANs,
+        with the first octet specifying VLANs 1 through 8, the second
+        octet specifying VLANs 9 through 16, etc.  Within each octet,
+        the most significant bit represents the highest numbered VLAN,
+        and the least significant bit represents the lowest numbered VLAN.
+        Thus, each allowed vlan of the trunk port is represented by a
+        single bit within the value of this object.  If that bit has a value
+        of '1' then that vlan is allowed in the set of VLANs.  The vlan
+        is not allowed if its bit has a value of '0'."
+    ::= { unisEponUniSysManEntry 9 }
+
+unisEponUniVLANTrunkAllowListHigh OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each octet within this value specifies a set of eight VLANs,
+        with the first octet specifying VLANs 2049 through 2056, the
+        second octet specifying VLANs 2057 through 2064, etc. Within
+        each octet, the most significant bit represents the highest
+        numbered vlan, and the least significant bit represents the
+        lowest numbered vlan. Thus, each allowed vlan of the trunk port
+        is represented by a single bit within the value of this object.
+        If that bit has a value of '1' then that vlan is allowed in the
+        set of VLANs. The vlan is not allowed if its bit has a value of '0'.
+        "
+    ::= { unisEponUniSysManEntry 10 }
+
+unisEponUniInboundLineRate OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of the inbound line-rate.  measured with kbps.
+        The upper limit of the line-rate is the value of
+        unisEponUniLineRateMax in the entry.  It must be multiple
+        of the value of unisEponUniLineRateStep. The default value of
+        unisEponUniLineRate is the value of unisEponUniLineRateMax."
+    ::= { unisEponUniSysManEntry 11 }
+
+unisEponUniOutboundLineRate OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of the outbound line-rate.  measured with kbps.
+        The upper limit of the line-rate is the value of
+        unisEponUniLineRateMax in the entry. It must be multiple
+        of the value of unisEponUniLineRateStep.  The default value of
+        unisEponUniLineRate is the value of unisEponUniLineRateMax."
+    ::= { unisEponUniSysManEntry 12 }
+
+unisEponUniFlowControl OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Flow control status.
+        true(1)  - Flow control status enable.
+        false(2) - Flow control status disable."
+    ::= { unisEponUniSysManEntry 13 }
+
+unisEponUniSpeed OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            auto(0),
+            s10M(10),
+            s100M(100),
+            s1000M(1000),
+            s10000M(10000),
+            s24000M(24000)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "User network interface speed."
+    ::= { unisEponUniSysManEntry 14 }
+
+unisEponUniDuplex OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            full(1),
+            half(2),
+            auto(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "User network interface mode."
+    ::= { unisEponUniSysManEntry 15 }
+
+unisEponUniVlanVPNStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "vlan VPN status.
+        true(1)  - vlan VPN status enable.
+        false(2) - vlan VPN disable."
+    ::= { unisEponUniSysManEntry 16 }
+
+unisEponUniCountReset OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            reset(1)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Reset the counter which is about packets of the interface,
+        then the counter will change to zero.  There is no sense in
+        reading this object."
+    ::= { unisEponUniSysManEntry 17 }
+
+unisEponUniPortIsolate OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        enable - enable UNI port isolate setting.
+        disable - disable UNI port isolate setting.
+        "
+    ::= { unisEponUniSysManEntry 18 }
+
+
+unisEponUniVlanConfiguration OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The vlan configuration of the related vlan mode.
+        Transparent vlan mode: unisEponUniVlanConfiguration is a
+        zero length string.
+        Tag vlan mode: the first four octets were the tag
+        assigned to untagged frames received on UNI, including TPID,
+        VID, CFI and priority.
+        Translation vlan mode: the first four octets were the old tag
+        (including TPID, VID, CFI and priority), which is replaced
+        by the new tag(including TPID, VID, CFI and priority),
+        the second four octets.
+        Doubletagged vlan mode: the first four octets were the tag
+        assigned to untagged or tagged frames received on UNI, including TPID,
+        VID, CFI and priority.
+        Vlantrunk vlan mode: the first four octets were the old tag
+        (including TPID, VID, CFI and priority), which is replaced
+        by the new tag(including TPID, VID, CFI and priority) of
+        the second four octets, the frames which assigned tag ranges from
+        the third four octets to fourth four octets were transmited freely
+        and so on for following octets.
+        Aggregation vlan mode: the first four octets were the old tag
+        (including TPID, VID, CFI and priority), which is replaced
+        by the new tag(including TPID, VID, CFI and priority) of
+        the second four octets, the frames which assigned tag ranges from
+        the third four octets to fourth four octets(using low two octets as vlan tag)
+        were replaced by the new tag(using high two octets as target vlan tag)
+        and so on for following octets.
+        "
+    ::= { unisEponUniSysManEntry 23 }
+
+unisEponUniAutoNegotiation OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        enable - enable auto negotiation.
+        disable - disable auto negotiation.
+        "
+    ::= { unisEponUniSysManEntry 25 }
+
+unisEponUniRestartAutoNeg OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            autoNegotiation(1)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Force to restart the auto negotiation process.
+        "
+    ::= { unisEponUniSysManEntry 26 }
+
+
+unisEponUniLinkStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            up(1),
+            down(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The link status of UNI.
+        "
+    ::= { unisEponUniSysManEntry 29 }
+
+unisEponUniInterfaceType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            gigabitethernetport(1),
+            fastethernetport(2),
+            voipport(3),
+            e1port(4)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI interface type.
+        "
+    ::= { unisEponUniSysManEntry 30 }
+
+-- BEGIN for UNI VCT
+unisEponUniVitualCableTest OBJECT-TYPE
+    SYNTAX      INTEGER{true(1),
+        false(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        True(1): Virtual cable test enable.
+        False(2): Virtual cable test disable."
+    DEFVAL{ false }
+    ::= { unisEponUniSysManEntry 31 }
+
+unisEponUniVCTCableStatus OBJECT-TYPE
+    SYNTAX      INTEGER{normal(1),
+        abnormal(2),
+        abnormalOpen(3),
+        abnormalShort(4),
+        failure(5)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        Get the cable status.
+        Normal(1),cable is normal.
+        Abnormal(2),cable is abnormal.
+        AbnormalOpen(3),cable is abnormal because of open circuit.
+        AbnormalShort(4),cable is abnormal because of short circuit.
+        Failure(5),cable is abnormal because of testing failure.
+        "
+    ::= { unisEponUniSysManEntry 32 }
+
+unisEponUniVCTCableLength OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        Get the cable length.
+        When unisEponUniVCTCableStatus is normal,
+        the node stands for the length from the UNI port to the port opposite.
+        When unisEponUniVCTCableStatus is abnormal,
+        it stands for the length from the UNI port to the failure place.
+        Unit:meter(m).
+        "
+    ::= { unisEponUniSysManEntry 33 }
+
+unisEponUniVCTImpedanceMismatch OBJECT-TYPE
+    SYNTAX      INTEGER{not-support(1),
+        true(2),
+        false(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        Get the cable impedance.
+        Not-support(1),the UNI port does not support this function.
+        True(2),impedance match.
+        False(3),impedance mismatch."
+    ::= { unisEponUniSysManEntry 34 }
+
+unisEponUniVCTPairSkew OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        Get the symmetry of cable.
+        If the function is not supported,
+        the default value 0 will be returned.
+        Unit:nanosecond(ns).
+        "
+    ::= { unisEponUniSysManEntry 35 }
+
+unisEponUniVCTPairSwap OBJECT-TYPE
+    SYNTAX      INTEGER{notSupport(1),
+        true(2),
+        false(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        NotSupport(1),the UNI port does not support this function.
+        True(2),pair swap.
+        False(3),not pair swap."
+    ::= { unisEponUniSysManEntry 36 }
+
+unisEponUniVCTPolaritySwap OBJECT-TYPE
+    SYNTAX      INTEGER{notSupport(1),
+        true(2),
+        false(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        NotSupport(1),the UNI port does not support this function.
+        True(2),polarity swap.
+        False(3),not polarity swap."
+    ::= { unisEponUniSysManEntry 37 }
+
+unisEponUniVCTInsertionLoss OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        If the function is not supported,
+        the default value 0 will be returned.
+        Unit:decibel(db).
+        "
+    ::= { unisEponUniSysManEntry 38 }
+
+unisEponUniVCTReturnLoss OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        If the function is not supported,
+        the default value 0 will be returned.
+        Unit:decibel(db).
+        "
+    ::= { unisEponUniSysManEntry 39 }
+
+unisEponUniVCTNearendCrosstalk OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        If the function is not supported,
+        the default value 0 will be returned.
+        Unit:decibel(db).
+        "
+    ::= { unisEponUniSysManEntry 40 }
+unisEponUniVlan   OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "
+        If the function is not supported,
+        the default value 0 will be returned.
+        Unit:decibel(db).
+        "
+    ::= { unisEponUniSysManEntry 41 }
+unisEponUniMacMax   OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The maximum number of MAC addresses that the UNI port can learn.
+        no-limit(65535)
+        others(0~65534)
+        "
+    DEFVAL { 65535 }
+    ::= { unisEponUniSysManEntry 42 }
+-- END for UNI VCT
+
+unisEponUniCountTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniCountEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of interface counter about frames entries."
+    ::= { unisEponUniSysMan 2 }
+
+unisEponUniCountEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniCountEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to a particular interface."
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex
+        }
+    ::= { unisEponUniCountTable 1 }
+
+UnisEponUniCountEntry ::= SEQUENCE
+    {
+        unisEponUniInStatsPkts                 Unsigned32,
+        unisEponUniInStatsUnicastPkts          Unsigned32,
+        unisEponUniInStatsBroadcastPkts        Unsigned32,
+        unisEponUniInStatsMulticastPkts        Unsigned32,
+        unisEponUniInPausePkts                 Unsigned32,
+        unisEponUniInTotalErrors               Unsigned32,
+        unisEponUniInStatsCRCAlignErrors       Unsigned32,
+        unisEponUniInStatsUndersizePkts        Unsigned32,
+        unisEponUniInStatsOversizePkts         Unsigned32,
+        unisEponUniInErrorbyOther              Unsigned32,
+        unisEponUniOutStatsPkts                Unsigned32,
+        unisEponUniOutStatsUnicastPkts         Unsigned32,
+        unisEponUniOutStatsBroadcastPkts       Unsigned32,
+        unisEponUniOutStatsMulticastPkts       Unsigned32,
+        unisEponUniOutStatsPausePkts           Unsigned32,
+        unisEponUniOutTotalErrors              Unsigned32,
+        unisEponUniOutStatsCollisions          Unsigned32,
+        unisEponUniOutDelayExceededDiscards    Unsigned32,
+        unisEponUniOutErrorbyOther             Unsigned32,
+        unisEponUniOutDroppedFrames            Unsigned32
+    }
+
+unisEponUniInStatsPkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of frames (including bad frames,
+        broadcast frames, and multicast frames) received."
+    ::= { unisEponUniCountEntry 1 }
+
+unisEponUniInStatsUnicastPkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of good frames received that are
+        directed to the unicast address.  Note that this
+        does not include multicast and broadcast frames."
+    ::= { unisEponUniCountEntry 2 }
+
+unisEponUniInStatsBroadcastPkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of good frames received that are
+        directed to the broadcast address.  Note that this
+        does not include multicast frames."
+    ::= { unisEponUniCountEntry 3 }
+
+unisEponUniInStatsMulticastPkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of good frames received that are
+        directed to a multicast address.  Note that this number
+        does not include frames directed to the broadcast address."
+    ::= { unisEponUniCountEntry 4 }
+
+unisEponUniInPausePkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A count of MAC Control frames received on this
+        interface by the pause(flow control) operation.
+        This counter does not increment when the
+        interface is in a half-duplex mode.
+        Discontinuities in the value of this counter can
+        occur at re-initialization of the management
+        system."
+    ::= { unisEponUniCountEntry 5 }
+
+unisEponUniInTotalErrors OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Total count of the error frames received on this interface."
+    ::= { unisEponUniCountEntry 6 }
+
+unisEponUniInStatsCRCAlignErrors OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of frames received that
+        had a length (excluding framing bits, but
+        including FCS octets) of between 64 and 1518
+        octets, inclusive, but had either a bad
+        Frame Check Sequence (FCS) with an integral
+        number of octets (FCS Error) or a bad FCS with
+        a non-integral number of octets (Alignment Error)."
+    ::= { unisEponUniCountEntry 7 }
+
+unisEponUniInStatsUndersizePkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of frames received that are
+        less than 64 octets long (excluding framing bits,
+        but including FCS octets) and are otherwise well formed."
+    ::= { unisEponUniCountEntry 8 }
+
+unisEponUniInStatsOversizePkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of frames received that are
+        longer than 1518 octets (excluding framing bits,
+        but including FCS octets) and are otherwise well formed."
+    ::= { unisEponUniCountEntry 9 }
+
+unisEponUniInErrorbyOther OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of error frames received on this interface."
+    ::= { unisEponUniCountEntry 10 }
+
+unisEponUniOutStatsPkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of frames (including bad frames,
+        broadcast frames, and multicast frames) sent."
+    ::= { unisEponUniCountEntry 11 }
+
+unisEponUniOutStatsUnicastPkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of good frames sent that are
+        directed to the unicast address.  Note that this
+        does not include multicast and broadcast frames."
+    ::= { unisEponUniCountEntry 12 }
+
+unisEponUniOutStatsBroadcastPkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of good frames sent that are
+        directed to the broadcast address.  Note that this
+        does not include multicast frames."
+    ::= { unisEponUniCountEntry 13 }
+
+unisEponUniOutStatsMulticastPkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of good frames sent that are
+        directed to a multicast address.  Note that this number
+        does not include frames directed to the broadcast address."
+    ::= { unisEponUniCountEntry 14 }
+
+unisEponUniOutStatsPausePkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of MAC control frames sent on this
+        interface by the pause operation.  This counter does
+        not increment when the interface is in a half-duplex mode.
+        Discontinuities in the value of this counter can
+        occur at re-initialization of the management system."
+    ::= { unisEponUniCountEntry 15 }
+
+unisEponUniOutTotalErrors OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of error frames sent on this interface."
+    ::= { unisEponUniCountEntry 16 }
+
+unisEponUniOutStatsCollisions OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The best estimate of the total number of collisions
+        on this Ethernet segment.
+        The value returned will depend on the location of the
+        RMON probe.  Section 8.2.1.3 (10BASE-5) and section
+        10.3.1.3 (10BASE-2) of IEEE standard 802.3 states that a
+        station must detect a collision, in the receive mode, if
+        three or more stations are transmitting simultaneously.  A
+        repeater port must detect a collision when two or more
+        stations are transmitting simultaneously.  Thus a probe
+        placed on a repeater port could record more collisions
+        than a probe connected to a station on the same segment
+        could.  Probe location plays a much smaller role when considering
+        10BASE-T.  14.2.1.4 (10BASE-T) of IEEE standard 802.3
+        defines a collision as the simultaneous presence of signals
+        on the DO and RD circuits (transmitting and receiving
+        at the same time).  A 10BASE-T station can only detect
+        collisions when it is transmitting.  Thus probes placed on
+        a station and a repeater, should report the same number of
+        collisions.  Note also that an RMON probe inside a repeater should
+        ideally report collisions between the repeater and one or
+        more other hosts (transmit collisions as defined by IEEE
+        802.3k) plus receiver collisions observed on any coax
+        segments to which the repeater is connected."
+    ::= { unisEponUniCountEntry 17 }
+
+unisEponUniOutDelayExceededDiscards OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of frames discarded by this port due
+        to excessive transit delay through the bridge.  It
+        is incremented by both transparent and source route bridges."
+    ::= { unisEponUniCountEntry 18 }
+
+unisEponUniOutErrorbyOther OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of other error frames sent on this interface.
+        Other error frames means the error frames out of collision frames
+        and excessive delayed frames."
+    ::= { unisEponUniCountEntry 19 }
+
+unisEponUniOutDroppedFrames OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The total number of frames dropped because of buffer failure.
+        "
+    ::= { unisEponUniCountEntry 20 }
+
+unisEponUniIgmpInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniIgmpInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table stores igmp information of UNI interface."
+    ::= { unisEponUniSysMan 3 }
+
+unisEponUniIgmpInfoEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniIgmpInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The entry of unisEponUniIgmpInfoTable."
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex,
+            unisEponUniMacIndex
+        }
+    ::= { unisEponUniIgmpInfoTable 1 }
+
+UnisEponUniIgmpInfoEntry ::= SEQUENCE
+    {
+        unisEponUniMacIndex          Integer32,
+        unisEponUniIgmpMacAddress    MacAddress,
+        unisEponUniIgmpVlanId        Integer32
+    }
+
+unisEponUniMacIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index uniquely identifies the igmp information in current
+        UNI interface."
+    ::= { unisEponUniIgmpInfoEntry 1 }
+
+unisEponUniIgmpMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A 6-octet read-only value carrying the individual MAC address
+        indicates which igmp group the UNI interface belonging to."
+    ::= { unisEponUniIgmpInfoEntry 2 }
+
+unisEponUniIgmpVlanId OBJECT-TYPE
+    SYNTAX      Integer32(1..4094)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "An integer range from 1 to 4094 indicates the vlan which the igmp
+        Mac address has joined in."
+    ::= { unisEponUniIgmpInfoEntry 3 }
+
+unisEponUniParaMan OBJECT IDENTIFIER ::= { unisEponUniSysMan 4 }
+
+unisEponUniLineRateMax OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum value of the line-rate(kbps) that user network
+        interface can be set."
+    ::= { unisEponUniParaMan 1 }
+
+unisEponUniLineRateStep OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The step of line-rate(kbps)."
+    ::= { unisEponUniParaMan 2 }
+
+unisEponUniNumberOnOnu OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The user network interface number on ONU."
+    ::= { unisEponUniParaMan 3 }
+
+
+unisEponUniScalarGroup OBJECT IDENTIFIER ::= { unisEponUniSysMan 5 }
+
+--
+-- unisEponUniPortPolicyTable
+--
+
+unisEponUniPortPolicyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniPortPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI port policy configuration.
+        "
+    ::= { unisEponUniSysMan 6 }
+
+unisEponUniPortPolicyEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniPortPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of unisEponUniPortPolicyTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex
+        }
+    ::= { unisEponUniPortPolicyTable 1 }
+
+UnisEponUniPortPolicyEntry ::= SEQUENCE
+    {
+        unisEponUniPortPolicyStatus                INTEGER,
+        unisEponUniPortPolicyCir                   Integer32,
+        unisEponUniPortPolicyBucketDepth           Integer32,
+        unisEponUniPortPolicyExtraBurst            Integer32,
+        unisEponUniPortPolicyInboundCir            Integer32,
+        unisEponUniPortPolicyInboundBucketDepth    Integer32,
+        unisEponUniPortPolicyInboundExtraBurst     Integer32,
+        unisEponUniPortPolicyOutboundCir           Integer32,
+        unisEponUniPortPolicyOutboundPir           Integer32
+    }
+
+unisEponUniPortPolicyStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        enable - enable UNI upstream port policing.
+        disable - disable UNI upstream port policing.
+        "
+    DEFVAL { disable }
+    ::= { unisEponUniPortPolicyEntry 1 }
+
+unisEponUniPortPolicyCir OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The committed information rate,
+        ranging from 1 to 102400, measured in kbps.
+        "
+    DEFVAL { 102400 }
+    ::= { unisEponUniPortPolicyEntry 2 }
+
+unisEponUniPortPolicyBucketDepth OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The depth of the token bucket to tolerant the certain burst(CBS),
+        ranging from 0 to 65535, measured in bytes.
+        "
+    DEFVAL { 0 }
+    ::= { unisEponUniPortPolicyEntry 3 }
+
+unisEponUniPortPolicyExtraBurst OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The extra token to permit the forwarding engine to finish the packet
+        being sent when the bucket depth is exhausted, ranging from 0 to 65535,
+        measured in bytes.
+        "
+    DEFVAL { 0 }
+    ::= { unisEponUniPortPolicyEntry 4 }
+
+unisEponUniPortPolicyInboundCir OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The inbound committed information rate, measured in kbps.
+        "
+    ::= { unisEponUniPortPolicyEntry 5 }
+
+unisEponUniPortPolicyInboundBucketDepth OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The inbound depth of the token bucket to tolerant the certain burst(CBS),
+        ranging from 0 to 65535, measured in bytes.
+        "
+    DEFVAL { 0 }
+    ::= { unisEponUniPortPolicyEntry 6 }
+
+unisEponUniPortPolicyInboundExtraBurst OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The inbound extra token to permit the forwarding engine to finish the packet
+        being sent when the bucket depth is exhausted, ranging from 0 to 65535,
+        measured in bytes.
+        "
+    DEFVAL { 0 }
+    ::= { unisEponUniPortPolicyEntry 7 }
+
+unisEponUniPortPolicyOutboundCir OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The outbound committed information rate, stepped by 64, measured in kbps.
+        "
+    ::= { unisEponUniPortPolicyEntry 8 }
+
+unisEponUniPortPolicyOutboundPir OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The outbound peak information rate, stepped by 64, measured in kbps.
+        "
+    ::= { unisEponUniPortPolicyEntry 9 }
+--
+-- unisEponUniMulticastTable
+--
+unisEponUniMulticastTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniMulticastEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI multicast configuration.
+        "
+    ::= { unisEponUniSysMan 7 }
+
+unisEponUniMulticastEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniMulticastEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of unisEponUniPortPolicyTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex
+        }
+    ::= { unisEponUniMulticastTable 1 }
+
+UnisEponUniMulticastEntry ::= SEQUENCE
+    {
+        unisEponUniMulticastGroupNumber    Integer32,
+        unisEponUniMulticastVlanList       OCTET STRING,
+        unisEponUniMulticastStripStatus    INTEGER,
+        unisEponUniMulticastFastleave      TruthValue
+    }
+
+unisEponUniMulticastGroupNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The allowed multicast group number that can be handled
+        at the same time by UNI.
+        "
+    DEFVAL { 64 }
+    ::= { unisEponUniMulticastEntry 1 }
+
+
+unisEponUniMulticastVlanList OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The multicast vlan list.
+        The first two octets of the string represent the first VLAN ID;
+        the second two octets of the string represent the second VLAN ID,
+        and so on. It is a zero length string by default.
+        "
+    ::= { unisEponUniMulticastEntry 2 }
+
+unisEponUniMulticastStripStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        true - strip the vlan tag of multicast packet.
+        false - does not strip the vlan tag of multicast packet.
+        "
+    DEFVAL { disable }
+    ::= { unisEponUniMulticastEntry 3 }
+
+unisEponUniMulticastFastleave OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        true(1)  - fast leave of IGMP enable on ONU.
+        false(2) - fast leave of IGMP disable on ONU.
+        "
+    DEFVAL { false }
+    ::= { unisEponUniMulticastEntry 4 }
+
+--
+-- unisEponUniTechAbilityTable
+--
+unisEponUniTechAbilityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniTechAbilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI multicast configuration.
+        "
+    ::= { unisEponUniSysMan 8 }
+
+unisEponUniTechAbilityEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniTechAbilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of unisEponUniTechAbilityTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex
+        }
+    ::= { unisEponUniTechAbilityTable 1 }
+
+UnisEponUniTechAbilityEntry ::= SEQUENCE
+    {
+        unisEponUniLocalTechAbility         OCTET STRING,
+        unisEponUniAdvertisedTechAbility    OCTET STRING
+    }
+unisEponUniLocalTechAbility OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The local port capabilities of the UNI.
+        Each two octets stand for a capability of UNI:
+        the first two octets represent one capability and
+        the second two octets represent another capability,
+        and so on.
+        The capabilities list:
+        1 - undefined,
+        2 - initializing, true ability not yet known,
+        14 - 10BASE-T,
+        142 - full duplex 10BASE-T,
+        23 - 100BASE-T4,
+        25 - 100BASE-TX,
+        252 - full duplex 100BASE-TX,
+        312 - PAUSE operation for full duplex links,
+        313 - asymmetric PAUSE operation for full duplex links,
+        314 - symmetric PAUSE operation for full duplex links,
+        32 - 100BASE-T2,
+        322 - full duplex 100BASE-T2,
+        36 - 1000BASE-X,
+        362 - full duplex 1000BASE-X,
+        40 - 1000BASE-T UTP PHY,
+        402 - full duplex 1000BASE-T UTP PHY,
+        37 - remote fault bit 1(RF1),
+        372 - remote fault bit 2(RF2),
+        8029 - 802.9ISLAN-16T.
+        "
+    ::= { unisEponUniTechAbilityEntry 1 }
+
+unisEponUniAdvertisedTechAbility OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The advertised port capabilities of the UNI.
+        The capabilities list references the description of unisEponUniLocalTechAbility.
+        "
+    ::= { unisEponUniTechAbilityEntry 2 }
+
+--
+-- unisEponUniMulticastControlTable
+--
+
+unisEponUniMulticastControlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniMulticastControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI multicast control parameters.
+        "
+    ::= { unisEponUniSysMan 9 }
+
+unisEponUniMulticastControlEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniMulticastControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisEponUniMulticastControlTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex,
+            unisEponUniMulticastIndex
+        }
+    ::= { unisEponUniMulticastControlTable 1 }
+
+UnisEponUniMulticastControlEntry ::= SEQUENCE
+    {
+        unisEponUniMulticastVlanIndex        Integer32,
+        unisEponUniMulticastAddressList      OCTET STRING,
+        unisEponUniMulticastAccessRule       INTEGER,
+        unisEponUniMulticastChannelLimit     Integer32,
+        unisEponUniMulticastPreTimeSlice     Integer32,
+        unisEponUniMulticastPreTimes         Integer32,
+        unisEponUniMulticastPreInterval      Integer32,
+        unisEponUniMulticastRowStatus        RowStatus,
+        unisEponUniMulticastIndex            INTEGER,
+        unisEponUniMulticastSourceIpList     OCTET STRING,
+        unisEponUniMulticastResetInterval    Integer32
+    }
+
+unisEponUniMulticastVlanIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The multicast vlan ID.
+        "
+    ::= { unisEponUniMulticastControlEntry 1 }
+
+unisEponUniMulticastAddressList OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The multicast address, each four octets represents a multicast address,
+        the address section ranging from the first four octets to the second
+        four octets, and the like.
+        "
+    ::= { unisEponUniMulticastControlEntry 2 }
+
+unisEponUniMulticastAccessRule OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            deny(1),
+            permit(2),
+            preview(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        deny - deny the multicast packet.
+        permit - permit the multicast packet.
+        preview - permit the multicast packet with conditions.
+        "
+    ::= { unisEponUniMulticastControlEntry 3 }
+
+unisEponUniMulticastChannelLimit OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The limitation of multicast preview channel number.
+        "
+    ::= { unisEponUniMulticastControlEntry 4 }
+
+unisEponUniMulticastPreTimeSlice OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The time slice of multicast preview.
+        "
+    ::= { unisEponUniMulticastControlEntry 5 }
+
+unisEponUniMulticastPreTimes OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The number of multicast preview times.
+        "
+    ::= { unisEponUniMulticastControlEntry 6 }
+
+unisEponUniMulticastPreInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The interval between two consecutive previews, measured in minute.
+        "
+    ::= { unisEponUniMulticastControlEntry 7 }
+
+unisEponUniMulticastRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The status of this table entry. The active,
+        createAndGo and the destory statuses are supported.
+        "
+    ::= { unisEponUniMulticastControlEntry 8 }
+
+unisEponUniMulticastIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The index of the entry.
+        "
+    ::= { unisEponUniMulticastControlEntry 9 }
+
+unisEponUniMulticastSourceIpList OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        This list contains many source ip addresses.
+        Each ip address is contained in four octets.
+        "
+    ::= { unisEponUniMulticastControlEntry 10 }
+
+unisEponUniMulticastResetInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The interval is measured in minute.
+        From the last preview limitation is reached, a customer can preview again
+        after this interval is expired.
+        "
+    ::= { unisEponUniMulticastControlEntry 11 }
+
+--
+-- unisEponUniQosIndexNextTable
+--
+
+unisEponUniQosIndexNextTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniQosIndexNextEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The next index table.
+        "
+    ::= { unisEponUniSysMan 10 }
+
+unisEponUniQosIndexNextEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniQosIndexNextEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisEponUniQosIndexNextTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex
+        }
+    ::= { unisEponUniQosIndexNextTable 1 }
+
+UnisEponUniQosIndexNextEntry ::= SEQUENCE
+    {
+        unisEponUniQosConfIndexNext    Integer32
+    }
+
+unisEponUniQosConfIndexNext OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object contains an appropriate value to be used for
+        unisEponUniQosConfIndex when creating rows in the
+        unisEponUniQosConfTable.
+        "
+    ::= { unisEponUniQosIndexNextEntry 1 }
+
+--
+-- unisEponUniQosConfTable
+--
+
+unisEponUniQosConfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniQosConfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI Qos configuration.
+        "
+    ::= { unisEponUniSysMan 11 }
+
+unisEponUniQosConfEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniQosConfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisEponUniQosConfTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex,
+            unisEponUniQosConfIndex
+        }
+    ::= { unisEponUniQosConfTable 1 }
+
+UnisEponUniQosConfEntry ::= SEQUENCE
+    {
+        unisEponUniQosConfIndex             Integer32,
+        unisEponUniQosConfRuleIndexNext     Integer32,
+        unisEponUniQosConfMappedQueue       Integer32,
+        unisEponUniQosConfMarkedPriority    Integer32,
+        unisEponUniQosConfRowStatus         RowStatus
+    }
+
+unisEponUniQosConfIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The rule index.
+        "
+    ::= { unisEponUniQosConfEntry 1 }
+
+unisEponUniQosConfRuleIndexNext OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object contains an appropriate value to be used for
+        unisEponUniQosRuleIndex when creating rows in the
+        unisEponUniQosRuleTable.
+        "
+    ::= { unisEponUniQosConfEntry 2 }
+
+unisEponUniQosConfMappedQueue OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The queue that the ethernet frames will be mapped.
+        "
+    ::= { unisEponUniQosConfEntry 3 }
+
+unisEponUniQosConfMarkedPriority OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        Priority of the ethernet frames to be marked, which
+        compliant with the 802.1D user priority standard.
+        "
+    ::= { unisEponUniQosConfEntry 4 }
+
+unisEponUniQosConfRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The status of this table entry. The active,
+        createAndGo and the destory statuses are supported.
+        "
+    ::= { unisEponUniQosConfEntry 5 }
+
+--
+-- unisEponUniQosRuleTable
+--
+
+unisEponUniQosRuleTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniQosRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        Qos sub rule of the UNI.
+        "
+    ::= { unisEponUniSysMan 12 }
+
+unisEponUniQosRuleEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniQosRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisEponUniQosRuleTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex,
+            unisEponUniQosConfIndex,
+            unisEponUniQosRuleIndex
+        }
+    ::= { unisEponUniQosRuleTable 1 }
+
+UnisEponUniQosRuleEntry ::= SEQUENCE
+    {
+        unisEponUniQosRuleIndex         Integer32,
+        unisEponUniQosRuleSelector      INTEGER,
+        unisEponUniQosRuleValue         Integer32,
+        unisEponUniQosRuleMacAddress    MacAddress,
+        unisEponUniQosRuleOperator      INTEGER,
+        unisEponUniQosRuleRowStatus     RowStatus
+    }
+
+unisEponUniQosRuleIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..255)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The sub rule index.
+        "
+    ::= { unisEponUniQosRuleEntry 1 }
+
+unisEponUniQosRuleSelector OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            dstmac(1),
+            srcmac(2),
+            ethernetpriority(3),
+            vlanid(4),
+            ethernettype(5),
+            dstip(6),
+            srcip(7),
+            ipprototype(8),
+            ipv4tosdscp(9),
+            ipv6precedence(10),
+            srcport(11),
+            dstport(12)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The ethernet frame selector.
+        dstmac - based on destination MAC address.
+        srcmac - based on source MAC address.
+        ethernetpriority -  based on ethernet priority.
+        vlanid - based on VLAN ID.
+        ethernettype - based on ethernet type.
+        dstip - based on destination IP address.
+        srcip - based on source IP address.
+        ipprototype - based on IP type(ipv4 or ipv6).
+        ipv4tosdscp - based on IP TOS/DSCP.
+        ipv6 - based IP precedence.
+        srcport - based on layer 4 source port.
+        dstport - based on layer 4 destination port.
+        "
+    ::= { unisEponUniQosRuleEntry 2 }
+
+unisEponUniQosRuleValue OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The rule value based on the unisEponUniQosRuleSelector.
+        "
+    ::= { unisEponUniQosRuleEntry 3 }
+
+unisEponUniQosRuleMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        MAC Address.
+        "
+    ::= { unisEponUniQosRuleEntry 4 }
+
+unisEponUniQosRuleOperator OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            nevermatch(1),
+            equal(2),
+            notequal(3),
+            lessthanequal(4),
+            greaterthanequal(5),
+            fieldexist(6),
+            fieldnotexist(7),
+            alwaysmatch(8)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        nervermatch - value never match.
+        equal - field equal to the value.
+        notequal - field not equal to the value.
+        lessthanequal - field less than or equal to the value.
+        greaterthanequal - field greater than or equal to the value.
+        fieldexist - value is ignored if field exists.
+        fieldnotexist - value is ignored if field does not exist.
+        alwaysmatch - value always match.
+        "
+    ::= { unisEponUniQosRuleEntry 5 }
+
+unisEponUniQosRuleRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The status of this table entry. Only active,
+        createAndGo and the destory are supported.
+        "
+    ::= { unisEponUniQosRuleEntry 6 }
+
+--
+-- unisEponUniMirrorGroupTable
+--
+
+unisEponUniMirrorGroupTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniMirrorGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        Qos sub rule of the UNI.
+        "
+    ::= { unisEponUniSysMan 13 }
+
+unisEponUniMirrorGroupEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniMirrorGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the unisEponUniMirrorGroupTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponUniMirrorGroupID
+        }
+    ::= { unisEponUniMirrorGroupTable 1 }
+
+UnisEponUniMirrorGroupEntry ::= SEQUENCE
+    {
+        unisEponUniMirrorGroupID             Integer32,
+        unisEponUniMirrorInboundPortList     OCTET STRING,
+        unisEponUniMirrorOutboundPortList    OCTET STRING,
+        unisEponUniMonitorPort               Integer32,
+        unisEponUniMirrorRowStatus           RowStatus
+    }
+
+unisEponUniMirrorGroupID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Epon UNI mirror group ID."
+    ::= { unisEponUniMirrorGroupEntry 1 }
+
+unisEponUniMirrorInboundPortList OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI inbound port list.
+        Each octet within this value specifies a set of eight ports,
+        with the first octet specifying ports 1 through 8, the second
+        octet specifying ports 9 through 16, etc.  Within each octet,
+        the most significant bit represents the highest numbered UNI,
+        and the least significant bit represents the lowest numbered UNI.
+        Thus, each UNI port is represented by a single bit within the
+        value of this object.  If that bit has a value of '1' then that
+        port is allowed in the set of ports.  the port is not allowed if
+        its bit has a value of '0'.
+        "
+    ::= { unisEponUniMirrorGroupEntry 2 }
+
+unisEponUniMirrorOutboundPortList OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI outbound port list. For more information, see unisEponUniMirrorInboundPortList.
+        "
+    ::= { unisEponUniMirrorGroupEntry 3 }
+
+unisEponUniMonitorPort OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI monitor port.
+        "
+    ::= { unisEponUniMirrorGroupEntry 4 }
+
+unisEponUniMirrorRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        RowStatus, Now support three status: createAndGo, active, destroy.
+        "
+    ::= { unisEponUniMirrorGroupEntry 5 }
+
+--
+-- unisEponUniMirrorGroupIdNextTable
+--
+
+unisEponUniMirrorGroupIdNextTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniMirrorGroupIdNextEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The next index table, which is used by unisEponUniMirrorGroupTable.
+        "
+    ::= { unisEponUniSysMan 14 }
+
+unisEponUniMirrorGroupIdNextEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniMirrorGroupIdNextEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisEponUniMirrorGroupIdNextEntry.
+        "
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisEponUniMirrorGroupIdNextTable 1 }
+
+UnisEponUniMirrorGroupIdNextEntry ::= SEQUENCE
+    {
+        unisEponUniMirrorGroupIDNext    Integer32
+    }
+
+unisEponUniMirrorGroupIDNext OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object contains an appropriate value to be used for
+        unisEponUniMirrorGroupID when creating rows in the
+        unisEponUniMirrorGroupTable.
+        "
+    ::= { unisEponUniMirrorGroupIdNextEntry 1 }
+
+--
+-- unisEponUniMulticastCtrlInfoTable
+--
+
+unisEponUniMulticastCtrlInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniMulticastCtrlInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI multicast information which is active .
+        "
+    ::= { unisEponUniSysMan 15 }
+
+unisEponUniMulticastCtrlInfoEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniMulticastCtrlInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisEponUniMulticastCtrlInfoTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex,
+            unisEponUniMultActVlan,
+            unisEponUniMultActAddress
+        }
+    ::= { unisEponUniMulticastCtrlInfoTable 1 }
+
+UnisEponUniMulticastCtrlInfoEntry ::= SEQUENCE
+    {
+        unisEponUniMultActVlan          Integer32,
+        unisEponUniMultActAddress       IpAddress,
+        unisEponUniMultActAccessRule    INTEGER,
+        unisEponUniMultActPreTimes      Integer32,
+        unisEponUniMultActPreRemain     Integer32
+    }
+
+unisEponUniMultActVlan OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The multicast vlan ID which is active.
+        "
+    ::= { unisEponUniMulticastCtrlInfoEntry 1 }
+
+unisEponUniMultActAddress OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The multicast address which is active.
+        "
+    ::= { unisEponUniMulticastCtrlInfoEntry 2 }
+
+unisEponUniMultActAccessRule OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            deny(1),
+            permit(2),
+            preview(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        deny - deny the multicast packet.
+        permit - permit the multicast packet.
+        preview - permit the multicast packet with conditions.
+        "
+    ::= { unisEponUniMulticastCtrlInfoEntry 3 }
+
+unisEponUniMultActPreTimes OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The number of multicast preview times which is active.
+        "
+    ::= { unisEponUniMulticastCtrlInfoEntry 4 }
+
+unisEponUniMultActPreRemain OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The remanent time slice of multicast preview which is active.
+        "
+    ::= { unisEponUniMulticastCtrlInfoEntry 5 }
+
+--
+-- unisEponUniMulticastIndexNextTable
+--
+
+unisEponUniMulticastIndexNextTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponUniMulticastIndexNextEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The next index table, which is used by unisEponUniMulticastControlTable.
+        "
+    ::= { unisEponUniSysMan 16 }
+
+unisEponUniMulticastIndexNextEntry OBJECT-TYPE
+    SYNTAX      UnisEponUniMulticastIndexNextEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisEponUniMulticastIndexNextEntry.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex
+        }
+    ::= { unisEponUniMulticastIndexNextTable 1 }
+
+UnisEponUniMulticastIndexNextEntry ::= SEQUENCE
+    {
+        unisEponUniMulticastConfIndexNext    Integer32
+    }
+
+unisEponUniMulticastConfIndexNext OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object contains an appropriate value to be used for
+        unisEponUniMulticastIndex when creating rows in the
+        unisEponUniMulticastControlTable.
+        "
+    ::= { unisEponUniMulticastIndexNextEntry 1 }
+
+--
+-- unisEponCTCAlarmTable
+--
+
+unisEponCTCAlarmTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEponCTCAlarmEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table is used for setting CTC alarm of an ONU.
+        "
+    ::= { unisEponUniSysMan 17 }
+
+unisEponCTCAlarmEntry OBJECT-TYPE
+    SYNTAX      UnisEponCTCAlarmEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the unisEponCTCAlarmTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponCTCAlarmID
+        }
+    ::= { unisEponCTCAlarmTable 1 }
+
+UnisEponCTCAlarmEntry ::= SEQUENCE
+    {
+        unisEponCTCAlarmID              INTEGER,
+        unisEponCTCAlarmProtocol        INTEGER,
+        unisEponCTCAlarmEnable          TruthValue,
+        unisEponCTCAlarmTriggerThresVal OCTET STRING,
+        unisEponCTCAlarmClearThresVal   OCTET STRING
+    }
+
+unisEponCTCAlarmID OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+-- ONU alarm ID
+            onuEquipmentAlarm(1),
+            onuPowerAlarm(2),
+            onuBatteryMissing(3),
+            onuBatteryFailure(4),
+            onuBatteryVoltLow(5),
+            onuPhysicalIntrusionAlarm(6),
+            onuONUSelfTestFailure(7),
+            onuONUTempHighAlarm(9),
+            onuONUTempLowAlarm(10),
+            onuIADConnectionFailure(11),
+            onuPonIFSwitch(12),
+            onuSleepStatusUpdate(13),
+-- PON alarm ID
+            ponRXPowerHighAlarm(257),
+            ponRXPowerLowAlarm(258),
+            ponTXPowerHighAlarm(259),
+            ponTXPowerLowAlarm(260),
+            ponTXBiasHighAlarm(261),
+            ponTXBiasLowAlarm(262),
+            ponVccHighAlarm(263),
+            ponVccLowAlarm(264),
+            ponTempHighAlarm(265),
+            ponTempLowAlarm(266),
+            ponRXPowerHighWarning(267),
+            ponRXPowerLowWarning(268),
+            ponTXPowerHighWarning(269),
+            ponTXPowerLowWarning(270),
+            ponTXBiasHighWarning(271),
+            ponTXBiasLowWarning(272),
+            ponVccHighWarning(273),
+            ponVccLowWarning(274),
+            ponTempHighWarning(275),
+            ponTempLowWarning(276),
+            ponDownstreamDropEventsAlarm(277),
+            ponUpstreamDropEventsAlarm(278),
+            ponDownstreamCRCErrorFramesAlarm(279),
+            ponUpstreamCRCErrorFramesAlarm(280),
+            ponDownstreamUndersizeFramesAlarm(281),
+            ponUpstreamUndersizeFramesAlarm(282),
+            ponDownstreamOversizeFramesAlarm(283),
+            ponUpstreamOversizeFramesAlarm(284),
+            ponDownstreamFragmentsAlarm(285),
+            ponUpstreamFragmentsAlarm(286),
+            ponDownstreamJabbersAlarm(287),
+            ponUpstreamJabbersAlarm(288),
+            ponDownstreamDiscardsAlarm(289),
+            ponUpstreamDiscardsAlarm(290),
+            ponDownstreamErrorsAlarm(291),
+            ponUpstreamErrorsAlarm(292),
+            ponDownstreamDropEventsWarning(293),
+            ponUpstreamDropEventsWarning(294),
+            ponDownstreamCRCErrorFramesWarning(295),
+            ponUpstreamCRCErrorFramesWarning(296),
+            ponDownstreamUndersizeFramesWarning(297),
+            ponUpstreamUndersizeFramesWarning(298),
+            ponDownstreamOversizeFramesWarning(299),
+            ponUpstreamOversizeFramesWarning(300),
+            ponDownstreamFragmentsWarning(301),
+            ponUpstreamFragmentsWarning(302),
+            ponDownstreamJabbersWarning(303),
+            ponUpstreamJabbersWarning(304),
+            ponDownstreamDiscardsWarning(305),
+            ponUpstreamDiscardsWarning(306),
+            ponDownstreamErrorsWarning(307),
+            ponUpstreamErrorsWarning(308),
+-- UNI alarm ID
+            uniEthPortAutoNegFailure(769),
+            uniEthPortLOS(770),
+            uniEthPortFailure(771),
+            uniEthPortLoopback(772),
+            uniEthPortCongestion(773),
+            uniDownstreamDropEventsAlarm(774),
+            uniUpstreamDropEventsAlarm(775),
+            uniDownstreamCRCErrorFramesAlarm(776),
+            uniUpstreamCRCErrorFramesAlarm(777),
+            uniDownstreamUndersizeFramesAlarm(778),
+            uniUpstreamUndersizeFramesAlarm(779),
+            uniDownstreamOversizeFramesAlarm(780),
+            uniUpstreamOversizeFramesAlarm(781),
+            uniDownstreamFragmentsAlarm(782),
+            uniUpstreamFragmentsAlarm(783),
+            uniDownstreamJabbersAlarm(784),
+            uniUpstreamJabbersAlarm(785),
+            uniDownstreamDiscardsAlarm(786),
+            uniUpstreamDiscardsAlarm(787),
+            uniDownstreamErrorsAlarm(788),
+            uniUpstreamErrorsAlarm(789),
+            uniStatusChangeTimesAlarm(790),
+            uniDownstreamDropEventsWarning(791),
+            uniUpstreamDropEventsWarning(792),
+            uniDownstreamCRCErrorFramesWarning(793),
+            uniUpstreamCRCErrorFramesWarning(794),
+            uniDownstreamUndersizeFramesWarning(795),
+            uniUpstreamUndersizeFramesWarning(796),
+            uniDownstreamOversizeFramesWarning(797),
+            uniUpstreamOversizeFramesWarning(798),
+            uniDownstreamFragmentsWarning(799),
+            uniUpstreamFragmentsWarning(800),
+            uniDownstreamJabbersWarning(801),
+            uniUpstreamJabbersWarning(802),
+            uniDownstreamDiscardsWarning(803),
+            uniUpstreamDiscardsWarning(804),
+            uniDownstreamErrorsWarning(805),
+            uniUpstreamErrorsWarning(806),
+            uniStatusChangeTimesWarning(807),
+            uniPOTSPortFailure(1025),
+            uniE1PortFailure(1281),
+            uniE1TimingUnlock(1282),
+            uniE1LOS(1283)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The CTC alarm ID. There are 3 types of CTC alarms.
+        ONU alarm:   0x0001~0x00ff
+        PON alarm:   0x0101~0x01ff
+        UNI alarm:   0x0301~0x05ff
+        "
+    ::= { unisEponCTCAlarmEntry 1 }
+
+unisEponCTCAlarmProtocol OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            auto(0),
+            ctc21(33),
+            ctc30(48)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Choose a CTC protocol to set CTC alarm of an ONU.
+        auto(0)  - Automatically select a CTC protocol.
+        ctc21(33) - Use CTC2.1 protocol.
+        ctc30(48) - Use CTC3.0 or later protocols.
+        "
+    DEFVAL { auto }
+    ::= { unisEponCTCAlarmEntry 2 }
+
+unisEponCTCAlarmEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Enable or disable a CTC alarm of an ONU.
+        true(1)  - alarm enable.
+        false(2) - alarm disable.
+        "
+    ::= { unisEponCTCAlarmEntry 3 }
+
+unisEponCTCAlarmTriggerThresVal OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Trigger threshold value of a CTC alarm on an ONU.
+        For different CTC alarms, there are different units(dBm, mA, V, C).
+        "
+    ::= { unisEponCTCAlarmEntry 4 }
+
+unisEponCTCAlarmClearThresVal OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Clear threshold value of a CTC alarm on an ONU.
+        For different CTC alarms, there are different units(dBm, mA, V, C).
+        "
+    ::= { unisEponCTCAlarmEntry 5 }
+
+unisEponUniErrorInfo OBJECT IDENTIFIER ::= { unisEponUniSysMan 18 }
+
+unisEponCTCAlarmInfo OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "
+        The information of an ONU CTC alarm.
+        "
+    ::= { unisEponUniErrorInfo 1 }
+
+--
+-- unisUniStatisticsTable
+--
+
+unisUniStatisticsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisUniStatisticsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table is used for enabling or disabling statistics and setting period of a UNI.
+        "
+    ::= { unisEponUniSysMan 19 }
+
+unisUniStatisticsEntry OBJECT-TYPE
+    SYNTAX      UnisUniStatisticsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the unisUniStatisticsTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex
+        }
+    ::= { unisUniStatisticsTable 1 }
+
+UnisUniStatisticsEntry ::= SEQUENCE
+    {
+        unisUniStatisticsPeriodVal  Unsigned32,
+        unisUniStatisticsEnable     TruthValue
+    }
+
+unisUniStatisticsPeriodVal OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI statistics period value.
+        "
+    ::= { unisUniStatisticsEntry 1 }
+
+unisUniStatisticsEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Enable or disable statistics of an UNI.
+        true(1)  - statistics enable.
+        false(2) - statistics disable.
+        "
+    ::= { unisUniStatisticsEntry 2 }
+
+--
+-- unisUniPoeTable
+--
+
+unisUniPoeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisUniPoeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table is used for configuring the PoE function for UNIs.
+        "
+    ::= { unisEponUniSysMan 20 }
+
+unisUniPoeEntry OBJECT-TYPE
+    SYNTAX      UnisUniPoeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the unisUniPoeTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex
+        }
+    ::= { unisUniPoeTable 1 }
+
+UnisUniPoeEntry ::= SEQUENCE
+    {
+        unisUniPoeEnable            TruthValue,
+        unisUniPoeMode              INTEGER,
+        unisUniPoePriority          INTEGER,
+        unisUniPoeMaxPowerClass     INTEGER,
+        unisUniPoeMaxPowerValue     Integer32,
+        unisUniPoeLegacyEnable      TruthValue
+    }
+
+unisUniPoeEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Enable PoE for an UNI.
+        "
+    DEFVAL { false }
+    ::= { unisUniPoeEntry 1 }
+
+unisUniPoeMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            signal(0),
+            spare(1)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Set the PoE mode for an UNI.
+        "
+    DEFVAL { 0 }
+    ::= { unisUniPoeEntry 2 }
+
+unisUniPoePriority OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            high(0),
+            critical(1),
+            low(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Set the PoE priority for an UNI.
+        "
+    DEFVAL { 0 }
+    ::= { unisUniPoeEntry 3 }
+
+unisUniPoeMaxPowerClass OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            default(0),
+            class0(1),
+            class1(2),
+            class2(3),
+            class3(4),
+            class4(5),
+            undefined(255)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Set the PoE max power class for an UNI.
+        "
+    DEFVAL { 0 }
+    ::= { unisUniPoeEntry 4 }
+
+unisUniPoeMaxPowerValue OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "mW"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Set the PoE max power value for an UNI.
+        "
+    DEFVAL { 0 }
+    ::= { unisUniPoeEntry 5 }
+
+unisUniPoeLegacyEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Enable PoE legacy PD detection for an UNI.
+        "
+    ::= { unisUniPoeEntry 6 }
+
+--
+-- unisUniPoeInfoTable
+--
+
+unisUniPoeInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisUniPoeInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table is used for getting UNIs' PoE information.
+        "
+    ::= { unisEponUniSysMan 21 }
+
+unisUniPoeInfoEntry OBJECT-TYPE
+    SYNTAX      UnisUniPoeInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the unisUniPoeInfoTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisEponUniIndex
+        }
+    ::= { unisUniPoeInfoTable 1 }
+
+UnisUniPoeInfoEntry ::= SEQUENCE
+    {
+        unisUniPoeInfoCapability    INTEGER,
+        unisUniPoeInfoEnable        TruthValue,
+        unisUniPoeInfoLegacyEnable  TruthValue,
+        unisUniPoeInfoMode          INTEGER,
+        unisUniPoeInfoPriority      INTEGER,
+        unisUniPoeInfoMaxPwrClass   INTEGER,
+        unisUniPoeInfoMaxPwrValue   Integer32,
+        unisUniPoeInfoPdClass       INTEGER,
+        unisUniPoeInfoPwrSuppStat   INTEGER,
+        unisUniPoeInfoSignalErrCnt  Integer32,
+        unisUniPoeInfoPwrDeniedCnt  Integer32,
+        unisUniPoeInfoPwrOverCnt    Integer32,
+        unisUniPoeInfoCurOverCnt    Integer32,
+        unisUniPoeInfoPdUndetectCnt Integer32,
+        unisUniPoeInfoMaxPower      Integer32,
+        unisUniPoeInfoCurOutputPwr  Integer32,
+        unisUniPoeInfoAvgOutputPwr  Integer32,
+        unisUniPoeInfoPeakOutputPwr Integer32
+    }
+
+unisUniPoeInfoCapability OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            incapable(0),
+            capable(1)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE capability.
+        "
+    ::= { unisUniPoeInfoEntry 1 }
+
+unisUniPoeInfoEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE enabling status.
+        "
+    ::= { unisUniPoeInfoEntry 2 }
+
+unisUniPoeInfoLegacyEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE legacy PD detection enabling status.
+        "
+    DEFVAL { 0 }
+    ::= { unisUniPoeInfoEntry 3 }
+
+unisUniPoeInfoMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            signal(0),
+            spare(1)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE mode.
+        "
+    ::= { unisUniPoeInfoEntry 4 }
+
+unisUniPoeInfoPriority OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            high(0),
+            critical(1),
+            low(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE priority.
+        "
+    ::= { unisUniPoeInfoEntry 5 }
+
+unisUniPoeInfoMaxPwrClass OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            default(0),
+            class0(1),
+            class1(2),
+            class2(3),
+            class3(4),
+            class4(5),
+            undefined(255)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE max power class.
+        "
+    ::= { unisUniPoeInfoEntry 6 }
+
+unisUniPoeInfoMaxPwrValue OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "mW"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE max power value.
+        "
+    ::= { unisUniPoeInfoEntry 7 }
+
+unisUniPoeInfoPdClass OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            default(0),
+            class0(1),
+            class1(2),
+            class2(3),
+            class3(4),
+            class4(5),
+            undefined(255)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE powered device class.
+        "
+    ::= { unisUniPoeInfoEntry 8 }
+
+unisUniPoeInfoPwrSuppStat OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            noNeed(0),
+            searching(1),
+            power(2),
+            force(3),
+            forceFailed(4),
+            powerFailed(5)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE power supply status.
+        "
+    ::= { unisUniPoeInfoEntry 9 }
+
+unisUniPoeInfoSignalErrCnt OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE signal error count.
+        "
+    ::= { unisUniPoeInfoEntry 10 }
+
+unisUniPoeInfoPwrDeniedCnt OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE power denied count.
+        "
+    ::= { unisUniPoeInfoEntry 11 }
+
+unisUniPoeInfoPwrOverCnt OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE power overload count.
+        "
+    ::= { unisUniPoeInfoEntry 12 }
+
+unisUniPoeInfoCurOverCnt OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE current overload count.
+        "
+    ::= { unisUniPoeInfoEntry 13 }
+
+unisUniPoeInfoPdUndetectCnt OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE powered device undetected count.
+        "
+    ::= { unisUniPoeInfoEntry 14 }
+
+unisUniPoeInfoMaxPower OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "mW"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE max power.
+        "
+    ::= { unisUniPoeInfoEntry 15 }
+
+unisUniPoeInfoCurOutputPwr OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "mW"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE current output power.
+        "
+    ::= { unisUniPoeInfoEntry 16 }
+
+unisUniPoeInfoAvgOutputPwr OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "mW"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE average output power.
+        "
+    ::= { unisUniPoeInfoEntry 17 }
+
+unisUniPoeInfoPeakOutputPwr OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "mW"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        UNI PoE peak output power.
+        "
+    ::= { unisUniPoeInfoEntry 18 }
+
+--
+-- unisEponUni NOTIFICATION
+--
+
+unisEponUniTrap OBJECT IDENTIFIER ::= { unisEponUni 2 }
+
+unisEponUniTrapPrefix OBJECT IDENTIFIER ::= { unisEponUniTrap 0 }
+
+unisEponUniLinkUpTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisEponUniIndex,
+            unisEponUniDescr,
+            unisEponUniAdminStatus
+        }
+    STATUS      current
+    DESCRIPTION
+        "
+        A unisEponUniLinkUpTrap notification is sent
+        when the UNI up event is detected
+        and the transmitting switch is turned on.
+        "
+    ::= { unisEponUniTrapPrefix 1 }
+
+unisEponUniLinkDownTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisEponUniIndex,
+            unisEponUniDescr,
+            unisEponUniAdminStatus
+        }
+    STATUS      current
+    DESCRIPTION
+        "
+        A unisEponUniLinkDownTrap notification is sent
+        when the UNI down event is detected
+        and the transmitting switch is turned on.
+        "
+    ::= { unisEponUniTrapPrefix 2 }
+
+unisEponUniLoopBackDetectedTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisEponUniIndex,
+            unisEponUniDescr,
+            unisEponUniVlan
+        }
+    STATUS      current
+    DESCRIPTION
+        "
+        A unisEponUniLoopBackDetectedTrap notification is sent
+        when the UNI loopback event is detected.
+        "
+    ::= { unisEponUniTrapPrefix 3 }
+unisEponUniLoopBackRecoveredTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisEponUniIndex,
+            unisEponUniDescr,
+            unisEponUniVlan
+        }
+    STATUS      current
+    DESCRIPTION
+        "
+        A unisEponUniLoopBackRecoveredTrap notification is sent
+        when the UNI loopback is recovered.
+        "
+    ::= { unisEponUniTrapPrefix 4 }
+
+unisEponCTCAlarmTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisEponCTCAlarmID,
+            unisEponUniIndex,
+            unisEponUniDescr,
+            unisEponCTCAlarmInfo
+        }
+    STATUS      current
+    DESCRIPTION
+        "
+        A unisEponCTCAlarmTrap notification is sent
+        when an ONU CTC alarm is detected.
+        "
+    ::= { unisEponUniTrapPrefix 5 }
+
+unisEponCTCAlarmRecoverTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisEponCTCAlarmID,
+            unisEponUniIndex,
+            unisEponUniDescr,
+            unisEponCTCAlarmInfo
+        }
+    STATUS      current
+    DESCRIPTION
+        "
+        A unisEponCTCAlarmRecoverTrap notification is sent
+        when an ONU CTC alarm is cleared.
+        "
+    ::= { unisEponUniTrapPrefix 6 }
+
+END

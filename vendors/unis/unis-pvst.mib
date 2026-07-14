@@ -1,0 +1,158 @@
+-- ===================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Per-VLAN spanning tree (PVST) MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2014-05-27 Created by wangmingjun.
+-- ===================================================================
+-- ===================================================================
+--
+-- Imported variables and types
+--
+-- ===================================================================
+
+UNIS-PVST-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisPvst MODULE-IDENTITY
+    LAST-UPDATED "201405270000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB defines objects for managing Per-VLAN spanning tree (PVST)."
+    REVISION "201405270000Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon  131 }
+
+-- =========================
+-- Subtrees in the PVST MIB
+-- =========================
+
+unisPvstObjects
+    OBJECT IDENTIFIER ::= { unisPvst 1 }
+
+unisPvstNotifications
+    OBJECT IDENTIFIER ::= { unisPvst 2 }
+
+--  ==================================================================
+--  PVST objects table
+--  ==================================================================
+
+--  ===============================
+--  PVST VLAN table
+--  ===============================
+
+unisPvstVlanConfigTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPvstVlanConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "PVST VLAN configuration table."
+    ::= { unisPvstObjects 1 }
+
+unisPvstVlanConfigEntry OBJECT-TYPE
+    SYNTAX      UnisPvstVlanConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "PVST VLAN configuration table entry."
+    INDEX {
+              unisPvstVlanID
+          }
+    ::= { unisPvstVlanConfigTable 1 }
+
+UnisPvstVlanConfigEntry ::=
+    SEQUENCE
+    {
+        unisPvstVlanID      Integer32
+    }
+
+unisPvstVlanID OBJECT-TYPE
+    SYNTAX      Integer32(1..4094)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The index of the VLAN configuration table."
+    ::= { unisPvstVlanConfigEntry 1 }
+
+--  ===============================
+--  PVST VLAN port table
+--  ===============================
+
+unisPvstVlanPortConfigTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPvstVlanPortConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "PVST VLAN port configuration table."
+        ::= { unisPvstObjects 2 }
+
+unisPvstVlanPortConfigEntry OBJECT-TYPE
+    SYNTAX      UnisPvstVlanPortConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "PVST VLAN port configuration table entry."
+    INDEX {
+              unisPvstPortVlanID,
+              unisPvstPortIndex
+          }
+    ::= { unisPvstVlanPortConfigTable 1 }
+
+UnisPvstVlanPortConfigEntry ::=
+    SEQUENCE
+    {
+        unisPvstPortVlanID     Integer32,
+        unisPvstPortIndex      Integer32
+    }
+
+unisPvstPortVlanID       OBJECT-TYPE
+    SYNTAX      Integer32(1..4094)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The index of the VLAN."
+    ::={ unisPvstVlanPortConfigEntry 1 }
+
+unisPvstPortIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The index of the bridge port."
+    ::={ unisPvstVlanPortConfigEntry 2 }
+
+--  ==================================================================
+--  PVST notification table
+--  ==================================================================
+
+unisPvstEvents
+    OBJECT IDENTIFIER ::= { unisPvstNotifications 0 }
+
+unisPvstVlanPortDetectedTc NOTIFICATION-TYPE
+    OBJECTS  { unisPvstPortVlanID , unisPvstPortIndex }
+    STATUS   current
+    DESCRIPTION
+        "The SNMP trap is generated when a port detects
+         a topology change in a VLAN."
+    ::= { unisPvstEvents 1 }
+
+unisPvstVlanPortRcvdTc NOTIFICATION-TYPE
+    OBJECTS  { unisPvstPortVlanID , unisPvstPortIndex }
+    STATUS   current
+    DESCRIPTION
+        "The SNMP trap is generated when a port receives
+         a topology change in a VLAN."
+    ::= { unisPvstEvents 2 }
+
+END

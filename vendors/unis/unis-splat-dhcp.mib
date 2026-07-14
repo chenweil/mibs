@@ -1,0 +1,215 @@
+-- ==================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: DHCP MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--(1) Created by Zhang Shilin, 2001.6.29
+--(2) Revised by Qi Zhenglin, 2002.01.08
+-- ==================================================================
+
+-- ==================================================================
+--
+-- Varibles and types be imported
+--
+-- ==================================================================
+
+UNIS-LswDHCP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+
+    RowStatus, MacAddress
+        FROM SNMPv2-TC
+
+    MODULE-IDENTITY,OBJECT-TYPE, IpAddress
+        FROM SNMPv2-SMI
+
+    unislswCommon
+        FROM UNIS-OID-MIB;
+
+-- ==================================================================
+--
+-- ======================= definition begin =========================
+--
+-- ==================================================================
+unisLswDhcpMib MODULE-IDENTITY
+            LAST-UPDATED "200106290000Z"
+            ORGANIZATION
+                "Unisyue Technologies Co., Ltd."
+            CONTACT-INFO
+                ""
+            DESCRIPTION
+            ""
+            REVISION "200106290000Z"
+            DESCRIPTION
+            ""
+            ::= { unislswCommon  8 }
+
+    unisLswDhcpMibObject OBJECT IDENTIFIER ::= {  unisLswDhcpMib 1  }
+
+    unisDhcpGroupTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF UnisDhcpGroupEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION "A table containing the information of dhcp group "
+        ::= { unisLswDhcpMibObject 1 }
+
+
+     unisDhcpGroupEntry OBJECT-TYPE
+        SYNTAX  UnisDhcpGroupEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION "A table entry containing the information of dhcp group "
+        INDEX   { unisDhcpGroupID }
+        ::= { unisDhcpGroupTable 1 }
+
+    UnisDhcpGroupEntry    ::=
+    SEQUENCE {
+        unisDhcpGroupID           INTEGER ,
+        unisIpDhcpServerAddress1  IpAddress ,
+        unisIpDhcpServerAddress2  IpAddress ,
+        unisDhcpRowStatus         RowStatus
+        }
+
+    unisDhcpGroupID OBJECT-TYPE
+        SYNTAX  INTEGER  (0..19)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION " DHCP group identifier "
+        ::= { unisDhcpGroupEntry 1 }
+
+    unisIpDhcpServerAddress1 OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " The first IP address of DHCP server group "
+        ::= { unisDhcpGroupEntry 2 }
+
+    unisIpDhcpServerAddress2 OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " The second IP address of DHCP server group "
+        ::= { unisDhcpGroupEntry 3 }
+
+    unisDhcpRowStatus OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION " Operation status of this table entry     "
+        ::= { unisDhcpGroupEntry 4 }
+
+    unisDhcpSecurityTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF UnisDhcpSecurityEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION "A table containing the information of dhcp security "
+        ::= { unisLswDhcpMibObject 2 }
+
+
+     unisDhcpSecurityEntry OBJECT-TYPE
+        SYNTAX  UnisDhcpSecurityEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION "A table containing the information of dhcp security "
+        INDEX   { unisDhcpClientIpAddress }
+        ::= { unisDhcpSecurityTable 1 }
+
+    UnisDhcpSecurityEntry    ::=
+    SEQUENCE {
+        unisDhcpClientIpAddress   IpAddress ,
+        unisDhcpClientMacAddress  MacAddress,
+        unisDhcpClientProperty    INTEGER ,
+        unisDhcpClientRowStatus   RowStatus
+        }
+
+    unisDhcpClientIpAddress OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " DHCP client's net ip address "
+        ::= { unisDhcpSecurityEntry 1 }
+
+    unisDhcpClientMacAddress OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " DHCP client's mac address     "
+        ::= { unisDhcpSecurityEntry 2 }
+
+    unisDhcpClientProperty OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+            static(1),
+            dynamic(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Property of client address     "
+        ::= { unisDhcpSecurityEntry 3 }
+
+    unisDhcpClientRowStatus OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION " status of this table's entry.     "
+        ::= { unisDhcpSecurityEntry 4 }
+
+
+    unisDhcpToL3IfTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF UnisDhcpToL3IfEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION "A table configuring dhcp for layer 3 interface"
+        ::= { unisLswDhcpMibObject 3 }
+
+
+    unisDhcpToL3IfEntry OBJECT-TYPE
+        SYNTAX  UnisDhcpToL3IfEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION "A table configuring dhcp for layer 3 interface "
+        INDEX   { unisDhcpToL3VlanIfIndex }
+        ::= { unisDhcpToL3IfTable 1 }
+
+    UnisDhcpToL3IfEntry    ::=
+    SEQUENCE {
+        unisDhcpToL3VlanIfIndex  INTEGER ,
+        unisDhcpToL3GroupId      INTEGER,
+        unisDhcpToL3AddressCheck INTEGER ,
+        unisDhcpToL3RowStatus    RowStatus
+        }
+
+    unisDhcpToL3VlanIfIndex OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " vlan virtual interface index "
+        ::= { unisDhcpToL3IfEntry 1 }
+
+    unisDhcpToL3GroupId OBJECT-TYPE
+        SYNTAX  INTEGER  (0..19)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " DHCP group id for this vlan virtual interface"
+        ::= { unisDhcpToL3IfEntry 2 }
+
+    unisDhcpToL3AddressCheck OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+            enabled(1),
+            disabled(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " If dhcp security check enabled for this vlan virtual interface "
+        ::= { unisDhcpToL3IfEntry 3 }
+
+    unisDhcpToL3RowStatus OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION " status of this table's entry.     "
+        ::= { unisDhcpToL3IfEntry 4 }
+END

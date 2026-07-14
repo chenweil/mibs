@@ -1,0 +1,64 @@
+--  =================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This MIB provides information about Ethernet Synchronous
+--              Messaging Channel feature.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2023-02-20, Du Wei, Initial version
+-- =================================================================
+UNIS-ESMC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisEsmc MODULE-IDENTITY
+    LAST-UPDATED "202302200000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB provides information about Ethernet Synchronous Messaging Channel feature."
+    REVISION "202302200000Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 260 }
+
+--
+-- Node definitions
+--
+
+unisEsmcNotifications OBJECT IDENTIFIER ::= { unisEsmc 1 }
+
+unisEsmcNotification OBJECT IDENTIFIER ::= { unisEsmcNotifications 0 }
+
+unisEsmcPacketLoss NOTIFICATION-TYPE
+    OBJECTS { unisEsmcPortName }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when esmc packet not received for more than 5000 ms."
+    ::= { unisEsmcNotification 1 }
+
+unisEsmcPacketLossResume NOTIFICATION-TYPE
+    OBJECTS { unisEsmcPortName }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when received esmc packet is normal."
+    ::= { unisEsmcNotification 2 }
+
+unisEsmcNotificationObjects OBJECT IDENTIFIER ::= { unisEsmcNotifications 1 }
+
+unisEsmcPortName OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Port name."
+    ::= { unisEsmcNotificationObjects 1 }
+
+END

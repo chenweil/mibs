@@ -1,0 +1,473 @@
+-- ===================================================================
+-- Copyright (c) 2004-2024 New H3C Tech. Co., Ltd. All rights reserved.
+--
+-- Description: V1.1
+-- History:
+--   V1.0 Created by zhangjitong
+--        Initial version 2022-01-25
+--   V1.1  2024-11-9 Add hh3cKPIDataOverLevel2Threshold, hh3cKPIDataLevel2Recover,
+--                        hh3cKPIDataOverLevel3Threshold, hh3cKPIDataLevel3Recover,
+--                        hh3cKPIDataUnderLowThreshold, hh3cKPIModuleConfigsTable
+--                        and hh3cKPIIndicatorConfigsTable by chenyuanke.
+-- ====================================================================
+HH3C-KPI-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        hh3cCommon
+    FROM HH3C-OID-MIB
+        Integer32, OBJECT-TYPE, NOTIFICATION-TYPE, MODULE-IDENTITY, Unsigned32
+    FROM SNMPv2-SMI
+        TruthValue
+    FROM SNMPv2-TC;
+
+hh3cKPI MODULE-IDENTITY
+    LAST-UPDATED "202411110412Z"
+    ORGANIZATION
+        "New H3C Tech. Co., Ltd."
+    CONTACT-INFO
+        "Platform Team New H3C Technologies Co., Ltd.
+        Hai-Dian District Beijing P.R. China
+        Http://www.h3c.com
+        Zip:100085"
+    DESCRIPTION
+        "The MIB module is used for managing KPI."
+    REVISION "202411110412Z"
+    DESCRIPTION
+        "Add hh3cKPIIndicatorType, hh3cKPIDataOverLevel2Threshold,
+         hh3cKPIDataLevel2Recover, hh3cKPIDataOverLevel3Threshold,
+         hh3cKPIDataLevel3Recover, hh3cKPIDataUnderLowThreshold,
+         hh3cKPIModuleConfigsTable, and hh3cKPIIndicatorConfigsTable"
+    REVISION "202204081635Z"
+    DESCRIPTION
+        "Modify the SYNTAX of hh3cKPIDataTimeStamp from TimeStamp to OCTET STRING."
+    REVISION "202201251502Z"
+    DESCRIPTION
+        "The initial revision of this KPI module."
+    ::= { hh3cCommon 221 }
+
+hh3cKPINotification OBJECT IDENTIFIER ::= {hh3cKPI 1}
+
+hh3cKPINotificationPrefix OBJECT IDENTIFIER ::= { hh3cKPINotification 0 }
+
+-- All Notifications definitions should be placed under this object
+hh3cKPIDataOverThreshold NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cKPIDataChassis,
+        hh3cKPIDataSlot,
+        hh3cKPIDataCPUID,
+        hh3cKPIDataModuleName,
+        hh3cKPIDataTimeStamp,
+        hh3cKPIDataObjectName,
+        hh3cKPIDataIndicatorName,
+        hh3cKPIDataIndicatorValue,
+        hh3cKPIDataThreshold
+    }
+    STATUS       current
+    DESCRIPTION
+        "This notification is generated when the KPI value exceeds the threshold."
+    ::= { hh3cKPINotificationPrefix 1 }
+
+hh3cKPIDataRecover NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cKPIDataChassis,
+        hh3cKPIDataSlot,
+        hh3cKPIDataCPUID,
+        hh3cKPIDataModuleName,
+        hh3cKPIDataTimeStamp,
+        hh3cKPIDataObjectName,
+        hh3cKPIDataIndicatorName,
+        hh3cKPIDataIndicatorValue,
+        hh3cKPIDataThreshold
+    }
+    STATUS       current
+    DESCRIPTION
+        "This notification is generated when the KPI value returns within the threshold range."
+    ::= { hh3cKPINotificationPrefix 2 }
+
+hh3cKPIPredictDataOverThreshold NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cKPIDataChassis,
+        hh3cKPIDataSlot,
+        hh3cKPIDataCPUID,
+        hh3cKPIDataModuleName,
+        hh3cKPIDataTimeStamp,
+        hh3cKPIDataObjectName,
+        hh3cKPIDataIndicatorName,
+        hh3cKPIDataIndicatorValue,
+        hh3cKPIDataPredictCycle,
+        hh3cKPIDataThreshold
+    }
+    STATUS       current
+    DESCRIPTION
+        "This notification is generated when the predicted KPI value exceeds the
+        threshold after n cycles."
+    ::= { hh3cKPINotificationPrefix 3 }
+
+hh3cKPIPredictDataRecover NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cKPIDataChassis,
+        hh3cKPIDataSlot,
+        hh3cKPIDataCPUID,
+        hh3cKPIDataModuleName,
+        hh3cKPIDataTimeStamp,
+        hh3cKPIDataObjectName,
+        hh3cKPIDataIndicatorName,
+        hh3cKPIDataIndicatorValue,
+        hh3cKPIDataPredictCycle,
+        hh3cKPIDataThreshold
+    }
+    STATUS       current
+    DESCRIPTION
+        "This notification is generated when the predicted KPI value returns within the threshold range."
+    ::= { hh3cKPINotificationPrefix 4 }
+
+hh3cKPIDataOverLevel2Threshold NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cKPIDataChassis,
+        hh3cKPIDataSlot,
+        hh3cKPIDataCPUID,
+        hh3cKPIDataModuleName,
+        hh3cKPIDataTimeStamp,
+        hh3cKPIDataObjectName,
+        hh3cKPIDataIndicatorName,
+        hh3cKPIDataIndicatorValue,
+        hh3cKPIDataThreshold
+    }
+    STATUS       current
+    DESCRIPTION
+        "This notification is generated when the KPI value exceeds the level 2 high threshold."
+    ::= { hh3cKPINotificationPrefix 5 }
+
+hh3cKPIDataLevel2Recover NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cKPIDataChassis,
+        hh3cKPIDataSlot,
+        hh3cKPIDataCPUID,
+        hh3cKPIDataModuleName,
+        hh3cKPIDataTimeStamp,
+        hh3cKPIDataObjectName,
+        hh3cKPIDataIndicatorName,
+        hh3cKPIDataIndicatorValue,
+        hh3cKPIDataThreshold
+    }
+    STATUS       current
+    DESCRIPTION
+        "This notification is generated when the KPI value returns within the level 2 high threshold range."
+    ::= { hh3cKPINotificationPrefix 6 }
+
+hh3cKPIDataOverLevel3Threshold NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cKPIDataChassis,
+        hh3cKPIDataSlot,
+        hh3cKPIDataCPUID,
+        hh3cKPIDataModuleName,
+        hh3cKPIDataTimeStamp,
+        hh3cKPIDataObjectName,
+        hh3cKPIDataIndicatorName,
+        hh3cKPIDataIndicatorValue,
+        hh3cKPIDataThreshold
+    }
+    STATUS       current
+    DESCRIPTION
+        "This notification is generated when the KPI value exceeds the level 3 high threshold."
+    ::= { hh3cKPINotificationPrefix 7 }
+
+hh3cKPIDataLevel3Recover NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cKPIDataChassis,
+        hh3cKPIDataSlot,
+        hh3cKPIDataCPUID,
+        hh3cKPIDataModuleName,
+        hh3cKPIDataTimeStamp,
+        hh3cKPIDataObjectName,
+        hh3cKPIDataIndicatorName,
+        hh3cKPIDataIndicatorValue,
+        hh3cKPIDataThreshold
+    }
+    STATUS       current
+    DESCRIPTION
+        "This notification is generated when the KPI value returns within the level 3 high threshold range."
+    ::= { hh3cKPINotificationPrefix 8 }
+
+hh3cKPIDataUnderLowThreshold NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cKPIDataChassis,
+        hh3cKPIDataSlot,
+        hh3cKPIDataCPUID,
+        hh3cKPIDataModuleName,
+        hh3cKPIDataTimeStamp,
+        hh3cKPIDataObjectName,
+        hh3cKPIDataIndicatorName,
+        hh3cKPIDataIndicatorValue,
+        hh3cKPIDataThreshold
+    }
+    STATUS       current
+    DESCRIPTION
+        "This notification is generated when the KPI value exceeds the low threshold."
+    ::= { hh3cKPINotificationPrefix 9 }
+
+hh3cKPINotificationDefinitions OBJECT IDENTIFIER ::= {hh3cKPINotification 1}
+-- All objects used for Notification only are defined here
+
+hh3cKPIDataChassis OBJECT-TYPE
+    SYNTAX Integer32(0..65535)
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+        "Number of the chassis where the KPI data is collected."
+    ::= { hh3cKPINotificationDefinitions 1 }
+
+hh3cKPIDataSlot OBJECT-TYPE
+    SYNTAX Integer32(0..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Number of the slot where the KPI data is collected."
+    ::= { hh3cKPINotificationDefinitions 2 }
+
+hh3cKPIDataCPUID OBJECT-TYPE
+    SYNTAX Integer32(0..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Number of the CPU where the KPI data is collected."
+    ::= { hh3cKPINotificationDefinitions 3 }
+
+hh3cKPIDataModuleName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(1..15))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Name of the module where the KPI data is collected."
+    ::= { hh3cKPINotificationDefinitions 4 }
+
+hh3cKPIDataTimeStamp OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(1..32))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Time when the KPI data is collected."
+    ::= { hh3cKPINotificationDefinitions 5 }
+
+hh3cKPIDataObjectName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(1..64))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Name of the object where the KPI data is collected."
+    ::= { hh3cKPINotificationDefinitions 6 }
+
+hh3cKPIDataIndicatorName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(1..64))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Name of the KPI indicator."
+    ::= { hh3cKPINotificationDefinitions 7 }
+
+hh3cKPIDataIndicatorValue OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(1..32))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Value of the KPI indicator."
+    ::= { hh3cKPINotificationDefinitions 8 }
+
+hh3cKPIDataPredictCycle OBJECT-TYPE
+    SYNTAX Integer32(0..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Number of cycles after which the threshold will be exceeded."
+    ::= { hh3cKPINotificationDefinitions 9 }
+
+hh3cKPIDataThreshold OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(1..32))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Upper/Lower threshold, that is, the maximum/minimum value of the KPI data."
+    ::= { hh3cKPINotificationDefinitions 10 }
+
+hh3cKPIScalarGroup      OBJECT IDENTIFIER ::= { hh3cKPI 2 }
+hh3cKPIConfGroup        OBJECT IDENTIFIER ::= { hh3cKPI 3 }
+
+hh3cKPIModuleConfigsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cKPIModuleConfigsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is used to modify KPI module configurations."
+    ::= {hh3cKPIConfGroup 1}
+-- All objects used for KPI module configurations only are defined here
+
+hh3cKPIModuleConfigsEntry OBJECT-TYPE
+    SYNTAX      Hh3cKPIModuleConfigsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing configurations applicable to a KPI module."
+    INDEX
+        {
+            hh3cKPIModule
+        }
+    ::= { hh3cKPIModuleConfigsTable 1 }
+
+Hh3cKPIModuleConfigsEntry ::= SEQUENCE
+    {
+        hh3cKPIModule                   OCTET STRING,
+        hh3cKPIModuleCollectInterval    Integer32,
+        hh3cKPIModuleCollectEnable      TruthValue
+    }
+
+hh3cKPIModule OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(1..15))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Name of KPI module."
+    ::= { hh3cKPIModuleConfigsEntry 1 }
+
+hh3cKPIModuleCollectInterval OBJECT-TYPE
+    SYNTAX      Integer32(60..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Collect interval of KPI module."
+    ::= { hh3cKPIModuleConfigsEntry 2 }
+
+hh3cKPIModuleCollectEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable or disable collect of KPI module."
+    ::= { hh3cKPIModuleConfigsEntry 3 }
+
+
+hh3cKPIIndicatorConfigsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cKPIIndicatorConfigsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is used to modify KPI indicator configurations."
+    ::= {hh3cKPIConfGroup 2}
+-- All objects used for KPI indicator configurations only are defined here
+
+hh3cKPIIndicatorConfigsEntry OBJECT-TYPE
+    SYNTAX      Hh3cKPIIndicatorConfigsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing configurations applicable to a KPI indicator."
+    INDEX
+        {
+            hh3cKPIIndicator
+        }
+    ::= { hh3cKPIIndicatorConfigsTable 1 }
+
+Hh3cKPIIndicatorConfigsEntry ::= SEQUENCE
+    {
+        hh3cKPIIndicator        OCTET STRING,
+        hh3cKPIAlarmEnable      TruthValue,
+        hh3cKPICollectType      INTEGER,
+        hh3cKPILowThreshold     Unsigned32,
+        hh3cKPINormalThreshold  Unsigned32,
+        hh3cKPILevel1Threshold  Unsigned32,
+        hh3cKPILevel2Threshold  Unsigned32,
+        hh3cKPILevel3Threshold  Unsigned32
+    }
+
+hh3cKPIIndicator OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Name of KPI indicator."
+    ::= { hh3cKPIIndicatorConfigsEntry 1 }
+
+hh3cKPIAlarmEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable or disable alarm when a KPI indicator value
+         exceeds a threshold."
+    ::= { hh3cKPIIndicatorConfigsEntry 2 }
+
+hh3cKPICollectType OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        always      (1),
+        change      (2),
+        threshold   (3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Type of collecting a KPI indicator.
+        Change means that collect if the value is changed since last time.
+        Threshold means that collect if the value exceeds the thresholds.
+        Otherwise always collect."
+    ::= { hh3cKPIIndicatorConfigsEntry 3 }
+
+hh3cKPILowThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The low alarm threshold of a KPI indicator. The unit of indicator
+         could be customized to be percentage or real number. It could be varied
+         in different products."
+    ::= { hh3cKPIIndicatorConfigsEntry 4 }
+
+hh3cKPINormalThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The normal threshold of a KPI indicator. The unit of indicator
+         could be customized to be percentage or real number. It could be varied
+         in different products"
+    ::= { hh3cKPIIndicatorConfigsEntry 5 }
+
+hh3cKPILevel1Threshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The level 1 high threshold of a KPI indicator. The unit of indicator
+         could be customized to be percentage or real number. It could be varied
+         in different products"
+    ::= { hh3cKPIIndicatorConfigsEntry 6 }
+
+hh3cKPILevel2Threshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The level 2 high threshold of a KPI indicator. The unit of indicator
+         could be customized to be percentage or real number. It could be varied
+         in different products"
+    ::= { hh3cKPIIndicatorConfigsEntry 7 }
+
+hh3cKPILevel3Threshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The level 3 high threshold of a KPI indicator. The unit of indicator
+         could be customized to be percentage or real number. It could be varied
+         in different products"
+    ::= { hh3cKPIIndicatorConfigsEntry 8 }
+END

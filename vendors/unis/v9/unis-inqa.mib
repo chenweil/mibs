@@ -1,0 +1,410 @@
+--  =================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB is designed to configure the Intelligent Network
+--              Quality Analyzer.
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 2022-09-01, Du Wei, Initial version
+-- V1.1 2022-12-01, Du Wei,
+--      Added nodes unisInqaInstAttrMismatchReason for unisInqaInstAttrMismatch,
+--      unisInqaInstAttrMismatchRecover trap.
+-- =================================================================
+
+UNIS-INQA-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    CounterBasedGauge64
+        FROM HCNUM-TC;
+
+unisInqa MODULE-IDENTITY
+    LAST-UPDATED "202212010000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The private MIB file includes the network quality information of the
+        device. It is to describes notifications of the Intelligent Network Quality Analyzer."
+    REVISION "202212010000Z"
+    DESCRIPTION
+        "Added nodes unisInqaInstAttrMismatchReason for unisInqaInstAttrMismatch,
+         unisInqaInstAttrMismatchRecover trap."
+    REVISION "202209010000Z"
+    DESCRIPTION
+        "Initial revision of this MIB module."
+    ::= { unisCommon 252 }
+
+--
+-- Node definitions
+--
+unisInqaNotifications OBJECT IDENTIFIER ::= { unisInqa 1 }
+
+unisInqaNotification OBJECT IDENTIFIER ::= { unisInqaNotifications 0 }
+
+unisInqaLossRatioExceed NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisInqaAnalyzerInstID,
+        unisInqaAnalyzerInstDesc,
+        unisInqaAmsID,
+        unisInqaAmsFlowDir,
+        unisInqaForwardLossRatio,
+        unisInqaBackwardLossRatio,
+        unisInqaLossUpperLimit,
+        unisInqaLossLowerLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the packet loss ratio of a flow exceeds the upper limit for five consecutive periods."
+    ::= { unisInqaNotification 1 }
+
+unisInqaLossRatioRecover NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisInqaAnalyzerInstID,
+        unisInqaAnalyzerInstDesc,
+        unisInqaAmsID,
+        unisInqaAmsFlowDir,
+        unisInqaForwardLossRatio,
+        unisInqaBackwardLossRatio,
+        unisInqaLossUpperLimit,
+        unisInqaLossLowerLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the packet loss ratio of a flow drops below the lower limit for five consecutive periods."
+    ::= { unisInqaNotification 2 }
+
+unisInqaOnewayDelayExceed NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisInqaAnalyzerInstID,
+        unisInqaAnalyzerInstDesc,
+        unisInqaAmsID,
+        unisInqaAmsFlowDir,
+        unisInqaForwardDelay,
+        unisInqaBackwardDelay,
+        unisInqaDelayUpperLimit,
+        unisInqaDelayLowerLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the one-way delay of a flow exceeds the upper limit for five consecutive periods."
+    ::= { unisInqaNotification 3 }
+
+unisInqaOnewayDelayRecover NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisInqaAnalyzerInstID,
+        unisInqaAnalyzerInstDesc,
+        unisInqaAmsID,
+        unisInqaAmsFlowDir,
+        unisInqaForwardDelay,
+        unisInqaBackwardDelay,
+        unisInqaDelayUpperLimit,
+        unisInqaDelayLowerLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the one-way delay of a flow drops below the lower limit for five consecutive periods."
+    ::= { unisInqaNotification 4 }
+
+unisInqaTwowayDelayExceed NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisInqaAnalyzerInstID,
+        unisInqaAnalyzerInstDesc,
+        unisInqaAmsID,
+        unisInqaAmsFlowDir,
+        unisInqaTwowayDelay,
+        unisInqaDelayUpperLimit,
+        unisInqaDelayLowerLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the two-way delay of a flow exceeds the upper limit for five consecutive periods."
+    ::= { unisInqaNotification 5 }
+
+unisInqaTwowayDelayRecover NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisInqaAnalyzerInstID,
+        unisInqaAnalyzerInstDesc,
+        unisInqaAmsID,
+        unisInqaAmsFlowDir,
+        unisInqaTwowayDelay,
+        unisInqaDelayUpperLimit,
+        unisInqaDelayLowerLimit
+    }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the two- way delay of a flow drops below the lower limit for five consecutive periods."
+    ::= { unisInqaNotification 6 }
+
+unisInqaInstAttrMismatch NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisInqaAnalyzerInstID,
+        unisInqaAnalyzerInstDesc,
+        unisInqaInstAttrMismatchReason
+    }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the attributes of collectors bound to the analyzer instance are inconsistent.
+        "
+    ::= { unisInqaNotification 7 }
+
+unisInqaInstAttrMismatchRecover NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisInqaAnalyzerInstID,
+        unisInqaAnalyzerInstDesc,
+        unisInqaInstAttrMismatchReason
+    }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when the attributes of collectors bound to the analyzer instance are consistent.
+        "
+    ::= { unisInqaNotification 8 }
+
+unisInqaNotificationObjects OBJECT IDENTIFIER ::= { unisInqaNotifications 1 }
+
+unisInqaForwardLossRatio OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..10))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Packet loss ratio of the forward flow.
+         The value ranges from 0.000001 to 100, and the unit is percentage."
+    ::= { unisInqaNotificationObjects 1 }
+
+unisInqaBackwardLossRatio OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..10))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Packet loss ratio of the backward flow.
+         The value ranges from 0.000001 to 100, and the unit is percentage."
+    ::= { unisInqaNotificationObjects 2 }
+
+unisInqaForwardDelay OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Packet transmission delay of the forward flow."
+    ::= { unisInqaNotificationObjects 3 }
+
+unisInqaBackwardDelay OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Packet transmission delay of the backward flow."
+    ::= { unisInqaNotificationObjects 4 }
+
+unisInqaTwowayDelay OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Two-way packet transmission delay."
+    ::= { unisInqaNotificationObjects 5 }
+
+unisInqaInstAttrMismatchReason OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        unspecified(0),
+        flag(1),
+        flow(2),
+        interval(3)
+    }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Attributes in which the collectors bound to the analyzer instance mismatch. The values include:
+        0, unspecified
+        1, flag
+        2, flow
+        3, interval
+        "
+    ::= { unisInqaNotificationObjects 6 }
+
+unisInqaObjects OBJECT IDENTIFIER ::= { unisInqa 2 }
+
+unisInqaAnalyzer OBJECT IDENTIFIER ::= { unisInqaObjects 1 }
+
+unisInqaAnalyzerInstTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisInqaAnalyzerInstEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains information about analyzer instances."
+    ::= { unisInqaAnalyzer 1 }
+
+unisInqaAnalyzerInstEntry OBJECT-TYPE
+    SYNTAX UnisInqaAnalyzerInstEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry provides analyzer instance configuration information."
+    INDEX { unisInqaAnalyzerInstID }
+    ::= { unisInqaAnalyzerInstTable 1 }
+
+UnisInqaAnalyzerInstEntry ::=
+    SEQUENCE {
+        unisInqaAnalyzerInstID  Unsigned32,
+        unisInqaAnalyzerInstDesc  OCTET STRING
+     }
+
+unisInqaAnalyzerInstID OBJECT-TYPE
+    SYNTAX Unsigned32 (1..8355838)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Identifier of the Analyzer instances."
+    ::= { unisInqaAnalyzerInstEntry 1 }
+
+unisInqaAnalyzerInstDesc OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..64))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Description for the analyzer instances."
+    ::= { unisInqaAnalyzerInstEntry 2 }
+
+unisInqaAnalyzerAmsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisInqaAnalyzerAmsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains AMS of the analyzer instances."
+    ::= { unisInqaAnalyzer 2 }
+
+unisInqaAnalyzerAmsEntry OBJECT-TYPE
+    SYNTAX UnisInqaAnalyzerAmsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This entry contains AMS of an analyzer instance."
+    INDEX { unisInqaAnalyzerInstID, unisInqaAmsID }
+    ::= { unisInqaAnalyzerAmsTable 1 }
+
+UnisInqaAnalyzerAmsEntry ::=
+    SEQUENCE {
+        unisInqaAmsID       Unsigned32,
+        unisInqaAmsFlowDir  INTEGER
+     }
+
+unisInqaAmsID OBJECT-TYPE
+    SYNTAX Unsigned32 (1..2147483647)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "AMS ID."
+    ::= { unisInqaAnalyzerAmsEntry 1 }
+
+unisInqaAmsFlowDir OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        forward(1),
+        backward(2),
+        bidirection(3)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Flow direction to meature."
+    ::= { unisInqaAnalyzerAmsEntry 2 }
+
+unisInqaAnalyzerLossThresTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisInqaAnalyzerLossThresEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains the packet loss alarm parameters of the analyzer instances."
+    ::= { unisInqaAnalyzer 3 }
+
+unisInqaAnalyzerLossThresEntry OBJECT-TYPE
+    SYNTAX UnisInqaAnalyzerLossThresEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This entry contains the packet loss alarm parameters of an analyzer instance."
+    INDEX { unisInqaAnalyzerInstID }
+    ::= { unisInqaAnalyzerLossThresTable 1 }
+
+UnisInqaAnalyzerLossThresEntry ::=
+    SEQUENCE {
+        unisInqaLossUpperLimit  OCTET STRING,
+        unisInqaLossLowerLimit  OCTET STRING
+     }
+
+unisInqaLossUpperLimit OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Upper limit of the packet loss ratio.
+         The value ranges from 0.000001 to 100, and the unit is percentage."
+    ::= { unisInqaAnalyzerLossThresEntry 1 }
+
+unisInqaLossLowerLimit OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Lower limit of the packet loss ratio.
+         The value ranges from 0.000001 to 100, and the unit is percentage."
+    ::= { unisInqaAnalyzerLossThresEntry 2 }
+
+unisInqaAnalyzerDelayThresTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisInqaAnalyzerDelayThresEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains the packet delay alarm parameters of the analyzer instances."
+    ::= { unisInqaAnalyzer 4 }
+
+unisInqaAnalyzerDelayThresEntry OBJECT-TYPE
+    SYNTAX UnisInqaAnalyzerDelayThresEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This entry contains the packet delay alarm parameters of an analyzer instance."
+    INDEX { unisInqaAnalyzerInstID }
+    ::= { unisInqaAnalyzerDelayThresTable 1 }
+
+UnisInqaAnalyzerDelayThresEntry ::=
+    SEQUENCE {
+        unisInqaDelayUpperLimit    CounterBasedGauge64,
+        unisInqaDelayLowerLimit    CounterBasedGauge64
+     }
+
+unisInqaDelayUpperLimit OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Upper limit of the packet delay.
+         The value ranges from 0 to 3600000000, and the unit is microseconds."
+    ::= { unisInqaAnalyzerDelayThresEntry 1 }
+
+unisInqaDelayLowerLimit OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Lower limit of the packet delay.
+         The value ranges from 0 to 3600000000, and the unit is microseconds."
+    ::= { unisInqaAnalyzerDelayThresEntry 2 }
+
+
+END
+

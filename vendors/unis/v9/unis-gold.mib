@@ -1,0 +1,120 @@
+-- =================================================================
+-- Copyright (c) 2021 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: GOLD MIB
+-- Version: V1.0
+-- History:
+--   V1.0 Created by meishenhe
+--        Initial version 2021-03-13
+-- =================================================================
+UNIS-GOLD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI;
+
+unisGold MODULE-IDENTITY
+    LAST-UPDATED "202103131502Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB is used to manage GOLD(Generic OnLine Diagnostics) detection.
+         This MIB is applicable to products that support GOLD."
+    REVISION "202103131502Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 203 }
+
+unisGoldTrap OBJECT IDENTIFIER ::= { unisGold 1 }
+
+unisGoldTrapOjbects OBJECT IDENTIFIER ::= { unisGoldTrap 0 }
+
+-- All trap definitions should be placed under this object.
+unisGoldLipcLinkFail NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisGoldLipcLinkSourceChassisID,
+            unisGoldLipcLinkSourceSlotID,
+            unisGoldLipcLinkSourceCpuID,
+            unisGoldLipcLinkDestChassisID,
+            unisGoldLipcLinkDestSlotID,
+            unisGoldLipcLinkDestCpuID
+        }
+    STATUS      current
+    DESCRIPTION
+        "the unisGoldLipcLinkFail trap indicates that the GOLD function
+        changed to the fail state."
+    ::= { unisGoldTrapOjbects 1 }
+
+unisGoldLipcLinkRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisGoldLipcLinkSourceChassisID,
+            unisGoldLipcLinkSourceSlotID,
+            unisGoldLipcLinkSourceCpuID,
+            unisGoldLipcLinkDestChassisID,
+            unisGoldLipcLinkDestSlotID,
+            unisGoldLipcLinkDestCpuID
+        }
+    STATUS      current
+    DESCRIPTION
+        "the unisGoldLipcLinkRecover trap indicates that the GOLD function
+        changed to the recover state."
+    ::= { unisGoldTrapOjbects 2 }
+
+unisGoldTrapObjectDefinitions OBJECT IDENTIFIER ::= { unisGoldTrap 1 }
+-- All objects used for TRAP only are defined here.
+
+unisGoldLipcLinkSourceChassisID OBJECT-TYPE
+    SYNTAX         Integer32(0..65535)
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The source chassis id of lipc node."
+    ::= { unisGoldTrapObjectDefinitions 1 }
+
+unisGoldLipcLinkSourceSlotID OBJECT-TYPE
+    SYNTAX         Integer32(0..65535)
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The source slot id of lipc node."
+    ::= { unisGoldTrapObjectDefinitions 2 }
+
+unisGoldLipcLinkSourceCpuID OBJECT-TYPE
+    SYNTAX         Integer32(0..65535)
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The source cpu id of lipc node."
+    ::= { unisGoldTrapObjectDefinitions 3 }
+
+unisGoldLipcLinkDestChassisID OBJECT-TYPE
+    SYNTAX         Integer32(0..65535)
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The destination chassis id of lipc node."
+    ::= { unisGoldTrapObjectDefinitions 4 }
+
+unisGoldLipcLinkDestSlotID OBJECT-TYPE
+    SYNTAX         Integer32(0..65535)
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The destination slot id of lipc node."
+    ::= { unisGoldTrapObjectDefinitions 5 }
+
+unisGoldLipcLinkDestCpuID OBJECT-TYPE
+    SYNTAX         Integer32(0..65535)
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The destination cpu id of lipc node."
+    ::= { unisGoldTrapObjectDefinitions 6 }
+
+END

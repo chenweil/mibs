@@ -1,0 +1,1544 @@
+-- ==================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Domain MIB
+-- Reference:
+-- Version: V2.5
+-- History:
+-- V1.0 2005.03.23 The initial version, created by Xulei
+-- V1.1 2005.06.03 updated by Xulei
+--      Updated the SMIv2 syntax of some MIB objects
+-- V1.2 2006.03.27 updated by yuanzhijie
+--      1. Modified the description of unisDomainSchemeRowStatus
+--      2. Added unisDomainSchemeAAAType, unisDomainSchemeAAAName,
+--         and unisDomainSchemeAccessMode
+--      3. Changed the value range for objects unisDomainAuthSchemeName
+--         and unisDomainAcctSchemeName
+-- V1.3 2007.03.07 updated by yangyang
+--      Changed the SYNTAX of unisDomainName and unisDomainDefault
+-- V1.4 2008.11.25 updated by ouzhili
+--      Added enumeration value vlanlist(3) to object unisDomainVlanAssignMode
+-- V1.5 2008.12.30 updated by dupengfei
+--      Added unisDomainCurrentAccessNum
+-- V1.6 2009.08.05 updated by huxiulan
+--      Added enumeration value reserved(12) to object unisAccessModeofDomainScheme
+-- V1.7 2012.05.20 updated by qiuchunxia
+--      Added unisDomainIdleCutTime
+--      2012.10.15 updated by liubo
+--      Added enumeration value ldap(5) to object unisDomainSchemeMode
+-- V1.8 2013.02.28 updated by xuyonggang
+--      Changed unisDomainSchemeAccessMode
+-- V1.9 2013.4.25 updated by qiuchunxia
+--      Deleted the range of unisDomainIdleCutMaxTime
+-- V2.0 2013.11.25 updated by zhangdexu
+--      Changed the range of unisDomainDefault and unisDomainName
+-- V2.1 2017.6.3 updated by yuhua
+--      Added unisDomainGlobalStat, unisDomainStatTable, unisDomainIPPoolStatTable,
+--      unisDomainServiceType, unisDomainIpPoolName, and unisDomainIpv6PoolName
+--      2017.10.13 updated by yangliping
+--      Changed unisDomainGlobalStat and unisDomainStatTable
+-- V2.2 2018.11.27 updated by yuhua
+--      Changed UnisDomainStatEntry, UnisDomainIPPoolStatEntry and unisDomainGlobalStat,
+--      add unisDomainTraps
+-- V2.3 2019.3.12 updated by yuhua
+--      Added unisDomainIPv4PoolUpperValue, unisDomainIPv4PoolLowerValue, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue,
+--      unisUserIPv6AllocAlarm, unisUserIPv6AllocAlarmResume, unisUserIPv6LowlimitWarnAlarm,
+--      unisUserIPv6LowlimitWarnResum, unisUserNDRAPfAllocAlarm, unisUserNDRAPfAllocAlarmResume,
+--      unisUserNDRAPfLowlimitWarnAlarm, unisUserNDRAPfLowlimitWarnResume, unisUserPDPfAllocAlarm, unisUserPDPfAllocAlarmResume,
+--      unisUserPDPfLowlimitWarnAlarm, unisUserPDPfLowlimitWarnResume
+-- V2.4 2020.1.16 updated by liubo
+--      1. Added unisDomainIpPoolGroupName, unisDomainIpv6PoolGroupName, unisDomainNdPrefixPoolName,
+--      unisDomainNdPrefixPoolGroupName, unisDomainIpv6Prefix, unisDomainIpv6PrefixLength,
+--      unisDomainNatBindingTable, unisDomainNatBindingUserGroupName, unisDomainNatBindingNatInstance
+--      and unisDomainNatBindingRowStatus
+--      2. Changed the MAX-ACCESS attribute value of unisDomainName to read-only
+-- V2.5 2020.7.3 updated by liubo
+--      Changed unisDomainIPv4PoolUpperValue, unisDomainIPv4PoolLowerValue, unisDomainIPv4PoolUpperValue
+--      and unisDomainIPv6PoolLowerValue
+-- ==================================================================
+UNIS-DOMAIN-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+        unisCommon
+            FROM UNIS-OID-MIB
+        Integer32, OBJECT-TYPE, NOTIFICATION-TYPE, MODULE-IDENTITY, TimeTicks, Unsigned32
+            FROM SNMPv2-SMI
+        InetAddressType, InetAddress
+            FROM INET-ADDRESS-MIB
+        Ipv6AddressPrefix
+            FROM IPV6-TC
+        RowStatus, TruthValue, TEXTUAL-CONVENTION
+            FROM SNMPv2-TC;
+
+    unisDomain MODULE-IDENTITY
+        LAST-UPDATED "202007030000Z"            -- July 03, 2020 at 00:00 GMT
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "The MIB module is used for managing domain."
+
+--  Revision history
+    REVISION     "202007030000Z"          -- July 03, 2020 at 00:00 GMT
+        DESCRIPTION  "Changed unisDomainIPv4PoolUpperValue, unisDomainIPv4PoolLowerValue, unisDomainIPv4PoolUpperValue
+                      and unisDomainIPv6PoolLowerValue"
+
+    REVISION     "202001160000Z"          -- January 16, 2020 at 00:00 GMT
+        DESCRIPTION  "1. Added unisDomainIpPoolGroupName, unisDomainIpv6PoolGroupName, unisDomainNdPrefixPoolName,
+                  unisDomainNdPrefixPoolGroupName, unisDomainIpv6Prefix, unisDomainIpv6PrefixLength,
+                  unisDomainNatBindingTable, unisDomainNatBindingUserGroupName, unisDomainNatBindingNatInstance
+                  and unisDomainNatBindingRowStatus
+                  2. Changed the MAX-ACCESS attribute value of unisDomainName to read-only"
+
+    REVISION     "201903120000Z"          -- March 11, 2019 at 00:00 GMT
+        DESCRIPTION  "1.Changed unisDomainInfoTable, unisDomainTraps
+                  2.Added unisDomainIPv4PoolUpperValue, unisDomainIPv4PoolLowerValue, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue
+                  3.Modify unisUserIPAllocAlarm, unisUserIPAllocAlarmResume, unisUserIPLowerlimitWarningAlarm, unisUserIPLowerlimitWarningResume
+                  4.unisUserIPv6AllocAlarm, unisUserIPv6AllocAlarmResume, unisUserIPv6LowlimitWarnAlarm, unisUserIPv6LowlimitWarnResum, unisUserNDRAPfAllocAlarm,
+                    unisUserNDRAPfAllocAlarmResume, unisUserNDRAPfLowlimitWarnAlarm, unisUserNDRAPfLowlimitWarnResume, unisUserPDPfAllocAlarm,
+                    unisUserPDPfAllocAlarmResume, unisUserPDPfLowlimitWarnAlarm, unisUserPDPfLowlimitWarnResume"
+
+    REVISION     "201811270000Z"          -- November 27, 2018 at 00:00 GMT
+        DESCRIPTION  "Changed UnisDomainStatEntry, UnisDomainIPPoolStatEntry and unisDomainGlobalStat,
+                      added unisDomainTraps"
+
+    REVISION     "201710130000Z"          -- October 13, 2017 at 00:00 GMT
+        DESCRIPTION  "Changed unisDomainGlobalStat and unisDomainStatTable"
+
+    REVISION     "201706030000Z"          -- June 03, 2017 at 00:00 GMT
+        DESCRIPTION  "Added unisDomainGlobalStat, unisDomainStatTable, unisDomainIPPoolStatTable,
+                  unisDomainServiceType, unisDomainIpPoolName, and unisDomainIpv6PoolName"
+
+    REVISION     "201311250000Z"          -- November 25, 2013 at 00:00 GMT
+        DESCRIPTION  "Changed the range of unisDomainDefault and unisDomainName"
+
+    REVISION     "201304250000Z"          -- April 25, 2013 at 00:00 GMT
+        DESCRIPTION  "Deleted the range of unisDomainIdleCutMaxTime"
+
+    REVISION     "201302280000Z"          -- February 28, 2013 at 00:00 GMT
+        DESCRIPTION  "Changed unisDomainSchemeAccessMode"
+
+    REVISION     "201210150000Z"          -- October 15, 2012 at 00:00 GMT
+        DESCRIPTION  "Added enumeration value ldap(5) to object unisDomainSchemeMode"
+
+    REVISION     "201205200000Z"          -- May 20, 2012 at 00:00 GMT
+        DESCRIPTION  "Added unisDomainIdleCutTime"
+
+    REVISION     "200908050000Z"          -- August 5, 2009 at 00:00 GMT
+        DESCRIPTION  "Added enumeration value reserved(12) to object unisAccessModeofDomainScheme"
+
+    REVISION     "200812300000Z"          -- December 30, 2008 at 00:00 GMT
+        DESCRIPTION  "Added unisDomainCurrentAccessNum"
+
+    REVISION     "200811250000Z"          -- November 25, 2008 at 00:00 GMT
+        DESCRIPTION  "Added enumeration value vlanlist(3) to object unisDomainVlanAssignMode"
+
+    REVISION     "200703070000Z"          -- March 7, 2007 at 00:00 GMT
+        DESCRIPTION  "Changed the SYNTAX of unisDomainName and unisDomainDefault"
+
+    REVISION     "200603270000Z"          -- March 27, 2006 at 00:00 GMT
+        DESCRIPTION  "1. Modified the description of unisDomainSchemeRowStatus
+                  2. Added unisDomainSchemeAAAType, unisDomainSchemeAAAName,
+                     and unisDomainSchemeAccessMode
+                  3. Changed the value range for objects unisDomainAuthSchemeName
+                     and unisDomainAcctSchemeName"
+
+    REVISION     "200506300000Z"          -- June 30, 2005 at 00:00 GMT
+        DESCRIPTION  "Updated the SMIv2 syntax of some MIB objects"
+
+    REVISION     "200503230000Z"          -- March 23, 2005 at 00:00 GMT
+        DESCRIPTION  "The initial version, created"
+
+    ::= { unisCommon 46 }
+
+    UnisModeOfDomainScheme ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+        "The scheme mode of the domain.
+        none: indicates the domain has no scheme.
+        local:indicates the domain will use local-server as a scheme.
+        radius:indicates the domain will use radius scheme.
+        tacacs:indicates the domain will use tacacs scheme.
+        ldap:indicates the domain will use ldap scheme."
+        SYNTAX INTEGER
+        {
+            none(1),
+            local(2),
+            radius(3),
+            tacacs(4),
+            ldap(5)
+        }
+
+    UnisAAATypeDomainScheme ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+        "The service type of the server."
+        SYNTAX INTEGER
+        {
+            accounting(1),
+            authentication(2),
+            authorization(3),
+            none(4)
+        }
+
+    UnisAccessModeofDomainScheme ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+        "The access mode of the domain."
+        SYNTAX INTEGER
+        {
+            default(1),
+            login(2),
+            lanAccess(3),
+            portal(4),
+            ppp(5),
+            gcm(6),
+            dvpn(7),
+            dhcp(8),
+            voice(9),
+            superauthen(10),
+            command(11),
+            reserved(12)
+        }
+
+    unisDomainControl OBJECT IDENTIFIER ::= { unisDomain 1 }
+
+    unisDomainDefault OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE (1..255))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+        "Specifies default domain on the equipment.  Default value is 'system'."
+    ::=  { unisDomainControl 1 }
+
+
+    unisDomainTables OBJECT IDENTIFIER ::= { unisDomain 2 }
+
+    unisDomainInfoTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF UnisDomainInfoEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "The (conceptual) table listing the domains."
+    ::= { unisDomainTables 1 }
+
+    unisDomainInfoEntry OBJECT-TYPE
+        SYNTAX  UnisDomainInfoEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "An entry (conceptual row) representing a domain."
+        INDEX { unisDomainName }
+    ::= { unisDomainInfoTable 1 }
+
+    UnisDomainInfoEntry ::= SEQUENCE {
+        unisDomainName                   OCTET STRING,
+        unisDomainState                  INTEGER,
+        unisDomainMaxAccessNum           Integer32,
+        unisDomainVlanAssignMode         INTEGER,
+        unisDomainIdleCutEnable          TruthValue,
+        unisDomainIdleCutMaxTime         Integer32,
+        unisDomainIdleCutMinFlow         Integer32,
+        unisDomainMessengerEnable        TruthValue,
+        unisDomainMessengerLimitTime     Integer32,
+        unisDomainMessengerSpanTime      Integer32,
+        unisDomainSelfServiceEnable      TruthValue,
+        unisDomainSelfServiceURL         OCTET STRING,
+        unisDomainAccFailureAction       INTEGER,
+        unisDomainRowStatus              RowStatus,
+        unisDomainCurrentAccessNum       Integer32,
+        unisDomainIdleCutTime            TimeTicks,
+        unisDomainServiceType            INTEGER,
+        unisDomainIpPoolName             OCTET STRING,
+        unisDomainIpv6PoolName           OCTET STRING,
+        unisDomainIPv4PoolUpperValue     Integer32,
+        unisDomainIPv4PoolLowerValue     Integer32,
+        unisDomainIPv6PoolUpperValue     Integer32,
+        unisDomainIPv6PoolLowerValue     Integer32,
+        unisDomainIpPoolGroupName        OCTET STRING,
+        unisDomainIpv6PoolGroupName      OCTET STRING,
+        unisDomainNdPrefixPoolName       OCTET STRING,
+        unisDomainNdPrefixPoolGroupName  OCTET STRING,
+        unisDomainIpv6Prefix             Ipv6AddressPrefix,
+        unisDomainIpv6PrefixLength       Integer32}
+
+    unisDomainName   OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (1..255))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "An index uniquely identifies a domain. "
+    ::= { unisDomainInfoEntry  1 }
+
+    unisDomainState   OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+            active(1),
+            block(2)
+        }
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "The state of the domain, which reflects whether the domain is active.
+        Default value is active."
+    ::= { unisDomainInfoEntry  2 }
+
+    unisDomainMaxAccessNum   OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "The maximum number which the domain allows to access.  If the value
+        is set to 0, the access limit will be disabled."
+    ::= { unisDomainInfoEntry  3 }
+
+    unisDomainVlanAssignMode   OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+            integer(1),
+            string(2),
+            vlanlist(3)
+        }
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "The vlan assignment mode.  The mode SHOULD be the same as the mode of
+        corresponding server.
+        1 (integer) - Integer Vlan assignment mode.
+        2 (string)  - String Vlan assignment mode.
+        3 (vlanlist)  - VLAN-List Vlan assignment mode.
+        The default value is integer."
+    ::= { unisDomainInfoEntry  4 }
+
+    unisDomainIdleCutEnable   OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "The idle cut control.  Setting this attribute to true, the connection will be
+        cut when the flow is less than unisDomainIdleCutMinFlow and lasts
+        unisDomainIdleCutMaxTime. Default value is false."
+    ::= { unisDomainInfoEntry  5 }
+
+    unisDomainIdleCutMaxTime   OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "The maximal time of idle-cut.  The unit is minute.  If the value of
+        unisDomainIdleCutEnable is false, the value of unisDomainIdleCutMaxTime
+        is meaningless."
+    ::= { unisDomainInfoEntry  6 }
+
+    unisDomainIdleCutMinFlow   OBJECT-TYPE
+        SYNTAX Integer32(1..10240000)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "The minimal flow of idle-cut.  The unit is byte. If the value of
+        unisDomainIdleCutEnable is false, the value of unisDomainIdleCutMinFlow
+        is meaningless."
+    ::= { unisDomainInfoEntry  7 }
+
+    unisDomainMessengerEnable   OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "The messenger service control.  If set unisDomainMessengerEnable to true,
+        unisDomainMessengerLimitTime and unisDomainMessengerSpanTime must be
+        set to valid values.  Default value is false."
+    ::= { unisDomainInfoEntry  8 }
+
+    unisDomainMessengerLimitTime   OBJECT-TYPE
+        SYNTAX Integer32(1..60)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "The messenger service limit time.  The unit is minute.  If the value of
+        unisDomainMessengerEnable is false, the value of unisDomainMessengerLimitTime
+        is meaningless."
+    ::= { unisDomainInfoEntry  9 }
+
+    unisDomainMessengerSpanTime   OBJECT-TYPE
+        SYNTAX Integer32(5..60)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "The messenger service span time.  The unit is minute.
+        It must be a multiple of 5.  If the value of unisDomainMessengerEnable is false,
+        the value of unisDomainMessengerSpanTime is meaningless."
+    ::= { unisDomainInfoEntry  10 }
+
+    unisDomainSelfServiceEnable   OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "The self service control.  If set unisDomainSelfServiceEnable to true,
+        unisDomainSelfServiceURL must be set to a valid value.
+        Default value is FALSE."
+    ::= { unisDomainInfoEntry  11 }
+
+    unisDomainSelfServiceURL   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..64))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "Self-service URL(Uniform Resource Locator) of the domain."
+    ::= { unisDomainInfoEntry  12 }
+
+    unisDomainAccFailureAction   OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+            ignore(1),
+            reject(2)
+        }
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "Defines the action that authentication should be taken if
+        authentication succeeds but the associated accounting start
+        fails.
+        1 (ignore) - treat as authentication success; ignore
+            accounting start failure.
+        2 (reject) - treat as authentication failed if
+            corresponding accounting start fails.
+        Default value is reject."
+    ::= { unisDomainInfoEntry  13 }
+
+    unisDomainRowStatus   OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS   current
+        DESCRIPTION
+        "This object is responsible for managing the creation, deletion and modification
+        of rows, which supports active status and CreateAndGo, Destroy operation. To destroy
+        an existent row, the domain of the row MUST NOT be used by user."
+    ::= { unisDomainInfoEntry 14 }
+
+    unisDomainCurrentAccessNum   OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "The current access number of the domain."
+    ::= { unisDomainInfoEntry 15 }
+
+    unisDomainIdleCutTime   OBJECT-TYPE
+        SYNTAX TimeTicks
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Authentication aging time.  If no packet is transmitted during the aging time,
+        the authentication is aged out."
+    ::= { unisDomainInfoEntry  16 }
+
+    unisDomainServiceType   OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+            hsi(1),
+            stb(2),
+            voip(3)
+        }
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "Service type of users in the domain, including hsi(1), stb(2), and voip(3).
+         The default value is hsi.
+
+         The High Speed Internet (hsi) service is applicable to users that access the
+         network through PPP, 802.1X, or IPoE. If this service is used, the multicast feature of
+         the access module is disabled to save system resources.
+
+         The Set Top Box (stb) service is applicable to users that access the network
+         through stb. If this service is used, the multicast feature of the access module
+         is enabled to improve the performance of the multicast module.
+
+         The Voice over IP (voip) service is applicable to users that access the network
+         through IP phones. If this service is used, the Quality of Service (QoS) module
+         increases the priority of voice traffic to reduce the transmission delay for
+         IP phone users.
+
+        Default value is hsi."
+    ::= { unisDomainInfoEntry  17 }
+
+    unisDomainIpPoolName   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..63))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "Specifies an IPv4 address pool for users in the domain."
+    ::= { unisDomainInfoEntry  18 }
+
+    unisDomainIpv6PoolName   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..63))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "Specifies an IPv6 address pool for users in the domain."
+    ::= { unisDomainInfoEntry  19 }
+
+    unisDomainIPv4PoolUpperValue OBJECT-TYPE
+        SYNTAX Integer32 (0..100)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+        "High alarm threshold for authorization IPv4 address usage, in percentage.
+        Value 0 indicates that no alarm notifications will be generated for high
+        authorization IPv4 address usage."
+        ::= { unisDomainInfoEntry 20 }
+
+    unisDomainIPv4PoolLowerValue OBJECT-TYPE
+        SYNTAX Integer32 (0..100)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+        "Low alarm threshold for authorization IPv4 address usage, in percentage.
+        Value 100 indicates that no alarm notifications will be generated for low
+        authorization IPv4 address usage."
+        ::= { unisDomainInfoEntry 21 }
+
+    unisDomainIPv6PoolUpperValue OBJECT-TYPE
+        SYNTAX Integer32 (0..100)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+        "High alarm threshold for authorization IPv6 address or prefix usage, in percentage.
+        Value 0 indicates that no alarm notifications will be generated for high
+        authorization IPv6 address or prefix usage."
+        ::= { unisDomainInfoEntry 22 }
+
+    unisDomainIPv6PoolLowerValue OBJECT-TYPE
+        SYNTAX Integer32 (0..100)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+        "Low alarm threshold for authorization IPv6 address or prefix usage, in percentage.
+        Value 100 indicates that no alarm notifications will be generated for low
+        authorization IPv6 address or prefix usage."
+        ::= { unisDomainInfoEntry 23 }
+
+    unisDomainIpPoolGroupName   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..63))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "IP address pool group authorized to users in the domain."
+        DEFVAL { "" }
+    ::= { unisDomainInfoEntry  24 }
+
+    unisDomainIpv6PoolGroupName   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..63))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "IPv6 address pool group authorized to users in the domain."
+        DEFVAL { "" }
+    ::= { unisDomainInfoEntry  25 }
+
+    unisDomainNdPrefixPoolName   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..63))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "IPv6 address ND prefix pool authorized to users in the domain."
+        DEFVAL { "" }
+    ::= { unisDomainInfoEntry  26 }
+
+    unisDomainNdPrefixPoolGroupName   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..63))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "IPv6 address ND prefix pool group authorized to users in the domain."
+        DEFVAL { "" }
+    ::= { unisDomainInfoEntry  27 }
+
+    unisDomainIpv6Prefix   OBJECT-TYPE
+        SYNTAX Ipv6AddressPrefix
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "IPv6 address prefix authorized to users in the domain."
+        DEFVAL { "" }
+    ::= { unisDomainInfoEntry  28 }
+
+    unisDomainIpv6PrefixLength   OBJECT-TYPE
+        SYNTAX Integer32 (0..128)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "IPv6 address prefix length authorized to users in the domain."
+        DEFVAL { 0 }
+    ::= { unisDomainInfoEntry  29 }
+
+    -- ----------------------------------------------------------------------
+    -- Scheme Table
+    -- ----------------------------------------------------------------------
+    unisDomainSchemeTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF UnisDomainSchemeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "The (conceptual) table listing schemes of all domains."
+    ::= { unisDomainTables 2 }
+
+    unisDomainSchemeEntry OBJECT-TYPE
+        SYNTAX  UnisDomainSchemeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "An entry (conceptual row) representing an IP pool of a domain"
+        INDEX { unisDomainName, unisDomainSchemeIndex }
+    ::= { unisDomainSchemeTable 1 }
+
+    UnisDomainSchemeEntry ::= SEQUENCE {
+        unisDomainSchemeIndex            Integer32,
+        unisDomainSchemeMode             UnisModeOfDomainScheme,
+        unisDomainAuthSchemeName         OCTET STRING,
+        unisDomainAcctSchemeName         OCTET STRING,
+        unisDomainSchemeRowStatus        RowStatus,
+        unisDomainSchemeAAAType          UnisAAATypeDomainScheme,
+        unisDomainSchemeAAAName          OCTET STRING,
+        unisDomainSchemeAccessMode       UnisAccessModeofDomainScheme
+        }
+
+    unisDomainSchemeIndex   OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "The scheme index of domain, which is an identifier of a domain scheme."
+    ::= { unisDomainSchemeEntry  1 }
+
+    unisDomainSchemeMode   OBJECT-TYPE
+        SYNTAX UnisModeOfDomainScheme
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "The scheme mode of the domain.  Setting unisDomainSchemeMode to none(1) indicates
+        the domain has none scheme.  Setting unisDomainSchemeMode to local(2) indicates the
+        domain will use local-server as a scheme.  Setting unisDomainSchemeMode to radius(3),
+        tacacs(4) or ldap(5) indicates the domain will use radius, tacacs or ldap scheme.  If set
+        unisDomainSchemeMode to radius(3), tacacs(4) or ldap(5), unisDomainAuthSchemeName and
+        unisDomainAcctSchemeName must be set to valid values.  And if unisDomainSchemeMode is
+        set to none(1) or local(2), the value of unisDomainAuthSchemeName and unisDomainAcctSchemeName
+        will be ignored."
+    ::= { unisDomainSchemeEntry  2 }
+
+    unisDomainAuthSchemeName   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..32))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "The authentication scheme name of domain.  If unisDomainSchemeMode is set to radius,
+        tacacs or ldap, the unisDomainAuthSchemeName must be configured with a valid value."
+    ::= { unisDomainSchemeEntry  3 }
+
+    unisDomainAcctSchemeName   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..32))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "The accounting scheme name of the domain. If unisDomainSchemeMode is set to radius
+        or tacacs, the unisDomainAcctSchemeName must be configured with a valid value."
+    ::= { unisDomainSchemeEntry  4 }
+
+    unisDomainSchemeRowStatus   OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "This object is responsible for managing the creation, deletion and modification
+        of rows, which supports active status and createAndGo, destroy operation. To
+        create a new row, unisDomainSchemeMode must be specified. To destroy an existent
+        row, the scheme of the row MUST NOT be used by user."
+    ::= { unisDomainSchemeEntry  5 }
+
+    unisDomainSchemeAAAType    OBJECT-TYPE
+        SYNTAX     UnisAAATypeDomainScheme
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+        "Service Type of the server."
+   ::= { unisDomainSchemeEntry  6 }
+
+    unisDomainSchemeAAAName       OBJECT-TYPE
+         SYNTAX      OCTET STRING(SIZE (0..32))
+         MAX-ACCESS  read-create
+         STATUS  current
+         DESCRIPTION
+         "The scheme name of the domain, whether the scheme represents accounting,
+          authentication or authorization references the object unisDomainSchemeAAAType.
+          The value of the object must be valid if the value of unisDomainSchemeMode
+          is radius or tacacs, the value of the object will be ignored if the value
+          of unisDomainSchemeMode is none or local. If the domain has no scheme,
+          there will be a null string. If this object is supported, the objects
+          unisDomainAuthSchemeName and unisDomainAcctSchemeName will be ignored."
+    ::= { unisDomainSchemeEntry  7 }
+
+    unisDomainSchemeAccessMode    OBJECT-TYPE
+         SYNTAX      UnisAccessModeofDomainScheme
+         MAX-ACCESS  read-create
+         STATUS  current
+         DESCRIPTION
+         "The access mode of the domain scheme."
+    ::= { unisDomainSchemeEntry  8 }
+
+    -- ----------------------------------------------------------------------
+    -- IP pool Table
+    -- ----------------------------------------------------------------------
+    unisDomainIpPoolTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF UnisDomainIpPoolEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "The (conceptual) table listing IP pools of all domains."
+    ::= { unisDomainTables 3 }
+
+    unisDomainIpPoolEntry OBJECT-TYPE
+        SYNTAX  UnisDomainIpPoolEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "An entry (conceptual row) representing an IP pool of a domain."
+        INDEX { unisDomainName, unisDomainIpPoolNum }
+    ::= { unisDomainIpPoolTable 1 }
+
+    UnisDomainIpPoolEntry ::= SEQUENCE {
+        unisDomainIpPoolNum              Integer32,
+        unisDomainIpPoolLowIpAddrType    InetAddressType,
+        unisDomainIpPoolLowIpAddr        InetAddress,
+        unisDomainIpPoolLen              Integer32,
+        unisDomainIpPoolRowStatus        RowStatus }
+
+
+    unisDomainIpPoolNum   OBJECT-TYPE
+        SYNTAX   Integer32(0..99)
+        MAX-ACCESS  not-accessible
+        STATUS   current
+        DESCRIPTION
+        "The number of IP pool, which is an identifier of an IP pool."
+    ::= { unisDomainIpPoolEntry 1 }
+
+
+    unisDomainIpPoolLowIpAddrType   OBJECT-TYPE
+        SYNTAX   InetAddressType
+        MAX-ACCESS  read-create
+        STATUS   current
+        DESCRIPTION
+        "The low IP addresses type (IPv4 or IPv6) of IP pool."
+    ::= { unisDomainIpPoolEntry 2 }
+
+
+    unisDomainIpPoolLowIpAddr   OBJECT-TYPE
+        SYNTAX   InetAddress
+        MAX-ACCESS  read-create
+        STATUS   current
+        DESCRIPTION
+        "The low IP address of IP pool."
+    ::= { unisDomainIpPoolEntry 3 }
+
+
+    unisDomainIpPoolLen   OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-create
+        STATUS   current
+        DESCRIPTION
+        "The length of IP pool.  Default value is 1."
+    ::= { unisDomainIpPoolEntry 4 }
+
+   unisDomainIpPoolRowStatus   OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS   current
+        DESCRIPTION
+        "This object is responsible for managing the creation, deletion and modification
+        of rows, which supports active status and CreateAndGo, Destroy operation.  To
+        create a new row, unisDomainIpPoolNum and unisDomainIpPoolLowIpAddr must be specified.
+        To destroy an existent row, the IP pool of this row MUST NOT be used by user."
+    ::= { unisDomainIpPoolEntry 5 }
+
+    -- ----------------------------------------------------------------------
+    -- Domain Statistics Table
+    -- ----------------------------------------------------------------------
+    unisDomainStatTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF UnisDomainStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "The (conceptual) table listing Domain statistics."
+    ::= { unisDomainTables 4 }
+
+    unisDomainStatEntry OBJECT-TYPE
+        SYNTAX  UnisDomainStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "An entry (conceptual row) representing statistics of a domain."
+        INDEX { unisDomainName }
+    ::= { unisDomainStatTable 1 }
+
+    UnisDomainStatEntry ::= SEQUENCE {
+        unisDomainAccessedNum              Unsigned32,
+        unisDomainOnlineNum                Unsigned32,
+        unisDomainOnlinePPPUser            Unsigned32,
+        unisDomainOnlineIPoEUser           Unsigned32,
+        unisDomainOnlinePPPoEUser          Unsigned32,
+        unisDomainOnlinePPPoAUser          Unsigned32,
+        unisDomainOnlinePPPoFRUser         Unsigned32,
+        unisDomainOnlineLacUser            Unsigned32,
+        unisDomainOnlineLnsUser            Unsigned32,
+        unisDomainOnlineIPoEBindAuthUser   Unsigned32,
+        unisDomainOnlineIPoEWebAuthUser    Unsigned32,
+        unisDomainOnlineLeasedUser         Unsigned32,
+        unisDomainOnlineIPv4User           Unsigned32,
+        unisDomainOnlineIPv6User           Unsigned32,
+        unisDomainOnlineDualStackUser      Unsigned32}
+
+
+    unisDomainAccessedNum   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Total number of users in the domain."
+    ::= { unisDomainStatEntry 1 }
+
+
+    unisDomainOnlineNum   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online users in the domain."
+    ::= { unisDomainStatEntry 2 }
+
+
+    unisDomainOnlinePPPUser   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online PPP users in the domain."
+    ::= { unisDomainStatEntry 3 }
+
+    unisDomainOnlineIPoEUser   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online IPoE users in the domain."
+    ::= { unisDomainStatEntry 4 }
+
+    unisDomainOnlinePPPoEUser   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online PPPoE users in the domain."
+    ::= { unisDomainStatEntry 5 }
+
+    unisDomainOnlinePPPoAUser   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online PPPoA users in the domain."
+    ::= { unisDomainStatEntry 6 }
+
+    unisDomainOnlinePPPoFRUser   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online PPPoFR users in the domain."
+    ::= { unisDomainStatEntry 7 }
+
+    unisDomainOnlineLacUser   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online LAC users in the domain."
+    ::= { unisDomainStatEntry 8 }
+
+    unisDomainOnlineLnsUser   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online LNS users in the domain."
+    ::= { unisDomainStatEntry 9 }
+
+    unisDomainOnlineIPoEBindAuthUser   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online IPoE users that use bind authentication in the domain."
+    ::= { unisDomainStatEntry 10 }
+
+    unisDomainOnlineIPoEWebAuthUser   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online IPoE users that use WEB authentication in the domain."
+    ::= { unisDomainStatEntry 11 }
+
+    unisDomainOnlineLeasedUser   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online IPoE Leased users in the domain."
+    ::= { unisDomainStatEntry 12 }
+
+    unisDomainOnlineIPv4User   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online IPv4 users in the domain."
+    ::= { unisDomainStatEntry 13 }
+
+    unisDomainOnlineIPv6User   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online IPv6 users in the domain."
+    ::= { unisDomainStatEntry 14 }
+
+    unisDomainOnlineDualStackUser   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online dual stack users in the domain."
+    ::= { unisDomainStatEntry 15 }
+
+    -- ----------------------------------------------------------------------
+    -- Domain IP Pool Statistics Table
+    -- ----------------------------------------------------------------------
+    unisDomainIPPoolStatTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF UnisDomainIPPoolStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "The (conceptual) table listing IP pool statistics."
+    ::= { unisDomainTables 5 }
+
+    unisDomainIPPoolStatEntry OBJECT-TYPE
+        SYNTAX  UnisDomainIPPoolStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "An entry (conceptual row) representing statistics of an IP pool."
+        INDEX { unisDomainName }
+    ::= { unisDomainIPPoolStatTable 1 }
+
+    UnisDomainIPPoolStatEntry ::= SEQUENCE {
+        unisDomainIPTotalNum                Unsigned32,
+        unisDomainIPUsedNum                 Unsigned32,
+        unisDomainIPConflictNum             Unsigned32,
+        unisDomainIPExcludeNum              Unsigned32,
+        unisDomainIPIdleNum                 Unsigned32,
+        unisDomainIPUsedPercent             OCTET STRING,
+        unisDomainIPv6AddressTotalNum       Unsigned32,
+        unisDomainIPv6AddressUsedNum        Unsigned32,
+        unisDomainIPv6AddressFreeNum        Unsigned32,
+        unisDomainIPv6AddressConflictNum    Unsigned32,
+        unisDomainIPv6AddressExcludeNum     Unsigned32,
+        unisDomainIPv6AddressUsedPercent    OCTET STRING,
+        unisDomainNDRAPrefixTotalNum        Unsigned32,
+        unisDomainNDRAPrefixUsedNum         Unsigned32,
+        unisDomainNDRAPrefixFreeNum         Unsigned32,
+        unisDomainNDRAPrefixConflictNum     Unsigned32,
+        unisDomainNDRAPrefixExcludeNum      Unsigned32,
+        unisDomainNDRAPrefixUsedPercent     OCTET STRING,
+        unisDomainPDPrefixTotalNum          Unsigned32,
+        unisDomainPDPrefixUsedNum           Unsigned32,
+        unisDomainPDPrefixFreeNum           Unsigned32,
+        unisDomainPDPrefixConflictNum       Unsigned32,
+        unisDomainPDPrefixExcludeNum        Unsigned32,
+        unisDomainPDPrefixUsedPercent       OCTET STRING }
+
+
+    unisDomainIPTotalNum   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Total number of addresses in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 1 }
+
+
+    unisDomainIPUsedNum    OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Number of addresses already used in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 2 }
+
+
+    unisDomainIPConflictNum   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Number of conflicting addresses in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 3 }
+
+
+    unisDomainIPExcludeNum   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of addresses excluded from the IP pool."
+    ::= { unisDomainIPPoolStatEntry 4 }
+
+   unisDomainIPIdleNum   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Number of idle addresses in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 5 }
+
+    unisDomainIPUsedPercent   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..32))
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Address occupancy rate in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 6 }
+
+    unisDomainIPv6AddressTotalNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Total number of IPv6 addresses in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 7 }
+
+    unisDomainIPv6AddressUsedNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of IPv6 addresses already used in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 8 }
+
+    unisDomainIPv6AddressFreeNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of idle IPv6 addresses in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 9 }
+
+    unisDomainIPv6AddressConflictNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of conflicting IPv6 addresses in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 10 }
+
+    unisDomainIPv6AddressExcludeNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of IPv6 addresses excluded from the IP pool."
+    ::= { unisDomainIPPoolStatEntry 11 }
+
+    unisDomainIPv6AddressUsedPercent   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..64))
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "IPv6 Address occupancy rate in the IP pool.
+        The value is in percentage.
+        For example: 0.79 means the IPv6 Address occupancy rate in the IP pool is 0.79%."
+    ::= { unisDomainIPPoolStatEntry 12 }
+
+    unisDomainNDRAPrefixTotalNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Total number of NDRA prefix addresses in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 13 }
+
+    unisDomainNDRAPrefixUsedNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of NDRA prefix addresses already used in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 14 }
+
+    unisDomainNDRAPrefixFreeNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of idle NDRA prefix addresses in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 15 }
+
+    unisDomainNDRAPrefixConflictNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of conflicting NDRA prefix addresses in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 16 }
+
+    unisDomainNDRAPrefixExcludeNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of NDRA prefix addresses excluded from the IP pool."
+    ::= { unisDomainIPPoolStatEntry 17 }
+
+    unisDomainNDRAPrefixUsedPercent   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..64))
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "NDRA prefix occupancy rate in the IP pool.
+        The value is in percentage.
+        For example: 0.79 means the NDRA prefix occupancy rate in the IP pool is 0.79%."
+    ::= { unisDomainIPPoolStatEntry 18 }
+
+    unisDomainPDPrefixTotalNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Total number of PD prefix addresses in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 19 }
+
+    unisDomainPDPrefixUsedNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of PD prefix addresses already used in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 20 }
+
+    unisDomainPDPrefixFreeNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of idle PD prefix addresses in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 21 }
+
+    unisDomainPDPrefixConflictNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of conflicting PD prefix addresses in the IP pool."
+    ::= { unisDomainIPPoolStatEntry 22 }
+
+    unisDomainPDPrefixExcludeNum   OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of PD prefix addresses excluded from the IP pool."
+    ::= { unisDomainIPPoolStatEntry 23 }
+
+    unisDomainPDPrefixUsedPercent   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..64))
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "PD prefix occupancy rate in the IP pool.
+        The value is in percentage.
+        For example: 0.79 means the PD prefix occupancy rate in the IP pool is 0.79%."
+    ::= { unisDomainIPPoolStatEntry 24 }
+
+    -- ----------------------------------------------------------------------
+    -- Domain NAT binding Table
+    -- ----------------------------------------------------------------------
+    unisDomainNatBindingTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF UnisDomainNatBindingEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "The (conceptual) table lists user group-to-NAT instance bindings of
+        all domains.  The device assigns an authenticated user to a load-sharing
+        user group and uses the NAT instance associated with that user group
+        to process the NAT service of the user."
+    ::= { unisDomainTables 6 }
+
+    unisDomainNatBindingEntry OBJECT-TYPE
+        SYNTAX  UnisDomainNatBindingEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "An entry (conceptual row) lists user group-to-NAT instance bindings of a domain."
+        INDEX { unisDomainName, unisDomainNatBindingUserGroupName }
+    ::= { unisDomainNatBindingTable 1 }
+
+    UnisDomainNatBindingEntry ::= SEQUENCE {
+        unisDomainNatBindingUserGroupName  OCTET STRING,
+        unisDomainNatBindingNatInstance    OCTET STRING,
+        unisDomainNatBindingRowStatus      RowStatus
+        }
+
+    unisDomainNatBindingUserGroupName   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..32))
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "The user group name."
+    ::= { unisDomainNatBindingEntry 1 }
+
+    unisDomainNatBindingNatInstance   OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..31))
+        MAX-ACCESS  read-create
+        STATUS   current
+        DESCRIPTION
+        "The bound NAT instance."
+    ::= { unisDomainNatBindingEntry 2 }
+
+    unisDomainNatBindingRowStatus   OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS   current
+        DESCRIPTION
+        "This object is responsible for managing the creation, deletion and
+         modification of rows. The object supports the active state and the
+         CreateAndGo and Destroy operations."
+    ::= { unisDomainNatBindingEntry 3 }
+
+    -- ----------------------------------------------------------------------
+    -- Domain Global Statistics Table
+    -- ----------------------------------------------------------------------
+    unisDomainGlobalStat OBJECT IDENTIFIER ::= { unisDomain 3 }
+
+    unisDomainGlobalAccessedNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of users in all domains."
+    ::=  { unisDomainGlobalStat 1 }
+
+    unisDomainGlobalOnlineNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online users in all domains."
+    ::=  { unisDomainGlobalStat 2 }
+
+    unisDomainGlobalOnlinePPPUser  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online PPP users in all domains."
+    ::=  { unisDomainGlobalStat 3 }
+
+    unisDomainGlobalOnlineIPoEUser  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online IPoE users in all domains."
+    ::=  { unisDomainGlobalStat 4 }
+
+    unisDomainGlobalOnlinePPPoEUser  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online PPPoE users in all domains."
+    ::=  { unisDomainGlobalStat 5 }
+
+    unisDomainGlobalOnlinePPPoAUser  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online PPPoA users in all domains."
+    ::=  { unisDomainGlobalStat 6 }
+
+    unisDomainGlobalOnlinePPPoFRUser  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online PPPoFR users in all domains."
+    ::=  { unisDomainGlobalStat 7 }
+
+    unisDomainGlobalOnlineLacUser  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online LAC users in all domains."
+    ::=  { unisDomainGlobalStat 8 }
+
+    unisDomainGlobalOnlineLnsUser  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online LNS users in all domains."
+    ::=  { unisDomainGlobalStat 9 }
+
+    unisDomainGlobalOnlineIPoEBindAuthUser  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online IPoE users that use bind authentication in all domains."
+    ::=  { unisDomainGlobalStat 10 }
+
+    unisDomainGlobalOnlineIPoEWebAuthUser  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online IPoE users that use WEB authentication in all domains."
+    ::=  { unisDomainGlobalStat 11 }
+
+    unisDomainGlobalOnlineLeasedUser  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Number of online IPoE Leased users in all domains."
+    ::=  { unisDomainGlobalStat 12 }
+
+    unisDomainGlobalTotalIPv4OnlineNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Total number of IPv4 online users in all domains."
+    ::=  { unisDomainGlobalStat 13 }
+
+    unisDomainGlobalTotalIPv6OnlineNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Total number of IPv6 online users in all domains."
+    ::=  { unisDomainGlobalStat 14 }
+
+    unisDomainGlobalTotalDualStackOnlineNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS   current
+        DESCRIPTION
+        "Total number of dual stack online users in all domains."
+    ::=  { unisDomainGlobalStat 15 }
+
+    -- ----------------------------------------------------------------------
+    -- unisDomainTraps Table
+    -- ----------------------------------------------------------------------
+    unisDomainTraps      OBJECT IDENTIFIER ::= { unisDomain 5 }
+    unisDomainTrapsDefine      OBJECT IDENTIFIER ::= { unisDomainTraps 0 }
+
+    unisUserIPAllocAlarm NOTIFICATION-TYPE
+            OBJECTS {unisDomainIPUsedPercent, unisDomainIPv4PoolUpperValue, unisDomainIPv4PoolLowerValue}
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Reach IP address allocable threshold
+                2 Notice/Trap generation cause:  Reach the threshold set in domain
+                3 Repair suggestions:
+                    Check whether to renew the configuration of the BAS IP pool
+                    Add new IP pool to this domain.
+                "
+            ::= { unisDomainTrapsDefine 1 }
+
+    unisUserIPAllocAlarmResume NOTIFICATION-TYPE
+            OBJECTS {unisDomainIPUsedPercent, unisDomainIPv4PoolUpperValue, unisDomainIPv4PoolLowerValue}
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Overallocated IP address recovery
+                2 Notice/Trap generation cause:  Recover from a state where IP address allocable threshold are reached.
+                3 Repair suggestions: NA.
+                "
+            ::= { unisDomainTrapsDefine 2 }
+
+    unisUserIPLowerlimitWarningAlarm NOTIFICATION-TYPE
+            OBJECTS {unisDomainIPUsedPercent, unisDomainIPv4PoolUpperValue, unisDomainIPv4PoolLowerValue}
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Reach IP address allocable lower limit threshold
+                2 Notice/Trap generation cause:  Reach the lower limit threshold set in domain
+                3 Repair suggestions:
+                    Check the domain.
+                "
+            ::= { unisDomainTrapsDefine 3 }
+
+    unisUserIPLowerlimitWarningResume NOTIFICATION-TYPE
+            OBJECTS {unisDomainIPUsedPercent, unisDomainIPv4PoolUpperValue, unisDomainIPv4PoolLowerValue}
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Less-allocated IP address recovery
+                2 Notice/Trap generation cause:  Recover from a state where IP address allocable lower limit threshold are reached.
+                3 Repair suggestions: NA.
+                "
+            ::= { unisDomainTrapsDefine 4 }
+
+    unisUserIPv6AllocAlarm NOTIFICATION-TYPE
+            OBJECTS {unisDomainIPv6AddressUsedPercent, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue }
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Reach IPv6 address allocable threshold
+                2 Notice/Trap generation cause:  Reach the threshold set in domain
+                3 Repair suggestions:
+                    Check whether to renew the configuration of the BAS IPv6 address pool
+                    Add new IPv6 address pool to this domain .
+                "
+            ::= { unisDomainTrapsDefine 5 }
+
+    unisUserIPv6AllocAlarmResume NOTIFICATION-TYPE
+            OBJECTS {unisDomainIPv6AddressUsedPercent, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue }
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Overallocated IPv6 address recovery
+                2 Notice/Trap generation cause:  Recover from a state where IPv6 address allocable threshold are reached.
+                3 Repair suggestions: NA.
+                "
+            ::= { unisDomainTrapsDefine 6 }
+
+    unisUserIPv6LowlimitWarnAlarm NOTIFICATION-TYPE
+            OBJECTS {unisDomainIPv6AddressUsedPercent, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue}
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Reach IPv6 address allocable lower limit threshold
+                2 Notice/Trap generation cause:  Reach the lower limit threshold set at domain
+                3 Repair suggestions:
+                    Check the domain.
+                "
+            ::= { unisDomainTrapsDefine 7 }
+
+    unisUserIPv6LowlimitWarnResume NOTIFICATION-TYPE
+            OBJECTS {unisDomainIPv6AddressUsedPercent, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue}
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Less-allocated IPv6 address recovery
+                2 Notice/Trap generation cause:  Recover from a state where IPv6 address allocable lower limit threshold are reached.
+                3 Repair suggestions: NA.
+                "
+            ::= { unisDomainTrapsDefine 8 }
+
+    unisUserNDRAPfAllocAlarm NOTIFICATION-TYPE
+            OBJECTS {unisDomainNDRAPrefixUsedPercent, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue }
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Reach IPv6 NDRA prefix allocable threshold
+                2 Notice/Trap generation cause: Reach the threshold set in domain
+                3 Repair suggestions:
+                    Check whether to renew the configuration of the BAS IPv6 NDRA prefix pool
+                    Add new IPv6 NDRA prefix pool to this domain .
+                "
+            ::= { unisDomainTrapsDefine 9 }
+
+    unisUserNDRAPfAllocAlarmResume NOTIFICATION-TYPE
+            OBJECTS {unisDomainNDRAPrefixUsedPercent, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue }
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Overallocated NDRA prefix recovery
+                2 Notice/Trap generation cause:  Recover from a state where NDRA prefix allocable threshold are reached.
+                3 Repair suggestions: NA.
+                "
+            ::= { unisDomainTrapsDefine 10 }
+
+    unisUserNDRAPfLowlimitWarnAlarm NOTIFICATION-TYPE
+            OBJECTS {unisDomainNDRAPrefixUsedPercent, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue}
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Reach NDRA prefix allocable lower limit threshold
+                2 Notice/Trap generation cause:  Reach the lower limit threshold set at domain
+                3 Repair suggestions:
+                    Check the domain.
+                "
+            ::= { unisDomainTrapsDefine 11 }
+
+    unisUserNDRAPfLowlimitWarnResume NOTIFICATION-TYPE
+            OBJECTS {unisDomainNDRAPrefixUsedPercent, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue}
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Less-allocated NDRA prefix recovery
+                2 Notice/Trap generation cause:  Recover from a state where NDRA Prefix allocable lower limit threshold are reached.
+                3 Repair suggestions: NA.
+                "
+            ::= { unisDomainTrapsDefine 12 }
+
+    unisUserPDPfAllocAlarm NOTIFICATION-TYPE
+            OBJECTS {unisDomainPDPrefixUsedPercent, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue }
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Reach IPv6 DHCPv6-PD prefix allocable threshold
+                2 Notice/Trap generation cause:  Reach the threshold set in domain
+                3 Repair suggestions:
+                    Check whether to renew the configuration of the BAS IPv6 DHCPv6-PD prefix pool
+                    Add new IPv6 DHCPv6-PD prefix pool to this domain .
+                "
+            ::= { unisDomainTrapsDefine 13 }
+
+    unisUserPDPfAllocAlarmResume NOTIFICATION-TYPE
+            OBJECTS {unisDomainPDPrefixUsedPercent, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue }
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Overallocated IPv6 DHCPv6-PD prefix recovery
+                2 Notice/Trap generation cause:  Recover from a state where IPv6 DHCPv6-PD Prefix allocable threshold are reached.
+                3 Repair suggestions: NA.
+                "
+            ::= { unisDomainTrapsDefine 14 }
+
+    unisUserPDPfLowlimitWarnAlarm NOTIFICATION-TYPE
+            OBJECTS {unisDomainPDPrefixUsedPercent, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue}
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Reach IPv6 DHCPv6-PD prefix allocable lower limit threshold
+                2 Notice/Trap generation cause:  Reach the lower limit threshold set at domain
+                3 Repair suggestions:
+                    Check the domain.
+                "
+            ::= { unisDomainTrapsDefine 15 }
+
+    unisUserPDPfLowlimitWarnResume NOTIFICATION-TYPE
+            OBJECTS {unisDomainPDPrefixUsedPercent, unisDomainIPv6PoolUpperValue, unisDomainIPv6PoolLowerValue}
+            STATUS current
+            DESCRIPTION
+                "
+                1 Notice/Trap name:  Less-allocated IPv6 DHCPv6-PD prefix recovery
+                2 Notice/Trap generation cause:  Recover from a state where IPv6 DHCPv6-PD Prefix allocable lower limit threshold are reached.
+                3 Repair suggestions: NA.
+                "
+            ::= { unisDomainTrapsDefine 16 }
+END

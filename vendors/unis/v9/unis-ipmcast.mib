@@ -1,0 +1,122 @@
+-- ==================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: IP Multicast MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2021-12-14 Created by Ma Xiaozhong
+-- ==================================================================
+--
+-- Variables and types be imported
+--
+-- ==================================================================
+UNIS-IPMCAST-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+
+    MODULE-IDENTITY,OBJECT-TYPE,NOTIFICATION-TYPE,Unsigned32
+        FROM SNMPv2-SMI
+
+    unisCommon
+        FROM UNIS-OID-MIB
+
+    InetAddressType
+        FROM INET-ADDRESS-MIB;
+
+unisIpMcast MODULE-IDENTITY
+    LAST-UPDATED "202112141400Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "IP Multicast Management MIB"
+    -- Revision history.
+    REVISION "202112141400Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 212 }
+
+--
+-- definition
+--
+unisIpMcastNotifications OBJECT IDENTIFIER ::= { unisIpMcast 0 }
+unisIpMcastObjects OBJECT IDENTIFIER ::= { unisIpMcast 1 }
+unisIpMcastTrapBindObjects OBJECT IDENTIFIER ::= { unisIpMcast 2 }
+
+
+--
+-- notification configuration
+--
+
+unisIpMcastEntryLimitType  OBJECT-TYPE
+    SYNTAX     INTEGER {
+                         starGroup(1),
+                         sourceGroup(2)
+    }
+    MAX-ACCESS accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "This variable defines IP multicast entry limit type.
+        The star-group is (*, G) entry. The source-group is (S, G) entry."
+    ::= { unisIpMcastTrapBindObjects 1 }
+
+unisIpMcastAddressFamily  OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "It is address family of IP multicast."
+    ::= { unisIpMcastTrapBindObjects 2 }
+
+unisIpMcastEntryLimitCount OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "It is the IP multicast entry limit value."
+    ::= { unisIpMcastTrapBindObjects 3 }
+
+unisIpMcastEntryLimitReasonType OBJECT-TYPE
+    SYNTAX     INTEGER {
+                         entryDeleted(1),
+                         configurationChanged(2)
+        }
+    MAX-ACCESS accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "Describe the reason for trap sending:
+        The 'entryDeleted' status indicates that the reason is table
+        entry deletion.
+        The 'configurationChanged' status indicates that the reason
+        is that the."
+    ::= { unisIpMcastTrapBindObjects 4 }
+
+--
+-- trap
+--
+unisIpMcastEntryExceed  NOTIFICATION-TYPE
+    OBJECTS { unisIpMcastEntryLimitType,
+              unisIpMcastAddressFamily,
+              unisIpMcastEntryLimitCount
+            }
+    STATUS    current
+    DESCRIPTION
+            "The unisMcastEntryExceed is generated when the IP multicast
+            entries
+            exceeded global entry limit of IP multicast routing-table."
+    ::= { unisIpMcastNotifications 1 }
+
+unisIpMcastEntryExceedClear  NOTIFICATION-TYPE
+    OBJECTS { unisIpMcastEntryLimitType,
+              unisIpMcastAddressFamily,
+              unisIpMcastEntryLimitCount,
+              unisIpMcastEntryLimitReasonType
+            }
+    STATUS    current
+    DESCRIPTION
+            "The unisMcastEntryExceedClear is generated when the IP multicast entries
+            fell below global entry limit of IP multicast routing-table."
+    ::= { unisIpMcastNotifications 2 }
+END

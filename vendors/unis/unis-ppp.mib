@@ -1,0 +1,107 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This MIB file is used for inquiring for PPP access user
+--              authentication information.
+-- Reference:
+-- Version:     V1.0
+-- History:
+--   V1.0 Initial version by hkf6733
+-- =================================================================
+UNIS-PPP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    InterfaceIndex
+        FROM IF-MIB
+    DisplayString
+        FROM SNMPv2-TC;
+
+
+
+unisPPP MODULE-IDENTITY
+    LAST-UPDATED "201802010000Z"            -- Feb 01th, 2018 at 00:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "PPP management information base for managing devices that support PPP
+        protocol."
+    REVISION    "201802010000Z"
+    DESCRIPTION
+        "Initial version"
+    ::= { unisCommon 175 }
+
+--
+-- Node definitions
+--
+
+unisPPPAuthObjects OBJECT IDENTIFIER ::= { unisPPP  1 }
+
+unisPPPAuthTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPPPAuthEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table describes the authentication information for PPP access
+        users.  The index of this table is the interface and authentication
+        type."
+    ::= { unisPPPAuthObjects 1 }
+
+unisPPPAuthEntry OBJECT-TYPE
+    SYNTAX UnisPPPAuthEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry in this table describes the authentication  information of
+        a PPP access user.  The available information includes: The index of
+        the interface on which the PPP authentication information are
+        configured, authentication type and username on the interface."
+    INDEX { unisPPPIfIndex, unisPPPAuthType }
+        ::= { unisPPPAuthTable 1 }
+
+UnisPPPAuthEntry ::=
+    SEQUENCE {
+        unisPPPIfIndex
+            InterfaceIndex,
+        unisPPPAuthType
+            INTEGER,
+        unisPPPUserName
+            DisplayString
+        }
+
+unisPPPIfIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of the interface on the PPP authentication information are
+        configured."
+        ::= { unisPPPAuthEntry 1 }
+
+unisPPPAuthType OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            unknown(1),
+            pap(2),
+            chap(3)
+        }
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The type of authentication for for the peer."
+    ::= { unisPPPAuthEntry 2 }
+
+unisPPPUserName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..80))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The username for access user."
+        ::= { unisPPPAuthEntry 3 }
+
+END

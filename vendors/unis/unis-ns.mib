@@ -1,0 +1,610 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 Created by Zhouzhihua, 2004.11.12
+-- V1.1 Bug fixed by songhao, 2015.04.30
+-- ============================================================================
+UNIS-NS-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        unisCommon
+            FROM UNIS-OID-MIB
+        TimeTicks, IpAddress, Integer32, Counter32, OBJECT-TYPE, MODULE-IDENTITY
+            FROM SNMPv2-SMI
+        RowStatus
+            FROM SNMPv2-TC;
+
+    unisNS MODULE-IDENTITY
+        LAST-UPDATED "200411071353Z"        -- November 07, 2004 at 13:53 GMT
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "This MIB contains objects to manage the configuration and status
+            information of network traffic statistics.  It classifies the IP
+            packets by source IP address, source port, destination IP address,
+            destination port, protocol, ToS and input interface, counts the
+            octets and packets, and sends the statistic information to the
+            specific collector.
+            "
+        REVISION "200409211415Z"        -- September 21, 2004 at 14:15 GMT
+        DESCRIPTION
+            "The initial revision of this MIB module."
+        ::= { unisCommon 20 }
+
+    unisNSMibObjects OBJECT IDENTIFIER ::= { unisNS 1 }
+
+    unisNSMibScalarObjects OBJECT IDENTIFIER ::= { unisNSMibObjects 1 }
+
+    unisNSActiveTime OBJECT-TYPE
+        SYNTAX Integer32 (1..60)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The stream will be aged when the active time of this stream
+            exceeds this value.  This object is in minute."
+        DEFVAL { 30 }
+        ::= { unisNSMibScalarObjects 1 }
+
+    unisNSInactiveTime OBJECT-TYPE
+        SYNTAX Integer32 (1..600)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The stream will be aged when the inactive time of this stream
+            exceeds this value.  This object is in second."
+        DEFVAL { 60 }
+        ::= { unisNSMibScalarObjects 2 }
+
+    unisNSVersion OBJECT-TYPE
+        SYNTAX Integer32 ( 5|9 )
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The version of the exported packet, which describes the format
+            of the exported packet.
+            It should export version 5 and version 8 when this object is 5,
+            but it should export version 9 only when the value of this object
+            is 9.
+            "
+        DEFVAL { 5 }
+        ::= { unisNSMibScalarObjects 3 }
+
+    unisNSAsType OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            peerAs(1),
+            originAs(2)
+            }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The number of autonomous system (AS).
+            This object can be origin or peer."
+        DEFVAL { peerAs }
+        ::= { unisNSMibScalarObjects 4 }
+
+    unisNSTemplateRefreshRate OBJECT-TYPE
+        SYNTAX Integer32 (1..600 )
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            "This object specifies the refresh rate in number of
+            exported packets."
+        DEFVAL { 20 }
+        ::= { unisNSMibScalarObjects 5 }
+
+    unisNSTemplateTimeout OBJECT-TYPE
+        SYNTAX Integer32 ( 1..3600 )
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object specifies the timeout rate in minutes."
+        DEFVAL { 30 }
+        ::= { unisNSMibScalarObjects 6 }
+
+    unisNSExportVlanOrIfIndex OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            vlanId(1),
+            interfaceIndex(2)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object describes the interface index at the exported packet.
+             It can be interface index or vlan id according to the product."
+        DEFVAL { vlanId }
+        ::= { unisNSMibScalarObjects 7 }
+
+    unisNSProcessSlotTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UNISNSProcessSlotEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table describes the board which can enable network traffic
+            statistics at the switch or router."
+        ::= { unisNSMibObjects 2 }
+
+    unisNSProcessSlotEntry OBJECT-TYPE
+        SYNTAX UNISNSProcessSlotEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The entry of unisNSProcessSlotEntry."
+        INDEX { unisNSProcessSlot }
+        ::= { unisNSProcessSlotTable 1 }
+
+    UNISNSProcessSlotEntry ::=
+        SEQUENCE {
+            unisNSProcessSlot
+                Integer32
+            }
+
+    unisNSProcessSlot OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object describes all boards which can processes network
+            traffic statistics at the switch or router."
+        ::= { unisNSProcessSlotEntry 1 }
+
+    unisNSExportConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UNISNSExportConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table describes the configuration of the exported packets."
+        ::= { unisNSMibObjects 3 }
+
+    unisNSExportConfigEntry OBJECT-TYPE
+        SYNTAX UNISNSExportConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The entry of unisNSExportConfigTable."
+        INDEX { unisNSAggregationType }
+        ::= { unisNSExportConfigTable 1 }
+
+    UNISNSExportConfigEntry ::=
+        SEQUENCE {
+            unisNSAggregationType
+                INTEGER,
+            unisNSHostIPAddr
+                IpAddress,
+            unisNSHostPort
+                Integer32,
+            unisNSSrcIpAddr
+                IpAddress,
+            unisNSState
+                INTEGER
+            }
+
+    unisNSAggregationType OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            v5Statistics(1),
+            as(2),
+            destinationPrefix(3),
+            sourcePrefix(4),
+            protocolPort(5),
+            prefix(6),
+            tosAs(7),
+            tosDestinationPrefix(8),
+            tosSourcePrefix(9),
+            tosProtocolPort(10),
+            tosPrefix(11),
+            prefixPort(12)
+            }
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The aggregation type.
+
+            v5Statistics type counts IP packets which have same source
+            IP address, destination IP address, source port, destination port,
+            protocol, ToS, input interface, output interface.
+
+            AS type counts IP packets which have same source AS, destination AS,
+            input interface and output interface.
+
+            destinationPrefix type counts IP packets which have same destination
+            AS, output interface, destination mask and destination prefix.
+
+            sourcePrefix type counts IP packets which have same source AS, input
+            interface, source mask and source prefix.
+
+            protocolPort type counts IP packets which have same protocol, source
+            port and destination port.
+
+            prefix type counts IP packets which have same source AS, destination
+            AS, input interface, output interface, source mask, source prefix,
+            destination mask, destination prefix.
+
+            tosAS type counts IP packets which have same tos, source AS, destination
+            AS, input interface and output interface.
+
+            tosDestinationPrefix type counts IP packets which have same tos,
+            destination AS, output interface, destination mask and destination prefix.
+
+            tosProtocolPort type counts IP packets which have same tos, protocol,
+            source port and destination port.
+
+            tosSourcePrefix type counts IP packets which have same tos, source AS,
+            input interface, source mask and source prefix.
+
+            tosPrefix type counts IP packets which have same tos, source AS,
+            destination AS, input interface, output interface, source mask, source
+            prefix, destination mask, destination prefix.
+
+            prefixPort type counts IP packets which have same tos, input interface,
+            output interface, source mask, source prefix, destination mask, destination
+            prefix, source port and destination port."
+        ::= { unisNSExportConfigEntry 1 }
+
+    unisNSHostIPAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The destination IP address of the exported packet.
+             This destination IP address is a NSC (NS Collector) address."
+        ::= { unisNSExportConfigEntry 2 }
+
+    unisNSHostPort OBJECT-TYPE
+        SYNTAX Integer32 (0..65535)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The destination port of the exported packets.
+             This destination port is a NSC listening port."
+        ::= { unisNSExportConfigEntry 3 }
+
+    unisNSSrcIpAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The source IP address of the exported packets."
+        ::= { unisNSExportConfigEntry 4 }
+
+    unisNSState OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            enabled(1),
+            disabled(2)
+            }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The state of aggregation is enabled or disabled."
+        ::= { unisNSExportConfigEntry 5 }
+
+    unisNSExportInformationTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UNISNSExportInformationEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table describes the Information of the exported packets."
+        ::= { unisNSMibObjects 4 }
+
+    unisNSExportInformationEntry OBJECT-TYPE
+        SYNTAX UNISNSExportInformationEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The entry of unisNSExportInformationTable."
+        INDEX { unisNSExportType,
+                unisNSExportSlot }
+        ::= { unisNSExportInformationTable 1 }
+
+        UNISNSExportInformationEntry ::=
+            SEQUENCE {
+                unisNSExportType
+                    INTEGER,
+                unisNSExportSlot
+                    Integer32,
+                unisNSExportStream
+                    Counter32,
+                unisNSExportNum
+                    Counter32,
+                unisNSExportFail
+                    Counter32
+                }
+
+    unisNSExportType OBJECT-TYPE
+        SYNTAX INTEGER  ( 1..12 )
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This object is equal to unisNSAggregationType."
+        ::= { unisNSExportInformationEntry 1 }
+
+    unisNSExportSlot OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This object is equal to unisNSProcessSlot."
+        ::= { unisNSExportInformationEntry 2 }
+
+    unisNSExportStream OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object counts the exported streams."
+        ::= { unisNSExportInformationEntry 3 }
+
+    unisNSExportNum OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object counts the exported packets."
+        ::= { unisNSExportInformationEntry 4 }
+
+    unisNSExportFail OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object counts the exported packets which failed to send.
+             The error may be unreachable destination IP address."
+        ::= { unisNSExportInformationEntry 5 }
+
+    unisNSConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UNISNSConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table describes current configurations."
+        ::= { unisNSMibObjects 5 }
+
+    unisNSConfigEntry OBJECT-TYPE
+        SYNTAX UNISNSConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The entry of unisNSAggregationTable."
+        INDEX { unisNSSourceSlot,
+                unisNSSourceIfIndex,
+                unisNSDestSlot }
+        ::= { unisNSConfigTable 1 }
+
+    UNISNSConfigEntry ::=
+        SEQUENCE {
+            unisNSSourceSlot
+                Integer32,
+            unisNSSourceIfIndex
+                Integer32,
+            unisNSDestSlot
+                Integer32,
+            unisNSDirect
+                INTEGER,
+            unisNSACLNumber
+                Integer32,
+            unisNSACLName
+                OCTET STRING,
+            unisNSACLRule
+                Integer32,
+            unisNSConfigRowStatus
+                RowStatus
+            }
+
+    unisNSSourceSlot OBJECT-TYPE
+        SYNTAX Integer32 (1..65535)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IP packet will be counted when it is passing through this slot."
+        ::= { unisNSConfigEntry 1 }
+
+    unisNSSourceIfIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IP packet will be statistics when it through this interface.
+             This object is equal to ifIndex at ifTable."
+        ::= { unisNSConfigEntry 2 }
+
+    unisNSDestSlot OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This object is equal to unisNSProcessSlot."
+        ::= { unisNSConfigEntry 3 }
+
+    unisNSDirect OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            inbound(1),
+            outbound(2)
+            }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "This object describes which packets will be counted.
+             It may be inbound or outbound packets through this interface."
+        DEFVAL { inbound }
+        ::= { unisNSConfigEntry 4 }
+
+    unisNSACLNumber OBJECT-TYPE
+        SYNTAX Integer32 (0 | 2000..3999)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The number of number-acl group."
+        ::= { unisNSConfigEntry 5 }
+
+    unisNSACLName OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The name of name-acl group."
+        ::= { unisNSConfigEntry 6 }
+
+    unisNSACLRule OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The rule of acl group."
+        ::= { unisNSConfigEntry 7 }
+
+    unisNSConfigRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "SNMP Row Status Variable.
+             Writable objects in the table may be written in any RowStatus state."
+        ::= { unisNSConfigEntry 8 }
+
+    unisNSStatusTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UNISNSStatusEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table describes current information of network traffic."
+        ::= { unisNSMibObjects 6 }
+
+    unisNSStatusEntry OBJECT-TYPE
+        SYNTAX UNISNSStatusEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The entry of unisNSAggregationTable."
+        INDEX { unisNSSlot }
+        ::= { unisNSStatusTable 1 }
+
+    UNISNSStatusEntry ::=
+        SEQUENCE {
+            unisNSSlot
+                Integer32,
+            unisNSActiveStreamNumber
+                Counter32,
+            unisNSTotalStreamNumber
+                Counter32,
+            unisNSTotalPacketNumber
+                Counter32,
+            unisNSTotalOctetNumber
+                Counter32,
+            unisNSMPLSActiveStreamNumber
+                Counter32,
+            unisNSMPLSTotalStreamNumber
+                Counter32,
+            unisNSMPLSTotalPacketNumber
+                Counter32,
+            unisNSMPLSTotalOctetNumber
+                Counter32,
+            unisNSResetFlag
+                INTEGER,
+            unisNSResetTime
+                TimeTicks
+            }
+
+    unisNSSlot OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This object is equal to unisNSProcessSlot."
+        ::= { unisNSStatusEntry 1 }
+
+    unisNSActiveStreamNumber OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object counts current active streams."
+        ::= { unisNSStatusEntry 2 }
+
+    unisNSTotalStreamNumber OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object counts all statistic streams."
+        ::= { unisNSStatusEntry 3 }
+
+    unisNSTotalPacketNumber OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object counts all statistic packets."
+        ::= { unisNSStatusEntry 4 }
+
+    unisNSTotalOctetNumber OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object counts all statistic octets."
+        ::= { unisNSStatusEntry 5 }
+
+    unisNSMPLSActiveStreamNumber OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object counts current active MPLS streams."
+        ::= { unisNSStatusEntry 6 }
+
+    unisNSMPLSTotalStreamNumber OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object counts all statistic MPLS streams."
+        ::= { unisNSStatusEntry 7 }
+
+    unisNSMPLSTotalPacketNumber OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object counts all statistic MPLS packets."
+        ::= { unisNSStatusEntry 8 }
+
+    unisNSMPLSTotalOctetNumber OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object counts all statistic octets of MPLS packets."
+        ::= { unisNSStatusEntry 9 }
+
+    unisNSResetFlag OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            enabled(1),
+            disabled(2)
+            }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Reset all streams.  The default value is disabled,
+             and set this value to enabled when resetting."
+        DEFVAL { disabled }
+        ::= { unisNSStatusEntry 10 }
+
+    unisNSResetTime OBJECT-TYPE
+        SYNTAX TimeTicks
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The system up time when stream is reset."
+        ::= { unisNSStatusEntry 11 }
+
+END

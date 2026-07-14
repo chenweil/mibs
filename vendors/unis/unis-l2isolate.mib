@@ -1,0 +1,128 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This file describes the unis MIB implementation of l2 isolation
+-- Reference:
+-- Version:     V1.0 Created by y04444 Initial version
+-- History:
+-- V1.0 Initial version
+-- =================================================================
+UNIS-L2ISOLATE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    TruthValue,
+    MacAddress,
+    RowStatus
+        FROM SNMPv2-TC
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, Integer32
+        FROM SNMPv2-SMI;
+
+unisL2Isolate MODULE-IDENTITY
+    LAST-UPDATED "200905060000Z"            -- May 06th, 2009 at 00:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for l2 isolation."
+    REVISION    "200905060000Z"
+    DESCRIPTION
+        "Initial version"
+    ::= { unisCommon 103 }
+
+unisL2IsolateObject OBJECT IDENTIFIER ::= { unisL2Isolate 1 }
+
+-- =================================================================
+--  1st Table of unisL2Isolate: unisL2IsolateEnableTable
+-- =================================================================
+unisL2IsolateEnableTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisL2IsolateEnableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for enabling/disabling layer-2-isolate for VLAN."
+    ::= { unisL2IsolateObject 1 }
+
+unisL2IsolateEnableEntry OBJECT-TYPE
+    SYNTAX      UnisL2IsolateEnableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for enabling/disabling layer-2-isolate for VLAN."
+    INDEX
+        {
+            unisL2IsolateVLANIndex
+        }
+    ::= { unisL2IsolateEnableTable 1 }
+
+UnisL2IsolateEnableEntry ::= SEQUENCE
+    {
+        unisL2IsolateVLANIndex        Integer32,
+        unisL2IsolateEnable           TruthValue
+    }
+
+unisL2IsolateVLANIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..4094)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents index of VLAN for layer-2-isolate."
+    ::= { unisL2IsolateEnableEntry 1 }
+
+unisL2IsolateEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the layer-2-isolate status of VLAN."
+    ::= { unisL2IsolateEnableEntry 2 }
+
+-- =================================================================
+--   2nd Table of unisL2Isolate: unisL2IsolatePermitMACTable
+-- =================================================================
+unisL2IsolatePermitMACTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisL2IsolatePermitMACEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table represents the permitting MAC address for the specific VLAN."
+    ::= { unisL2IsolateObject 2 }
+
+unisL2IsolatePermitMACEntry OBJECT-TYPE
+    SYNTAX      UnisL2IsolatePermitMACEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry represents the permitting MAC address for the specific VLAN."
+    INDEX
+        {
+            unisL2IsolateVLANIndex,
+            unisL2IsoLatePermitMAC
+        }
+    ::= { unisL2IsolatePermitMACTable 1 }
+
+UnisL2IsolatePermitMACEntry ::= SEQUENCE
+    {
+        unisL2IsoLatePermitMAC            MacAddress,
+        unisL2IsoLatePermitMACRowStatus   RowStatus
+    }
+
+unisL2IsoLatePermitMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address permitted in the VLAN."
+    ::= { unisL2IsolatePermitMACEntry 1 }
+
+unisL2IsoLatePermitMACRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus. Three actions are used: active, CreateAndGo, destroy."
+    ::= { unisL2IsolatePermitMACEntry 2 }
+
+END

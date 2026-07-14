@@ -1,0 +1,494 @@
+-- =========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This file describes common MIB objects implemented by both
+--              Routers and Switches.
+-- Reference:
+-- Version: V2.8
+-- History:
+-- V1.0 2004-6-30 Created by MIB Standard Group
+-- V1.1 16th Aug 2004
+--      Added the trap node 'unisRebootSendTrap' into unisSystemNotification
+-- V2.0 2004-10-12 updated by gaolong
+--      Imported from SNMPv2-SMI and SNMPv2-TC instead of RFC1212 and RFC1155-SMI
+--      Changed ACCESS clauses to MAX-ACCESS
+--      Changed STATUS clauses from mandatory to current
+-- V2.1 2008-11-11 added node unisSysBootType by lifengguang
+-- V2.2 2009-05-05 added unisSysStatisticPeriod, unisSysSamplePeriod,
+--      unisSysTrapResendPeriod, unisSysTrapCollectionPeriod, unisSysColdStartTrap,
+--      unisSysWarmStartTrap, unisSysSnmpPort, unisSysSnmpTrapPort, unisSysNetID,
+--      unisSysLastSampleTime by jinyi
+-- V2.3 2012-01-07 added node unisSysTrapSendNum and unisSysFirstTrapTime by duyanbing
+-- V2.4 2012-06-06 added node unisSysBannerMOTD by jixugang
+-- V2.5 2013-05-28 added trap node unisSysLoghostUnreachableTrap by duyanbing
+-- V2.6 2013-09-13 added normal(0) to node unisReboot by duyanbing
+-- V2.7 2014-08-07 added unisSystemDiagInfoTable by SongHao
+--      2015-03-25 Added the trap node unisSysDyingGaspTrap into unisSystemNotification
+--      by gaoyanping
+-- V2.8 2015-05-05 added unisSystemWorkingMode, unisSystemWorkingModeTable,
+--      unisSystemWorkingModeDefault, unisSystemWorkingModeCurrent,
+--      unisSystemWorkingModeNext by lifuxia
+-- =========================================================================
+UNIS-COMMON-SYSTEM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, TimeTicks, Integer32
+        FROM SNMPv2-SMI
+    DisplayString, DateAndTime, TimeStamp, RowStatus
+        FROM SNMPv2-TC
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB
+    unisNetworking
+        FROM UNIS-OID-MIB;
+
+unisSystem MODULE-IDENTITY
+    LAST-UPDATED "201505050000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This file describes common MIB objects implemented by
+        both Routers and Switches."
+    REVISION     "201505050000Z"
+    DESCRIPTION  "Added unisSystemWorkingMode, unisSystemWorkingModeTable,
+                  unisSystemWorkingModeDefault, unisSystemWorkingModeCurrent,
+                  unisSystemWorkingModeNext."
+    REVISION     "201503250000Z"
+    DESCRIPTION  "Added the trap node unisSysDyingGaspTrap into unisSystemNotification."
+    REVISION     "201408071710Z"
+    DESCRIPTION  "Added unisSystemDiagInfoTable."
+    REVISION     "201309130000Z"
+    DESCRIPTION  "Added normal(0) to node unisReboot."
+    REVISION     "201305280000Z"
+    DESCRIPTION  "Added trap node unisSysLoghostUnreachableTrap."
+    REVISION     "201206060000Z"
+    DESCRIPTION  "Added node unisSysBannerMOTD."
+    REVISION     "201201070000Z"
+    DESCRIPTION  "Added node unisSysTrapSendNum and unisSysFirstTrapTime."
+    REVISION     "200905050000Z"
+    DESCRIPTION  "Added unisSysStatisticPeriod, unisSysSamplePeriod,
+                  unisSysTrapResendPeriod, unisSysTrapCollectionPeriod,
+                  unisSysColdStartTrap, unisSysWarmStartTrap, unisSysSnmpPort,
+                  unisSysSnmpTrapPort, unisSysNetID, unisSysLastSampleTime."
+    REVISION     "200811110000Z"
+    DESCRIPTION  "added node unisSysBootType."
+    REVISION     "200410120000Z"
+    DESCRIPTION  "Imported from SNMPv2-SMI and SNMPv2-TC instead of
+                  RFC1212 and RFC1155-SMI.
+                  Changed ACCESS clauses to MAX-ACCESS.
+                  Changed STATUS clauses from mandatory to current."
+    REVISION     "200408160000Z"
+    DESCRIPTION  "Added the trap node 'unisRebootSendTrap' into unisSystemNotification."
+    REVISION     "200406300000Z"
+    DESCRIPTION  "Initial revision of this MIB module."
+    ::= { unisNetworking 6 }
+
+-- ==============================
+-- Begin define of unismHostName
+-- ==============================
+
+    unisWriteConfig OBJECT-TYPE
+        SYNTAX INTEGER{
+                       save(1)
+                      }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Write config to router."
+        ::= { unisSystem 5 }
+
+    unisStartFtpServer OBJECT-TYPE
+        SYNTAX INTEGER{
+                       enable(1),
+                       disable(2)
+                       }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Decide whether start ftp-server.enable(1) indicates to start ftp-server;
+            disable(2) indicates to stop ftp-server."
+        ::= { unisSystem 6 }
+
+    unisReboot OBJECT-TYPE
+        SYNTAX INTEGER{
+                       normal(0),
+                       reboot(1)
+                       }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "normal: do nothing.
+            reboot: reboot the device.
+            'normal' will be returned when getting."
+        ::= { unisSystem 7 }
+
+    unisSystemNotification OBJECT IDENTIFIER ::= { unisSystem 8 }
+
+    unisWriteSuccessTrap NOTIFICATION-TYPE
+        STATUS current
+        DESCRIPTION
+            "Send a trap about write success."
+        ::= { unisSystemNotification 1 }
+
+    unisWriteFailureTrap NOTIFICATION-TYPE
+        STATUS current
+        DESCRIPTION
+            "Send a trap about write failure."
+        ::= { unisSystemNotification 2 }
+
+    unisRebootSendTrap NOTIFICATION-TYPE
+        STATUS current
+        DESCRIPTION
+            "If a user restarts the device with command
+            'reboot', this trap will be sent two seconds
+             before the device reboots."
+        ::= { unisSystemNotification 3 }
+
+    unisSysColdStartTrap NOTIFICATION-TYPE
+        OBJECTS
+            {
+                unisSysFirstTrapTime
+            }
+        STATUS current
+        DESCRIPTION
+            "System cold start trap."
+        ::= { unisSystemNotification 4 }
+
+    unisSysWarmStartTrap NOTIFICATION-TYPE
+        OBJECTS
+            {
+                unisSysFirstTrapTime
+            }
+        STATUS current
+        DESCRIPTION
+            "System warm start trap."
+        ::= { unisSystemNotification 5 }
+
+    unisSysLoghostUnreachableTrap NOTIFICATION-TYPE
+        OBJECTS
+        {
+            unisSysLoghostIndex,
+            unisSysLoghostIpaddressType,
+            unisSysLoghostIpaddress,
+            unisSysLoghostTrapVpnName
+        }
+        STATUS      current
+        DESCRIPTION
+            "This notification will be sent when a loghost becomes unreachable."
+        ::= { unisSystemNotification 6}
+
+    unisSysDyingGaspTrap NOTIFICATION-TYPE
+        STATUS      current
+        DESCRIPTION
+            "This notification will be sent upon loss of power."
+        ::= { unisSystemNotification 7}
+
+    unisSoftwareVersion OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Software version."
+        ::= { unisSystem 9 }
+
+    unisSysBootType OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+            coldStart(1),           -- Cold start
+            warmStart(2)            -- Warm start
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Boot type of the system, indicates whether the last device reboot was by
+            CLI (warm start) or power off (cold start)."
+        ::= { unisSystem 10 }
+
+    unisSystemInfo OBJECT IDENTIFIER ::= { unisSystem 11 }
+
+    unisSysStatisticPeriod OBJECT-TYPE
+        SYNTAX      Integer32(0..900)
+        UNITS       "seconds"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Statistic period.  The device collects statistics
+             within the period."
+        DEFVAL { 0 }
+        ::= { unisSystemInfo 1 }
+
+    unisSysSamplePeriod OBJECT-TYPE
+        SYNTAX      Integer32(0..300)
+        UNITS       "seconds"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Sampling period.  The device takes samples periodically
+             for statistics collection."
+        DEFVAL { 0 }
+        ::= { unisSystemInfo 2 }
+
+    unisSysTrapResendPeriod OBJECT-TYPE
+        SYNTAX      Integer32(0..3600)
+        UNITS       "seconds"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Trap resending period.  If the value is zero, the trap
+             will not be re-sent."
+        DEFVAL { 0 }
+        ::= { unisSystemInfo 3 }
+
+    unisSysTrapCollectionPeriod OBJECT-TYPE
+        SYNTAX      Integer32(0..60)
+        UNITS       "seconds"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Trap collecting period.  If the value is zero, the trap
+             will not be re-sent."
+        DEFVAL { 0 }
+        ::= { unisSystemInfo 4 }
+
+    unisSysSnmpPort OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "UDP port for SNMP protocol entity to receive messages except Trap-PDU."
+        ::= { unisSystemInfo 5 }
+
+    unisSysSnmpTrapPort OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "UDP port for Trap-PDU to receive messages."
+        ::= { unisSystemInfo 6 }
+
+    unisSysNetID OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..127))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "System Net ID."
+        ::= { unisSystemInfo 7 }
+
+    unisSysLastSampleTime OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Last sampling time of the system."
+        ::= { unisSystemInfo 8 }
+
+    unisSysTrapSendNum OBJECT-TYPE
+        SYNTAX      Integer32(0..24)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Maximum number of times for sending a trap.  If the value is zero,
+            a trap will be sent at an interval continually."
+        ::= { unisSystemInfo 9 }
+
+    unisSysFirstTrapTime OBJECT-TYPE
+        SYNTAX      TimeTicks
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "Time when the first trap is sent."
+        ::= { unisSystemInfo 10 }
+
+    unisSysBannerMOTD OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..2000))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "An administratively configured message that is displayed
+             to the user when the user logs in to the device through
+             the console port or Web interface."
+        ::= { unisSystemInfo 11 }
+
+    unisSystemNotificationInfo OBJECT IDENTIFIER ::= { unisSystem 12 }
+
+    unisSysLoghostIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "Index of loghost."
+        ::= { unisSystemNotificationInfo 1 }
+
+    unisSysLoghostIpaddressType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "IP address type of the loghost."
+        ::= { unisSystemNotificationInfo 2 }
+
+    unisSysLoghostIpaddress OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "IP address of the loghost."
+        ::= { unisSystemNotificationInfo 3 }
+
+    unisSysLoghostTrapVpnName OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..31))
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "VPN name of the loghost."
+        ::= { unisSystemNotificationInfo 4 }
+
+-- unisSystemDiagInfoTable
+    unisSystemDiagInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisSystemDiagInfoEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION     "This table is used to write diagnosis-information file."
+        ::= { unisSystem 13 }
+    unisSystemDiagInfoEntry OBJECT-TYPE
+        SYNTAX          UnisSystemDiagInfoEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION     "The entry of unisSystemDiagInfoTable.
+                        The maximum number of entries of this table is 10.
+                        When creating a new entry if there are already
+                        10 entries in this table, the oldest entry will be
+                        deleted automatically."
+        INDEX { unisSystemDiagInfoIndex }
+        ::= { unisSystemDiagInfoTable 1 }
+    UnisSystemDiagInfoEntry ::= SEQUENCE {
+        unisSystemDiagInfoIndex             Integer32,
+        unisSystemDiagInfoFilename          DisplayString,
+        unisSystemDiagInfoRowStatus         RowStatus,
+        unisSystemDiagInfoOperEndTime       TimeStamp,
+        unisSystemDiagInfoOperState         INTEGER,
+        unisSystemDiagInfoOperFailReason    DisplayString
+     }
+    unisSystemDiagInfoIndex OBJECT-TYPE
+        SYNTAX          Integer32 (1..2147483647)
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION     "Specifies the index of an entry."
+        ::= { unisSystemDiagInfoEntry 1 }
+    unisSystemDiagInfoFilename OBJECT-TYPE
+        SYNTAX          DisplayString (SIZE (0..255))
+        MAX-ACCESS      read-create
+        STATUS          current
+        DESCRIPTION     "Specifies the name of diagnosis-information file.
+                        When creating a row without this column, the system
+                        will generate a default filename instead."
+        ::= { unisSystemDiagInfoEntry 2 }
+    unisSystemDiagInfoRowStatus OBJECT-TYPE
+        SYNTAX          RowStatus
+        MAX-ACCESS      read-create
+        STATUS          current
+        DESCRIPTION     "The row status of this entry.
+                        Only active, createAndGo, and destroy are supported."
+        ::= { unisSystemDiagInfoEntry 3 }
+    unisSystemDiagInfoOperEndTime OBJECT-TYPE
+        SYNTAX          TimeStamp
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION     "The time when this operation was completed."
+        ::= { unisSystemDiagInfoEntry 4 }
+    unisSystemDiagInfoOperState OBJECT-TYPE
+        SYNTAX          INTEGER
+                        {
+                            opInProgress(1),
+                            opSuccess(2),
+                            opFailure(3)
+                        }
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION     "The state of this operation.
+                        If the state of this operation is opFailure, the detailed
+                        information can be read by unisSystemDiagInfoOperFailReason."
+        ::= { unisSystemDiagInfoEntry 5 }
+    unisSystemDiagInfoOperFailReason OBJECT-TYPE
+        SYNTAX          DisplayString (SIZE (0..255))
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION     "The failure reasons of this operation."
+        ::= { unisSystemDiagInfoEntry 6 }
+
+    unisSystemWorkingMode OBJECT IDENTIFIER ::= { unisSystem 14 }
+
+-- unisSystemWorkingModeTable
+    unisSystemWorkingModeTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisSystemWorkingModeEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION     "This table is used to show the system operating mode information.
+                        The supported features and the specifications of the
+                        supported features vary by system operating mode.
+                        The mode will take effect on the entire device."
+        ::= { unisSystemWorkingMode 1 }
+    unisSystemWorkingModeEntry OBJECT-TYPE
+        SYNTAX          UnisSystemWorkingModeEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION     "The entry of unisSystemtemWorkingModeTable."
+        INDEX { unisSystemWorkingModeIndex }
+        ::= { unisSystemWorkingModeTable 1 }
+    UnisSystemWorkingModeEntry ::= SEQUENCE {
+        unisSystemWorkingModeIndex             Integer32,
+        unisSystemWorkingModeName              DisplayString,
+        unisSystemWorkingModeDescr       DisplayString
+     }
+    unisSystemWorkingModeIndex OBJECT-TYPE
+        SYNTAX          Integer32 (1..2147483647)
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION     "The unique index of unisSystemWorkingModeTable.
+                        The value should be a a small-incremental integer.
+                        An index value uniquely identifies a system operating mode."
+        ::= { unisSystemWorkingModeEntry 1 }
+    unisSystemWorkingModeName OBJECT-TYPE
+        SYNTAX          DisplayString (SIZE (1..32))
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION     "The name that uniquely identifies the system operating mode.
+                        The value should not contain blank spaces."
+        ::= { unisSystemWorkingModeEntry 2 }
+    unisSystemWorkingModeDescr OBJECT-TYPE
+        SYNTAX          DisplayString (SIZE (1..128))
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION     "Description of the system operating mode."
+        ::= { unisSystemWorkingModeEntry 3 }
+
+     unisSystemWorkingModeDefault OBJECT-TYPE
+        SYNTAX          Integer32 (1..2147483647)
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION     "The default system operating mode.
+                        Different device devices might have different
+                        default system operating modes.
+                        The value is from unisSystemWorkingModeIndex."
+        ::= { unisSystemWorkingMode 2 }
+
+    unisSystemWorkingModeCurrent OBJECT-TYPE
+        SYNTAX          Integer32 (1..2147483647)
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION     "The current system operating mode.
+                        The value is from unisSystemWorkingModeIndex."
+        ::= { unisSystemWorkingMode 3 }
+
+    unisSystemWorkingModeNext OBJECT-TYPE
+        SYNTAX          Integer32 (1..2147483647)
+        MAX-ACCESS      read-write
+        STATUS          current
+        DESCRIPTION     "The system operating mode to be used at next startup.
+                        A mode change takes effect after the running
+                        configuration is saved and the device is rebooted.
+                        The value is from unisSystemWorkingModeIndex."
+        ::= { unisSystemWorkingMode 4 }
+
+END

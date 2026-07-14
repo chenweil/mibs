@@ -1,0 +1,1853 @@
+-- ===========================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description: The MIB is designed to manage the snap of storage device.
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2007-09-14 created by yangqi
+-- =================================================================
+UNIS-STORAGE-SNAP-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+        Counter32, Integer32,
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        TEXTUAL-CONVENTION, TruthValue, DateAndTime, RowStatus
+    FROM SNMPv2-TC
+        InetAddressType, InetAddress
+    FROM INET-ADDRESS-MIB
+        entPhysicalIndex
+    FROM ENTITY-MIB
+        UnisStorageOnlineState, UnisStorageEnableState, UnisStorageActionType,
+        UnisLvIDType, UnisRaidIDType, UnisExtendSelectPolicy, unisStorageRef
+    FROM UNIS-STORAGE-REF-MIB;
+
+unisStorageSnap MODULE-IDENTITY
+    LAST-UPDATED "200709141452Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB describes the general information about snap of storage device."
+    ::= { unisStorageRef 2 }
+
+unisSnapMibObjects OBJECT IDENTIFIER ::= { unisStorageSnap 1 }
+
+unisGlobalSnapSettingsObject  OBJECT IDENTIFIER ::= { unisSnapMibObjects 1 }
+unisAddtionalSpaceMaxSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "TB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the maximal size of snapshot resource, safecache, 
+        and Continued replication Resource ."
+    ::= { unisGlobalSnapSettingsObject 1 }
+
+-- Snap Resource Config Table
+-- This table described how to config a snap on a special logic volume.
+unisSnapConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisSnapConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to config the snapshot resources for special logic
+        volumes."
+    ::= { unisSnapMibObjects 2 }
+
+unisSnapConfigEntry OBJECT-TYPE
+    SYNTAX      UnisSnapConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing configuration about the snapshot resource."
+    INDEX
+        {
+            unisSnapLvIndex
+        }
+
+    ::= { unisSnapConfigTable 1 }
+
+UnisSnapConfigEntry ::= SEQUENCE
+    {
+        unisSnapLvIndex             UnisLvIDType,
+        unisSnapAreaId              UnisLvIDType,
+        unisSnapAreaAutoExpand      UnisStorageEnableState,
+        unisSnapAreaThreshold       Integer32,
+        unisSnapAreaIncSize         Integer32,
+        unisSnapAreaMaxSize         Integer32,
+        unisSnapAreaFullDeleteTM    INTEGER,
+        unisSnapAreaNotify          UnisStorageEnableState,
+        unisSnapAreaStatus          UnisStorageOnlineState,
+        unisSnapRaidUuid            UnisRaidIDType,
+        unisSnapRaidSize            Integer32,
+        unisSnapRaidSelectPolicy    UnisExtendSelectPolicy,
+        unisSnapAreaTotalSize       Integer32,
+        unisSnapAreaFreeSize        Integer32,
+        unisSnapExtendTimes         Integer32,
+        unisSnapRowStatus           RowStatus
+    }
+
+unisSnapLvIndex OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the index of unisSnapConfigTable. The object
+        identified by this index is the same object as identified by the
+        same value of unisLvIndex."
+    ::= { unisSnapConfigEntry 1 }
+
+unisSnapAreaId OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the snapshot resource of the logic volume."
+    ::= { unisSnapConfigEntry 2 }
+
+unisSnapAreaAutoExpand OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes if the space of snapshot resource can be expanded
+        automatically."
+    DEFVAL { disable }
+    ::= { unisSnapConfigEntry 3 }
+
+unisSnapAreaThreshold OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "If unisSnapAreaAutoExpand is selected, the 'unisSnapAreaThreshold' means 
+        the threshold of the snapshot resource."
+    ::= { unisSnapConfigEntry 4 }
+
+unisSnapAreaIncSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "If unisSnapAreaAutoExpand is selected, the 'unisSnapAreaIncSize' means 
+        the amount of space to be allocated for each expansion."
+    ::= { unisSnapConfigEntry 5 }
+
+
+unisSnapAreaMaxSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "If unisSnapAreaAutoExpand is selected, the 'unisSnapAreaIncSize' means the
+        max size of snapshot resource."
+    ::= { unisSnapConfigEntry 6 }
+
+unisSnapAreaFullDeleteTM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            rotative(1),
+            none(2)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the snapshot resource is out of space and expand 
+        failed, if the system delete the old timemark until enough space or not."        
+    DEFVAL { none }
+    ::= { unisSnapConfigEntry 7 }
+
+unisSnapAreaNotify OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes if a snapshot notification should be send to the client when the
+        system create a timemark."
+    ::= { unisSnapConfigEntry 8 }
+
+unisSnapAreaStatus OBJECT-TYPE
+    SYNTAX      UnisStorageOnlineState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the state of the snapshot resource."
+    ::= { unisSnapConfigEntry 9 }
+
+unisSnapRaidUuid OBJECT-TYPE
+    SYNTAX      UnisRaidIDType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the raid where the snapshot resource is created."
+    ::= { unisSnapConfigEntry 10 }
+
+
+
+unisSnapRaidSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the size designated when the snapshot resource
+        is created."
+    ::= { unisSnapConfigEntry 11 }
+
+
+unisSnapRaidSelectPolicy OBJECT-TYPE
+    SYNTAX      UnisExtendSelectPolicy
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the policy when the snapshot resource is created
+        automatically.             
+        Note that the value can not be 'none' when the value of associated
+        unisSnapRaidUuid object is equal to null."
+    DEFVAL { none }
+    ::= { unisSnapConfigEntry 12 }
+
+
+unisSnapAreaTotalSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the current total size of the snapshot resource."
+    ::= { unisSnapConfigEntry 13 }
+
+unisSnapAreaFreeSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the free size of the snapshot resource."
+    ::= { unisSnapConfigEntry 14 }
+
+
+unisSnapExtendTimes OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the times the snapshot resource extended."
+    ::= { unisSnapConfigEntry 15 }
+    
+unisSnapRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the action of snapshot resource.
+        Note that the assocai snapshot resource can not be delete when a snapshot copy is
+        processing or the TimeMark is enabled, or the replication is enabled."
+    ::= { unisSnapConfigEntry 16 }
+
+
+-- Snap Resource Expand Table
+-- This table described how to expand a snapshot resource.
+unisSnapExpandTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisSnapExpandEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to expand a snapshot resource."
+    ::= { unisSnapMibObjects 3 }
+
+unisSnapExpandEntry OBJECT-TYPE
+    SYNTAX      UnisSnapExpandEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing expand information applicable to the snapshot resource."
+    INDEX
+        {
+            unisSnapLvIndex,
+            unisSAExpRaidUuid
+        }
+
+    ::= { unisSnapExpandTable 1 }
+
+UnisSnapExpandEntry ::= SEQUENCE
+    {
+        unisSAExpRaidUuid        UnisRaidIDType,
+        unisSAExpSize            Integer32,
+        unisSAExpRaidSize        Integer32,
+        unisSnapAreaExpRowStatus RowStatus
+    }
+
+unisSAExpRaidUuid OBJECT-TYPE
+    SYNTAX      UnisRaidIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This index is identical to unisRaidUuid in UNIS-RAID-MIB."
+    ::= { unisSnapExpandEntry 1 }
+
+unisSAExpSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the increased size for snapshot resource when
+        expanded. The units is million bytes. The value is always equal to
+        zero when read."
+    ::= { unisSnapExpandEntry 2 }
+
+
+unisSAExpRaidSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the size for snapshot resource on the raid.
+        The units is million bytes. The value is always equal to
+        zero when read."
+    ::= { unisSnapExpandEntry 3 }
+
+unisSnapAreaExpRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to expand the size for snap."
+    ::= { unisSnapExpandEntry 4 }
+
+
+-- Snap Resource Copy Table
+-- This table described how to take a snapshot copy.
+unisSnapCopyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisSnapCopyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity about snapshot copy."
+    ::= { unisSnapMibObjects 4 }
+
+unisSnapCopyEntry OBJECT-TYPE
+    SYNTAX      UnisSnapCopyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing snapshot copy information applicable."
+    INDEX
+        {
+            unisSnapLvIndex
+        }
+
+    ::= { unisSnapCopyTable 1 }
+
+UnisSnapCopyEntry ::= SEQUENCE
+    {
+        unisSnapCopyLvIndex       UnisLvIDType,
+        unisSnapCopyPercentage    Integer32,
+        unisSnapCopyStartTime     DateAndTime,
+        unisSnapCopySwitch        INTEGER
+    }
+
+unisSnapCopyLvIndex OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the index of destination logic volume for
+        snapshot copy."
+    ::= { unisSnapCopyEntry 1 }
+
+unisSnapCopyPercentage OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the percentage of snapshot copy. The value
+        is equal to zero if the snapshot copy has not started. When finished,
+        the value is always equal to '100'."
+    ::= { unisSnapCopyEntry 2 }
+
+unisSnapCopyStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the time to start the snapshot copy."
+    ::= { unisSnapCopyEntry 3 }
+
+unisSnapCopySwitch OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            start(1),
+            stop(2),
+            none(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to start or stop the snapshot copy.
+        When read, the value of 'none' will be get.
+        Note that if the snapshot resource of source logic volume has not been
+        created, the action of snapshot copy will be refused by agent."
+    ::= { unisSnapCopyEntry 4 }
+
+
+-- TimeMark Resource Config Table
+-- This table described how to config a TimeMark resource on a special logic
+-- volume.
+unisTimeMarkConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTimeMarkConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to config a TimeMark on a special logic
+        volume."
+    ::= { unisSnapMibObjects 5 }
+
+unisTimeMarkConfigEntry OBJECT-TYPE
+    SYNTAX      UnisTimeMarkConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing config information applicable to the TimeMark."
+    INDEX
+        {
+            unisSnapLvIndex
+        }
+
+    ::= { unisTimeMarkConfigTable 1 }
+
+UnisTimeMarkConfigEntry ::= SEQUENCE
+    {
+        unisTimeMarkCounts            Integer32,
+        unisTimeMarkInitializeTime    DateAndTime,
+        unisTimeMarkInterval          Integer32,
+        unisTimeMarkLastTime          DateAndTime,
+        unisTimeMarkTotal             Integer32,
+        unisTimeMarkSwitch            UnisStorageEnableState
+    }
+
+
+unisTimeMarkCounts OBJECT-TYPE
+    SYNTAX      Integer32(1..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the max num of TimeMark which can be configed."
+    ::= { unisTimeMarkConfigEntry 1 }
+
+unisTimeMarkInitializeTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the date and time when the first TimeMark
+        is created on the logic volume."
+    ::= { unisTimeMarkConfigEntry 2 }
+
+unisTimeMarkInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the interval when the TimeMark is created
+        automatically if the value of this object is not equal to zero.
+        The units is second. the min value is 10 seconds."
+    ::= { unisTimeMarkConfigEntry 3 }
+
+unisTimeMarkLastTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the date and time when the latest TimeMark
+        is created on the logic volume."
+    ::= { unisTimeMarkConfigEntry 4 }
+
+unisTimeMarkTotal OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the current num of TimeMark."
+    ::= { unisTimeMarkConfigEntry 5 }
+
+unisTimeMarkSwitch OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes enable or disable TimeMark."
+    ::= { unisTimeMarkConfigEntry 6 }
+
+
+-- TimeMark Resource Create Table
+-- This table described how to create a TimeMark on a special logic
+-- volume.
+unisTimeMarkCreateTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTimeMarkCreateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to create a TimeMark on a special logic
+        volume."
+    ::= { unisSnapMibObjects 6 }
+
+unisTimeMarkCreateEntry OBJECT-TYPE
+    SYNTAX      UnisTimeMarkCreateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing create information applicable to the TimeMark."
+    INDEX
+        {
+            unisSnapLvIndex,
+            unisTimeMarkStamp
+        }
+
+    ::= { unisTimeMarkCreateTable 1 }
+
+UnisTimeMarkCreateEntry ::= SEQUENCE
+    {
+        unisTimeMarkStamp        DateAndTime,
+        unisTimeMarkComment      OCTET STRING,
+        unisTimeMarkSize         Integer32,
+        unisTimeMarkRowStatus    RowStatus
+    }
+
+unisTimeMarkStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the date and time the TimeMark is created."
+    ::= { unisTimeMarkCreateEntry 1 }
+
+unisTimeMarkComment OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the comment of the TimeMark."
+    ::= { unisTimeMarkCreateEntry 2 }
+
+unisTimeMarkSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "KB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the current size of the TimeMark."
+    ::= { unisTimeMarkCreateEntry 3 }
+
+unisTimeMarkRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the action to create or delete the TimeMark.
+        Note that the TimeMark can not be deleted if it is using."
+    ::= { unisTimeMarkCreateEntry 4 }
+
+
+-- TimeMark Copy Table
+-- This table described how to do a TimeMark copy.
+unisTimeMarkCopyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTimeMarkCopyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity about a TimeMark copy."
+    ::= { unisSnapMibObjects 7 }
+
+unisTimeMarkCopyEntry OBJECT-TYPE
+    SYNTAX      UnisTimeMarkCopyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing config information applicable to the TimeMark copy."
+    INDEX
+        {
+            unisSnapLvIndex,
+            unisTimeMarkStamp
+        }
+
+    ::= { unisTimeMarkCopyTable 1 }
+
+UnisTimeMarkCopyEntry ::= SEQUENCE
+    {
+        unisTMCopyDestLvId      UnisLvIDType,
+        unisTMCopyPercentage    Integer32,
+        unisTMCopyStartTime     DateAndTime,
+        unisTMCopySwitch        INTEGER
+    }
+
+
+unisTMCopyDestLvId OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the index of destination logic volume for
+        TimeMark copy."
+    ::= { unisTimeMarkCopyEntry 1 }
+
+unisTMCopyPercentage OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the percentage of TimeMark copy. The value
+        is equal to zero if the TimeMark copy has not started. When finished,
+        the value is always equal to '100'."
+    ::= { unisTimeMarkCopyEntry 2 }
+
+
+unisTMCopyStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the time to start the TimeMark copy."
+    ::= { unisTimeMarkCopyEntry 3 }
+
+unisTMCopySwitch OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            start(1),
+            stop(2),
+            none(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to start or stop the TimeMark copy.
+        When read, the value of 'none' will be get."
+    ::= { unisTimeMarkCopyEntry 4 }
+
+
+-- TimeMark Rollback Table
+-- This table described how to use a TimeMark to rollback the logic volume.
+unisTimeMarkRollbackTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTimeMarkRollbackEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to use a TimeMark to rollback the logic volume."
+    ::= { unisSnapMibObjects 8 }
+
+unisTimeMarkRollbackEntry OBJECT-TYPE
+    SYNTAX      UnisTimeMarkRollbackEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing config information applicable to use a TimeMark to rollback the logic volume."
+    INDEX
+        {
+            unisSnapLvIndex,
+            unisTimeMarkStamp
+        }
+
+    ::= { unisTimeMarkRollbackTable 1 }
+
+UnisTimeMarkRollbackEntry ::= SEQUENCE
+    {
+        unisTMRollbackPercentage    Integer32,
+        unisTMRollbackStartTime     DateAndTime,
+        unisTMRollbackSwitch        UnisStorageActionType
+    }
+
+unisTMRollbackPercentage OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the percentage of rollback."
+    ::= { unisTimeMarkRollbackEntry 1 }
+
+unisTMRollbackStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the time to start the rollback."
+    ::= { unisTimeMarkRollbackEntry 2 }
+
+unisTMRollbackSwitch OBJECT-TYPE
+    SYNTAX      UnisStorageActionType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to use a TimeMark to rollback the logic volume.
+        Note that once you roll back, you cannot roll forward, all the later TimeMark behind it
+        will be deleted."
+    ::= { unisTimeMarkRollbackEntry 3 }
+
+
+-- Time View Table
+-- This table described how to config TimeView on a special TimeMark
+-- mark.
+unisTimeViewTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTimeViewEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to config a TimeView on a special
+        TimeMark."
+    ::= { unisSnapMibObjects 9 }
+
+unisTimeViewEntry OBJECT-TYPE
+    SYNTAX      UnisTimeViewEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing config information applicable to the TimeView."
+    INDEX
+        {
+            unisSnapLvIndex,
+            unisTimeViewStamp
+        }
+
+    ::= { unisTimeViewTable 1 }
+
+UnisTimeViewEntry ::= SEQUENCE
+    {
+        unisTimeViewStamp     DateAndTime,
+        unisTimeViewID        UnisLvIDType,
+        unisTimeViewName      OCTET STRING,
+        unisTimeViewRowStatus RowStatus
+    }
+    
+unisTimeViewStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the TimeView. The object identified by this
+        index is the same object as identified by the same value of 
+        unisTimeMarkStamp."
+    ::= { unisTimeViewEntry 1 }
+    
+unisTimeViewID OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the TimeView. "
+    ::= { unisTimeViewEntry 2 }
+
+unisTimeViewName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the name of the TimeView."
+    ::= { unisTimeViewEntry 3 }
+
+unisTimeViewRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to create or delete the TimeView."
+    ::= { unisTimeViewEntry 4 }
+
+
+-- Logic Volume Replica Config Table
+-- This table described how to config logic volume replica.
+unisReplicaConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisReplicaConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to config replication for a logic volume."
+    ::= { unisSnapMibObjects 10 }
+
+unisReplicaConfigEntry OBJECT-TYPE
+    SYNTAX      UnisReplicaConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing config information applicable to the replication for a logic volume."
+    INDEX
+        {
+            unisRepLocalLvIndex
+        }
+
+    ::= { unisReplicaConfigTable 1 }
+
+UnisReplicaConfigEntry ::= SEQUENCE
+    {
+        unisRepLocalLvIndex  	    	UnisLvIDType,
+        unisLvRepLocalWay            	INTEGER,
+        unisRepLocalServerIP          	InetAddress,
+        unisRepLocalServerIPType      	InetAddressType,
+        unisRepLocalServerName        	OCTET STRING,
+        unisRepLocalServerUsername    	OCTET STRING,
+        unisRepLocalServerPassword    	OCTET STRING,
+        unisRepRemoteServerIP          	InetAddress,
+        unisRepRemoteServerIPType      	InetAddressType,
+        unisRepRemoteServerName        	OCTET STRING,
+        unisRepRemoteServerUsername    	OCTET STRING,
+        unisRepRemoteServerPassword    	OCTET STRING,
+        unisRepRemoteLvIndex         	UnisLvIDType,
+        unisReplicaMode              	INTEGER,
+        unisReplicaWatermark         	Integer32,
+        unisReplicaWatermarkRetry    	Integer32,
+        unisReplicaInitializeTime    	DateAndTime,
+        unisReplicaInterval          	Integer32,
+        unisReplicaEncrypt           	UnisStorageEnableState,
+        unisReplicaCompress          	UnisStorageEnableState,
+        unisReplicaUseExistTM        	UnisStorageEnableState,
+        unisReplicaProtocol          	INTEGER,
+        unisReplicaScanDiff          	TruthValue,
+        unisReplicaStatSwitch        	INTEGER,
+        unisReplicaRowStatus         	RowStatus
+    }
+
+
+unisRepLocalLvIndex OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the local logic volume that is related with 
+        replication. The object identified by this index is the same object 
+        as identified by the same value of unisSnapLvIndex."
+    ::= { unisReplicaConfigEntry 1 }
+
+unisLvRepLocalWay OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            outgoing(1),
+            incoming(2)            
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of 'outgoing' means the unisRepLocalLvIndex is the primary logic 
+        volume of replication, and the unisRepRemoteLvIndex is the replica logic volume.
+        The value of 'incoming' means the unisRepLocalLvIndex is the replica logic 
+        volume of replication. , and the unisRepRemoteLvIndex is the primary logic volume."
+    ::= { unisReplicaConfigEntry 2 }
+
+unisRepLocalServerIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the ip address of local server."
+    ::= { unisReplicaConfigEntry 3 }
+
+unisRepLocalServerIPType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the ip address type of local server."
+    ::= { unisReplicaConfigEntry 4 }
+
+unisRepLocalServerName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the name of local server."
+    ::= { unisReplicaConfigEntry 5 }
+
+unisRepLocalServerUsername OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..32))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the username of local server."
+    ::= { unisReplicaConfigEntry 6 }
+
+unisRepLocalServerPassword OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..127))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the password of local server."
+    ::= { unisReplicaConfigEntry 7 }
+
+unisRepRemoteServerIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the ip address of remote server."
+    ::= { unisReplicaConfigEntry 8 }
+
+unisRepRemoteServerIPType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the ip address type of remote server."
+    ::= { unisReplicaConfigEntry 9 }
+
+unisRepRemoteServerName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the name of remote server."
+    ::= { unisReplicaConfigEntry 10 }
+
+unisRepRemoteServerUsername OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..32))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the username of remote server."
+    ::= { unisReplicaConfigEntry 11 }
+
+unisRepRemoteServerPassword OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..127))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the password of remote server."
+    ::= { unisReplicaConfigEntry 12 }
+
+unisRepRemoteLvIndex OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the logic volume of remote server."
+    ::= { unisReplicaConfigEntry 13 }
+
+unisReplicaMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            adaptive(1),
+            remote(2),
+            none(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the replication mode:
+        The value of 'adaptive' means that data from the primary resource is 
+        continuously replicated to a replica resource unless the system determines 
+        it is not practical or possible.
+        The value of 'remote' means that a snapshot is taken of the primary resource at 
+        prescribed intervals based on the criteria you set (schedule and/or watermark 
+        value).
+        Note that the associated Continuous Replication Resource can not be created
+        if the value of this boject is not equal to 'adaptive'."
+    ::= { unisReplicaConfigEntry 14 }
+
+unisReplicaWatermark OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the size of watermark which means a replication is scheduled."
+    ::= { unisReplicaConfigEntry 15 }
+
+unisReplicaWatermarkRetry OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "If the 'unisReplicaWatermark' is set, This object identifies the interval time to 
+        retry if the last replication is failed. 
+        The units is minute."
+    ::= { unisReplicaConfigEntry 16 }
+
+unisReplicaInitializeTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the time to start an initial replication."
+    ::= { unisReplicaConfigEntry 17 }
+
+unisReplicaInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies how often the replication should be repeated after initial 
+        replication. The units is minute."
+    ::= { unisReplicaConfigEntry 18 }
+
+unisReplicaEncrypt OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the encrypt option is enable or diable."
+    DEFVAL { disable }
+    ::= { unisReplicaConfigEntry 19 }
+
+unisReplicaCompress OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the compress option is enable or diable."
+    DEFVAL { disable }
+    ::= { unisReplicaConfigEntry 20 }
+
+unisReplicaUseExistTM OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if using the exist TimeMark to replicate or not."
+    DEFVAL { disable }
+    ::= { unisReplicaConfigEntry 21 }
+
+unisReplicaProtocol OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            tcp(1),
+            rudp(2)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the protocol about replication. The value 'tcp' means
+        Transmission Control Protocol, and 'rudp' means Reliable User Datagram Protocol."
+    ::= { unisReplicaConfigEntry 22 }
+
+unisReplicaScanDiff OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the system to scan both the primary and replica resource 
+        to determine how much data needs to be synchronized."
+    ::= { unisReplicaConfigEntry 23 }
+
+unisReplicaStatSwitch OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            promte(1),
+            sync(2),
+            scan(3),
+            reversal(4),
+            stop(5),
+            suspend(6),
+            resume(7),
+            none(8)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the action how to operate the replica.
+        When read , a value of 'none' will be get.
+        The value of 'promte' means remove the replication relation and promote 
+        the remote copy on the target server.
+        The value of 'sync' means synchronize mannually (force a replication that 
+        is not scheduled.)        
+        The value of 'scan' means scan the delta data between primary resource and 
+        replica resource.
+        The value of 'reversal' means switch the roles of the primary resource and 
+        replica resource. The replication configuration is maintained. The primary 
+        and replica must be synchronized in order to reverse a replica. 
+        The value of 'stop' means stop a replication that is currently in progress.
+        The value of 'suspend' means suspend future replications from automatically 
+        being triggered by replication policies (watermark, interval, time). This will 
+        not stop a replication that is currently in progress.
+        The value of 'resume' means resume the replication status from suspended to 
+        normal.
+        Note that if the action of 'upgrade' is executed successfully, this replica
+        resource will become a normal logic volume, and this entry will be deleted
+        automatically.
+        Note that if the action of 'reversal' is executed successfully, Clients will 
+        be disconnected from the former primary resource."
+    ::= { unisReplicaConfigEntry 24 }
+
+unisReplicaRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the action to enable or disable the replication."
+    ::= { unisReplicaConfigEntry 25 }
+
+-- Logic Volume Replication State Table
+-- This table described the replication state.
+unisReplicaStateTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisReplicaStateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to show replication state."
+    ::= { unisSnapMibObjects 11 }
+
+unisReplicaStateEntry OBJECT-TYPE
+    SYNTAX      UnisReplicaStateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing show information applicable to the replication state."
+    INDEX
+        {
+            unisRepLocalLvIndex
+        }
+
+    ::= { unisReplicaStateTable 1 }
+
+UnisReplicaStateEntry ::= SEQUENCE
+    {
+        unisReplicaDelta              Integer32,
+        unisReplicaLastSyncTime       DateAndTime,
+        unisReplicaNextSyncTime       DateAndTime,
+        unisReplicaSyncTotalSize      Integer32,
+        unisReplicaSyncCurPercentage  Integer32,
+        unisReplicaSyncPerformance    Integer32,
+        unisReplicaRunStatus          INTEGER
+    }
+
+unisReplicaDelta OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the size of delta data after last sync."
+    ::= { unisReplicaStateEntry 1 }
+
+unisReplicaLastSyncTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the date and time when last sync is taken."
+    ::= { unisReplicaStateEntry 2 }
+
+unisReplicaNextSyncTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the date and time when next sync will be
+        taken."
+    ::= { unisReplicaStateEntry 3 }
+
+unisReplicaSyncTotalSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies how much data need to be synchronized to 
+        the replica resource for current replication."
+    ::= { unisReplicaStateEntry 4 }
+
+unisReplicaSyncCurPercentage OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies how much data has been synchronized to the 
+        replica resource for current replication."
+    ::= { unisReplicaStateEntry 5 }
+
+unisReplicaSyncPerformance OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the performance of the synchronize. The unit is MB/s."
+    ::= { unisReplicaStateEntry 6 }
+
+unisReplicaRunStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            suspend(1),
+            idle(2),
+            stop(3),
+            sync(4),
+            scan(5)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of the replica."
+    ::= { unisReplicaStateEntry 7 }
+
+
+
+-- Continued replication Resource Config Table
+-- This table described how to config Continuous Replication Resource for a adaptive replication.
+unisCDRConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisCDRConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to config Continuous Replication Resource."
+    ::= { unisSnapMibObjects 12 }
+
+unisCDRConfigEntry OBJECT-TYPE
+    SYNTAX      UnisCDRConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing some information applicable to Continuous Replication 
+        Resource of the logic volume."
+    INDEX
+        {
+            unisCDRLvIndex
+        }
+
+    ::= { unisCDRConfigTable 1 }
+
+UnisCDRConfigEntry ::= SEQUENCE
+    {
+        unisCDRLvIndex         UnisLvIDType,
+        unisCDRID              Integer32,
+        unisCDRStatus          UnisStorageOnlineState,
+        unisCDRTotalSize       Integer32,
+        unisCDRFreeSize        Integer32,
+        unisCDRSelectPolicy    UnisExtendSelectPolicy,
+        unisCDRRowStatus       RowStatus
+    }
+
+unisCDRLvIndex OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the source logic volume of the Continuous Replication 
+        Resource. The object identified by this index is the same object as identified 
+        by the same value of unisRepLocalLvIndex.
+        Note that an entry of unisCDRConfigTable can be created only when the associated 
+        unisCDRDistributeTable's objects is ready or the associated select policy is not 
+        equal to 'none'.
+        If an entry is deleted, the associated unisCDRDistributeTable objects should be 
+        deleted automatically."
+    ::= { unisCDRConfigEntry 1 }
+
+unisCDRID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the Continuous Replication Resource."
+    ::= { unisCDRConfigEntry 2 }
+
+unisCDRStatus OBJECT-TYPE
+    SYNTAX      UnisStorageOnlineState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of the Continuous Replication Resource."
+    ::= { unisCDRConfigEntry 3 }
+
+unisCDRTotalSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the total size of the Continuous Replication Resource."
+    ::= { unisCDRConfigEntry 4 }
+
+unisCDRFreeSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the free size of the Continuous Replication Resource."
+    ::= { unisCDRConfigEntry 5 }
+
+unisCDRSelectPolicy OBJECT-TYPE
+    SYNTAX      UnisExtendSelectPolicy
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the policy about allocating the space for Continuous 
+        Replication Resource."
+    DEFVAL { none }
+    ::= { unisCDRConfigEntry 6 }
+
+unisCDRRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the action to create or delete the Continuous Replication 
+        Resource."
+    ::= { unisCDRConfigEntry 7 }
+
+
+-- Continuous Replication Resource Distributing Table
+-- This table described how to config the distribution of Continuous Replication Resource.
+unisCDRDistributeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisCDRDistributeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to config the distribution of Continuous Replication 
+        Resource."
+    ::= { unisSnapMibObjects 13 }
+
+unisCDRDistributeEntry OBJECT-TYPE
+    SYNTAX      UnisCDRDistributeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing some information applicable to the distribution of Continuous 
+        Replication Resource."
+    INDEX
+        {
+            unisCDRDistLvIndex,
+            unisCDRRaidUuid
+        }
+
+    ::= { unisCDRDistributeTable 1 }
+
+UnisCDRDistributeEntry ::= SEQUENCE
+    {
+        unisCDRDistLvIndex     UnisLvIDType,
+        unisCDRRaidUuid        UnisRaidIDType,
+        unisCDRRaidSize        Integer32,
+        unisCDRExtRowStatus    RowStatus
+    }
+
+unisCDRDistLvIndex OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This index is identical to unisLvIndex in UNIS-LOGIC-VOLUME-MIB."
+    ::= { unisCDRDistributeEntry 1 }
+
+unisCDRRaidUuid OBJECT-TYPE
+    SYNTAX      UnisRaidIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This index is identical to unisRaidUuid in UNIS-RAID-MIB."
+    ::= { unisCDRDistributeEntry 2 }
+
+unisCDRRaidSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the size on the special raid distributed
+        for the Continuous Replication Resource."
+    ::= { unisCDRDistributeEntry 3 }
+
+unisCDRExtRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the action to create the distribution
+        for the Continuous Replication Resource."
+    ::= { unisCDRDistributeEntry 4 }
+
+
+-- SafeCache Config Table
+-- This table described how to config SafeCache of logic volume.
+unisSafeCacheConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisSafeCacheConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to config SafeCache."
+    ::= { unisSnapMibObjects 14 }
+
+unisSafeCacheConfigEntry OBJECT-TYPE
+    SYNTAX      UnisSafeCacheConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing some information applicable to SafeCache of
+        the logic volume."
+    INDEX
+        {
+            unisSafeCacheLvIndex
+        }
+
+    ::= { unisSafeCacheConfigTable 1 }
+
+UnisSafeCacheConfigEntry ::= SEQUENCE
+    {
+        unisSafeCacheLvIndex         UnisLvIDType,
+        unisSafeCacheID              Integer32,
+        unisSafeCacheStatus          UnisStorageOnlineState,
+        unisSafeCacheTotalSize       Integer32,
+        unisSafeCacheFreeSize        Integer32,
+        unisSafeCacheSelectPolicy    UnisExtendSelectPolicy,
+        unisSafeCacheThreshold       Integer32,
+        unisSafeCacheFlushTime       Integer32,
+        unisSafeCacheFlushCommand    Integer32,
+        unisSafeCacheSkipDupWrite    INTEGER,
+        unisSafeCacheRunStatus       INTEGER,
+        unisSafeCacheSwitch          INTEGER,
+        unisSafeCacheRowStatus       RowStatus
+    }
+
+unisSafeCacheLvIndex OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the source logic volume of the SafeCache.
+        The object identified by this index is the same object as identified
+        by the same value of unisLvindex.
+        Note that an entry of unisSafeCacheConfigTable can be created only when
+        the associated unisSafeCacheDistributeTable's objects is ready or the associated
+        select policy is not equal to 'none'.
+        If an entry is deleted, the associated unisSafeCacheDistributeTable
+        objects should be deleted automatically."
+    ::= { unisSafeCacheConfigEntry 1 }
+
+unisSafeCacheID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies a SafeCache."
+    ::= { unisSafeCacheConfigEntry 2 }
+
+
+unisSafeCacheStatus OBJECT-TYPE
+    SYNTAX      UnisStorageOnlineState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of the SafeCache."
+    ::= { unisSafeCacheConfigEntry 3 }
+
+unisSafeCacheTotalSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the total size of the SafeCache.
+        The units is million bytes."
+    ::= { unisSafeCacheConfigEntry 4 }
+
+unisSafeCacheFreeSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the free size of the SafeCache.
+        The units is million bytes."
+    ::= { unisSafeCacheConfigEntry 5 }
+
+unisSafeCacheSelectPolicy OBJECT-TYPE
+    SYNTAX      UnisExtendSelectPolicy
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the policy about allocating the space for SafeCache."
+    DEFVAL { none }
+    ::= { unisSafeCacheConfigEntry 6 }
+
+unisSafeCacheThreshold OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the maximal percentage of date changed
+        before data flushing."
+    ::= { unisSafeCacheConfigEntry 7 }
+
+
+unisSafeCacheFlushTime OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the period during which the date can stay
+        in cache before data flushing.
+        The units is second."
+    ::= { unisSafeCacheConfigEntry 8 }
+
+
+unisSafeCacheFlushCommand OBJECT-TYPE
+    SYNTAX      Integer32(1..64)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the number of commands when data flushing."
+    ::= { unisSafeCacheConfigEntry 9 }
+
+unisSafeCacheSkipDupWrite OBJECT-TYPE
+    SYNTAX      INTEGER
+	{
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies skip duplicate write commands or not."
+    ::= { unisSafeCacheConfigEntry 10 }
+
+unisSafeCacheRunStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            run(1),
+            suspend(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the run state of the SafeCache."
+    ::= { unisSafeCacheConfigEntry 11 }
+
+unisSafeCacheSwitch OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            suspend(1),
+            resume(2),
+            none(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the action of the SafeCache.
+        The value 'suspend' means suspend the SafeCache.
+        The value 'resume' means resume the SafeCache."
+    ::= { unisSafeCacheConfigEntry 12 }
+
+unisSafeCacheRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the action to create or delete the SafeCache."
+    ::= { unisSafeCacheConfigEntry 13 }
+
+
+-- SafeCache Resource Distributing Table
+-- This table described how to config SafeCache resource of logic volume.
+unisSafeCacheDistributeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisSafeCacheDistributeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to config the SafeCache resource."
+    ::= { unisSnapMibObjects 15 }
+
+unisSafeCacheDistributeEntry OBJECT-TYPE
+    SYNTAX      UnisSafeCacheDistributeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing some information applicable to SafeCache
+        resource of the logic volume."
+    INDEX
+        {
+            unisSafeCacheDistLvIndex,
+            unisSafeCacheRaidUuid
+        }
+
+    ::= { unisSafeCacheDistributeTable 1 }
+
+UnisSafeCacheDistributeEntry ::= SEQUENCE
+    {
+        unisSafeCacheDistLvIndex     UnisLvIDType,
+        unisSafeCacheRaidUuid        UnisRaidIDType,
+        unisSafeCacheRaidSize        Integer32,
+        unisSafeCacheExtRowStatus    RowStatus
+    }
+
+
+unisSafeCacheDistLvIndex OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This index is identical to unisLvIndex in UNIS-LOGIC-VOLUME-MIB."
+    ::= { unisSafeCacheDistributeEntry 1 }
+
+unisSafeCacheRaidUuid OBJECT-TYPE
+    SYNTAX      UnisRaidIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This index is identical to unisRaidUuid in UNIS-RAID-MIB."
+    ::= { unisSafeCacheDistributeEntry 2 }
+
+
+unisSafeCacheRaidSize OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the size on the special raid distributed
+        for the SafeCache resource."
+    ::= { unisSafeCacheDistributeEntry 3 }
+
+unisSafeCacheExtRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the action to create the distribution
+        for the SafeCache resource."
+    ::= { unisSafeCacheDistributeEntry 4 }
+
+
+
+
+-- Logic Volume Mirror Config Table
+-- This table described how to config mirror for a logic volume.
+unisMirrorConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMirrorConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to config mirror."
+    ::= { unisSnapMibObjects 16 }
+
+unisMirrorConfigEntry OBJECT-TYPE
+    SYNTAX      UnisMirrorConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing some information applicable to mirror for
+        the logic volume."
+    INDEX
+        {
+            unisMirrorLvIndex
+        }
+
+    ::= { unisMirrorConfigTable 1 }
+
+UnisMirrorConfigEntry ::= SEQUENCE
+    {
+        unisMirrorLvIndex            UnisLvIDType,
+        unisMirrorType               INTEGER,
+        unisMirrorStatus             UnisStorageOnlineState,
+        unisMirrorName               OCTET STRING,
+        unisMirrorSyncPercentage     Integer32,
+        unisMirrorSyncPerformance    Integer32,
+        unisMirrorDelta              Integer32,
+        unisMirrorRaidType           INTEGER,
+        unisMirrorSelectPolicy       UnisExtendSelectPolicy,
+        unisMirrorSwitch             INTEGER,
+        unisMirrorExtendRaidUuid     UnisRaidIDType,
+        unisMirrorRowStatus          RowStatus
+    }
+
+unisMirrorLvIndex OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the source logic volume of the mirror.
+        The object identified by this index is the same object as identified
+        by the same value of unisLvindex.
+        Note that an entry of unisMirrorConfigTable can be created only when
+        the associated unisMirrorDistributeTable's objects is ready or the associated
+        select policy is not equal to 'none'.
+        If an entry is deleted, the associated unisMirrorDistributeTable
+        objects should be deleted automatically."
+    ::= { unisMirrorConfigEntry 1 }
+
+unisMirrorType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            sync(1),
+            async(2),
+            none(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the type of the mirror."
+    ::= { unisMirrorConfigEntry 2 }
+
+unisMirrorStatus OBJECT-TYPE
+    SYNTAX      UnisStorageOnlineState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of the mirror resource."
+    ::= { unisMirrorConfigEntry 3 }
+
+unisMirrorName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the name of the mirror resource. it is used when 
+        promote mirror resource."
+    ::= { unisMirrorConfigEntry 4 }
+
+unisMirrorSyncPercentage OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the percentage of the mirror sync."
+    ::= { unisMirrorConfigEntry 5 }
+
+unisMirrorSyncPerformance OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the performance of the mirror sync. The unit is MB/S"
+    ::= { unisMirrorConfigEntry 6 }
+
+
+unisMirrorDelta OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"    
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies size of delta data after the last
+        mirror sync."
+    ::= { unisMirrorConfigEntry 7 }
+
+
+unisMirrorRaidType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            virtual(1),
+            serviceEnable(2),
+            none(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the raid type of the mirror resource."
+    ::= { unisMirrorConfigEntry 8 }
+
+
+unisMirrorSelectPolicy OBJECT-TYPE
+    SYNTAX      UnisExtendSelectPolicy
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the policy about allocating the space 
+        for mirror resource."
+    DEFVAL { none }
+    ::= { unisMirrorConfigEntry 9 }
+
+unisMirrorSwitch OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            sync(1),
+            swap(2),
+            promote(3),
+            none(4)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of the mirror.
+        The value of 'sync' means synchronize mannually.        
+        The value of 'swap' means switch the roles of the primary resource and 
+        mirror resource. 
+        The value of 'promte' means break the mirrored pair and convert the mirror 
+        resource into an independent logic volume. The new logic volume will have 
+        all of the properties of a regular logic volume.
+        Note that if the action of 'promte' is executed successfully, this mirror
+        resource will become a primary logic volume, and this entry will be deleted
+        automatically."
+    ::= { unisMirrorConfigEntry 10 }
+    
+unisMirrorExtendRaidUuid OBJECT-TYPE
+    SYNTAX      UnisRaidIDType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the raid of the mirror resource when the primary
+        logic volume resource is extended."
+    ::= { unisMirrorConfigEntry 11 }
+
+unisMirrorRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the action to create or delete the mirror resource."
+    ::= { unisMirrorConfigEntry 12 }
+
+
+-- Logic Volume Mirror Resource Distributing Table
+-- This table described how to config mirror resource for logic volume.
+unisMirrorDistributeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisMirrorDistributeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity to config the mirror resource."
+    ::= { unisSnapMibObjects 17 }
+
+unisMirrorDistributeEntry OBJECT-TYPE
+    SYNTAX      UnisMirrorDistributeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing some information applicable to mirror
+        resource for the logic volume."
+    INDEX
+        {
+            unisMirrorDistLvIndex,
+            unisMirrorRaidUuid
+        }
+
+    ::= { unisMirrorDistributeTable 1 }
+
+UnisMirrorDistributeEntry ::= SEQUENCE
+    {
+        unisMirrorDistLvIndex     UnisLvIDType,
+        unisMirrorRaidUuid        UnisRaidIDType,
+        unisMirrorRaidSize        Integer32,
+        unisMirrorExtRowStatus    RowStatus
+    }
+
+
+unisMirrorDistLvIndex OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This index is identical to unisLvIndex in UNIS-LOGIC-VOLUME-MIB."
+    ::= { unisMirrorDistributeEntry 1 }
+
+unisMirrorRaidUuid OBJECT-TYPE
+    SYNTAX      UnisRaidIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This index is identical to unisRaidUuid in UNIS-RAID-MIB."
+    ::= { unisMirrorDistributeEntry 2 }
+
+unisMirrorRaidSize OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the size on the special raid distributed
+        for the mirror resource."
+    ::= { unisMirrorDistributeEntry 3 }
+
+unisMirrorExtRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the action to create or delete the distribution
+        for the mirror resource."
+    ::= { unisMirrorDistributeEntry 4 }
+END

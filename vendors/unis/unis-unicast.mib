@@ -1,0 +1,126 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This MIB is a framework MIB for unicast technology
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2005-04-20 created by fuzhenyu
+-- ============================================================================
+UNIS-UNICAST-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        unisCommon
+            FROM UNIS-OID-MIB
+        Integer32, Counter64, OBJECT-TYPE, MODULE-IDENTITY
+            FROM SNMPv2-SMI
+        TruthValue
+            FROM SNMPv2-TC;
+
+
+    unisUnicast MODULE-IDENTITY
+        LAST-UPDATED "200501311454Z"        -- January 31, 2005 at 14:54 GMT
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            " This MIB is a framework MIB for unicast related features."
+        REVISION      "200503241454Z"
+        DESCRIPTION
+                " Revisions made by MIB team."
+        ::= { unisCommon 44 }
+
+
+    unisURPFTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisURPFEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            " Unicast Reverse Path Forwarding (URPF) is used to prevent the network
+            attacks caused by source address spoofing. This table is used to configure
+            URPF on specific interfaces."
+        ::= { unisUnicast 1 }
+
+
+    unisURPFEntry OBJECT-TYPE
+        SYNTAX UnisURPFEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            " The entry of unisURPFTable, indexed by vlan interface index."
+        INDEX { unisURPFIfIndex }
+        ::= { unisURPFTable 1 }
+
+
+    UnisURPFEntry ::=
+        SEQUENCE {
+            unisURPFIfIndex
+                Integer32,
+            unisURPFEnabled
+                TruthValue,
+            unisURPFSlotID
+                Integer32,
+            unisURPFTotalReceivedPacket
+                Counter64,
+            unisURPFDroppedPacket
+                Counter64,
+            unisURPFClearStat
+                INTEGER
+         }
+
+    unisURPFIfIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            " The ifIndex of vlan interface."
+        ::= { unisURPFEntry 1 }
+
+    unisURPFEnabled OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " This object is used to enable or disable URPF on certain vlan interfaces."
+        DEFVAL { false }
+        ::= { unisURPFEntry 2 }
+
+    unisURPFSlotID OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " This object specifies to which slot packets are redirected in order to
+            perform URPF check."
+        ::= { unisURPFEntry 3 }
+
+    unisURPFTotalReceivedPacket OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " This object provides total received packets number."
+        ::= { unisURPFEntry 4 }
+
+    unisURPFDroppedPacket OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " This object provides total dropped invalid packets number."
+        ::= { unisURPFEntry 5 }
+
+    unisURPFClearStat OBJECT-TYPE
+        SYNTAX INTEGER { reserved(0),reset(1) }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " This object is used to clear the URPF statistics on certain
+            vlan interfaces. This object is actually a write-only object.
+            When read, it always returns 0. When set to 1, the objects
+            unisURPFTotalReceivedPacket and unisURPFDroppedPacket are reset
+            to 0."
+        ::= { unisURPFEntry 6 }
+
+END

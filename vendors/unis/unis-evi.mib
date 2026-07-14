@@ -1,0 +1,1180 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: EVI MIB
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 Initial version 09413 2013-03-24
+-- V1.1 Modified by Jinlei 2013-04-01
+--   2013-04-01 Added unisEviIfAttributeTable, unisEviIfFloodingMacTable,
+--                  unisEviNbrBaseTable, unisEviNbrRemoteServerTable,
+--                  and unisEviNbrTable.
+--   2013-04-28 Modified by 09413
+--     Modified the order of the nodes in table of unisEviMacLocalTable,
+--     unisEviMacRemoteTable and unisEviISISNbrTable, deleted
+--     unisEviIfExtendVlanPrefer of unisEviIfExtendVlanTable, deleted
+--     unisEviISISLSPDataTable.
+-- =================================================================
+
+UNIS-EVI-MIB DEFINITIONS ::= BEGIN
+
+-- ---------------------------------------------------------- --
+-- MIB for edge devices, also known as EVI switches
+-- ---------------------------------------------------------- --
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Counter32, Unsigned32, Integer32
+        FROM SNMPv2-SMI            -- RFC2578
+    TEXTUAL-CONVENTION, TruthValue, MacAddress, RowStatus,
+    DisplayString
+        FROM SNMPv2-TC             -- RFC2579
+    VlanId
+        FROM Q-BRIDGE-MIB          -- RFC4363
+    InetAddress, InetAddressType
+        FROM INET-ADDRESS-MIB      -- RFC4001
+    ifIndex
+        FROM IF-MIB                -- RFC2233
+    IsisSystemID
+        FROM ISIS-MIB              -- RFC4444
+    ;
+
+-- ==================================================================
+--
+-- ======================= Definition Begin =========================
+--
+-- ==================================================================
+unisEvi MODULE-IDENTITY
+    LAST-UPDATED "201304280000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB contains the objects for managing Ethernet Virtual
+        Interconnect(EVI)."
+    REVISION "201304280000Z"        -- April 28, 2013 at 18:00 GMT
+    DESCRIPTION
+        "UNIS-EVI-MIB module for managing EVI-capable switches."
+    ::= { unisCommon 132 }
+
+-- ---------------------------------------------------------- --
+-- Subtrees in the EVI MIB
+-- ---------------------------------------------------------- --
+
+unisEviNotifications  OBJECT IDENTIFIER ::= { unisEvi 0 }
+unisEviObjects        OBJECT IDENTIFIER ::= { unisEvi 1 }
+
+unisEviBase           OBJECT IDENTIFIER ::= { unisEviObjects 1 }
+unisEviIf             OBJECT IDENTIFIER ::= { unisEviObjects 2 }
+unisEviMac            OBJECT IDENTIFIER ::= { unisEviObjects 3 }
+unisEviProcess        OBJECT IDENTIFIER ::= { unisEviObjects 4 }
+unisEviISIS           OBJECT IDENTIFIER ::= { unisEviObjects 5 }
+unisEviEnable         OBJECT IDENTIFIER ::= { unisEviObjects 6 }
+unisEviNbr            OBJECT IDENTIFIER ::= { unisEviObjects 7 }
+
+-- ---------------------------------------------------------- --
+-- Type definitions
+-- ---------------------------------------------------------- --
+
+UnisEviMacType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "MAC addresses include three types: dynamic,
+        static, and flood (MACs configured for selective flooding)."
+    SYNTAX INTEGER
+        {
+            other(1),
+            dynamic(2),
+            static(3),
+            flood(4)
+        }
+
+UnisEviNeighborStatus ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "State of EVI neighbors."
+    SYNTAX INTEGER
+        {
+            up(1),
+            down(2)
+        }
+
+--
+-- The unisEviBase subtree
+--
+-- Implementation of the unisEviBase subtree is mandatory for all
+-- edge devices.
+--
+
+unisEviDesignatedVlan OBJECT-TYPE
+    SYNTAX      VlanId
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The designated VLAN is used for edge devices on
+         a multihomed site to exchange EVI IS-IS hello
+         packets for DED election and extended-VLAN
+         assignment."
+    DEFVAL      { 1 }
+    ::= { unisEviBase 1 }
+
+unisEviSiteID OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Site ID.  The edge devices in the same site must have
+         the same site ID."
+    DEFVAL      { 0 }
+    ::= { unisEviBase 2 }
+--
+-- The unisEviIf subtree
+--
+-- Implementation of the unisEviIf subtree is mandatory for all
+-- edge devices.
+--
+
+-- ---------------------------------------------------------- --
+-- The EVI Extended VLAN Table
+-- ---------------------------------------------------------- --
+
+unisEviIfExtendVlanTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviIfExtendVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains extended VLAN entries.  A site
+        extends extended VLANs to remote sites over an EVI tunnel."
+    ::= { unisEviIf 1 }
+
+unisEviIfExtendVlanEntry OBJECT-TYPE
+    SYNTAX      UnisEviIfExtendVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information about each extended VLAN."
+    INDEX  { ifIndex, unisEviIfExtendVlanIndex }
+    ::= { unisEviIfExtendVlanTable 1 }
+
+UnisEviIfExtendVlanEntry ::=
+    SEQUENCE {
+        unisEviIfExtendVlanIndex
+            VlanId,
+        unisEviIfExtendVlanLAV
+            TruthValue,
+        unisEviIfExtendVlanRowStatus
+            RowStatus
+             }
+
+unisEviIfExtendVlanIndex OBJECT-TYPE
+    SYNTAX      VlanId
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each VLAN index specifies a VLAN ID in the range of
+         1 to 4094."
+    ::= { unisEviIfExtendVlanEntry 1 }
+
+unisEviIfExtendVlanLAV OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "Local Active VLANs (LAVs), which are active VLANs on the EVI tunnel
+       interface.  The interface can extend only active VLANs to
+       remote sites."
+    DEFVAL      { false }
+    ::= { unisEviIfExtendVlanEntry 2 }
+
+unisEviIfExtendVlanRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+       "Entry status."
+    ::= { unisEviIfExtendVlanEntry 3 }
+
+-- ---------------------------------------------------------- --
+-- The EVI VLAN Mapping Table
+-- ---------------------------------------------------------- --
+
+unisEviIfVlanMappingTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviIfVlanMappingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "VLAN mapping table on the interface."
+    ::= { unisEviIf 2 }
+
+unisEviIfVlanMappingEntry OBJECT-TYPE
+    SYNTAX      UnisEviIfVlanMappingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information about each VLAN mapping."
+    INDEX  { ifIndex,
+             unisEviIfVlanMappingSiteId,
+             unisEviIfVlanMappingSrc,
+             unisEviIfVlanMappingDst}
+    ::= { unisEviIfVlanMappingTable 1 }
+
+UnisEviIfVlanMappingEntry ::=
+    SEQUENCE {
+        unisEviIfVlanMappingSiteId
+            Integer32,
+        unisEviIfVlanMappingSrc
+            VlanId,
+        unisEviIfVlanMappingDst
+            VlanId,
+        unisEviIfVlanMappingRowStatus
+            RowStatus
+             }
+
+unisEviIfVlanMappingSiteId OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Site ID of the interface on which the VLAN mapping is
+         configured.  If '0' is specified, the operation applies
+         to all sites."
+    ::= { unisEviIfVlanMappingEntry 1 }
+
+unisEviIfVlanMappingSrc OBJECT-TYPE
+    SYNTAX      VlanId
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Local VLAN ID in the mapping."
+    ::= { unisEviIfVlanMappingEntry 2 }
+
+unisEviIfVlanMappingDst OBJECT-TYPE
+    SYNTAX      VlanId
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Remote VLAN ID in the mapping."
+    ::= { unisEviIfVlanMappingEntry 3 }
+
+unisEviIfVlanMappingRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Entry status."
+    ::= { unisEviIfVlanMappingEntry 4 }
+-- ---------------------------------------------------------- --
+-- The EVI Instance Attribute Table
+-- ---------------------------------------------------------- --
+
+unisEviIfAttributeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviIfAttributeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains EVI tunnel attribute entries."
+    ::= { unisEviIf 3 }
+
+unisEviIfAttributeEntry OBJECT-TYPE
+    SYNTAX      UnisEviIfAttributeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information about the attributes of each EVI tunnel."
+    INDEX  { ifIndex }
+    ::= { unisEviIfAttributeTable 1 }
+
+UnisEviIfAttributeEntry ::=
+    SEQUENCE {
+        unisEviIfFloodingMode
+            TruthValue,
+        unisEviIfARPSuppression
+            TruthValue
+         }
+
+unisEviIfFloodingMode OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "State of the EVI flooding function.  The function is enabled
+         if the value is set to true."
+    DEFVAL      { false }
+    ::= { unisEviIfAttributeEntry 1 }
+
+unisEviIfARPSuppression OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "State of the ARP flooding suppression function.  The
+        function is enabled if the value is set to true."
+    DEFVAL      { false }
+    ::= { unisEviIfAttributeEntry 2 }
+
+-- ---------------------------------------------------------- --
+-- The EVI Flooding MAC Table
+-- ---------------------------------------------------------- --
+
+unisEviIfFloodingMacTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviIfFloodingMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains MAC addresses configured
+        for selective flooding."
+    ::= { unisEviIf 4 }
+
+unisEviIfFloodingMacEntry OBJECT-TYPE
+    SYNTAX      UnisEviIfFloodingMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information about each MAC address
+        used for EVI selective flooding."
+    INDEX  {
+             ifIndex,
+             unisEviIfFloodingMacAddress,
+             unisEviIfFloodMacVlanIndex
+           }
+    ::= { unisEviIfFloodingMacTable 1 }
+
+UnisEviIfFloodingMacEntry ::=
+    SEQUENCE {
+        unisEviIfFloodingMacAddress
+            MacAddress,
+        unisEviIfFloodMacVlanIndex
+            VlanId,
+        unisEviIfFloodingMacRowStatus
+            RowStatus
+         }
+
+unisEviIfFloodingMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "MAC address used for EVI selective flooding."
+    ::= { unisEviIfFloodingMacEntry 1 }
+
+unisEviIfFloodMacVlanIndex OBJECT-TYPE
+    SYNTAX      VlanId
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The VLAN that contains the MAC address."
+    ::= { unisEviIfFloodingMacEntry 2 }
+
+unisEviIfFloodingMacRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+       "State of the MAC address entry.  You can use this
+       object to create or delete entries.  Deleting entries
+       does not delete this object."
+    ::= { unisEviIfFloodingMacEntry 3 }
+
+--
+-- The unisEviMac subtree
+--
+-- Implementation of the unisEviMac subtree is mandatory for all
+-- edge devices.
+--
+
+-- ---------------------------------------------------------- --
+-- The EVI MAC Count Table
+-- ---------------------------------------------------------- --
+
+unisEviMacCountTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviMacCountEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "EVI MAC statistics table.  The table contains MAC entry
+         counts sorted by MAC address types, including local MACs, local
+         MAC conflicts, remote MACs, and remote MAC conflicts."
+    ::= { unisEviMac 1 }
+
+unisEviMacCountEntry OBJECT-TYPE
+    SYNTAX      UnisEviMacCountEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "EVI MAC entry counts."
+    INDEX  { ifIndex }
+    ::= { unisEviMacCountTable 1 }
+
+UnisEviMacCountEntry ::=
+    SEQUENCE {
+        unisEviMacLocalMacs
+            Counter32,
+        unisEviMacLocalConflicts
+            Counter32,
+        unisEviMacRemoteMacs
+            Counter32,
+        unisEviMacRemoteConflicts
+            Counter32
+             }
+
+unisEviMacLocalMacs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of local MACs."
+    ::= { unisEviMacCountEntry 1 }
+
+unisEviMacLocalConflicts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of local MACs that conflict with remote
+         MACs."
+    ::= { unisEviMacCountEntry 2 }
+
+unisEviMacRemoteMacs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of remote MACs received from remote edge devices."
+    ::= { unisEviMacCountEntry 3 }
+
+unisEviMacRemoteConflicts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of remote MACs that conflict with local MACs."
+    ::= { unisEviMacCountEntry 4 }
+
+-- ---------------------------------------------------------- --
+-- The EVI Local MAC Table
+-- ---------------------------------------------------------- --
+
+unisEviMacLocalTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviMacLocalEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "MAC address table that only contains MAC addresses at
+         the site."
+    ::= { unisEviMac 2 }
+
+unisEviMacLocalEntry OBJECT-TYPE
+    SYNTAX      UnisEviMacLocalEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed informaiton about each local MAC entry."
+    INDEX  { ifIndex,
+             unisEviMacLocalVlan,
+             unisEviMacLocalMacAddr }
+    ::= { unisEviMacLocalTable 1 }
+
+UnisEviMacLocalEntry ::=
+    SEQUENCE {
+        unisEviMacLocalVlan
+            VlanId,
+        unisEviMacLocalMacAddr
+            MacAddress,
+        unisEviMacLocalMacType
+            UnisEviMacType,
+        unisEviMacLocalConflict
+            TruthValue,
+        unisEviMacLocalFiltered
+            TruthValue
+    }
+
+unisEviMacLocalVlan OBJECT-TYPE
+    SYNTAX      VlanId
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "VLANs that contain the local MACs."
+    ::= { unisEviMacLocalEntry 1 }
+
+unisEviMacLocalMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Local MAC addresses."
+    ::= { unisEviMacLocalEntry 2 }
+
+unisEviMacLocalMacType OBJECT-TYPE
+    SYNTAX      UnisEviMacType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "MAC address types, including: dynamic MACs, static MACs,
+        and flood MACs (MACs configured for selective flooding)."
+    ::= { unisEviMacLocalEntry 3 }
+
+unisEviMacLocalConflict OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Whether the MAC conflicts with any remote MAC."
+    ::= { unisEviMacLocalEntry 4 }
+
+unisEviMacLocalFiltered OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Whether the MAC is filtered."
+    ::= { unisEviMacLocalEntry 5 }
+
+-- ---------------------------------------------------------- --
+-- The EVI Remote MAC Table
+-- ---------------------------------------------------------- --
+
+unisEviMacRemoteTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviMacRemoteEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table contains MAC addresses received from remote edge devices."
+    ::= { unisEviMac 3 }
+
+unisEviMacRemoteEntry OBJECT-TYPE
+    SYNTAX      UnisEviMacRemoteEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information about each remote MAC."
+    INDEX  { ifIndex,
+             unisEviMacRemoteVlan,
+             unisEviMacRemoteMacAddr }
+    ::= { unisEviMacRemoteTable 1 }
+
+UnisEviMacRemoteEntry ::=
+    SEQUENCE {
+        unisEviMacRemoteVlan
+            VlanId,
+        unisEviMacRemoteMacAddr
+            MacAddress,
+        unisEviMacRemoteMacEffect
+            TruthValue,
+        unisEviMacRemoteConflict
+            TruthValue
+    }
+
+unisEviMacRemoteVlan OBJECT-TYPE
+    SYNTAX      VlanId
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "VLANs that contain remote MAC addresses."
+    ::= { unisEviMacRemoteEntry 1 }
+
+unisEviMacRemoteMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Remote MAC address."
+    ::= { unisEviMacRemoteEntry 2 }
+
+unisEviMacRemoteMacEffect OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Whether the MAC can be used for forwarding traffic."
+    ::= { unisEviMacRemoteEntry 3 }
+
+unisEviMacRemoteConflict OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The remote MAC conflicts with a local MAC."
+    ::= { unisEviMacRemoteEntry 4 }
+
+
+--
+-- The unisEviProcess subtree
+--
+-- Implementation of the unisEviProcess subtree is mandatory for all
+-- edge devices.
+--
+
+-- ---------------------------------------------------------- --
+-- The EVI Process Policy Table
+-- ---------------------------------------------------------- --
+
+unisEviProcessPolicyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviProcessPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains routing policy information for each
+         EVI IS-IS process."
+    ::= { unisEviProcess 1 }
+
+unisEviProcessPolicyEntry OBJECT-TYPE
+    SYNTAX      UnisEviProcessPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information about the routing policy for each
+         EVI IS-IS process."
+    INDEX  { unisEviProcessId }
+    ::= { unisEviProcessPolicyTable 1 }
+
+UnisEviProcessPolicyEntry ::=
+    SEQUENCE {
+        unisEviProcessId
+            Unsigned32,
+        unisEviProcessPolicy
+            DisplayString
+             }
+
+unisEviProcessId OBJECT-TYPE
+    SYNTAX      Unsigned32 (0 .. 1023)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "EVI IS-IS process ID."
+    ::= { unisEviProcessPolicyEntry 1 }
+
+unisEviProcessPolicy OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Routing policy for the EVI IS-IS process."
+    ::= { unisEviProcessPolicyEntry 2 }
+
+-- ---------------------------------------------------------- --
+-- The EVI Process GR Table
+-- ---------------------------------------------------------- --
+
+unisEviProcessGrTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviProcessGrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains graceful restart (GR) information."
+    ::= { unisEviProcess 2 }
+
+unisEviProcessGrEntry OBJECT-TYPE
+    SYNTAX      UnisEviProcessGrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed GR information for each EVI IS-IS process."
+    INDEX  { unisEviProcessId }
+    ::= { unisEviProcessGrTable 1 }
+
+UnisEviProcessGrEntry ::=
+    SEQUENCE {
+        unisEviProcessGrEnable
+            TruthValue,
+        unisEviProcessGrInterval
+            Unsigned32
+             }
+
+unisEviProcessGrEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Whether the GR function is enabled."
+    DEFVAL { false }
+    ::= { unisEviProcessGrEntry 1 }
+
+unisEviProcessGrInterval OBJECT-TYPE
+    SYNTAX      Unsigned32 (30..1800)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "EVI IS-IS GR interval in the range of 30 to 1800, in
+         seconds."
+    DEFVAL { 300 }
+    ::= { unisEviProcessGrEntry 2 }
+
+-- ---------------------------------------------------------- --
+-- The EVI Process Virtual System Table
+-- ---------------------------------------------------------- --
+
+unisEviProcessVSysTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviProcessVSysEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains virtual system entries.  Virtual systems are
+         associated with EVI IS-IS processes."
+    ::= { unisEviProcess 3 }
+
+unisEviProcessVSysEntry OBJECT-TYPE
+    SYNTAX      UnisEviProcessVSysEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information about each vitual system."
+    INDEX  { unisEviProcessId,
+             unisEviVirtualSysId }
+    ::= { unisEviProcessVSysTable 1 }
+
+UnisEviProcessVSysEntry ::=
+    SEQUENCE {
+        unisEviVirtualSysId
+            IsisSystemID,
+        unisEviVirtualSysRowStatus
+            RowStatus
+             }
+
+unisEviVirtualSysId OBJECT-TYPE
+    SYNTAX      IsisSystemID
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Virtual system ID in hexadecimal notation.  The virtual
+         system ID must be unique in the EVI network."
+    ::= { unisEviProcessVSysEntry 1 }
+
+unisEviVirtualSysRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Entry status."
+    ::= { unisEviProcessVSysEntry 2 }
+
+--
+-- The unisEviISIS subtree
+--
+-- Implementation of the unisEviISIS subtree is mandatory for all
+-- edge devices.
+--
+
+-- ---------------------------------------------------------- --
+-- The EVI IS-IS NBR Summary Table
+-- ---------------------------------------------------------- --
+
+unisEviISISNbrSummaryTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviISISNbrSummaryEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "EVI neighbor statistics table."
+    ::= { unisEviISIS 1 }
+
+unisEviISISNbrSummaryEntry OBJECT-TYPE
+    SYNTAX      UnisEviISISNbrSummaryEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "EVI neighbor statistics table entries.  The entries
+         contain the EVI neighbor summary for each EVI IS-IS
+         process."
+    INDEX  { unisEviProcessId }
+    ::= { unisEviISISNbrSummaryTable 1 }
+
+UnisEviISISNbrSummaryEntry ::=
+    SEQUENCE {
+        unisEviISISNbrMaxMultiHomes
+            Unsigned32,
+        unisEviISISNbrSiteNbrs
+            Unsigned32,
+        unisEviISISNbrLinkNbrs
+            Unsigned32
+    }
+
+unisEviISISNbrMaxMultiHomes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of edge devices that the site
+         can contain."
+   ::= { unisEviISISNbrSummaryEntry 1 }
+
+unisEviISISNbrSiteNbrs OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The count of neighbors that belong to the same site."
+    ::= { unisEviISISNbrSummaryEntry 2 }
+
+unisEviISISNbrLinkNbrs OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The count of neighbors that are in remote sites."
+    ::= { unisEviISISNbrSummaryEntry 3 }
+
+-- ---------------------------------------------------------- --
+-- The EVI IS-IS NBR Table
+-- ---------------------------------------------------------- --
+
+unisEviISISNbrTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviISISNbrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains generic information about all
+         neighbors."
+    ::= { unisEviISIS 2 }
+
+unisEviISISNbrEntry OBJECT-TYPE
+    SYNTAX      UnisEviISISNbrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information about each neighbor of the edge
+         device."
+    INDEX  { unisEviProcessId,
+             ifIndex,
+             unisEviISISNbrSysId }
+    ::= { unisEviISISNbrTable 1 }
+
+UnisEviISISNbrEntry ::=
+    SEQUENCE {
+        unisEviISISNbrSysId
+            IsisSystemID,
+        unisEviISISNbrMacAddr
+            MacAddress,
+        unisEviISISNbrSiteId
+            Integer32,
+        unisEviISISNbrTransStatus
+            TruthValue
+    }
+
+unisEviISISNbrSysId OBJECT-TYPE
+    SYNTAX      IsisSystemID
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "System ID of the neighbor."
+    ::= { unisEviISISNbrEntry 1 }
+
+unisEviISISNbrMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "MAC address of the neighbor."
+    ::= { unisEviISISNbrEntry 2 }
+
+unisEviISISNbrSiteId OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Site ID of the neighbor."
+    ::= { unisEviISISNbrEntry 3 }
+
+unisEviISISNbrTransStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "State of EVI transport-facing links."
+    ::= { unisEviISISNbrEntry 4 }
+
+--
+-- The unisEviEnable subtree
+--
+-- Implementation of the unisEviEnable subtree is mandatory for all
+-- edge devices.
+--
+
+-- ---------------------------------------------------------- --
+-- The EVI Enable Table
+-- ---------------------------------------------------------- --
+
+unisEviEnableTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviEnableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains all EVI-enabled neighboring ports of the edge device."
+    ::= { unisEviEnable 1 }
+
+unisEviEnableEntry OBJECT-TYPE
+    SYNTAX      UnisEviEnableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information about each EVI-enabled port in the EVI
+         network."
+    INDEX  { ifIndex }
+    ::= { unisEviEnableTable 1 }
+
+UnisEviEnableEntry ::=
+    SEQUENCE {
+        unisEviEnableStatus
+            TruthValue
+             }
+
+unisEviEnableStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "End station service disable (trunk port) bit.  When this bit
+         is set (true), all native frames received on the port and all
+         native frames that would have been sent on the port are
+         discarded.
+
+         The value of this object MUST be retained across
+         reinitializations of the management system."
+    DEFVAL      { false }
+    ::= { unisEviEnableEntry 1 }
+--
+-- The unisEVINbr subtree
+--
+-- Implementation of the unisEVINbr  subtree is mandatory for all
+-- edge devices.
+--
+
+-- ---------------------------------------------------------- --
+-- The EVI Neighbor Base Table
+-- ---------------------------------------------------------- --
+
+unisEviNbrBaseTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviNbrBaseEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains basic information about the EVI
+         Neighbor Discovery Protocol (ENDP)."
+    ::= { unisEviNbr 1 }
+
+unisEviNbrBaseEntry OBJECT-TYPE
+    SYNTAX      UnisEviNbrBaseEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information about ENDP for each EVI tunnel."
+    INDEX  { ifIndex }
+    ::= { unisEviNbrBaseTable 1 }
+
+UnisEviNbrBaseEntry ::=
+    SEQUENCE {
+        unisEviNbrSelfServerStatus
+            TruthValue,
+        unisEviNbrAuthPassword
+            OCTET STRING,
+        unisEviNbrClientRegisterInterval
+            Integer32
+         }
+
+unisEviNbrSelfServerStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "If the value is set to true, the EVI neighbor
+         discovery server (ENDS) is enabled.  When you
+         enable ENDS on an EVI tunnel interface, an
+         EVI neighbor discovery client (ENDC) on the EVI tunnel
+         interface is also enabled automatically, with the source
+         address of the EVI tunnel as the server address."
+    DEFVAL { false }
+    ::= { unisEviNbrBaseEntry 1 }
+
+unisEviNbrAuthPassword OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..24))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "ENDP authentication key.  It is a zero-length string when being read."
+    ::= { unisEviNbrBaseEntry 2 }
+
+unisEviNbrClientRegisterInterval OBJECT-TYPE
+    SYNTAX      Integer32 (5..120)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "Interval at which the ENDCs on an EVI tunnel interface
+       update their registration with their ENDSs."
+    ::= { unisEviNbrBaseEntry 3 }
+
+-- ---------------------------------------------------------- --
+-- The EVI Remote Server Table
+-- ---------------------------------------------------------- --
+
+unisEviNbrRemoteServerTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviNbrRemoteServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains basic information about the
+         remote ENDSs."
+    ::= { unisEviNbr 2 }
+
+unisEviNbrRemoteServerEntry OBJECT-TYPE
+    SYNTAX      UnisEviNbrRemoteServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information about each remote ENDS.  When you set
+         the address of a remote ENDS on an EVI tunnel interface,
+         an ENDC is enabled automatically on the EVI tunnel interface."
+    INDEX  {
+             ifIndex,
+             unisEviNbrRemoteServerType,
+             unisEviNbrRemoteServer
+           }
+    ::= { unisEviNbrRemoteServerTable 1 }
+
+UnisEviNbrRemoteServerEntry ::=
+    SEQUENCE {
+        unisEviNbrRemoteServerType
+            InetAddressType,
+        unisEviNbrRemoteServer
+            InetAddress,
+        unisEviNbrRemoteServerRowStatus
+            RowStatus
+         }
+
+unisEviNbrRemoteServerType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Address type of the remote ENDS, including ipv4 and ipv6."
+    ::= { unisEviNbrRemoteServerEntry 1 }
+
+unisEviNbrRemoteServer OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Address of the remote ENDS.  The address type is
+         specified by the unisEviNbrRemoteServerType object.
+         Address length (4 or 16 bytes) must be consistent with
+         the address type."
+    ::= { unisEviNbrRemoteServerEntry 2 }
+
+unisEviNbrRemoteServerRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+       "Entry status.  This object is used to create or delete
+       entries.  Deleting entries does not delete this object."
+    ::= { unisEviNbrRemoteServerEntry 3 }
+
+-- ---------------------------------------------------------- --
+-- The EVI Neighbor Table
+-- ---------------------------------------------------------- --
+
+unisEviNbrTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEviNbrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains basic information about neighbors
+         discovered with ENDP."
+    ::= { unisEviNbr 3 }
+
+unisEviNbrEntry OBJECT-TYPE
+    SYNTAX      UnisEviNbrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Detailed information about each EVI neighbor."
+    INDEX  {
+             ifIndex,
+             unisEviNbrAddressType,
+             unisEviNbrAddress
+           }
+    ::= { unisEviNbrTable 1 }
+
+UnisEviNbrEntry ::=
+    SEQUENCE {
+        unisEviNbrAddressType
+            InetAddressType,
+        unisEviNbrAddress
+            InetAddress,
+        unisEviNbrSystemID
+            MacAddress,
+        unisEviNbrExpireTime
+            Integer32,
+        unisEviNbrStatus
+            UnisEviNeighborStatus
+         }
+
+unisEviNbrAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Address type of the neighbor, including ipv4 and ipv6."
+    ::= { unisEviNbrEntry 1 }
+
+unisEviNbrAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Address of the neighbor.  The address type is specified by the
+         unisEviNbrAddressType object.  Address length (4 or 16 bytes)
+         must be consistent with the address type."
+    ::= { unisEviNbrEntry 2 }
+
+unisEviNbrSystemID OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "System ID of the neighbor."
+    ::= { unisEviNbrEntry 3 }
+
+unisEviNbrExpireTime OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Expiration time of the neighbor."
+    ::= { unisEviNbrEntry 4 }
+
+unisEviNbrStatus OBJECT-TYPE
+    SYNTAX      UnisEviNeighborStatus
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "State of the neighbor."
+    ::= { unisEviNbrEntry 5 }
+-- ---------------------------------------------------------- --
+-- Notifications used by EVI
+-- ---------------------------------------------------------- --
+
+unisEviNewDed  NOTIFICATION-TYPE
+    OBJECTS     { ifIndex,
+                  unisEviProcessId,
+                  unisEviISISNbrSysId }
+    STATUS      current
+    DESCRIPTION
+        "Notifies that a new DED has been elected."
+    ::= { unisEviNotifications 1 }
+
+unisEviSiteEDTopoChange  NOTIFICATION-TYPE
+    OBJECTS     { unisEviProcessId,
+                  unisEviISISNbrSiteNbrs }
+    STATUS      current
+    DESCRIPTION
+        "Notifies that the EVI network topology has changed."
+    ::= { unisEviNotifications 2 }
+
+unisEviEDLinkDisconnect  NOTIFICATION-TYPE
+    OBJECTS     { unisEviProcessId }
+    STATUS      current
+    DESCRIPTION
+        "Notifies that all the EVI links on a tunnel are down."
+    ::= { unisEviNotifications 3 }
+END

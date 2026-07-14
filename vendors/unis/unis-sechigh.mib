@@ -1,0 +1,306 @@
+-- ==========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB is designed to show information on high-end driver products.
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0  2017-09 Initial version created by meirongjun 14958.
+-- V1.1  2020-05 Added unisSecHighFaultMonitor by sunlibing 21109.
+-- ==========================================================================
+UNIS-SECHIGH-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI;         -- [RFC2578]
+
+unisSecHigh MODULE-IDENTITY
+    LAST-UPDATED "202005290000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The private MIB file includes the information on high-end driver products."
+    REVISION      "202005290000Z"
+    DESCRIPTION
+        "Added unisSecHighFaultMonitor."
+    REVISION      "201709162020Z"
+    DESCRIPTION
+        "Initial revision of this MIB module."
+    ::= { unisCommon 171 }
+--
+-- Node definitions
+--
+unisSecHighMonitor OBJECT IDENTIFIER ::= { unisSecHigh 1 }
+
+
+--
+-- unisSecHighHgMonitorAlarm context table definitions
+--
+unisSecHighHgMonitorAlarmVar OBJECT IDENTIFIER   ::= { unisSecHighMonitor 1 }
+
+unisSecHighHgMonitorAlarmType OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Type of the alarm,0 represent recovery normal,1 represent link status error,
+            2 represent Some packets were dropped on the link."
+    ::= { unisSecHighHgMonitorAlarmVar 1 }
+
+unisSecHighHgMonitorAlarmSrcChassis OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Number of the chassis where the source end of the alarmed link resides."
+    ::= { unisSecHighHgMonitorAlarmVar 2 }
+
+unisSecHighHgMonitorAlarmSrcSlot OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Number of the slot where the source end of the alarmed link resides."
+    ::= { unisSecHighHgMonitorAlarmVar 3 }
+
+unisSecHighHgMonitorAlarmSrcChip OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Number of the chip where the source end of the alarmed link resides."
+    ::= { unisSecHighHgMonitorAlarmVar 4 }
+
+unisSecHighHgMonitorAlarmSrcPort OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Number of the port where the source end of the alarmed link resides."
+    ::= { unisSecHighHgMonitorAlarmVar 5 }
+
+unisSecHighHgMonitorAlarmDstChassis OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Number of the chassis where the destination end of the alarmed link resides."
+    ::= { unisSecHighHgMonitorAlarmVar 6 }
+
+unisSecHighHgMonitorAlarmDstSlot OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Number of the slot where the destination end of the alarmed link resides."
+    ::= { unisSecHighHgMonitorAlarmVar 7 }
+
+unisSecHighHgMonitorAlarmDstChip OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Number of the chip where the destination end of the alarmed link resides."
+    ::= { unisSecHighHgMonitorAlarmVar 8 }
+
+unisSecHighHgMonitorAlarmDstPort OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Number of the port where the destination end of the alarmed link resides."
+    ::= { unisSecHighHgMonitorAlarmVar 9 }
+
+unisSecHighHgMonitorAlarmReason OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..512))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Cause of the alarm."
+    ::= { unisSecHighHgMonitorAlarmVar 10 }
+
+
+
+-- ===============================================
+-- Definition of traps.
+-- ===============================================
+unisSecHighHgMonitorAlarmTrap OBJECT IDENTIFIER ::= { unisSecHighMonitor 2 }
+unisSecHighHgMonitorAlarmNotifications OBJECT IDENTIFIER ::= { unisSecHighHgMonitorAlarmTrap 0 }
+
+unisSecHighHgMonitorAlarmNotification NOTIFICATION-TYPE
+    OBJECTS {
+                unisSecHighHgMonitorAlarmType,
+                unisSecHighHgMonitorAlarmSrcChassis,
+                unisSecHighHgMonitorAlarmSrcSlot,
+                unisSecHighHgMonitorAlarmSrcChip,
+                unisSecHighHgMonitorAlarmSrcPort,
+                unisSecHighHgMonitorAlarmDstChassis,
+                unisSecHighHgMonitorAlarmDstSlot,
+                unisSecHighHgMonitorAlarmDstChip,
+                unisSecHighHgMonitorAlarmDstPort,
+                unisSecHighHgMonitorAlarmReason
+            }
+    STATUS     current
+    DESCRIPTION
+           "This notification is generated when an HgMonitor alarm is generated."
+    ::= { unisSecHighHgMonitorAlarmNotifications 1 }
+
+
+
+-- ===============================================
+-- Definition of unisSecHighFaultMonitor.
+-- ===============================================
+unisSecHighFaultMonitor OBJECT IDENTIFIER ::= { unisSecHighMonitor 3 }
+
+-- ============
+-- unisSecHighFaultAlm context variables definition
+-- ============
+unisSecHighFaultAlmVar OBJECT IDENTIFIER ::= { unisSecHighFaultMonitor 1 }
+
+
+unisSecHighFaultAlmType OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Type of the alarm, 1 represents Hg link status error,
+            2 represents Hg packet loss error, 3 represents back board E2PROM error,
+            4 represents board E2PROM error, 5 represents CPLD chip error,
+            101 to 200 represent FPGA errors."
+    ::= { unisSecHighFaultAlmVar 1 }
+
+unisSecHighFaultAlmChassis OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Number of the chassis in which error occurs."
+    ::= { unisSecHighFaultAlmVar 2 }
+
+unisSecHighFaultAlmSlot OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Number of the slot in which error occurs."
+    ::= { unisSecHighFaultAlmVar 3 }
+
+unisSecHighFaultAlmDstChassis OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Number of the destination chassis in which Hg error occurs."
+    ::= { unisSecHighFaultAlmVar 4 }
+
+unisSecHighFaultAlmDstSlot OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Number of the destination slot in which Hg error occurs."
+    ::= { unisSecHighFaultAlmVar 5 }
+
+
+unisSecHighFaultAlmChip OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Id of the error chip."
+    ::= { unisSecHighFaultAlmVar 6 }
+
+unisSecHighFaultAlmInfo OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..512))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "Details of the alarm notification."
+    ::= { unisSecHighFaultAlmVar 7 }
+
+
+-- ===============================================
+-- Definition of Fault monitor traps.
+-- ===============================================
+unisSecHighFaultAlmTrap OBJECT IDENTIFIER ::= { unisSecHighFaultMonitor 2 }
+
+-- ===============================================
+-- Definition of Fault monitor traps Pre.
+-- ===============================================
+unisSecHighFaultAlmTrapPre OBJECT IDENTIFIER ::= { unisSecHighFaultAlmTrap 0 }
+
+
+-- ============
+-- unisSecHighFaultMonitorChipAlarm trap definition
+-- ============
+
+unisSecHighFaultMonChipAlmNotifi NOTIFICATION-TYPE
+    OBJECTS {
+                unisSecHighFaultAlmType,
+                unisSecHighFaultAlmChassis,
+                unisSecHighFaultAlmSlot,
+                unisSecHighFaultAlmChip,
+                unisSecHighFaultAlmInfo
+            }
+    STATUS     current
+    DESCRIPTION
+           "This notification is generated when a chip error occurs."
+    ::= { unisSecHighFaultAlmTrapPre 1 }
+
+-- ============
+-- unisSecHighFaultMonChipAlm resume trap definition
+-- ============
+
+unisSecHighFaultMonChipAlmResu NOTIFICATION-TYPE
+    OBJECTS {
+                unisSecHighFaultAlmType,
+                unisSecHighFaultAlmChassis,
+                unisSecHighFaultAlmSlot,
+                unisSecHighFaultAlmChip,
+                unisSecHighFaultAlmInfo
+            }
+    STATUS     current
+    DESCRIPTION
+           "This notification is generated when a chip error is recovered."
+    ::= { unisSecHighFaultAlmTrapPre 2 }
+
+-- ============
+-- unisSecHighFaultMonitorHgAlarm trap definition
+-- ============
+
+unisSecHighFaultMonHgAlmNotifi NOTIFICATION-TYPE
+    OBJECTS {
+                unisSecHighFaultAlmType,
+                unisSecHighFaultAlmChassis,
+                unisSecHighFaultAlmSlot,
+                unisSecHighFaultAlmDstChassis,
+                unisSecHighFaultAlmDstSlot,
+                unisSecHighFaultAlmInfo
+            }
+    STATUS     current
+    DESCRIPTION
+           "This notification is generated when an Hg error occurs."
+    ::= { unisSecHighFaultAlmTrapPre 3 }
+
+-- ============
+-- unisSecHighFaultMonHgAlm resume trap definition
+-- ============
+
+unisSecHighFaultMonHgAlmResu NOTIFICATION-TYPE
+    OBJECTS {
+                unisSecHighFaultAlmType,
+                unisSecHighFaultAlmChassis,
+                unisSecHighFaultAlmSlot,
+                unisSecHighFaultAlmDstChassis,
+                unisSecHighFaultAlmDstSlot,
+                unisSecHighFaultAlmInfo
+            }
+    STATUS     current
+    DESCRIPTION
+           "This notification is generated when an Hg error is recovered."
+    ::= { unisSecHighFaultAlmTrapPre 4 }
+END

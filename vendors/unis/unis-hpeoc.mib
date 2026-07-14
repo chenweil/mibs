@@ -1,0 +1,1119 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+-- Reference:
+-- Version: V1.7
+-- History:
+-- V1.0 created by liujingya.
+--    Initial version of the MIB
+-- V1.1 2008-1-29 Adjusted the structure of some tables by liujingya.
+-- V1.2 2008-5-19 Added unisHPEOCCltAutoUpgrade, unisHPEOCCnuAnonymStatus and
+--    unisHPEOCBitPerSymbolTable, modified description of unisHPEOCCnuBcastControl
+--    by liujingya.
+-- V1.3 2009-2-13 Added unisHPEOCOnLineCnuNumber, unisHPEOCCpuMacAddress,
+--    unisHPEOCOffLineCnuNumber, unisHPEOCDownLoadCNUFWResult,
+--    unisHPEOCCltAutoUpgradeType, unisHPEOCServerAddress, unisHPEOCServerUser,
+--    unisHPEOCServerPassword and unisHPEOCCnuMacLimit by liujingya.
+-- V1.4 2011-12-28 Added unisHPEOCCltLinkState by gaoguangping.
+--      2012-03-14 Added unisHPEOCCltLoopbackDetect by gaoguangping.
+-- V1.5 2013-08-20 Added unisHPEOCTemplate,unisHPEOCCnuAccess by xujun
+--      2013-09-16 Added unisHPEOCTemplateEnable by xujun
+-- V1.6 2015-04-30 Bug fixed by songhao
+-- V1.7 2016-09-02 Bug fixed by gaoguangping
+-- =================================================================
+UNIS-HPEOC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        ifIndex
+    FROM IF-MIB
+        Integer32, Unsigned32, Counter64, OBJECT-TYPE, MODULE-IDENTITY,
+        IpAddress
+    FROM SNMPv2-SMI
+        DisplayString, TruthValue, MacAddress, RowStatus
+    FROM SNMPv2-TC;
+
+
+unisHPEOC MODULE-IDENTITY
+    LAST-UPDATED "200708281008Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "
+        The objects in this MIB module are used to manage and
+        display current configuration of Ethernet Over Cable
+        Network (EOC) which based on HomePlug(HP) AV Specification.
+        "
+    ::= { unisCommon 84 }
+
+--
+-- unisHPEOCSystem
+--
+unisHPEOCSystem OBJECT IDENTIFIER ::= { unisHPEOC 1 }
+
+unisHPEOCCltVlanType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            ieee8021q(1),
+            portbased(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Control EOC CLT's VLAN type,
+        ieee8021q : 802.1q VLAN mode,
+        portbased : portbased VLAN mode.
+        "
+    ::= { unisHPEOCSystem 1 }
+
+--
+-- unisHPEOCCltVlanManTable
+--
+unisHPEOCCltVlanManTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisHPEOCCltVlanManEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table implements the management of CLT(Coax Line Terminal)
+        VLAN.
+        "
+    ::= { unisHPEOCSystem 2 }
+
+unisHPEOCCltVlanManEntry OBJECT-TYPE
+    SYNTAX      UnisHPEOCCltVlanManEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisHPEOCCltVlanManTable.
+        "
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisHPEOCCltVlanManTable 1 }
+
+UnisHPEOCCltVlanManEntry ::= SEQUENCE
+    {
+        unisHPEOCCltEthPortType    INTEGER
+    }
+
+unisHPEOCCltEthPortType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            normal(1),
+            debug(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Control CLT ethernet ports' type,
+        normal : port which used for normal translation,
+        debug : port which used for debug.
+        "
+    ::= { unisHPEOCCltVlanManEntry 1 }
+
+--
+-- unisHPEOCCltSysManTable
+--
+unisHPEOCCltSysManTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisHPEOCCltSysManEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table implements the management of CLT(Coax Line Terminal).
+        "
+    ::= { unisHPEOCSystem 3 }
+
+unisHPEOCCltSysManEntry OBJECT-TYPE
+    SYNTAX      UnisHPEOCCltSysManEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisHPEOCCltSysManTable.
+        "
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisHPEOCCltSysManTable 1 }
+
+UnisHPEOCCltSysManEntry ::= SEQUENCE
+    {
+        unisHPEOCCltDescr        DisplayString,
+        unisHPEOCCltFwVersion    DisplayString,
+        unisHPEOCCltLinkState    INTEGER
+    }
+
+unisHPEOCCltDescr OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..126))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Set the description of CLT.
+        "
+    ::= { unisHPEOCCltSysManEntry 1 }
+
+unisHPEOCCltFwVersion OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        EOC firmware version.  If the object length is
+        zero, it means the version is unknown.
+        "
+    ::= { unisHPEOCCltSysManEntry 2 }
+
+unisHPEOCCltLinkState OBJECT-TYPE
+    SYNTAX     INTEGER
+        {
+            physicaldown(1),
+            linkdown(2),
+            linkup(3),
+            loopback(4)
+        }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "
+        The cable port's link state.  The physicaldown(1) state indicates
+        that the CLT is not powered on.  The linkdown(2) state indicates
+        that the CLT is powered on, but registers fail.  The linkup(3)
+        state indicates that the CLT is powered on, and registers
+        successful.  The loopback(4) state indecates that the CLT is
+        powered on and registers successful, but loopback has detected.
+        "
+    ::= { unisHPEOCCltSysManEntry 3 }
+
+--
+-- unisHPEOCCnuSysManTable
+--
+unisHPEOCCnuSysManTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisHPEOCCnuSysManEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table implements the management of CNUs.
+        "
+    ::= { unisHPEOCSystem 4 }
+
+unisHPEOCCnuSysManEntry OBJECT-TYPE
+    SYNTAX      UnisHPEOCCnuSysManEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisHPEOCCnuSysManTable.
+        "
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisHPEOCCnuSysManTable 1 }
+
+UnisHPEOCCnuSysManEntry ::= SEQUENCE
+    {
+        unisHPEOCCnuBcastControl    TruthValue,
+        unisHPEOCCnuAnonymStatus    TruthValue,
+        unisHPEOCCnuMacLimit        Unsigned32
+    }
+
+unisHPEOCCnuBcastControl OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Broadcast storm suppression status.
+        true(1)  - Broadcast storm suppression enable.
+        false(2) - Broadcast storm suppression disable.
+        "
+    ::= { unisHPEOCCnuSysManEntry 1 }
+
+unisHPEOCCnuAnonymStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        Anonymity status.
+        true(1)  - the user which uses the CNU is anonymous.
+        false(2) - the user which uses the CNU has an account.
+        "
+    ::= { unisHPEOCCnuSysManEntry 2 }
+
+unisHPEOCCnuMacLimit OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Configure the max number of MAC address entries which can access
+        through the CNU, it ranges from 1 to 8.
+        Otherwise,
+        If configure 0, the CNU won't limit the MAC address entry.
+        If configure 0xFF, it means no MAC address entry can access the CNU.
+        "
+    ::= { unisHPEOCCnuSysManEntry 3 }
+
+unisHPEOCCltAutoUpgrade OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Auto upgrade Status.
+        true(1) - The firmware of the CNU will be auto changed by CLT.
+        false(2)- The firmware of the CNU will not be auto changed.
+        "
+    DEFVAL
+        {
+            false
+        }
+    ::= { unisHPEOCSystem 5 }
+
+unisHPEOCOnLineCnuNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The total number of the online CNU(s).
+        "
+    ::= { unisHPEOCSystem 6 }
+
+unisHPEOCCpuMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        EOC CPU's MAC address.
+        "
+    ::= { unisHPEOCSystem 7 }
+
+unisHPEOCOffLineCnuNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The total number of the offline CNU(s).
+        "
+    ::= { unisHPEOCSystem 8 }
+
+unisHPEOCDownLoadCNUFWResult OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "
+        Download CNU firmware result.
+        "
+    ::= { unisHPEOCSystem 9 }
+
+unisHPEOCCltAutoUpgradeType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            flash(1),
+            ftp(2),
+            tftp(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Type of auto upgrade status.
+        It depends on unisHPEOCCltAutoUpgrade status.
+        flash - The CLT auto upgrade the firmware inside its flash
+                   to the CNUs.
+        ftp    - First download the firmware from FTP server to the CLT,
+                   then the CLT auto upgrade the firmware to the CNUs.
+        tftp   - First download the firmware from TFTP server to the CLT,
+                   then the CLT auto upgrade the firmware to the CNUs.
+        "
+    ::= { unisHPEOCSystem 10 }
+
+unisHPEOCAutoUpObjects OBJECT IDENTIFIER ::= { unisHPEOCSystem 11 }
+
+unisHPEOCServerAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        The address of remote host acting as server for operation.
+        The default value is 0.0.0.0
+        "
+    ::= { unisHPEOCAutoUpObjects 1 }
+
+unisHPEOCServerUser OBJECT-TYPE
+    SYNTAX     DisplayString
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        When using ftp to transfer files, the user name must be
+        specified through this node.  It contains 1 to 30 characters.
+        "
+    ::= { unisHPEOCAutoUpObjects 2 }
+
+unisHPEOCServerPassword OBJECT-TYPE
+    SYNTAX     DisplayString
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Remote user password for copying via ftp protocol. Optionally,
+        this object may be ignored for protocols other than ftp.
+        It contains 1 to 31 characters.
+        "
+    ::= { unisHPEOCAutoUpObjects 3 }
+
+unisHPEOCCltLoopbackDetect OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            false(0),
+            true(1)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Loopback detect Status.
+        true(1) - The loopback detect is enabled.
+        false(0)- The loopback detect is disabled.
+        "
+    ::= { unisHPEOCSystem 12 }
+
+unisHPEOCTemplateEnable OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            false(0),
+            true(1)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Use template for white-list cnu.
+        true(1) - Use template is enabled.
+        false(0)- Use template detect is disabled.
+        "
+    ::= { unisHPEOCSystem 13 }
+
+--
+-- unisHPEOCCableInfo
+--
+unisHPEOCCableInfo OBJECT IDENTIFIER ::= { unisHPEOC 2 }
+
+
+--
+-- unisHPEOCCableInfoTable
+--
+
+unisHPEOCCableInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisHPEOCCableInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table defines the primary parameters of the
+        cable information.
+        "
+    ::= { unisHPEOCCableInfo 1 }
+
+unisHPEOCCableInfoEntry OBJECT-TYPE
+    SYNTAX      UnisHPEOCCableInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisHPEOCCableInfoTable.
+        "
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisHPEOCCableInfoTable 1 }
+
+
+UnisHPEOCCableInfoEntry ::= SEQUENCE
+    {
+        unisHPEOCFECErrors            Counter64,
+        unisHPEOCAvgBitsPerCarrier    Unsigned32,
+        unisHPEOCAvgSNRPerCarrier     Integer32,
+        unisHPEOCAvgInPBCRCErrors     Unsigned32,
+        unisHPEOCInTotalPkts          Counter64,
+        unisHPEOCAvgOutPower          Integer32,
+        unisHPEOCAvgOutPBCRCErrors    Unsigned32,
+        unisHPEOCOutTotalPkts         Counter64
+    }
+
+unisHPEOCFECErrors OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The cable port's FEC bits errors ratio.  FEC means the
+        payload Forward Error Correction.  It's a technology of
+        controlling errors.  Packets in transmission is checked by
+        the receiver, if error occurs, the receiver will announce
+        the sender to resend.
+        "
+    ::= { unisHPEOCCableInfoEntry 1 }
+
+unisHPEOCAvgBitsPerCarrier OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The cable port's average bits per carrier.
+        "
+    ::= { unisHPEOCCableInfoEntry 2 }
+
+unisHPEOCAvgSNRPerCarrier OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The cable port's signal noise ratio(SNR) bits per carrier.
+        "
+    ::= { unisHPEOCCableInfoEntry 3 }
+
+unisHPEOCAvgInPBCRCErrors OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The input PB CRC errors on average.
+        "
+    ::= { unisHPEOCCableInfoEntry 4 }
+
+unisHPEOCInTotalPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The total number of packets(including bad packets)
+        received on this interface.
+        "
+    ::= { unisHPEOCCableInfoEntry 5 }
+
+unisHPEOCAvgOutPower OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The cable port's power sent on average, the unit is db.
+        "
+    ::= { unisHPEOCCableInfoEntry 6 }
+
+unisHPEOCAvgOutPBCRCErrors OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The cable port's physical block(PB) cyclic redundancy
+        check(CRC) errors sent on average.
+        "
+    ::= { unisHPEOCCableInfoEntry 7 }
+
+unisHPEOCOutTotalPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The total count of the packets(including bad packets)
+        sent on this interface.
+        "
+    ::= { unisHPEOCCableInfoEntry 8 }
+
+--
+-- unisHPEOCBitPerSymbolTable
+--
+
+unisHPEOCBitPerSymbolTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisHPEOCBitPerSymbolEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table defines the bits per symbol parameters of the
+        cable line.
+        "
+    ::= { unisHPEOCCableInfo 2 }
+
+unisHPEOCBitPerSymbolEntry OBJECT-TYPE
+    SYNTAX      UnisHPEOCBitPerSymbolEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisHPEOCBitPerSymbolTable.
+        "
+    INDEX
+        {
+            ifIndex,
+            unisHPEOCBitPerSymbolIndex
+        }
+    ::= { unisHPEOCBitPerSymbolTable 1 }
+
+UnisHPEOCBitPerSymbolEntry ::= SEQUENCE
+    {
+        unisHPEOCBitPerSymbolIndex      Unsigned32,
+        unisHPEOCBitPerSymbol           OCTET STRING
+    }
+
+unisHPEOCBitPerSymbolIndex OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        The index of the unisHPEOCBitPerSymbolTable.
+        "
+    ::= { unisHPEOCBitPerSymbolEntry 1 }
+
+unisHPEOCBitPerSymbol OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        unisHPEOCBitPerSymbol returns all the bits per symbol on the fixed
+        frequency.  Each 4 bits stand for one value, all the values
+        picking-up will make up a cable bit map.
+        "
+    ::= { unisHPEOCBitPerSymbolEntry 2 }
+
+--
+-- unisHPEOCTemplate
+--
+
+unisHPEOCTemplate OBJECT IDENTIFIER ::= { unisHPEOC 3 }
+
+--
+-- unisHPEOCTemplateGlobalTable
+--
+
+unisHPEOCTemplateGlobalTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisHPEOCTemplateGlobalEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table defines the global parameters of the
+        Template information.
+        "
+    ::= { unisHPEOCTemplate 1 }
+
+unisHPEOCTemplateGlobalEntry OBJECT-TYPE
+    SYNTAX      UnisHPEOCTemplateGlobalEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisHPEOCTemplateGlobalTable.
+        "
+    INDEX
+        {
+            unisHPEOCTemplateIndex
+        }
+    ::= { unisHPEOCTemplateGlobalTable 1 }
+
+UnisHPEOCTemplateGlobalEntry ::= SEQUENCE
+    {
+        unisHPEOCTemplateIndex            Integer32,
+        unisHPEOCTemplateType             Integer32,
+        unisHPEOCTemplateName             DisplayString,
+        unisHPEOCTemplateDescr            DisplayString,
+        unisHPEOCTemplateCnuMaxDownBW     Integer32,
+        unisHPEOCTemplateCnuMaxUpBW       Integer32,
+        unisHPEOCTemplateCnuBcastControl  TruthValue,
+        unisHPEOCTemplateCnuMacLimit      Unsigned32,
+        unisHPEOCTemplateCb201VlanEn      TruthValue,
+        unisHPEOCTemplateRowStatus        RowStatus
+    }
+
+unisHPEOCTemplateIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The index of cable Template.
+        "
+    ::= { unisHPEOCTemplateGlobalEntry 1 }
+
+unisHPEOCTemplateType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            switch(1),
+            gateway(2)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The cable Template's type, can not change after create it.
+        "
+    ::= { unisHPEOCTemplateGlobalEntry 2 }
+
+unisHPEOCTemplateName OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The cable Template's name, it's recommended to set it
+        uniquely and understandably. Length: 1 to 15 characters.
+        "
+    ::= { unisHPEOCTemplateGlobalEntry 3 }
+
+unisHPEOCTemplateDescr OBJECT-TYPE
+    SYNTAX     DisplayString
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        The cable Template's description. Length: 0 to 63 characters.
+        "
+    ::= { unisHPEOCTemplateGlobalEntry 4 }
+
+unisHPEOCTemplateCnuMaxDownBW OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Maximum downstream bandwidth allowed for the CNU,
+        measured in Kbit/s, ranges from 0 to 16384, and must be multiples of 64.
+        "
+    ::= { unisHPEOCTemplateGlobalEntry 5 }
+
+unisHPEOCTemplateCnuMaxUpBW OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Maximum upstream bandwidth allowed for the CNU,
+        measured in Kbit/s, ranges from 0 to 16384, and must be multiples of 64.
+        "
+    ::= { unisHPEOCTemplateGlobalEntry 6 }
+
+unisHPEOCTemplateCnuBcastControl OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Broadcast storm suppression status.
+        true(1)  - Broadcast storm suppression enable.
+        false(2) - Broadcast storm suppression disable.
+        "
+    ::= { unisHPEOCTemplateGlobalEntry 7 }
+
+unisHPEOCTemplateCnuMacLimit OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Configure the max number of MAC address entries which can access
+        through the CNU, it ranges from 1 to 8.
+        Otherwise,
+        If configure 0, the CNU won't limit the MAC address entry.
+        If configure 0xFF, it means no MAC address entry can access the CNU.
+        "
+    ::= { unisHPEOCTemplateGlobalEntry 8 }
+
+unisHPEOCTemplateCb201VlanEn OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Use for Cb201 cnu only.
+        true(1)  - Enable vlan insert function.
+        false(2) - Disable vlan insert function.
+        "
+    ::= { unisHPEOCTemplateGlobalEntry 9 }
+
+unisHPEOCTemplateRowStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "
+        Operation status.
+        "
+    ::= { unisHPEOCTemplateGlobalEntry 10 }
+
+--
+-- unisHPEOCTemplateSwitchTable
+--
+
+unisHPEOCTemplateSwitchTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisHPEOCTemplateSwitchEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table defines the port parameters of the
+        switch type cnu. it's not affect on the type of gateway Template.
+        "
+    ::= { unisHPEOCTemplate 2 }
+
+unisHPEOCTemplateSwitchEntry OBJECT-TYPE
+    SYNTAX      UnisHPEOCTemplateSwitchEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisHPEOCTemplateSwitchTable.
+        "
+    INDEX
+        {
+            unisHPEOCTemplateIndex,
+            unisHPEOCTemplateUniIndex
+        }
+    ::= { unisHPEOCTemplateSwitchTable 1 }
+
+UnisHPEOCTemplateSwitchEntry ::= SEQUENCE
+    {
+        unisHPEOCTemplateUniIndex            Integer32,
+        unisHPEOCTemplateUniSpeed            INTEGER,
+        unisHPEOCTemplateUniDuplex           INTEGER,
+        unisHPEOCTemplateUniPriority         Integer32,
+        unisHPEOCTemplateUniFlowControl      TruthValue,
+        unisHPEOCTemplateUniUpLineRate       Unsigned32,
+        unisHPEOCTemplateUniDownLineRate     Unsigned32,
+        unisHPEOCTemplateUniAdminStatus      INTEGER,
+        unisHPEOCTemplateUniVLANType         INTEGER,
+        unisHPEOCTemplateUniPvid             Integer32,
+        unisHPEOCTemplateUniVlanTag          INTEGER
+    }
+
+unisHPEOCTemplateUniIndex OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        The index value which uniquely identifies the FE
+        interface of the CNU.
+        "
+    ::= { unisHPEOCTemplateSwitchEntry 1 }
+
+unisHPEOCTemplateUniSpeed OBJECT-TYPE
+    SYNTAX     INTEGER
+        {
+            auto(1),
+            s10M(10),
+            s100M(100)
+        }
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        User network interface speed.
+        "
+    ::= { unisHPEOCTemplateSwitchEntry 2 }
+
+unisHPEOCTemplateUniDuplex OBJECT-TYPE
+    SYNTAX     INTEGER
+        {
+            full(1),
+            half(2),
+            auto(3)
+        }
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        User network interface mode.
+        "
+    ::= { unisHPEOCTemplateSwitchEntry 3 }
+
+unisHPEOCTemplateUniPriority OBJECT-TYPE
+    SYNTAX     Integer32 (0..7)
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        The default ingress User Priority for this port.  This
+        only has effect on media, such as Ethernet, that do not
+        support native User Priority.
+        "
+    ::= { unisHPEOCTemplateSwitchEntry 4 }
+
+unisHPEOCTemplateUniFlowControl OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Flow control status.
+        true(1)  - Flow control status enable.
+        false(2) - Flow control status disable."
+    DEFVAL
+        {
+            false
+        }
+    ::= { unisHPEOCTemplateSwitchEntry 5 }
+
+unisHPEOCTemplateUniUpLineRate OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        The max speed upload in units of 1,024 bits per second
+        on this interface.  The value should between 0 and 8Mbps.
+        If the value is 0, it means that the upload speed is only
+        restricted by the physical line.
+        "
+    ::= { unisHPEOCTemplateSwitchEntry 6 }
+
+unisHPEOCTemplateUniDownLineRate OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        The max speed download in units of 1,024 bits per second
+        on this interface.  The value should between 0 and 8Mbps.
+        If the value is 0, it means that the download speed is only
+        restricted by the physical line.
+        "
+    ::= { unisHPEOCTemplateSwitchEntry 7 }
+
+unisHPEOCTemplateUniAdminStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            up(1),
+            down(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Control if open or close the UNI.  If choose up(1), means the UNI is
+        opened and packets can pass it.  If choose down(2), means the UNI is
+        closed and all packets will be discard.
+        "
+    ::= { unisHPEOCTemplateSwitchEntry 8 }
+
+unisHPEOCTemplateUniVLANType OBJECT-TYPE
+    SYNTAX     INTEGER
+        {
+            access(1),
+            trunk(2),
+            hybrid(3)
+        }
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "port vlan types.
+        hybrid (3) port can carry multiple VLANs.
+        "
+    ::= { unisHPEOCTemplateSwitchEntry 9 }
+
+unisHPEOCTemplateUniPvid OBJECT-TYPE
+    SYNTAX     Integer32 (1..4094)
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        The PVID, the VLAN ID assigned to untagged frames or
+        Priority-Tagged frames received on this port.
+        "
+    REFERENCE
+        "
+        IEEE 802.1Q/D11 Section 12.10.1.1
+        "
+    DEFVAL
+        {
+            1
+        }
+    ::= { unisHPEOCTemplateSwitchEntry 10 }
+
+unisHPEOCTemplateUniVlanTag OBJECT-TYPE
+    SYNTAX     INTEGER
+        {
+            tagged(1),
+            untagged(2)
+        }
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        VLAN is set tagged or untagged.
+        "
+    ::= { unisHPEOCTemplateSwitchEntry 11 }
+
+--
+-- unisHPEOCCnuAccess
+--
+unisHPEOCCnuAccess OBJECT IDENTIFIER ::= { unisHPEOC 4 }
+
+--
+-- unisHPEOCCnuAccessTable
+--
+
+unisHPEOCCnuAccessTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisHPEOCCnuAccessEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table defines the global parameters of the
+        cnu type permitting to access.
+        "
+    ::= { unisHPEOCCnuAccess 1 }
+
+unisHPEOCCnuAccessEntry OBJECT-TYPE
+    SYNTAX      UnisHPEOCCnuAccessEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The entry of the table unisHPEOCCnuAccessTable.
+        "
+    INDEX
+        {
+            unisHPEOCCnuAccessIndex
+        }
+    ::= { unisHPEOCCnuAccessTable 1 }
+
+
+UnisHPEOCCnuAccessEntry ::= SEQUENCE
+    {
+        unisHPEOCCnuAccessIndex        Integer32,
+        unisHPEOCCnuHFID               DisplayString,
+        unisHPEOCManuInfo              DisplayString,
+        unisHPEOCCnuType               Integer32,
+        unisHPEOCCnuSwitchType         Integer32,
+        unisHPEOCCnuUniNum             Integer32,
+        unisHPEOCCnuPhy2Uni            OCTET STRING,
+        unisHPEOCCnuAccessRowStatus    RowStatus
+    }
+
+unisHPEOCCnuAccessIndex OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "
+        The index value which uniquely identifies the
+        manuinfo of the CNU.
+        "
+    ::= { unisHPEOCCnuAccessEntry 1 }
+
+unisHPEOCCnuHFID OBJECT-TYPE
+    SYNTAX     DisplayString
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        The Cnu's HFID. Every type Cnu has it's unique HFID.
+        Length: 1 to 64 characters.
+        "
+    ::= { unisHPEOCCnuAccessEntry 2 }
+
+unisHPEOCManuInfo OBJECT-TYPE
+    SYNTAX     DisplayString
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        The Cnu's manufactory infofamiont.
+        Length: 0 to 63 characters.
+        "
+    ::= { unisHPEOCCnuAccessEntry 3 }
+
+unisHPEOCCnuType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            switch(1),
+            gateway(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The Cnu's function type.
+        "
+    ::= { unisHPEOCCnuAccessEntry 4 }
+
+unisHPEOCCnuSwitchType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            rtl8306e(1),
+            ar8236(2),
+            mv6061(3),
+            mv6031(4)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The Cnu's switch chip type. It's useless for gataway type cnu.
+        "
+    ::= { unisHPEOCCnuAccessEntry 5 }
+
+unisHPEOCCnuUniNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Uni number of the Cnu. It's useless for gataway type cnu.
+        "
+    ::= { unisHPEOCCnuAccessEntry 6 }
+
+unisHPEOCCnuPhy2Uni OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Reflection from phy port to uni port of the cnu.
+        It's useless for gataway type cnu.
+        For example, phy port 0,1,2,3 is reflect to uni port
+        1,2,3,4, then the value of this mib is {0,1,2,3}
+        "
+    ::= { unisHPEOCCnuAccessEntry 7 }
+
+unisHPEOCCnuAccessRowStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "
+        Operation status.
+        "
+    ::= { unisHPEOCCnuAccessEntry 8 }
+
+END

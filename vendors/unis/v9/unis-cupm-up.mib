@@ -1,0 +1,135 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB of data and configuration on user plane.
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 Created by huanglei
+--     Initial version 2020-09-10
+-- =================================================================
+UNIS-CUPM-UP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        InetAddressType, InetAddress
+    FROM INET-ADDRESS-MIB
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE,
+        Integer32
+    FROM SNMPv2-SMI;
+
+unisCupmUp MODULE-IDENTITY
+    LAST-UPDATED "202009110000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB provides config information of UP(User Plane)."
+    REVISION "202009110000Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 195 }
+
+--
+-- Node definitions
+--
+
+-- Traps are defined below.
+unisCupmUpNotifications OBJECT IDENTIFIER ::= { unisCupmUp 0 }
+
+unisCupmUpProtoTnlUp NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisCupmUpVbVxlanID,
+            unisCupmUpVbSrcAddrType,
+            unisCupmUpVbSrcAddr,
+            unisCupmUpVbDestAddrType,
+            unisCupmUpVbDestAddr,
+            unisCupmUpVbVpnName
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when
+         UP device connects to VXLAN tunnel."
+    ::= { unisCupmUpNotifications 1 }
+
+unisCupmUpProtoTnlDown NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisCupmUpVbVxlanID,
+            unisCupmUpVbSrcAddrType,
+            unisCupmUpVbSrcAddr,
+            unisCupmUpVbDestAddrType,
+            unisCupmUpVbDestAddr,
+            unisCupmUpVbVpnName
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when
+         UP device disconnects to VXLAN tunnel."
+    ::= { unisCupmUpNotifications 2 }
+
+-- =================================================================
+-- TrapObjects are defined below.
+
+unisCupmUpNotifyVarObjects OBJECT IDENTIFIER ::= { unisCupmUp 1 }
+
+unisCupmUpVbVxlanID OBJECT-TYPE
+    SYNTAX      Integer32 (1..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Part of the index for this table, this value
+         identifies the VXLAN protocol tunnel."
+    ::= { unisCupmUpNotifyVarObjects 1 }
+
+unisCupmUpVbSrcAddrType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Specifies the type of local address to be used at a remote
+         host for connecting VXLAN protocol tunnel."
+    ::= { unisCupmUpNotifyVarObjects 2 }
+
+unisCupmUpVbSrcAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Specifies the local address to be used at a remote
+         host for connecting VXLAN protocol tunnel.  The host
+         address type is determined by the object value of corresponding
+         unisCupmCpProtoTnlSrcAddrType."
+    ::= { unisCupmUpNotifyVarObjects 3 }
+
+unisCupmUpVbDestAddrType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Specifies the type of remote host for connecting the VXLAN
+         protocol tunnel."
+    ::= { unisCupmUpNotifyVarObjects 4 }
+
+unisCupmUpVbDestAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Specifies the remote host for connecting the VXLAN
+         protocol tunnel."
+    ::= { unisCupmUpNotifyVarObjects 5 }
+
+unisCupmUpVbVpnName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..31))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The VPN name, to which the rule will be applied.
+         Default value is zero-length."
+    ::= { unisCupmUpNotifyVarObjects 6 }
+
+END

@@ -1,0 +1,672 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This file describes the enterprise mib implementation
+--              of sending some traps.
+-- Reference:
+-- Version: V1.6
+-- History:
+--   V1.0 created by Huang Yang
+--     Initial version 2005-01-25
+--   V1.1 2005-10-27  added unisArpPortDynamicEntryFullTrap by ZhangLin
+--   V1.2 2007-02-06  added unisNdTabTrapEnable, unisNdTabTrapInterval,
+--                    unisNdTabLen and unisNdTabFullTrap by lizuxing04859
+--   V1.3 2008-07-18  added unisPeriodicalTrapGroup by songhao
+--   V1.4 2009-10-09  modified unisPeriodicalTrapInterval by lisong
+--   V1.5 2010-03-06  added unisPeriodicalTrapSwitch, unisTrapDesInfoTable
+--                    unisTrapConfigTable by haoyan
+--        2010-04-29  added unisDefaultRtDelTrap by wenchenhua
+--        2010-06-05  added unisTrapDesAddrTAddress by jinyi
+--   V1.6 2013-09-13  added unisPeriodicalTrapSwitch2 and
+--                    unisTrapConfigSwitch2 by duyanbing
+-- =================================================================
+UNIS-TRAP-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        IpAddress
+            FROM SNMPv2-SMI
+        SnmpAdminString
+            FROM SNMP-FRAMEWORK-MIB
+        ifIndex, ifDescr, InterfaceIndex
+            FROM IF-MIB
+        RowStatus, TAddress, TruthValue
+            FROM SNMPv2-TC
+        Integer32, OBJECT-TYPE,
+        MODULE-IDENTITY, NOTIFICATION-TYPE
+            FROM SNMPv2-SMI
+        InetAddressType, InetAddress
+            FROM INET-ADDRESS-MIB
+        unisCommon
+            FROM UNIS-OID-MIB;
+
+    unisTrap MODULE-IDENTITY
+        LAST-UPDATED "201006051050Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "This MIB is applicable to routers, switches and other products.
+
+            Some objects in this may be used only for some specific products,
+            so users should refer to the related documents to acquire more
+            detail information.
+            "
+        REVISION "201006051050Z"
+        DESCRIPTION
+            "The initial revision of this MIB module."
+        ::= { unisCommon 38 }
+
+
+--
+-- Node definitions
+--
+    unisTableGroup OBJECT IDENTIFIER ::= { unisTrap 1 }
+
+-- Describe objects for MAC table
+    unisMacTabStatGroup OBJECT IDENTIFIER ::= { unisTableGroup 1 }
+
+    unisMacTabTrapEnable OBJECT-TYPE
+        SYNTAX INTEGER{
+                        enable(1),
+                        disable(2)
+                        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisMacTabFullTrap and
+            unisMacTabAlmostFullTrap traps should be generated
+            when the MAC table is filled."
+        DEFVAL { enable }
+        ::= { unisMacTabStatGroup 1 }
+
+    unisMacTabTrapInterval OBJECT-TYPE
+        SYNTAX Integer32 (30..3600)
+        UNITS "seconds"
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Definition of the minimum interval between two
+            traps which occur when the MAC table is full or
+            two traps which occur when the MAC table is almost full."
+        DEFVAL { 30 }
+        ::= { unisMacTabStatGroup 2 }
+
+    unisMacTabTrapInfo OBJECT IDENTIFIER ::= { unisMacTabStatGroup 3 }
+
+    unisMacTabLen OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The length of the MAC table."
+        ::= { unisMacTabTrapInfo 1 }
+
+    unisMacTabTrap OBJECT IDENTIFIER ::= { unisMacTabStatGroup 4 }
+
+    unisMacTabFullTrap NOTIFICATION-TYPE
+            OBJECTS { unisMacTabLen }
+            STATUS current
+            DESCRIPTION
+                "Send this trap when the MAC table is filled.  The
+                interval between two traps generated should be longer
+                than unisMacTabTrapInterval."
+            ::= { unisMacTabTrap 1 }
+
+    unisMacTabAlmostFullTrap NOTIFICATION-TYPE
+            STATUS current
+            DESCRIPTION
+                "Send this trap when the MAC table is almost full.  The
+                interval between two traps generated should be longer
+                than unisMacTabTrapInterval."
+            ::= { unisMacTabTrap 2 }
+
+-- Describe objects for ARP table
+    unisArpTabStatGroup OBJECT IDENTIFIER ::= { unisTableGroup 2 }
+
+    unisArpTabTrapEnable OBJECT-TYPE
+        SYNTAX INTEGER {
+                        enable(1),
+                        disable(2)
+                        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisArpTabFullTrap traps
+            should be generated when the ARP table is filled."
+        DEFVAL { enable }
+        ::= { unisArpTabStatGroup 1 }
+
+    unisArpTabTrapInterval OBJECT-TYPE
+        SYNTAX Integer32 (30..3600)
+        UNITS "seconds"
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Definition of the minimum interval between two traps
+            which occur when the ARP table is filled."
+        DEFVAL { 30 }
+        ::= { unisArpTabStatGroup 2 }
+
+    unisArpTabTrapInfo OBJECT IDENTIFIER ::= { unisArpTabStatGroup 3 }
+
+    unisArpTabLen OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The length of the ARP table."
+        ::= { unisArpTabTrapInfo 1 }
+
+    unisArpTabTrap OBJECT IDENTIFIER ::= { unisArpTabStatGroup 4 }
+
+    unisArpTabFullTrap NOTIFICATION-TYPE
+            OBJECTS { unisArpTabLen }
+            STATUS current
+            DESCRIPTION
+                "Send this trap when the ARP table is filled.  The
+                interval between two traps generated should be longer
+                than unisArpTabTrapInterval."
+            ::= { unisArpTabTrap 1 }
+
+    unisArpPortDynamicEntryFullTrap NOTIFICATION-TYPE
+            OBJECTS { unisArpTabLen, ifIndex, ifDescr }
+            STATUS current
+            DESCRIPTION
+                 "Send this trap when the dynamic ARP number of the
+                port exceeds the limitation. The object unisArpTabLen
+                describes the limitation of the max dynamic ARP number
+                of this port. The interval between two traps should be
+                longer than unisArpTabTrapInterval."
+            ::= { unisArpTabTrap 2 }
+
+-- Describe objects for routing table
+    unisRtTabStatGroup OBJECT IDENTIFIER ::= { unisTableGroup 3 }
+
+    unisDetailRtTrapTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisDetailRtTrapEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table contains objects to decide what kind of
+            trap should be sent."
+        ::= { unisRtTabStatGroup 1 }
+
+    unisDetailRtTrapEntry OBJECT-TYPE
+        SYNTAX UnisDetailRtTrapEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry items"
+        INDEX { unisDetailRtProType }
+        ::= { unisDetailRtTrapTable 1 }
+
+    UnisDetailRtTrapEntry ::=
+        SEQUENCE {
+            unisDetailRtProType
+                INTEGER,
+            unisDetailRtEnable
+                INTEGER
+        }
+
+    unisDetailRtProType OBJECT-TYPE
+        SYNTAX INTEGER {
+            other(1),       -- none of the following
+
+                            -- non-protocol information,
+                            -- e.g., manually configured
+            local(2),       -- entries
+            rip(3),
+            isis(4),
+            ospf(5),
+            bgp(6)
+        }
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The index value which uniquely identifies an entry
+            in the unisDetailRtTrapTable."
+        ::= { unisDetailRtTrapEntry 1 }
+
+    unisDetailRtEnable OBJECT-TYPE
+        SYNTAX INTEGER {
+                        enable(1),
+                        disable(2)
+                        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisDetailRtTabFullTrap traps
+            should be generated when a specific routing table
+            is filled."
+        DEFVAL { enable }
+        ::= { unisDetailRtTrapEntry 2 }
+
+    unisRtTabTrapEnable OBJECT-TYPE
+        SYNTAX INTEGER {
+                        enable(1),
+                        disable(2)
+                        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisRtTabFullTrap traps should
+            be generated when the routing table is filled."
+        DEFVAL { enable }
+        ::= { unisRtTabStatGroup 2 }
+
+    unisRtTabTrapInterval OBJECT-TYPE
+        SYNTAX Integer32 (30..3600)
+        UNITS "seconds"
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Definition of the minimum interval between two
+            traps which occur when the routing table is filled."
+        DEFVAL { 30 }
+        ::= { unisRtTabStatGroup 3 }
+
+    unisRtTabTrapInfo OBJECT IDENTIFIER ::= { unisRtTabStatGroup 4 }
+
+    unisRtTabLen OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The length of the routing table.  The detail
+            routing tables also use the same object."
+        ::= { unisRtTabTrapInfo 1 }
+
+    unisDefaultRtNextHopType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The IP address type of the next hop of the default route.
+            The value must be ipv4 or ipv6"
+        ::= { unisRtTabTrapInfo 2 }
+
+    unisDefaultRtNextHop OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The IP address of the next hop of the default route."
+        ::= { unisRtTabTrapInfo 3 }
+
+    unisDefaultRtOutIf OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The index value which uniquely identifies the
+             local interface through which the next hop of this
+             route should be reached.  The interface identified
+             by a particular value of this index is the same
+             interface as identified by the same value of
+             ifIndex."
+        ::= { unisRtTabTrapInfo 4 }
+
+    unisRtTabTrap OBJECT IDENTIFIER ::= { unisRtTabStatGroup 5 }
+
+    unisRtTabFullTrap NOTIFICATION-TYPE
+            OBJECTS { unisRtTabLen }
+            STATUS current
+            DESCRIPTION
+                "Send this trap when the routing table is filled.  The
+                interval between two traps generated should be longer
+                than unisRtTabTrapInterval."
+            ::= { unisRtTabTrap 1 }
+
+    unisDetailRtTabFullTrap NOTIFICATION-TYPE
+            OBJECTS { unisDetailRtProType, unisRtTabLen }
+            STATUS current
+            DESCRIPTION
+                "Send this trap when the detail routing table is filled.  The
+                interval between two traps generated should be longer than
+                unisRtTabTrapInterval."
+            ::= { unisRtTabTrap 2 }
+
+    unisDefaultRtDelTrap NOTIFICATION-TYPE
+            OBJECTS { unisDetailRtProType, unisDefaultRtNextHopType, unisDefaultRtNextHop, unisDefaultRtOutIf }
+            STATUS current
+            DESCRIPTION
+                "Send this trap when the default route is deleted."
+            ::= { unisRtTabTrap 3 }
+
+    unisDefaultRtDelTrapEnable OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisDefaultRtDelTrap traps should
+            be generated when the default route is deleted."
+        DEFVAL { false }
+        ::= { unisRtTabStatGroup 6 }
+
+-- Describe objects for multicast table
+    unisMulticastTabStatGroup OBJECT IDENTIFIER ::= { unisTableGroup 4 }
+
+    unisMulticastTabTrapEnable OBJECT-TYPE
+        SYNTAX INTEGER {
+                        enable(1),
+                        disable(2)
+                        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisMulticastTabFullTrap traps
+            should be generated when the multicast table is filled."
+        DEFVAL { enable }
+        ::= { unisMulticastTabStatGroup 1 }
+
+    unisMulticastTabTrapInterval OBJECT-TYPE
+        SYNTAX Integer32 (30..3600)
+        UNITS "seconds"
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Definition of the minimum interval between two traps
+            which occur when the multicast table is filled."
+        DEFVAL { 30 }
+        ::= { unisMulticastTabStatGroup 2 }
+
+    unisMulticastTabTrapInfo OBJECT IDENTIFIER ::= { unisMulticastTabStatGroup 3 }
+
+    unisMulticastTabType OBJECT-TYPE
+        SYNTAX INTEGER {
+                        lay2(1),
+                        lay3(2)
+                        }
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "Defining the type of the multicast table, layer2 or layer3."
+        ::= { unisMulticastTabTrapInfo 1 }
+
+    unisMulticastTabLen OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The length of the multicast table."
+        ::= { unisMulticastTabTrapInfo 2 }
+
+    unisMulticastTabTrap OBJECT IDENTIFIER ::= { unisMulticastTabStatGroup 4 }
+
+    unisMulticastTabFullTrap NOTIFICATION-TYPE
+            OBJECTS { unisMulticastTabType, unisMulticastTabLen }
+            STATUS current
+            DESCRIPTION
+                "Send this trap when the multicast table is filled.  The
+                interval between two traps generated should be longer
+                than unisMulticastTabTrapInterval."
+            ::= { unisMulticastTabTrap 1 }
+
+
+-- Describe objects for Neighbor table
+    unisNdTabStatGroup OBJECT IDENTIFIER ::= { unisTableGroup 5 }
+
+    unisNdTabTrapEnable OBJECT-TYPE
+        SYNTAX INTEGER {
+                        enable(1),
+                        disable(2)
+                        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisNdTabFullTrap traps
+            should be generated when the ND table is filled."
+        DEFVAL { enable }
+        ::= { unisNdTabStatGroup 1 }
+
+    unisNdTabTrapInterval OBJECT-TYPE
+        SYNTAX Integer32 (30..3600)
+        UNITS "seconds"
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Definition of the minimum interval between two traps
+            which occur when the ND table is filled."
+        DEFVAL { 30 }
+        ::= { unisNdTabStatGroup 2 }
+
+    unisNdTabTrapInfo OBJECT IDENTIFIER ::= { unisNdTabStatGroup 3 }
+
+    unisNdTabLen OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The length of the ND table."
+        ::= { unisNdTabTrapInfo 1 }
+
+    unisNdTabTrap OBJECT IDENTIFIER ::= { unisNdTabStatGroup 4 }
+
+    unisNdTabFullTrap NOTIFICATION-TYPE
+            OBJECTS { unisNdTabLen }
+            STATUS current
+            DESCRIPTION
+                "Send this trap when the ND table is filled.  The
+                interval between two traps generated should be longer
+                than unisNdTabTrapInterval."
+            ::= { unisNdTabTrap 1 }
+
+-- Describe SNMP periodical trap group
+    unisPeriodicalTrapGroup OBJECT IDENTIFIER ::= { unisTableGroup 6 }
+
+-- Describe objects for SNMP periodical trap
+    unisPeriodicalTrapObjects OBJECT IDENTIFIER
+        ::= { unisPeriodicalTrapGroup 1 }
+
+    unisPeriodicalTrapInterval OBJECT-TYPE
+        SYNTAX Integer32 (0|10..3600)
+        UNITS "seconds"
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Definition of the periodical interval.
+            If no trap occurs during the certain interval, an unisPeriodicalTrap
+            will be generated.
+            If the interval is set to 0, no unisPeriodicalTrap will be generated."
+        DEFVAL { 60 }
+        ::= { unisPeriodicalTrapObjects 1 }
+
+    unisPeriodicalTrapSwitch OBJECT-TYPE
+        SYNTAX INTEGER {
+                        enable(1),
+                        disable(2)
+                        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Definition of the periodical switch.
+            If the value is off,the unisPeriodicalTrap will not be generated.
+            the unisPeriodicalTrapInterval will be set to 0."
+        DEFVAL { enable }
+        ::= { unisPeriodicalTrapObjects 2 }
+
+    unisPeriodicalTrapSwitch2 OBJECT-TYPE
+        SYNTAX INTEGER {
+                        off(0),
+                        on(1)
+                        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Periodical heartbeat trap sending switch.
+            If the value is off, the unisPeriodicalTrap will not be generated,
+            and the unisPeriodicalTrapInterval will be set to 0.  This node
+            differs from unisPeriodicalTrapSwitch in value."
+        DEFVAL { on }
+        ::= { unisPeriodicalTrapObjects 3 }
+
+-- Describe information for SNMP periodical trap
+    unisPeriodicalTrapInfo OBJECT IDENTIFIER
+        ::= { unisPeriodicalTrapGroup 2 }
+
+-- Describe SNMP periodical trap
+    unisPeriodicalNotification OBJECT IDENTIFIER
+        ::= { unisPeriodicalTrapGroup 3 }
+
+    unisPeriodicalNotificationPrefix OBJECT IDENTIFIER
+        ::= { unisPeriodicalNotification 0 }
+
+    unisPeriodicalTrap NOTIFICATION-TYPE
+            STATUS current
+            DESCRIPTION
+                "If no trap occurs during the interval spicified by
+                unisPeriodicalTrapInterval, an unisPeriodicalTrap
+                will be generated. If the interval is set to 0, no
+                unisPeriodicalTrap will be generated."
+            ::= { unisPeriodicalNotificationPrefix 1 }
+
+-- Describe SNMP TrapDesInfo group
+    unisTrapDesInfo OBJECT IDENTIFIER ::= { unisTableGroup 7 }
+
+    unisTrapDesInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisTrapDesInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of trap destination host address and port ."
+            ::= { unisTrapDesInfo 1 }
+
+    unisTrapDesInfoEntry OBJECT-TYPE
+            SYNTAX UnisTrapDesInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The entry of trap destination host address and port."
+            INDEX { unisTrapDesInfoIndex }
+            ::= { unisTrapDesInfoTable 1 }
+
+    UnisTrapDesInfoEntry ::=
+            SEQUENCE {
+                unisTrapDesInfoIndex Integer32,
+                unisTrapDesIPAddress IpAddress,
+                unisTrapDesPort Integer32,
+                unisTrapDesRowStatus  RowStatus,
+                unisTrapDesAddrTAddress TAddress
+            }
+
+    unisTrapDesInfoIndex OBJECT-TYPE
+            SYNTAX Integer32 (1..20)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The index of this table."
+            ::= { unisTrapDesInfoEntry 1 }
+
+    unisTrapDesIPAddress OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The host IP address of the trap destination."
+            ::= { unisTrapDesInfoEntry 2 }
+
+    unisTrapDesPort OBJECT-TYPE
+            SYNTAX Integer32 (0..65535)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The port of the trap destination."
+            ::= { unisTrapDesInfoEntry 3 }
+
+    unisTrapDesRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The status of this table entry."
+            ::= { unisTrapDesInfoEntry 4 }
+
+    unisTrapDesAddrTAddress OBJECT-TYPE
+            SYNTAX TAddress
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "This object contains a transport address."
+            ::= { unisTrapDesInfoEntry 5 }
+
+-- Describe SNMP TrapConfig group
+    unisTrapConfig OBJECT IDENTIFIER ::= { unisTableGroup 8 }
+
+    unisTrapConfigTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisTrapConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of trap configuration."
+            ::= { unisTrapConfig 1 }
+
+    unisTrapConfigEntry OBJECT-TYPE
+            SYNTAX UnisTrapConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The entry of trap configuration."
+            INDEX { unisTrapConfigIndex }
+            ::= { unisTrapConfigTable 1 }
+
+    UnisTrapConfigEntry ::=
+            SEQUENCE {
+                    unisTrapConfigIndex Integer32,
+                    unisTrapConfigName SnmpAdminString,
+                    unisTrapConfigDescr SnmpAdminString,
+                    unisTrapConfigSwitch INTEGER,
+                    unisTrapConfigSwitch2 INTEGER
+            }
+
+    unisTrapConfigIndex OBJECT-TYPE
+            SYNTAX Integer32 (1..2147483647)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The index of this table."
+            ::= { unisTrapConfigEntry 1 }
+
+    unisTrapConfigName OBJECT-TYPE
+            SYNTAX SnmpAdminString (SIZE(0..127))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The name of the appointed traps."
+            ::= { unisTrapConfigEntry 2 }
+
+    unisTrapConfigDescr OBJECT-TYPE
+            SYNTAX SnmpAdminString (SIZE(0..127))
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The description of the appointed traps."
+            ::= { unisTrapConfigEntry 3 }
+
+    unisTrapConfigSwitch OBJECT-TYPE
+            SYNTAX INTEGER {
+                            enable(1),
+                            disable(2)
+                            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether the specified traps
+                should be generated."
+            DEFVAL { enable }
+            ::= { unisTrapConfigEntry 4 }
+
+    unisTrapConfigSwitch2 OBJECT-TYPE
+            SYNTAX INTEGER {
+                            off(0),
+                            on(1)
+                            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether the specified traps should be generated.
+                This node differs from unisTrapConfigSwitch in value."
+            DEFVAL { on }
+            ::= { unisTrapConfigEntry 5 }
+
+END

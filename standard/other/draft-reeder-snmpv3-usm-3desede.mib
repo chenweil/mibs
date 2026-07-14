@@ -1,0 +1,79 @@
+SNMP-USER-BASED-SM-3DES-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-IDENTITY,
+       snmpModules                        FROM SNMPv2-SMI
+    AutonomousType                        FROM SNMPv2-TC
+    snmpPrivProtocols                     FROM SNMP-FRAMEWORK-MIB;
+
+snmpUsmMIB MODULE-IDENTITY
+    LAST-UPDATED "9910060000Z"            -- 06 October 1999, midnight
+    ORGANIZATION "SNMPv3 Working Group"
+    CONTACT-INFO "WG-email:   snmpv3@lists.tislabs.com
+                  Subscribe:  majordomo@lists.tislabs.com
+                              In msg body:  subscribe snmpv3
+
+                  Chair:      Russ Mundy
+                              NAI Labs
+                  postal:     3060 Washington Rd
+                              Glenwood MD 21738
+                              USA
+                  email:      mundy@tislabs.com
+                  phone:      +1-443-259-2307
+
+                  Co-editor:  David Reeder
+                              NAI Labs
+                  postal:     3060 Washington Road (Route 97)
+                              Glenwood, MD  21738
+                              USA
+                  email:      dreeder@tislabs.com
+                  phone:      +1-443-259-2348
+
+                  Co-editor:  Olafur Gudmundsson
+                              NAI Labs
+                  postal:     3060 Washington Road (Route 97)
+                              Glenwood, MD  21738
+                              USA
+                  email:      ogud@tislabs.com
+                  phone:      +1-443-259-2389
+                 "
+    DESCRIPTION  "Extension to the SNMP User-based Security Model
+                  to support Triple-DES EDE in 'Outside' CBC
+                  (cipher-block chaining) Mode.
+                 "
+--  Revision history
+    REVISION     "9910060000Z"            -- 06 October 1999, midnight
+    DESCRIPTION  "Initial version, published as an Internet Draft."
+
+    ::= { snmpModules 15 }
+
+-- Identification of Privacy Protocols *******************************
+
+-- Note: { snmpPrivProtocols 1 } through { snmpPrivProtocols 2 }
+-- are defined in USM.
+
+usm3DESEDEPrivProtocol OBJECT-IDENTITY
+    STATUS        current
+    DESCRIPTION  "The 3DES-EDE Symmetric Encryption Protocol."
+    REFERENCE    "- Data Encryption Standard, National Institute of
+                    Standards and Technology.  Federal Information
+                    Processing Standard (FIPS) Publication 46-3,(1999,
+                    pending approval).  Will supersede FIPS Publication
+                    46-2.
+
+                  - Data Encryption Algorithm, American National
+                    Standards Institute.  ANSI X3.92-1981,
+                    (December, 1980).
+
+                  - DES Modes of Operation, National Institute of
+                    Standards and Technology.  Federal Information
+                    Processing Standard (FIPS) Publication 81,
+                    (December, 1980).
+
+                  - Data Encryption Algorithm - Modes of Operation,
+                    American National Standards Institute.
+                    ANSI X3.106-1983, (May 1983).
+                 "
+    ::= { snmpPrivProtocols 3 }
+
+END

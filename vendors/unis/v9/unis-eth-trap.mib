@@ -1,0 +1,91 @@
+-- =================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: ETH TRAP MIB File
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2023-04-21 created by yuanyuchen
+-- =================================================================
+UNIS-ETH-TRAP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Unsigned32
+    FROM SNMPv2-SMI
+        DisplayString, MacAddress
+    FROM SNMPv2-TC;
+
+unisEthTrap MODULE-IDENTITY
+    LAST-UPDATED
+        "202304210920Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file defines the ETH trap warning feature only."
+    REVISION
+        "202304210920Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 262 }
+
+
+unisEthTrapMlag OBJECT IDENTIFIER ::= { unisEthTrap 1 }
+
+unisEthTrapsMlag OBJECT IDENTIFIER ::= { unisEthTrapMlag 0 }
+
+-- unisEthTrapsMlag
+unisEthTrapMlagSetDrvFailed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisEthTrapMlagSetDrvChassis,
+            unisEthTrapMlagSetDrvSlot,
+            unisEthTrapMlagSetDrvIfName,
+            unisEthTrapMlagSetDrvMacAddress
+        }
+    STATUS      current
+    DESCRIPTION
+        "ETH m-lag failed to add the MAC address."
+    ::= { unisEthTrapsMlag 1 }
+
+unisEthTrapMlagObjects OBJECT IDENTIFIER ::= { unisEthTrapMlag 1 }
+
+-- unisEthTrapMlagObjects
+unisEthTrapMlagSetDrvChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+         not a stacked device."
+    ::= { unisEthTrapMlagObjects 1 }
+
+unisEthTrapMlagSetDrvSlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "The information of slot."
+    ::= { unisEthTrapMlagObjects 2 }
+
+unisEthTrapMlagSetDrvIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of interface name."
+    ::= { unisEthTrapMlagObjects 3 }
+
+unisEthTrapMlagSetDrvMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of mac address."
+    ::= { unisEthTrapMlagObjects 4 }
+
+END
+

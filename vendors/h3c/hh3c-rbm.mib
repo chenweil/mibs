@@ -1,0 +1,465 @@
+-- =========================================================================
+-- Copyright (c) 2008-2023 New H3C Tech. Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB is designed to set rbm configuration or get rbm information.
+-- Reference:
+-- Version: V1.2
+-- History:
+--  V1.0 2020-05-19 created by liuzhengrui 17656
+--       Initial version.
+--  V1.1 2022-08-03  modified by wangjuxnaing 27996
+--       Add hh3cRbmCompareTrap,hh3cRbmDualActiveCheckTrap,
+--       hh3cRbmDualActiveCheckRecvTrap,hh3cRbmCfgCheckAlarmTrap
+--  V1.2 2023-03-01  modified by wangwenjuan 42382
+--       Add hh3cRbmInfoTables hh3cRbmConfigInfoTable,hh3cRbmConfigInfoEntry,
+--       hh3cRbmInfoIndex,hh3cRbmInfoLocalIpType,hh3cRbmInfoLocalIp,hh3cRbmInfoRemoteIpType,
+--       hh3cRbmInfoRemoteIp,hh3cRbmInfoRemoteIpPort,hh3cRbmInfoSwitchNum,
+--       hh3cRbmInfoStableTime,hh3cRbmInfoDelayTime,hh3cRbmInfoCfgCheckInternal,
+--       hh3cRbmInfoDeviceRole,hh3cRbmInfoDeviceRoleStatus,hh3cRbmInfoCfgSyncStatus,hh3cRbmInfoSyncStatus,
+--       hh3cRbmInfoConsistencyCheckResult,hh3cRbmInfoConsistencyCheckTime,hh3cRbmInfoBackupMode,
+--       hh3cRbmInfoRunningStatus,hh3cRbmInfoChannelStatus,hh3cRbmInfoHotBackupStatus,
+--       hh3cRbmInfoHotBackupBatchStatus,hh3cRbmInfoHotBackupDns,hh3cRbmInfoHotBackupHttp
+-- =========================================================================
+HH3C-RBM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    hh3cCommon
+    FROM HH3C-OID-MIB
+        Integer32, OBJECT-TYPE, MODULE-IDENTITY , NOTIFICATION-TYPE, Unsigned32
+    FROM SNMPv2-SMI
+        InetAddress, InetAddressType
+    FROM INET-ADDRESS-MIB;
+
+
+
+hh3cRbm MODULE-IDENTITY
+    LAST-UPDATED "202303011105Z"  -- March 1, 2023
+    ORGANIZATION
+        "New H3C Tech. Co., Ltd."
+    CONTACT-INFO
+        "Platform Team New H3C Tech. Co., Ltd.
+         Hai-Dian District Beijing P.R. China
+         http://www.h3c.com
+         Zip:100085"
+    DESCRIPTION
+        "The MIB is designed to manage Rbm products."
+
+ -- Revision History
+    REVISION "202303011105Z"  -- March 1, 2023
+    DESCRIPTION
+        "Add hh3cRbmInfoTables hh3cRbmConfigInfoTable hh3cRbmConfigInfoEntry
+         hh3cRbmInfoIndex hh3cRbmInfoLocalIp hh3cRbmInfoRemoteIp hh3cRbmInfoLocalIpv6
+         hh3cRbmInfoRemoteIpv6 hh3cRbmInfoRemoteIpPort hh3cRbmInfoSwitchNum
+         hh3cRbmInfoStableTime hh3cRbmInfoDelayTime hh3cRbmInfoCfgCheckInternal
+         hh3cRbmInfoDeviceRole hh3cRbmInfoDeviceRoleStatus hh3cRbmInfoCfgSyncStatus hh3cRbmInfoSyncStatus
+         hh3cRbmInfoConsistencyCheckResult hh3cRbmInfoConsistencyCheckTime hh3cRbmInfoBackupMode
+         hh3cRbmInfoRunningStatus hh3cRbmInfoChannelStatus hh3cRbmInfoHotBackupStatus
+         hh3cRbmInfoHotBackupBatchStatus hh3cRbmInfoHotBackupDns hh3cRbmInfoHotBackupHttp"
+    REVISION "202208031105Z"  -- August 3, 2022
+    DESCRIPTION
+        "Add hh3cRbmCompareTrap hh3cRbmDualActiveCheckTrap hh3cRbmDualActiveCheckRecvTrap hh3cRbmCfgCheckAlarmTrap"
+    REVISION     "202005191105Z"  -- May 19, 2020
+    DESCRIPTION  "Initial version."
+    ::= { hh3cCommon 187 }
+
+--
+-- Table definitions
+--
+
+hh3cRbmTables OBJECT IDENTIFIER ::= { hh3cRbm 1 }
+
+-- Describe objects for rbm abrupt trap
+
+hh3cRbmTrapObjects OBJECT IDENTIFIER ::= { hh3cRbmTables 1 }
+
+hh3cRbmTrapVar OBJECT-TYPE
+    SYNTAX Integer32 (0..1)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The value is RBM trap."
+::= { hh3cRbmTrapObjects 1 }
+
+hh3cRbmTrapLogVar OBJECT-TYPE
+    SYNTAX OCTET STRING(SIZE(0..256))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+    "The value is the reason for this notification."
+    ::= { hh3cRbmTrapObjects 2}
+
+hh3cRbmMonitor OBJECT IDENTIFIER ::= { hh3cRbmTables 2 }
+
+hh3cRbmTrap OBJECT IDENTIFIER ::= { hh3cRbmMonitor 0 }
+
+hh3cRbmKeepaliveNormal NOTIFICATION-TYPE
+    OBJECTS
+  {
+    hh3cRbmTrapVar
+  }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when RBM keepalive channel connected."
+::= { hh3cRbmTrap 1 }
+
+hh3cRbmKeepaliveFailure NOTIFICATION-TYPE
+    OBJECTS
+  {
+    hh3cRbmTrapVar
+  }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when RBM keepalive channel disconnected."
+::= { hh3cRbmTrap 2 }
+
+hh3cRbmStateChange NOTIFICATION-TYPE
+    OBJECTS
+  {
+    hh3cRbmTrapVar
+  }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when RBM running status changes(0:new-state = Active,1:new-state = Standby)."
+::= { hh3cRbmTrap 3 }
+
+hh3cRbmCfgInconsistentTrap NOTIFICATION-TYPE
+    OBJECTS
+  {
+    hh3cRbmTrapLogVar
+  }
+    STATUS current
+    DESCRIPTION
+        "When the result of RBM configuration consistency check is inconsistent, it checks the result of the last check.
+        If the result of the last check is also inconsistent, this notification is generated."
+::= { hh3cRbmTrap 4 }
+
+hh3cRbmDualActiveCheckTrap NOTIFICATION-TYPE
+    OBJECTS
+  {
+    hh3cRbmTrapLogVar
+  }
+    STATUS current
+    DESCRIPTION
+        "After the RBM is linked with the MAD,it responds to the MAD event.
+        When it receives a dual-primary conflict reported by the MAD,
+        it adds this notification to the original processing logic."
+::= { hh3cRbmTrap 5 }
+
+hh3cRbmDualActiveCheckRecvTrap NOTIFICATION-TYPE
+    OBJECTS
+  {
+    hh3cRbmTrapLogVar
+  }
+    STATUS current
+    DESCRIPTION
+        "After the RBM is linked with the MAD,it responds to the MAD event.
+        When receiving the MAD report of dual-primary conflict recovery,
+        this notification is added to the original processing logic."
+::= { hh3cRbmTrap 6 }
+
+hh3cRbmCfgCheckTrap NOTIFICATION-TYPE
+    OBJECTS
+  {
+    hh3cRbmTrapLogVar
+  }
+    STATUS current
+    DESCRIPTION
+        "After the heartbeat cable is connected,
+         if the RBM configuration is a dual management master or dual management backup configuration or
+         is not configured with data-channel,this notification is sent every 30s."
+::= { hh3cRbmTrap 7 }
+
+hh3cRbmInfoTables OBJECT IDENTIFIER ::= { hh3cRbm 2 }
+-- ----------------------------------------------------------------------
+  -- Rbm configuration and operation status information
+-- ----------------------------------------------------------------------
+hh3cRbmConfigInfoTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Hh3cRbmConfigInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "The configuration and operation status of RBM."
+    ::= { hh3cRbmInfoTables 1 }
+
+hh3cRbmConfigInfoEntry OBJECT-TYPE
+    SYNTAX  Hh3cRbmConfigInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "An entry (conceptual row) of RBM and operation status information."
+    INDEX { hh3cRbmInfoIndex }
+    ::= { hh3cRbmConfigInfoTable 1 }
+
+Hh3cRbmConfigInfoEntry ::= SEQUENCE {
+    hh3cRbmInfoIndex                   Unsigned32,
+    hh3cRbmInfoLocalIpType             InetAddressType,
+    hh3cRbmInfoLocalIp                 InetAddress,
+    hh3cRbmInfoRemoteIpType            InetAddressType,
+    hh3cRbmInfoRemoteIp                InetAddress,
+    hh3cRbmInfoRemoteIpPort            Integer32,
+    hh3cRbmInfoSwitchNum               Integer32,
+    hh3cRbmInfoStableTime              Integer32,
+    hh3cRbmInfoDelayTime               Integer32,
+    hh3cRbmInfoCfgCheckInternal        Integer32,
+    hh3cRbmInfoDeviceRole              INTEGER,
+    hh3cRbmInfoDeviceRoleStatus        INTEGER,
+    hh3cRbmInfoCfgSyncStatus           INTEGER,
+    hh3cRbmInfoCfgBatchStatus          INTEGER,
+    hh3cRbmInfoConsistencyCheckResult  INTEGER,
+    hh3cRbmInfoConsistencyCheckTime    OCTET STRING,
+    hh3cRbmInfoBackupMode              INTEGER,
+    hh3cRbmInfoRunningStatus           INTEGER,
+    hh3cRbmInfoChannelStatus           INTEGER,
+    hh3cRbmInfoHotBackupStatus         INTEGER,
+    hh3cRbmInfoHotBackupBatchStatus    INTEGER,
+    hh3cRbmInfoHotBackupDns            INTEGER,
+    hh3cRbmInfoHotBackupHttp           INTEGER
+    }
+
+hh3cRbmInfoIndex   OBJECT-TYPE
+    SYNTAX Unsigned32(0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "Device entity index."
+    ::= { hh3cRbmConfigInfoEntry  1 }
+
+hh3cRbmInfoLocalIpType    OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The type of the local IP address of RBM."
+    ::= { hh3cRbmConfigInfoEntry  2 }
+
+hh3cRbmInfoLocalIp    OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The local IP address of RBM."
+    ::= { hh3cRbmConfigInfoEntry  3 }
+
+hh3cRbmInfoRemoteIpType     OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The type of the remote IP address of RBM."
+    ::= { hh3cRbmConfigInfoEntry  4 }
+
+hh3cRbmInfoRemoteIp     OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The remote IP address of RBM."
+    ::= { hh3cRbmConfigInfoEntry  5 }
+
+hh3cRbmInfoRemoteIpPort     OBJECT-TYPE
+    SYNTAX Integer32 (1024..65535)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The remote port of RBM."
+    ::= { hh3cRbmConfigInfoEntry  6 }
+
+hh3cRbmInfoSwitchNum     OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The switchover times of RBM."
+    ::= { hh3cRbmConfigInfoEntry  7 }
+
+hh3cRbmInfoStableTime     OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The uptime since last switchover. The value represents a time period."
+    ::= { hh3cRbmConfigInfoEntry  8 }
+
+hh3cRbmInfoDelayTime     OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The backswitch delay time of RBM. The value represents a time period."
+    ::= { hh3cRbmConfigInfoEntry  9 }
+
+hh3cRbmInfoCfgCheckInternal     OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The configuration check interval of RBM."
+    ::= { hh3cRbmConfigInfoEntry  10 }
+
+hh3cRbmInfoDeviceRole     OBJECT-TYPE
+    SYNTAX INTEGER
+            {
+                rolePrimary(1),
+                roleSecondary(2),
+                roleAuto(3)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The configuration management role of RBM."
+    ::= { hh3cRbmConfigInfoEntry  11 }
+
+hh3cRbmInfoDeviceRoleStatus     OBJECT-TYPE
+    SYNTAX INTEGER
+            {
+                primary(1),
+                secondary(2),
+                primaryInBatch(3),
+                initial(4)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The status of configuration management role."
+    ::= { hh3cRbmConfigInfoEntry  12 }
+
+hh3cRbmInfoCfgSyncStatus     OBJECT-TYPE
+    SYNTAX INTEGER
+            {
+                disabled(0),
+                enabled(1)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The configuration synchronization mode of RBM, asynchronous or automatic."
+    DEFVAL { enabled }
+    ::= { hh3cRbmConfigInfoEntry  13 }
+
+hh3cRbmInfoCfgBatchStatus     OBJECT-TYPE
+    SYNTAX INTEGER
+            {
+                notBackup(0),
+                backup(1)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The configuration synchronization status of rRBM, undo backup or being configured."
+    DEFVAL { notBackup }
+    ::= { hh3cRbmConfigInfoEntry  14 }
+
+hh3cRbmInfoConsistencyCheckResult     OBJECT-TYPE
+    SYNTAX INTEGER
+            {
+                disable(1),
+                doing(2),
+                consistent(3),
+                inconsistent(4)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The configuration consistency check result of RBM."
+    ::= { hh3cRbmConfigInfoEntry  15 }
+
+hh3cRbmInfoConsistencyCheckTime     OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..127))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The last configuration consistency check time of RBM."
+    ::= { hh3cRbmConfigInfoEntry  16 }
+
+hh3cRbmInfoBackupMode     OBJECT-TYPE
+    SYNTAX INTEGER
+            {
+                activeStandby(1),
+                dualActive(2)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The run mode of RBM, active/standby or dual-active."
+    DEFVAL { activeStandby }
+    ::= { hh3cRbmConfigInfoEntry  17 }
+
+hh3cRbmInfoRunningStatus     OBJECT-TYPE
+    SYNTAX INTEGER
+            {
+                active(1),
+                standby(2),
+                initial(3)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "The run status of RBM, primary status, secondary status, or initial when the RBM configuration is not complete."
+    ::= { hh3cRbmConfigInfoEntry  18 }
+
+hh3cRbmInfoChannelStatus     OBJECT-TYPE
+    SYNTAX INTEGER
+            {
+                disconnected(1),
+                connected(2)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "Whether to connect the RBM channel."
+    DEFVAL { disconnected }
+    ::= { hh3cRbmConfigInfoEntry  19 }
+
+hh3cRbmInfoHotBackupStatus     OBJECT-TYPE
+    SYNTAX INTEGER
+            {
+                disabled(0),
+                enabled(1)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "Whether to synchronize the running data of RBM."
+    DEFVAL { enabled }
+    ::= { hh3cRbmConfigInfoEntry  20 }
+
+hh3cRbmInfoHotBackupBatchStatus     OBJECT-TYPE
+    SYNTAX INTEGER
+            {
+                notBackup(0),
+                backup(1)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "RBM running data batch backup status, not in batch or in batch."
+    DEFVAL { notBackup }
+    ::= { hh3cRbmConfigInfoEntry  21 }
+
+hh3cRbmInfoHotBackupDns     OBJECT-TYPE
+    SYNTAX INTEGER
+            {
+                disabled(0),
+                enabled(1)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "Whether the synchronization of RBM operation mode of DNS is enabled."
+    DEFVAL { enabled }
+    ::= { hh3cRbmConfigInfoEntry  22 }
+
+hh3cRbmInfoHotBackupHttp     OBJECT-TYPE
+    SYNTAX INTEGER
+            {
+                disabled(0),
+                enabled(1)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    "Whether the synchronization of RBM operation mode of HTTP is enabled."
+    DEFVAL { enabled }
+    ::= { hh3cRbmConfigInfoEntry  23 }
+
+END

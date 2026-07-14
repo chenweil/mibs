@@ -1,0 +1,116 @@
+-- ============================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description: The purpose of this MIB file is to provide the definition of
+--              the DIM(Deep Inspect Management) trap.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2022/07/15 created by suncao
+--      The initial revision of this MIB module.
+--      Add unisDimTrapSigUpdateSuccess,
+--      unisDimTrapSigUpdateFailed.
+-- ============================================================================
+UNIS-DIM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI;
+
+unisDim MODULE-IDENTITY
+    LAST-UPDATED "202207151711Z"             -- July 15, 2022 at 17:11 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Add unisDimTrapSigUpdateSuccess,
+        unisDimTrapSigUpdateFailed"
+    REVISION "202207151711Z"                -- July 15, 2022 at 17:11 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 236 }
+
+--
+-- Node definitions
+--
+
+-- Global Variants
+unisDimSignatureTraps OBJECT IDENTIFIER ::= { unisDim 1 }
+
+--                     **************Global Variants***************
+-- Describe objects for dim trap
+unisDimTrapsSigUpdatePrefix OBJECT IDENTIFIER ::= { unisDimSignatureTraps 0 }
+unisDimTrapSigUpdateSuccess NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDimSigUpdateFeatureId,
+            unisDimSigUpdateType,
+            unisDimSigUpdateLastVersion,
+            unisDimSigUpdateCurrentVersion
+        }
+    STATUS    current
+    DESCRIPTION
+        "Send trap when the signature update success."
+    ::= { unisDimTrapsSigUpdatePrefix 1 }
+unisDimTrapSigUpdateFailed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDimSigUpdateFeatureId,
+            unisDimSigUpdateType,
+            unisDimSigUpdateFailedReason
+        }
+    STATUS    current
+    DESCRIPTION
+        "Send trap when the signature update failed."
+    ::= { unisDimTrapsSigUpdatePrefix 2 }
+
+unisDimTrapsSigUpdateObjects OBJECT IDENTIFIER ::= { unisDimSignatureTraps 1 }
+unisDimSigUpdateFeatureId OBJECT-TYPE
+    SYNTAX    Unsigned32(1..8)
+    MAX-ACCESS    accessible-for-notify
+    STATUS    current
+    DESCRIPTION
+        "The signature feature identification.
+        1-APR.
+        2-IPS.
+        3-AV.
+        4-UFLT.
+        5-IP-REPUTATION.
+        6-WAF.
+        7-URL-REPUTATION.
+        8-DNS-REPUTATION."
+    ::= { unisDimTrapsSigUpdateObjects 1 }
+unisDimSigUpdateType OBJECT-TYPE
+    SYNTAX    Unsigned32(1..2)
+    MAX-ACCESS    accessible-for-notify
+    STATUS    current
+    DESCRIPTION
+        "The signature update type,automatic upgrade or manual upgrade.
+        1-Manual upgrade.
+        2-Automatic upgrade."
+    ::= { unisDimTrapsSigUpdateObjects 2 }
+unisDimSigUpdateLastVersion OBJECT-TYPE
+    SYNTAX    OCTET STRING(SIZE(0..255))
+    MAX-ACCESS    accessible-for-notify
+    STATUS    current
+    DESCRIPTION
+        "The last signature version."
+    ::= { unisDimTrapsSigUpdateObjects 3 }
+unisDimSigUpdateCurrentVersion OBJECT-TYPE
+    SYNTAX    OCTET STRING(SIZE(0..255))
+    MAX-ACCESS    accessible-for-notify
+    STATUS    current
+    DESCRIPTION
+        "The current signature version."
+    ::= { unisDimTrapsSigUpdateObjects 4 }
+unisDimSigUpdateFailedReason OBJECT-TYPE
+    SYNTAX    OCTET STRING(SIZE(0..255))
+    MAX-ACCESS    accessible-for-notify
+    STATUS    current
+    DESCRIPTION
+        "The reason of failure feature library upgrade."
+    ::= { unisDimTrapsSigUpdateObjects 5 }
+
+END

@@ -1,0 +1,315 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: DHCP Relay MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--
+-- =================================================================
+
+    UNIS-DHCPR-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS
+            unisRhw
+                FROM UNIS-OID-MIB
+            ifIndex
+                FROM RFC1213-MIB
+            OBJECT-GROUP
+                FROM SNMPv2-CONF
+            IpAddress, Integer32, OBJECT-TYPE, MODULE-IDENTITY
+                FROM SNMPv2-SMI
+            RowStatus
+                FROM SNMPv2-TC;
+
+        unisDHCPRelayMib MODULE-IDENTITY
+            LAST-UPDATED "200303010000Z"        -- March 01, 2003 at 00:00 GMT
+            ORGANIZATION
+                "Unisyue Technologies Co., Ltd."
+            CONTACT-INFO
+                ""
+            DESCRIPTION
+                "This MIB describes objects used for managing DHCP relay."
+            REVISION "200302120000Z"        -- February 12, 2003 at 00:00 GMT
+            DESCRIPTION
+                "The initial revision of this MIB module."
+            ::= { unisRhw 1 }
+
+
+
+--
+-- Node definitions
+--
+
+        unisDHCPRelayMibObject OBJECT IDENTIFIER ::= { unisDHCPRelayMib 1 }
+
+-- =================================================================
+-- 1st Table of unisDHCPRelayMibObjects: unisDHCPRIPTable
+-- =================================================================
+        unisDHCPRIPTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisDHCPRIPEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table for configuring ip addresses for DHCP relay"
+            ::= { unisDHCPRelayMibObject 1 }
+
+        unisDHCPRIPEntry OBJECT-TYPE
+            SYNTAX UnisDHCPRIPEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "An entry for configuring ip addresses for DHCP
+                relay"
+            INDEX { ifIndex, unisDHCPRIPAddr }
+            ::= { unisDHCPRIPTable 1 }
+
+        UnisDHCPRIPEntry ::=
+            SEQUENCE {
+                unisDHCPRIPAddr
+                    IpAddress,
+                unisDHCPRIPRowStatus
+                    RowStatus
+             }
+
+        unisDHCPRIPAddr OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Ip address for DHCP relay"
+            ::= { unisDHCPRIPEntry 1 }
+
+        unisDHCPRIPRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus. Three actions are used: active,
+                createAndGo, destroy"
+            ::= { unisDHCPRIPEntry 2 }
+
+-- =================================================================
+-- 2nd Table of unisDHCPRelayMibObjects: unisDHCPRSeletAllocateModeTable
+-- =================================================================
+        unisDHCPRSeletAllocateModeTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisDHCPRSeletAllocateModeEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table for selecting allocation mode of dhcp
+                service"
+            ::= { unisDHCPRelayMibObject 2 }
+
+        unisDHCPRSeletAllocateModeEntry OBJECT-TYPE
+            SYNTAX UnisDHCPRSeletAllocateModeEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "An entry for configuring the allocation mode of
+                DHCP service"
+            INDEX { ifIndex }
+            ::= { unisDHCPRSeletAllocateModeTable 1 }
+
+        UnisDHCPRSeletAllocateModeEntry ::=
+            SEQUENCE {
+                unisDHCPRSelectAllocateMode
+                    INTEGER
+             }
+
+        unisDHCPRSelectAllocateMode OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                global(0),
+                interface(1),
+                relay(2)
+                }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Allocation mode of DHCP service"
+            ::= { unisDHCPRSeletAllocateModeEntry 1 }
+
+--
+-- Non-table objects
+--
+        unisDHCPRelayCycleStatus OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                on(0),
+                off(1)
+                }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Status of DHCP relay cycle mode"
+            ::= { unisDHCPRelayMibObject 3 }
+
+        unisDHCPRRxBadPktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the bad packets received by
+                DHCP relay"
+            ::= { unisDHCPRelayMibObject 4 }
+
+        unisDHCPRRxServerPktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the packets received from
+                DHCP servers by DHCP relay module"
+            ::= { unisDHCPRelayMibObject 5 }
+
+        unisDHCPRTxServerPktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the packets transmited to
+                DHCP servers by DHCP relay module"
+            ::= { unisDHCPRelayMibObject 6 }
+
+        unisDHCPRRxClientPktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the packets received form DHCP
+                clients by DHCP relay"
+            ::= { unisDHCPRelayMibObject 7 }
+
+        unisDHCPRTxClientPktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the brodcast packets transmited
+                to DHCP clients by DHCP relay"
+            ::= { unisDHCPRelayMibObject 8 }
+
+        unisDHCPRTxClientUniPktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the unicast packets received
+                form DHCP clients by DHCP relay"
+            ::= { unisDHCPRelayMibObject 9 }
+
+        unisDHCPRTxClientBroPktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the brodcast packets received
+                form DHCP clients by DHCP relay"
+            ::= { unisDHCPRelayMibObject 10 }
+
+        unisDHCPRelayDiscoverPktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the DHCP Discover packets handled
+                by DHCP relay"
+            ::= { unisDHCPRelayMibObject 11 }
+
+        unisDHCPRelayRequestPktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the DHCP Request packets handled
+                by DHCP relay"
+            ::= { unisDHCPRelayMibObject 12 }
+
+        unisDHCPRelayDeclinePktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the DHCP Decline packets handled
+                by DHCP relay"
+            ::= { unisDHCPRelayMibObject 13 }
+
+        unisDHCPRelayReleasePktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the DHCP Release packets handled
+                by DHCP relay"
+            ::= { unisDHCPRelayMibObject 14 }
+
+        unisDHCPRelayInformPktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the DHCP Inform packets handled
+                by DHCP relay"
+            ::= { unisDHCPRelayMibObject 15 }
+
+        unisDHCPRelayOfferPktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the DHCP Offer packets handled
+                by DHCP server"
+            ::= { unisDHCPRelayMibObject 16 }
+
+        unisDHCPRelayAckPktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the DHCP Ack packets handled
+                by DHCP relay"
+            ::= { unisDHCPRelayMibObject 17 }
+
+        unisDHCPRelayNakPktNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the DHCP Nak packets handled
+                by DHCP relay"
+            ::= { unisDHCPRelayMibObject 18 }
+
+        unisDHCPRelayStatisticsReset OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                invalid(0),
+                reset(1)
+                }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Reset the above statictics information of handled
+                packets by DHCP relay"
+            ::= { unisDHCPRelayMibObject 19 }
+
+        unisDHCPRelayMIBConformance OBJECT IDENTIFIER ::= { unisDHCPRelayMib 2 }
+
+        unisDHCPRelayMIBCompliances OBJECT IDENTIFIER ::= { unisDHCPRelayMIBConformance 1 }
+
+        unisDHCPRelayMIBGroups OBJECT IDENTIFIER ::= { unisDHCPRelayMIBConformance 2 }
+
+        unisDHCPRelayMIBGroup OBJECT-GROUP
+            OBJECTS { unisDHCPRIPAddr, unisDHCPRIPRowStatus, unisDHCPRSelectAllocateMode, unisDHCPRelayCycleStatus, unisDHCPRRxBadPktNum,
+                unisDHCPRRxServerPktNum, unisDHCPRTxServerPktNum, unisDHCPRRxClientPktNum, unisDHCPRTxClientPktNum, unisDHCPRTxClientUniPktNum,
+                unisDHCPRTxClientBroPktNum, unisDHCPRelayDiscoverPktNum, unisDHCPRelayRequestPktNum, unisDHCPRelayDeclinePktNum, unisDHCPRelayReleasePktNum,
+                unisDHCPRelayInformPktNum, unisDHCPRelayOfferPktNum, unisDHCPRelayAckPktNum, unisDHCPRelayNakPktNum, unisDHCPRelayStatisticsReset
+                 }
+            STATUS current
+            DESCRIPTION
+                "The basic collection of objects providing management of
+                DHCP realy."
+            ::= { unisDHCPRelayMIBGroups 1 }
+
+
+    END

@@ -1,0 +1,1199 @@
+-- ************************************************************************
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: WAPI extension mib
+-- Reference:
+-- Version: V1.5
+-- History:
+--   V1.0 created by zhanglianglun
+--     Initial version 2007-5-20
+--   V1.1 2009-06-04 modified by caizibin
+--        Add uniswapiCertificateInstalled, uniswapiConfigTable,
+--        uniswapiUserwithInvalidCertificate,
+--        uniswapiStationReplayAttack, uniswapiTamperAttack,
+--        uniswapiLowSafeLevelAttack, uniswapiAddressRedirectionAttack,
+--        uniswapiTrapInfoMacAddr, uniswapiTrapInfoAPId,
+--        uniswapiTrapInfoRadioId, uniswapiTrapInfoBSSId
+--   V1.2 2010-03-06 modified by xuyonggang
+--        Add uniswapiConfigExtTable
+--   V1.3 2010-11-23 modified by xuyonggang
+--        Add uniswapiCfgExtASIPAddressType
+--        Add uniswapiCfgExtASIPAddress
+--        Add uniswapiCfgExtASName
+--        Add uniswapiCfgExtCertDomain
+--        Add uniswapiCfgExtCertInstalled
+--   V1.4 2013-01-10 modified by xuyonggang
+--        Add uniswapiTrapInfoAPMacAddr
+--   V1.5 2018-05-07 modified by muzhuqing
+--        Add node uniswapiConfigVersion to uniswapiConfigExtTable.
+--        Add node uniswapiControlledAuthControl to uniswapiConfigExtTable.
+--        Add node uniswapiControlledPortControl to uniswapiConfigExtTable.
+--        Add node uniswapiOptionImplemented to uniswapiConfigExtTable.
+--        Add node uniswapiPreauthImplemented to uniswapiConfigExtTable.
+--        Add node uniswapiEnabled to uniswapiConfigExtTable.
+--        Add node uniswapiPreauthEnabled to uniswapiConfigExtTable.
+--        Add node uniswapiCfgUniKeysSupported to uniswapiConfigExtTable.
+--        Add node uniswapiCfgUniRekeyMethod to uniswapiConfigExtTable.
+--        Add node uniswapiCfgUniRekeyTime to uniswapiConfigExtTable.
+--        Add node uniswapiCfgUniRekeyPackets to uniswapiConfigExtTable.
+--        Add node uniswapiCfgMultiCipher to uniswapiConfigExtTable.
+--        Add node uniswapiCfgMultiRekeyMethod to uniswapiConfigExtTable.
+--        Add node uniswapiCfgMultiRekeyTime to uniswapiConfigExtTable.
+--        Add node uniswapiCfgMultiRekeyPackets to uniswapiConfigExtTable.
+--        Add node uniswapiCfgMultiRekeyStrict to uniswapiConfigExtTable.
+--        Add node uniswapiCfgPSKValue to uniswapiConfigExtTable.
+--        Add node uniswapiCfgPSKPassPhrase to uniswapiConfigExtTable.
+--        Add node uniswapiCfgCertUpdateCount to uniswapiConfigExtTable.
+--        Add node uniswapiCfgMultiUpdateCount to uniswapiConfigExtTable.
+--        Add node uniswapiCfgUniUpdateCount to uniswapiConfigExtTable.
+--        Add node uniswapiCfgMultiCipherSize to uniswapiConfigExtTable.
+--        Add node uniswapiCfgBKLifetime to uniswapiConfigExtTable.
+--        Add node uniswapiCfgBKReauthThreshold to uniswapiConfigExtTable.
+--        Add node uniswapiCfgSATimeout to uniswapiConfigExtTable.
+--        Add node uniswapiAuthenSuiteSelected to uniswapiConfigExtTable.
+--        Add node uniswapiUniCipherSelected to uniswapiConfigExtTable.
+--        Add node uniswapiMultiCipherSelected to uniswapiConfigExtTable.
+--        Add node uniswapiBKIDUsed to uniswapiConfigExtTable.
+--        Add node uniswapiAuthenSuiteRequested to uniswapiConfigExtTable.
+--        Add node uniswapiUniCipherRequested to uniswapiConfigExtTable.
+--        Add node uniswapiMultiCipherRequested to uniswapiConfigExtTable.
+--        Add table uniswapiStatsTable.
+-- ************************************************************************
+UNIS-WAPI-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        Counter32, Integer32, Unsigned32,
+        MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE
+            FROM SNMPv2-SMI
+        TruthValue, MacAddress
+            FROM SNMPv2-TC
+        ifIndex, ifDescr
+            FROM IF-MIB
+        InetAddressType, InetAddress
+            FROM INET-ADDRESS-MIB
+        unisCommon
+            FROM UNIS-OID-MIB;
+
+    uniswapiMIB MODULE-IDENTITY
+        LAST-UPDATED "201012011757Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "UNIS-WAPI-MIB is an extension of MIB in WAPI
+            protocol.  This MIB contains objects to
+            manage configuration and monitor running state
+            for WAPI feature."
+        REVISION "201012011757Z"
+        DESCRIPTION
+            "Add node uniswapiConfigVersion to uniswapiConfigExtTable.
+            Add node uniswapiControlledAuthControl to uniswapiConfigExtTable.
+            Add node uniswapiControlledPortControl to uniswapiConfigExtTable.
+            Add node uniswapiOptionImplemented to uniswapiConfigExtTable.
+            Add node uniswapiPreauthImplemented to uniswapiConfigExtTable.
+            Add node uniswapiEnabled to uniswapiConfigExtTable.
+            Add node uniswapiPreauthEnabled to uniswapiConfigExtTable.
+            Add node uniswapiCfgUniKeysSupported to uniswapiConfigExtTable.
+            Add node uniswapiCfgUniRekeyMethod to uniswapiConfigExtTable.
+            Add node uniswapiCfgUniRekeyTime to uniswapiConfigExtTable.
+            Add node uniswapiCfgUniRekeyPackets to uniswapiConfigExtTable.
+            Add node uniswapiCfgMultiCipher to uniswapiConfigExtTable.
+            Add node uniswapiCfgMultiRekeyMethod to uniswapiConfigExtTable.
+            Add node uniswapiCfgMultiRekeyTime to uniswapiConfigExtTable.
+            Add node uniswapiCfgMultiRekeyPackets to uniswapiConfigExtTable.
+            Add node uniswapiCfgMultiRekeyStrict to uniswapiConfigExtTable.
+            Add node uniswapiCfgPSKValue to uniswapiConfigExtTable.
+            Add node uniswapiCfgPSKPassPhrase to uniswapiConfigExtTable.
+            Add node uniswapiCfgCertUpdateCount to uniswapiConfigExtTable.
+            Add node uniswapiCfgMultiUpdateCount to uniswapiConfigExtTable.
+            Add node uniswapiCfgUniUpdateCount to uniswapiConfigExtTable.
+            Add node uniswapiCfgMultiCipherSize to uniswapiConfigExtTable.
+            Add node uniswapiCfgBKLifetime to uniswapiConfigExtTable.
+            Add node uniswapiCfgBKReauthThreshold to uniswapiConfigExtTable.
+            Add node uniswapiCfgSATimeout to uniswapiConfigExtTable.
+            Add node uniswapiAuthenSuiteSelected to uniswapiConfigExtTable.
+            Add node uniswapiUniCipherSelected to uniswapiConfigExtTable.
+            Add node uniswapiMultiCipherSelected to uniswapiConfigExtTable.
+            Add node uniswapiBKIDUsed to uniswapiConfigExtTable.
+            Add node uniswapiAuthenSuiteRequested to uniswapiConfigExtTable.
+            Add node uniswapiUniCipherRequested to uniswapiConfigExtTable.
+            Add node uniswapiMultiCipherRequested to uniswapiConfigExtTable.
+            Add table uniswapiStatsTable."
+        ::= { unisCommon 77 }
+
+    uniswapiMIBObjects OBJECT IDENTIFIER ::= { uniswapiMIB 1 }
+    uniswapiMIBStatsObjects OBJECT IDENTIFIER ::= { uniswapiMIB 2 }
+    uniswapiMIBTableObjects OBJECT IDENTIFIER ::= { uniswapiMIB 3 }
+    uniswapiTrap OBJECT IDENTIFIER ::= { uniswapiMIB 4 }
+
+-- ************************************************************************
+-- * uniswapiModeEnabled OBJECT
+-- ************************************************************************
+    uniswapiModeEnabled OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "When this object is set to TRUE, it shall indicate that WAPI
+            is enabled.  Otherwise, it shall indicate that WAPI is disabled."
+        ::= { uniswapiMIBObjects 1 }
+
+-- ************************************************************************
+-- * uniswapiASIPAddress OBJECT
+-- ************************************************************************
+    uniswapiASIPAddressType OBJECT-TYPE
+        SYNTAX  InetAddressType
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object is used to set global IP addresses
+            type (IPv4 or IPv6) of AS."
+        DEFVAL { ipv4 }
+        ::= { uniswapiMIBObjects 2 }
+
+    uniswapiASIPAddress OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object is used to set the global IP address of AS."
+        ::= { uniswapiMIBObjects 3 }
+
+-- ************************************************************************
+-- * uniswapiCertificateInstalled OBJECT
+-- ************************************************************************
+    uniswapiCertificateInstalled OBJECT-TYPE
+        SYNTAX  TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object indicates whether the entity has installed
+            certificate.  When the value is TRUE, it shall indicate that
+            the entity has installed certificate.  Otherwise, it shall
+            indicate that the entity hasn't installed certificate."
+        ::= { uniswapiMIBObjects 4 }
+
+-- ************************************************************************
+-- * 9 statistics OBJECTS
+-- ************************************************************************
+    uniswapiStatsWAISignatureErrors OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when the received packet of
+            WAI signature is wrong."
+        ::= { uniswapiMIBStatsObjects 1 }
+
+    uniswapiStatsWAIHMACErrors OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when the received packet of
+            WAI message authentication key checking error occurs."
+        ::= { uniswapiMIBStatsObjects 2 }
+
+    uniswapiStatsWAIAuthRsltFailures OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when the WAI authentication result is
+            unsuccessful."
+        ::= { uniswapiMIBStatsObjects 3 }
+
+    uniswapiStatsWAIDiscardCounters OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when the received packet of WAI are
+            discarded."
+        ::= { uniswapiMIBStatsObjects 4 }
+
+    uniswapiStatsWAITimeoutCounters OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when the packet of WAI overtime are
+            detected."
+        ::= { uniswapiMIBStatsObjects 5 }
+
+    uniswapiStatsWAIFormatErrors OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when the WAI packet of WAI format
+            error is detected."
+        ::= { uniswapiMIBStatsObjects 6 }
+
+    uniswapiStatsWAICtfHskFailures OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when the WAI certificate authenticates
+            unsuccessfully."
+        ::= { uniswapiMIBStatsObjects 7 }
+
+    uniswapiStatsWAIUniHskFailures OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when the WAI unicast cipher key
+            negotiates unsuccessfully."
+        ::= { uniswapiMIBStatsObjects 8 }
+
+    uniswapiStatsWAIMulHskFailures OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when the WAI multicast cipher key
+            announces unsuccessfully."
+        ::= { uniswapiMIBStatsObjects 9 }
+
+-- ************************************************************************
+-- * uniswapiConfigTable Table
+-- ************************************************************************
+    uniswapiConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UniswapiConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The table containing WAPI configuration objects."
+        ::= { uniswapiMIBTableObjects 1 }
+
+    uniswapiConfigEntry OBJECT-TYPE
+        SYNTAX UniswapiConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the uniswapiConfigTable."
+        INDEX { ifIndex }
+        ::= { uniswapiConfigTable 1 }
+
+    UniswapiConfigEntry ::= SEQUENCE
+        {
+            uniswapiConfigASIPAddressType InetAddressType,
+            uniswapiConfigASIPAddress InetAddress,
+            uniswapiConfigAuthMethod INTEGER,
+            uniswapiConfigAuthMode INTEGER,
+            uniswapiConfigISPDomain OCTET STRING,
+            uniswapiConfigCertificateDomain OCTET STRING,
+            uniswapiConfigASName OCTET STRING,
+            uniswapiConfigBKRekeyEnabled TruthValue
+        }
+
+    uniswapiConfigASIPAddressType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object is used to set IP addresses type of AS."
+        ::= { uniswapiConfigEntry 1 }
+
+    uniswapiConfigASIPAddress OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object is used to set the IP address of AS."
+        ::= { uniswapiConfigEntry 2 }
+
+    uniswapiConfigAuthMethod OBJECT-TYPE
+        SYNTAX INTEGER {
+            certificate(1),
+            psk(2),
+            certificatePsk(3)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object selects a mechanism for WAPI authentication.
+            The default is certificate."
+        DEFVAL { certificate }
+        ::= { uniswapiConfigEntry 3 }
+
+    uniswapiConfigAuthMode OBJECT-TYPE
+        SYNTAX INTEGER {
+            standard(1),
+            radiusExtension(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object selects a mechanism for WAPI authentication.
+            When the value is standard, it shall indicate that the entity
+            acts based on the official definition. Otherwise, it shall
+            indicate that the entity finishes authentication by means of RADIUS.
+            The default is standard."
+        DEFVAL { standard }
+        ::= { uniswapiConfigEntry 4 }
+
+    uniswapiConfigISPDomain OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(0..24))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The ISP domain name."
+        ::= { uniswapiConfigEntry 5 }
+
+    uniswapiConfigCertificateDomain OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(1..15))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The PKI domain name."
+        ::= { uniswapiConfigEntry 6 }
+
+    uniswapiConfigASName OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(1..15))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The name of AS."
+        ::= { uniswapiConfigEntry 7 }
+
+    uniswapiConfigBKRekeyEnabled OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object indicates whether the BK rekey function is
+            supported. When the value is TRUE, it shall indicate that
+            the BK rekey function is supported. Otherwise, it shall
+            indicate that the BK rekey function is not supported."
+        ::= { uniswapiConfigEntry 8 }
+
+-- *************************************************************************
+-- * uniswapiConfigExtTable Table
+-- *************************************************************************
+
+    uniswapiConfigExtTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UniswapiConfigExtEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The table containing WAPI configuration objects for SSID."
+        ::= { uniswapiMIBTableObjects 2 }
+
+    uniswapiConfigExtEntry OBJECT-TYPE
+        SYNTAX UniswapiConfigExtEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An extend entry in the uniswapiConfigExtTable."
+        INDEX { uniswapiConfigServicePolicyID }
+        ::= { uniswapiConfigExtTable 1 }
+
+    UniswapiConfigExtEntry ::= SEQUENCE
+    {
+        uniswapiConfigServicePolicyID Integer32,
+        uniswapiConfigUnicastCipherEnabled TruthValue,
+        uniswapiConfigUnicastCipherSize Unsigned32,
+        uniswapiConfigAuthenticationSuiteEnabled TruthValue,
+        uniswapiConfigAuthenticationSuite  OCTET STRING,
+        uniswapiCfgExtASIPAddressType InetAddressType,
+        uniswapiCfgExtASIPAddress InetAddress,
+        uniswapiCfgExtASName OCTET STRING,
+        uniswapiCfgExtCertDomain OCTET STRING,
+        uniswapiCfgExtCertInstalled TruthValue,
+        uniswapiConfigVersion Integer32,
+        uniswapiControlledAuthControl TruthValue,
+        uniswapiControlledPortControl Integer32,
+        uniswapiOptionImplemented TruthValue,
+        uniswapiPreauthImplemented TruthValue,
+        uniswapiEnabled TruthValue,
+        uniswapiPreauthEnabled TruthValue,
+        uniswapiCfgUniKeysSupported Unsigned32,
+        uniswapiCfgUniRekeyMethod INTEGER,
+        uniswapiCfgUniRekeyTime Unsigned32,
+        uniswapiCfgUniRekeyPackets Unsigned32,
+        uniswapiCfgMultiCipher OCTET STRING,
+        uniswapiCfgMultiRekeyMethod INTEGER,
+        uniswapiCfgMultiRekeyTime Unsigned32,
+        uniswapiCfgMultiRekeyPackets Unsigned32,
+        uniswapiCfgMultiRekeyStrict TruthValue,
+        uniswapiCfgPSKValue OCTET STRING,
+        uniswapiCfgPSKPassPhrase OCTET STRING,
+        uniswapiCfgCertUpdateCount Unsigned32,
+        uniswapiCfgMultiUpdateCount Unsigned32,
+        uniswapiCfgUniUpdateCount Unsigned32,
+        uniswapiCfgMultiCipherSize Unsigned32,
+        uniswapiCfgBKLifetime Unsigned32,
+        uniswapiCfgBKReauthThreshold Unsigned32,
+        uniswapiCfgSATimeout Unsigned32,
+        uniswapiAuthenSuiteSelected OCTET STRING,
+        uniswapiUniCipherSelected OCTET STRING,
+        uniswapiMultiCipherSelected OCTET STRING,
+        uniswapiBKIDUsed OCTET STRING,
+        uniswapiAuthenSuiteRequested OCTET STRING,
+        uniswapiUniCipherRequested OCTET STRING,
+        uniswapiMultiCipherRequested OCTET STRING
+    }
+
+    uniswapiConfigServicePolicyID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the ID of each service policy."
+    ::= { uniswapiConfigExtEntry 1 }
+
+   uniswapiConfigUnicastCipherEnabled OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object enables or disables the unicast cipher."
+        ::= { uniswapiConfigExtEntry 2 }
+
+   uniswapiConfigUnicastCipherSize OBJECT-TYPE
+        SYNTAX Unsigned32 (0..4294967295)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object indicates the length in bits of the unicast cipher
+            key.  This should be 256 for SMS4, first 128 bits for encrypting,
+            last 128 bits for integrity checking."
+        ::= { uniswapiConfigExtEntry 3 }
+
+    uniswapiConfigAuthenticationSuiteEnabled OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This variable indicates the corresponding AKM suite is enabled
+            or disabled."
+        ::= { uniswapiConfigExtEntry 4 }
+
+    uniswapiConfigAuthenticationSuite OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(4))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The selector of an AKM suite.  It consists of an OUI (the first 3
+            octets) and a cipher suite identifier (the last octet)."
+        ::= { uniswapiConfigExtEntry 5 }
+
+    uniswapiCfgExtASIPAddressType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object is used to set IP addresses type of AS."
+        ::= { uniswapiConfigExtEntry 6 }
+
+    uniswapiCfgExtASIPAddress OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object is used to set the IP address of AS."
+        ::= { uniswapiConfigExtEntry 7 }
+
+    uniswapiCfgExtASName OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(1..15))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object is used to set the name of AS."
+        ::= { uniswapiConfigExtEntry 8 }
+
+    uniswapiCfgExtCertDomain OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(1..15))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object is used to set the PKI domain name."
+        ::= { uniswapiConfigExtEntry 9 }
+
+    uniswapiCfgExtCertInstalled OBJECT-TYPE
+        SYNTAX  TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object indicates whether the entity has installed
+            certificate.  When the value is TRUE, it shall indicate that
+            the SSID has installed certificate. Otherwise, it shall
+            indicate that the SSID hasn't installed certificate."
+        ::= { uniswapiConfigExtEntry 10 }
+
+    uniswapiConfigVersion OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The highest WAPI version this entity supports."
+        ::= { uniswapiConfigExtEntry 11 }
+
+    uniswapiControlledAuthControl OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object indicates whether the entity is enabled with
+            authentication. When the value is FALSE, it shall indicate that
+            authentication is not enabled on this entity, and the status of
+            the controlled port is 'authenticated'. When the value is TRUE,
+            it shall indicate that authentication is enabled, and the status
+            of controlled port is decided by
+            uniswapiControlledPortControl."
+        ::= { uniswapiConfigExtEntry 12 }
+
+    uniswapiControlledPortControl OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object indicates the controlling type of the entity's port.
+            This object is available when
+            uniswapiControlledAuthControl is TRUE. When the value is
+            zero, it means 'automatic', and the status of the controlled port
+            is decided by authentication result. When the value is one,
+            it means 'forcibly unauthenticated', and the status of the
+            controlled port is 'unauthenticated'."
+        ::= { uniswapiConfigExtEntry 13 }
+
+    uniswapiOptionImplemented OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object indicates whether the entity supports WAPI. When the
+            value is TRUE, it shall indicate that the entity supports WAPI.
+            Otherwise, it shall indicate that the entity does not support WAPI."
+        ::= { uniswapiConfigExtEntry 14 }
+
+    uniswapiPreauthImplemented OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object indicates whether the entity supports WAPI
+            preauthentication. This object can't be set to TRUE, unless
+            uniswapiOptionImplemented is TRUE."
+        ::= { uniswapiConfigExtEntry 15 }
+
+    uniswapiEnabled OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "When this object is set to TRUE, it shall indicate that WAPI is
+            enabled on this entity. The entity will advertise the WAPI
+            information element in its beacon and probe response frames."
+        ::= { uniswapiConfigExtEntry 16 }
+
+    uniswapiPreauthEnabled OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "When this object is set to TRUE, it shall indicate that WAPI
+            preauthentication is enabled on this entity. Otherwise, it shall
+            indicate that WAPI preauthentication is disabled on this entity.
+            This object requires that unisWAPIEnabled also be set to
+            TRUE."
+        ::= { uniswapiConfigExtEntry 17 }
+
+    uniswapiCfgUniKeysSupported OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object indicates how many unicast keys the entity supports
+            for WAPI."
+        ::= { uniswapiConfigExtEntry 18 }
+
+    uniswapiCfgUniRekeyMethod OBJECT-TYPE
+        SYNTAX INTEGER {
+            disabled(1),
+            timeBased(2),
+            packetBased(3),
+            timepacketBased(4)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object selects a mechanism for rekeying the WAPI USK. The
+            default is time-based, once per day. Rekeying the USK is only
+            applicable to an entity acting as an AE or ASUE."
+        DEFVAL { timeBased }
+        ::= { uniswapiConfigExtEntry 19 }
+
+    uniswapiCfgUniRekeyTime OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4294967295)
+        UNITS "seconds"
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Time in seconds after which the WAPI USK shall be refreshed.
+            The timer shall start at the moment the USK was set using the
+            MLME-SETWPIKEYS request primitive."
+        DEFVAL { 86400 }
+        ::= { uniswapiConfigExtEntry 20 }
+
+    uniswapiCfgUniRekeyPackets OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4294967295)
+        UNITS "1000 packets"
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "A packet count (a multiple of 1000) after which the WAPI USK
+            shall be refreshed. The packet counter shall start at the moment
+            the USK was set using the MLME-SETKEYS request primitive and it
+            shall count all packets encrypted using the current USK."
+        ::= { uniswapiConfigExtEntry 21 }
+
+    uniswapiCfgMultiCipher OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(4))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object indicates the multicast cipher suite selector the
+            entity must use. The multicast cipher suite in the WAPI
+            information element shall take its value from this variable.
+            It contains an OUI (the first 3 octets) and a cipher suite
+            identifier (the last octet)."
+        ::= { uniswapiConfigExtEntry 22 }
+
+    uniswapiCfgMultiRekeyMethod OBJECT-TYPE
+        SYNTAX INTEGER {
+            disabled(1),
+            timeBased(2),
+            packetBased(3),
+            timepacketBased(4)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object selects a mechanism for rekeying the WAPI MSK. The
+            default is time-based, once per day. Rekeying the MSK is only
+            applicable to an entity acting as an AE or ASUE."
+        DEFVAL { timeBased }
+        ::= { uniswapiConfigExtEntry 23 }
+
+    uniswapiCfgMultiRekeyTime OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4294967295)
+        UNITS "seconds"
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Time in seconds after which the WAPI MSK shall be refreshed.
+            The timer shall start at the moment the MSK was set using the
+            MLME-SETWPIKEYS request primitive."
+        DEFVAL { 86400 }
+        ::= { uniswapiConfigExtEntry 24 }
+
+    uniswapiCfgMultiRekeyPackets OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4294967295)
+        UNITS "1000 packets"
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "A packet count (a multiple of 1000) after which the WAPI MSK
+            shall be refreshed. The packet counter shall start at the moment
+            the MSK was set using the MLME-SETKEYS request primitive and it
+            shall count all packets encrypted using the current MSK."
+        ::= { uniswapiConfigExtEntry 25 }
+
+    uniswapiCfgMultiRekeyStrict OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object indicates that the MSK shall be refreshed whenever an
+            STA leaves the BSS that has the MSK."
+        ::= { uniswapiConfigExtEntry 26 }
+
+    uniswapiCfgPSKValue OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(2..32))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The PSK value when WAPI in PSK mode is the selected AKM suite.
+            In that case, the BK will obtain its value from this object.
+            This object is logically write-only. Reading this variable shall
+            return unsuccessful status or null or zero."
+        ::= { uniswapiConfigExtEntry 27 }
+
+    uniswapiCfgPSKPassPhrase OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(1..16))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The PSK value when WAPI in PSK mode is the selected AKM suite,
+            which is configured by uniswapiCfgPSKValue.
+            An alternative method of setting the PSK is to
+            use the password-to-key algorithm.
+            This variable provides a means to enter a pass-phrase.
+            When this object is written, the WAPI entity shall
+            use the password-to-key algorithm to derive a preshared key
+            and populate uniswapiCfgPSKValue with this key.
+            This object is logically write-only. Reading this variable shall
+            return unsuccessful status or null or zero."
+        ::= { uniswapiConfigExtEntry 28 }
+
+    uniswapiCfgCertUpdateCount OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4294967295)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The number of times message in the WAPI certificate
+            authentication handshake will be retried per certificate
+            authentication handshake attempt."
+        DEFVAL { 3 }
+        ::= { uniswapiConfigExtEntry 29 }
+
+    uniswapiCfgMultiUpdateCount OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4294967295)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The number of times message in the WAPI multicast key handshake
+            will be retried per MSK handshake attempt."
+        DEFVAL { 3 }
+        ::= { uniswapiConfigExtEntry 30 }
+
+    uniswapiCfgUniUpdateCount OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4294967295)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The number of times message in the WAPI unicast key handshake
+            will be retried per 3-way handshake attempt."
+        DEFVAL { 3 }
+        ::= { uniswapiConfigExtEntry 31 }
+
+    uniswapiCfgMultiCipherSize OBJECT-TYPE
+        SYNTAX Unsigned32 (0..4294967295)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object indicates the length in bits of the multicast cipher
+            key. This should be 256 for SMS4, where the first 128 bits are
+            for encryption, and the last 128 bits for integrity check."
+        ::= { uniswapiConfigExtEntry 32 }
+
+    uniswapiCfgBKLifetime OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4294967295)
+        UNITS "seconds"
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The maximum lifetime of a BK in the BK cache."
+        DEFVAL { 43200 }
+        ::= { uniswapiConfigExtEntry 33 }
+
+    uniswapiCfgBKReauthThreshold OBJECT-TYPE
+        SYNTAX Unsigned32 (1..100)
+        UNITS "percentage"
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The percentage of the BK lifetime that should expire before a
+            reauthentication occurs."
+        DEFVAL { 70 }
+        ::= { uniswapiConfigExtEntry 34 }
+
+    uniswapiCfgSATimeout OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4294967295)
+        UNITS "seconds"
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The maximum time a security association shall take to set up."
+        DEFVAL { 60 }
+        ::= { uniswapiConfigExtEntry 35 }
+
+    uniswapiAuthenSuiteSelected OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(4))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The selector of the last negotiated AKM suite."
+        ::= { uniswapiConfigExtEntry 36 }
+
+    uniswapiUniCipherSelected OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(4))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The selector of the last negotiated unicast cipher."
+        ::= { uniswapiConfigExtEntry 37 }
+
+    uniswapiMultiCipherSelected OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(4))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The selector of the last negotiated multicast cipher."
+        ::= { uniswapiConfigExtEntry 38 }
+
+    uniswapiBKIDUsed OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(16))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The selector of the last BKID used in the last unicast
+            cipher key handshake."
+        ::= { uniswapiConfigExtEntry 39 }
+
+    uniswapiAuthenSuiteRequested OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(4))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The selector of the last requested AKM suite."
+        ::= { uniswapiConfigExtEntry 40 }
+
+    uniswapiUniCipherRequested OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(4))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The selector of the last requested unicast cipher."
+        ::= { uniswapiConfigExtEntry 41 }
+
+    uniswapiMultiCipherRequested OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(4))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The selector of the last requested multicast cipher."
+        ::= { uniswapiConfigExtEntry 42 }
+
+    uniswapiStatsTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UniswapiStatsEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table maintains per-STA statistics in a WAPI. The entry
+            with uniswapiStatsSTAAddress set to FF-FF-FF-FF-FF-FF
+            shall contain statistics for broadcast/multicast traffic."
+        ::= { uniswapiMIBTableObjects 3 }
+
+    uniswapiStatsEntry OBJECT-TYPE
+        SYNTAX UniswapiStatsEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the uniswapiStatsTable."
+        INDEX { uniswapiStationMAC }
+        ::= { uniswapiStatsTable 1 }
+
+    UniswapiStatsEntry ::=
+        SEQUENCE {
+            uniswapiStationMAC MacAddress,
+            uniswapiStatsSTAAddress MacAddress,
+            uniswapiStatsVersion Unsigned32,
+            uniswapiStatsCtrlPortStatus TruthValue,
+            uniswapiStatsSelectedUniCipher OCTET STRING,
+            uniswapiStatsWPIReplayCnt Counter32,
+            uniswapiStatsWPIDecryptErr Counter32,
+            uniswapiStatsWPIMICErr Counter32,
+            uniswapiStatsWAISignatureErr Counter32,
+            uniswapiStatsWAIHMACErr Counter32,
+            uniswapiStatsWAIAuthenFail Counter32,
+            uniswapiStatsWAIDiscardCnt Counter32,
+            uniswapiStatsWAITimeoutCnt Counter32,
+            uniswapiStatsWAIFormatErr Counter32,
+            uniswapiStatsWAICertFail Counter32,
+            uniswapiStatsWAIUniFail Counter32,
+            uniswapiStatsWAIMultiFail Counter32
+        }
+
+    uniswapiStationMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the unique MAC Address of station."
+    ::= { uniswapiStatsEntry 1 }
+
+    uniswapiStatsSTAAddress OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The MAC address of the STA to which the statistics in this
+            conceptual row belong."
+        ::= { uniswapiStatsEntry 2 }
+
+    uniswapiStatsVersion OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4294967295)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The WAPI version with which the STA is associated."
+        ::= { uniswapiStatsEntry 3 }
+
+    uniswapiStatsCtrlPortStatus OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object indicates the status of the authentication
+            entity's controlled port. When the value is TRUE, it means
+            'authenticated'. Otherwise, it means 'unauthenticated'."
+        ::= { uniswapiStatsEntry 4 }
+
+    uniswapiStatsSelectedUniCipher OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(4))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The unicast cipher suite selector used during association."
+        ::= { uniswapiStatsEntry 5 }
+
+    uniswapiStatsWPIReplayCnt OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of WPI MPDUs discarded by the replay mechanism."
+        ::= { uniswapiStatsEntry 6 }
+
+    uniswapiStatsWPIDecryptErr OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of WPI MPDUs discarded because of unavailable cipher
+            key during WPI-SMS4 decryption."
+        ::= { uniswapiStatsEntry 7 }
+
+    uniswapiStatsWPIMICErr OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of WPI MPDUs discarded because of MIC checking
+            failure during WPI-SMS4 decryption."
+        ::= { uniswapiStatsEntry 8 }
+
+    uniswapiStatsWAISignatureErr OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when the received WAI packets' signature
+            is wrong."
+        ::= { uniswapiStatsEntry 9 }
+
+    uniswapiStatsWAIHMACErr OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when message authentication key
+            checking error occurs on the received WAI packets."
+        ::= { uniswapiStatsEntry 10 }
+
+    uniswapiStatsWAIAuthenFail OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when the WAI authentication result
+            is unsuccessful."
+        ::= { uniswapiStatsEntry 11 }
+
+    uniswapiStatsWAIDiscardCnt OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when the received WAI packet is
+            discarded."
+        ::= { uniswapiStatsEntry 12 }
+
+    uniswapiStatsWAITimeoutCnt OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when a WAI packet timeout is
+            detected."
+        ::= { uniswapiStatsEntry 13 }
+
+    uniswapiStatsWAIFormatErr OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when WAI packet format error occurs"
+        ::= { uniswapiStatsEntry 14 }
+
+    uniswapiStatsWAICertFail OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when WAI certificate authentication
+            fails."
+        ::= { uniswapiStatsEntry 15 }
+
+    uniswapiStatsWAIUniFail OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when WAI unicast cipher key
+            negotiation succeeds."
+        ::= { uniswapiStatsEntry 16 }
+
+    uniswapiStatsWAIMultiFail OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This counter increases when the WAI multicast cipher key
+            announcement failure occurs."
+        ::= { uniswapiStatsEntry 17 }
+
+-- ************************************************************************
+-- * trap OBJECT
+-- ************************************************************************
+    uniswapiTrapPrefix OBJECT IDENTIFIER ::= { uniswapiTrap 0 }
+    uniswapiUserwithInvalidCertificate NOTIFICATION-TYPE
+        OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            uniswapiTrapInfoMacAddr,
+            uniswapiTrapInfoAPId,
+            uniswapiTrapInfoRadioId,
+            uniswapiTrapInfoBSSId,
+            uniswapiTrapInfoAPMacAddr
+        }
+        STATUS current
+        DESCRIPTION
+            "This trap is sent when a user intrudes upon network with invalid
+            certificate."
+        ::= { uniswapiTrapPrefix 1 }
+
+    uniswapiStationReplayAttack NOTIFICATION-TYPE
+        OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            uniswapiTrapInfoMacAddr,
+            uniswapiTrapInfoAPId,
+            uniswapiTrapInfoRadioId,
+            uniswapiTrapInfoBSSId,
+            uniswapiTrapInfoAPMacAddr
+        }
+        STATUS current
+        DESCRIPTION
+            "This trap is sent when an attacker records and replays network
+            transactions."
+        ::= { uniswapiTrapPrefix 2 }
+
+    uniswapiTamperAttack NOTIFICATION-TYPE
+        OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            uniswapiTrapInfoMacAddr,
+            uniswapiTrapInfoAPId,
+            uniswapiTrapInfoRadioId,
+            uniswapiTrapInfoBSSId,
+            uniswapiTrapInfoAPMacAddr
+        }
+        STATUS current
+        DESCRIPTION
+            "This trap is sent when an attacker monitors network traffic and
+            maliciously changes data in transit(for example, an attacker may
+            modify the contents of a WAI message)."
+        ::= { uniswapiTrapPrefix 3 }
+
+    uniswapiLowSafeLevelAttack NOTIFICATION-TYPE
+        OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            uniswapiTrapInfoMacAddr,
+            uniswapiTrapInfoAPId,
+            uniswapiTrapInfoRadioId,
+            uniswapiTrapInfoBSSId,
+            uniswapiTrapInfoAPMacAddr
+        }
+        STATUS current
+        DESCRIPTION
+            "This trap is sent when a station associates AP(Access Point),
+            creates packet of Unicast Key Negotiation Response with wrong
+            WIE(WAPI Information Element) of ASUE(Authentication Supplicant
+            Entity)."
+        ::= { uniswapiTrapPrefix 4 }
+
+    uniswapiAddressRedirectionAttack NOTIFICATION-TYPE
+        OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            uniswapiTrapInfoMacAddr,
+            uniswapiTrapInfoAPId,
+            uniswapiTrapInfoRadioId,
+            uniswapiTrapInfoBSSId,
+            uniswapiTrapInfoAPMacAddr
+        }
+        STATUS current
+        DESCRIPTION
+            "This trap is sent when an attacker maliciously changes destination
+            MAC address of WPI(WLAN Privacy Infrastructure) frame."
+        ::= { uniswapiTrapPrefix 5 }
+
+-- ************************************************************************
+-- * The following objects are used for binding informations when sending traps.
+-- ************************************************************************
+
+uniswapiTrapInfo OBJECT IDENTIFIER ::= { uniswapiTrap 1 }
+
+uniswapiTrapInfoMacAddr OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The MAC address of the WAPI user."
+        ::= { uniswapiTrapInfo 1 }
+
+uniswapiTrapInfoAPId OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "To uniquely identify each AP."
+        ::= { uniswapiTrapInfo 2 }
+
+uniswapiTrapInfoRadioId OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "Represents each radio."
+        ::= { uniswapiTrapInfo 3 }
+
+uniswapiTrapInfoBSSId OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "As MAC Address format, it is to identify BSS."
+        ::= { uniswapiTrapInfo 4 }
+
+uniswapiTrapInfoAPMacAddr OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "As MAC Address format, it is to identify AP"
+        ::= { uniswapiTrapInfo 5 }
+END

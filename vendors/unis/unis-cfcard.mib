@@ -1,0 +1,307 @@
+-- =============================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:  provide the info about CF Card.
+-- Version: V1.0
+-- History:
+--   V1.0 Initial Version created by lizhiyong
+-- =============================================================
+UNIS-CFCARD-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS
+            unisCfCard
+                FROM UNIS-OID-MIB
+            OBJECT-GROUP, MODULE-COMPLIANCE, NOTIFICATION-GROUP
+                FROM SNMPv2-CONF
+            Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, OBJECT-IDENTITY, NOTIFICATION-TYPE
+                FROM SNMPv2-SMI;
+
+
+--  December 24, 2004 at 15:41 GMT
+        unisCfCardMIB MODULE-IDENTITY
+            LAST-UPDATED "200412240000Z"
+            ORGANIZATION
+                "Unisyue Technologies Co., Ltd."
+            CONTACT-INFO
+                ""
+            DESCRIPTION
+                "This MIB provides the information about CF Card."
+            ::= { unisCfCard 1 }
+
+
+
+
+        unisCfCardMIBObjects OBJECT-IDENTITY
+            STATUS current
+            DESCRIPTION
+                "Objects used for CF Card management."
+            ::= { unisCfCardMIB 1 }
+
+
+        unisCfCardScalarObjects OBJECT-IDENTITY
+            STATUS current
+            DESCRIPTION
+                "The scalar objects for the CF Card(s)."
+            ::= { unisCfCardMIBObjects 1 }
+
+
+        unisCfCardNumber OBJECT-TYPE
+            SYNTAX INTEGER (0..255)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of the CF Card(s) at present."
+            ::= { unisCfCardScalarObjects 1 }
+
+
+        unisCfCardInfoObjects OBJECT-IDENTITY
+            STATUS current
+            DESCRIPTION
+                "The basic information about CF Card(s)."
+            ::= { unisCfCardMIBObjects 2 }
+
+
+        unisCfCardInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UNISCfCardInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "This table contains the basic information about CF Card(s)."
+            ::= { unisCfCardInfoObjects 2 }
+
+
+        unisCfCardInfoEntry OBJECT-TYPE
+            SYNTAX UNISCfCardInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "This list contains the basic information about CF Card."
+            INDEX { unisCfCardIndex }
+            ::= { unisCfCardInfoTable 1 }
+
+
+        UNISCfCardInfoEntry ::=
+            SEQUENCE {
+                unisCfCardIndex
+                    INTEGER,
+                unisCfCardIsPresent
+                    INTEGER,
+                unisCfCardContainedIn
+                    INTEGER,
+                unisCfCardParentRelPos
+                    INTEGER,
+                unisCfCardDescription
+                    OCTET STRING,
+                unisCfCardSerialNumber
+                    OCTET STRING,
+                unisCfCardFirewareVersion
+                    OCTET STRING,
+                unisCfCardModelNumber
+                    OCTET STRING,
+                unisCfCardState
+                    INTEGER,
+                unisCfCardSize
+                    Unsigned32,
+                unisCfCardUsedSize
+                    Unsigned32,
+                unisCfCardFreeSize
+                    Unsigned32
+             }
+
+        unisCfCardIndex OBJECT-TYPE
+            SYNTAX INTEGER (1..255)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The index of the table."
+            ::= { unisCfCardInfoEntry 1 }
+
+
+        unisCfCardIsPresent OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                yes(1),
+                no(2)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The value indicates whether the CF Card is present or not."
+            ::= { unisCfCardInfoEntry 2 }
+
+
+        unisCfCardContainedIn OBJECT-TYPE
+            SYNTAX INTEGER (0..255)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of the slot which containes this CF Card "
+            ::= { unisCfCardInfoEntry 3 }
+
+
+        unisCfCardParentRelPos OBJECT-TYPE
+            SYNTAX INTEGER (0..255)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "An indication of the relative position of this CF Card
+                among all the CF Card contained in the same slot."
+            ::= { unisCfCardInfoEntry 4 }
+
+
+        unisCfCardDescription OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (0..255))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Description of CF Card."
+            ::= { unisCfCardInfoEntry 5 }
+
+
+        unisCfCardSerialNumber OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (0..255))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The serial number of CF Card."
+            ::= { unisCfCardInfoEntry 6 }
+
+
+        unisCfCardFirewareVersion OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (0..255))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The firmware revision of CF Card."
+            ::= { unisCfCardInfoEntry 7 }
+
+
+        unisCfCardModelNumber OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (0..255))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The model number containing infomation of manufacturer."
+            ::= { unisCfCardInfoEntry 8 }
+
+
+        unisCfCardState OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                sNoError(1),          -- No error
+                sFormatError(2),      -- Format error
+                sSectorBufferError(3),-- Sector Buffer error
+                sECCError(4),         -- ECC circuitry error
+                sCMPError(5),         -- Controlling microprocessor error
+                sSlaveError(128),     -- Slave error in True IDE Mode
+                sIOError(240),        -- I/O error
+                sOther(255)           -- Unknown status
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The state of CF Card."
+            ::= { unisCfCardInfoEntry 9 }
+
+
+        unisCfCardSize OBJECT-TYPE
+            SYNTAX Unsigned32
+            UNITS "byte"
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The size of CF Card."
+            ::= { unisCfCardInfoEntry 10 }
+
+
+        unisCfCardUsedSize OBJECT-TYPE
+            SYNTAX Unsigned32
+            UNITS "byte"
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The used size of CF Card."
+            ::= { unisCfCardInfoEntry 11 }
+
+
+        unisCfCardFreeSize OBJECT-TYPE
+            SYNTAX Unsigned32
+            UNITS "byte"
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The free size of CF Card."
+            ::= { unisCfCardInfoEntry 12 }
+
+
+        unisCfCardNotifications OBJECT-IDENTITY
+            STATUS current
+            DESCRIPTION
+                "Notification about the CF Card."
+            ::= { unisCfCardMIB 2 }
+
+
+        unisCfCardNotificationsV2 OBJECT-IDENTITY
+            STATUS current
+            DESCRIPTION
+                "Root node for the Notification."
+            ::= { unisCfCardNotifications 0 }
+
+
+        unisCfCardHotSwapOn NOTIFICATION-TYPE
+            OBJECTS { unisCfCardContainedIn, unisCfCardParentRelPos, unisCfCardDescription }
+            STATUS current
+            DESCRIPTION
+                "This notification is sent when a CF Card is hot swapped in."
+            ::= { unisCfCardNotificationsV2 1 }
+
+
+        unisCfCardHotSwapOff NOTIFICATION-TYPE
+            OBJECTS { unisCfCardContainedIn, unisCfCardParentRelPos, unisCfCardDescription }
+            STATUS current
+            DESCRIPTION
+                "This notification is sent when a CF Card is hot swapped out."
+            ::= { unisCfCardNotificationsV2 2 }
+
+
+        unisCfCardMIBConformance OBJECT IDENTIFIER ::= { unisCfCardMIB 4 }
+
+
+        unisCfCardMIBGroups OBJECT IDENTIFIER ::= { unisCfCardMIBConformance 1 }
+
+
+        uniscurrentObjectGroup OBJECT-GROUP
+            OBJECTS { unisCfCardNumber, unisCfCardIndex, unisCfCardIsPresent,
+                    unisCfCardContainedIn, unisCfCardParentRelPos, unisCfCardDescription,
+                    unisCfCardSerialNumber, unisCfCardFirewareVersion, unisCfCardModelNumber,
+                    unisCfCardState, unisCfCardSize, unisCfCardUsedSize, unisCfCardFreeSize
+                    }
+            STATUS current
+            DESCRIPTION
+                "A collection of objects."
+            ::= { unisCfCardMIBGroups 1 }
+
+
+        uniscurrentNotificationGroup NOTIFICATION-GROUP
+            NOTIFICATIONS { unisCfCardHotSwapOn, unisCfCardHotSwapOff }
+            STATUS current
+            DESCRIPTION
+                "Notification group."
+            ::= { unisCfCardMIBGroups 2 }
+
+
+        unisCfCardMIBCompliances OBJECT IDENTIFIER ::= { unisCfCardMIBConformance 2 }
+
+
+
+        unisbasicCompliance MODULE-COMPLIANCE
+            STATUS current
+            DESCRIPTION
+                "The compliance statement."
+            MODULE -- this module
+                MANDATORY-GROUPS { uniscurrentObjectGroup, uniscurrentNotificationGroup }
+            ::= { unisCfCardMIBCompliances 1 }
+
+
+
+    END

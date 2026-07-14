@@ -1,0 +1,45 @@
+-- =================================================================
+-- Copyright (c) 2004-2024 New H3C Tech. Co., Ltd. All rights reserved.
+--
+-- Description: Neighbor Discovery entry MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 Initial version created by x31830
+-- =================================================================
+HH3C-ND-ENTRY-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    hh3cCommon
+        FROM HH3C-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, Counter32
+        FROM SNMPv2-SMI;
+
+hh3cNDEntry MODULE-IDENTITY
+    LAST-UPDATED "202409101500Z"            -- Sep 10, 2024 at 15:00 GMT
+    ORGANIZATION
+        "New H3C Technologies Co., Ltd."
+    CONTACT-INFO
+        "No.466 Changhe Road, Binjiang District, Hangzhou, Zhejiang
+         http://www.h3c.com
+         Zip: 310052"
+    DESCRIPTION
+        "The MIB module is used for ND entry."
+    REVISION    "202409101500Z"            -- Sep 10, 2024 at 15:00 GMT
+    DESCRIPTION
+        "Initial version"
+    ::= { hh3cCommon 270}
+
+--
+-- Define the ND Entry GLOBAL.
+--
+hh3cNDEntryCountObjects OBJECT IDENTIFIER ::= { hh3cNDEntry 1 }
+
+hh3cNDEntryCount OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Count of ND entries of all types."
+    ::= { hh3cNDEntryCountObjects 1 }
+
+END

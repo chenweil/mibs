@@ -1,0 +1,328 @@
+-- =======================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: User-interfaces management mib
+-- Reference:
+-- Version: V1.6
+-- History:
+--  V1.0 Initial version 2002-12-20
+--  V1.1 2004-10-12 updated by gaolong
+--       Remove unisVtyAccUserIndex, unisVtyAccConnway from unisUIMgtBasicGroup
+--       because they are not accessbile objects.
+--  V1.2 Updated by tanbo 02122, 2004-12-20
+--       Add unisConStatus for console re-authentication.
+--  V1.3 2005-01-03 updated by huguohua02576
+--       Modified unisVtyAccAclNum's attribute.
+--       Added rowstatus for unisVtyAccTable.
+--  V1.4 2005-08-15 updated by wangrui01736
+--       Add enumeration value linkinbound(3) for unisVtyAccConnway.
+--  V1.5 2006-11-03 updated by songhao02718
+--       Add enumeration value acl6inbound(11) and acl6outbound(12) for unisVtyAccConnway.
+--  V1.6 2007-12-12 updated by miaochunyan05345
+--       Add unisTerminalUserName, unisTerminalSource, unisTerminalUserAuthFailureReason,
+--       unisLogIn, unisLogOut and unisLogInAuthenFailure.
+-- =======================================================================
+UNIS-UI-MAN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-GROUP, MODULE-COMPLIANCE
+        FROM SNMPv2-CONF
+    RowStatus,DisplayString
+        FROM SNMPv2-TC
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI;
+
+
+unisUIMgt MODULE-IDENTITY
+    LAST-UPDATED "200404081405Z"            -- April 08, 2004 at 14:05 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "User interfaces management MIB"
+    ::= { unisCommon 2 }
+
+
+--
+-- Node definitions
+--
+
+unisUIMgtObjects OBJECT IDENTIFIER ::= { unisUIMgt 1 }
+
+unisUIBasicInfo OBJECT IDENTIFIER ::= { unisUIMgtObjects 1 }
+
+unisUIScalarObjects OBJECT IDENTIFIER ::= { unisUIBasicInfo 1 }
+
+unisUITrapBindObjects OBJECT IDENTIFIER ::= { unisUIBasicInfo 2 }
+
+unisTerminalUserName OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "
+        It represents the name of the logging user when login with authentication,
+        otherwise login mode, such as Console, AUX, TTY, VTY etc.
+        "
+    ::= { unisUITrapBindObjects 1 }
+
+unisTerminalSource OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "
+        Login mode, such as Console, AUX, TTY, VTY etc.
+        "
+    ::= { unisUITrapBindObjects 2 }
+
+unisTerminalUserAuthFailureReason OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            exceedRetries(1),
+            authTimeout(2),
+            otherReason(3)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The reason why a user failed to log in."
+    ::= { unisUITrapBindObjects 3 }
+
+unisUINotifications OBJECT IDENTIFIER ::= { unisUIBasicInfo 3 }
+
+unisUINotificationsPrefix OBJECT IDENTIFIER ::= { unisUINotifications 0 }
+
+unisLogIn NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTerminalUserName,
+            unisTerminalSource
+        }
+    STATUS      current
+    DESCRIPTION
+        "
+        This notification is generated when a user logs in.
+        "
+    ::= { unisUINotificationsPrefix 1 }
+
+unisLogOut NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTerminalUserName,
+            unisTerminalSource
+        }
+    STATUS      current
+    DESCRIPTION
+        "
+        This notification is generated when a user logs out.
+        "
+    ::= { unisUINotificationsPrefix 2 }
+
+unisLogInAuthenFailure NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTerminalUserName,
+            unisTerminalSource,
+            unisTerminalUserAuthFailureReason
+        }
+    STATUS      current
+    DESCRIPTION
+        "
+        This notification is generated when a user fails to log in
+        because of authentication.
+        "
+    ::= { unisUINotificationsPrefix 3 }
+
+unisVtyMan OBJECT IDENTIFIER ::= { unisUIMgtObjects 2 }
+
+-- unisVtyAccTable===============================================================
+unisVtyAccTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVtyAccEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Description."
+    ::= { unisVtyMan 1 }
+
+unisVtyAccEntry OBJECT-TYPE
+    SYNTAX      UnisVtyAccEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Description."
+    INDEX
+        {
+            unisVtyAccUserIndex,
+            unisVtyAccConnway
+        }
+    ::= { unisVtyAccTable 1 }
+
+UnisVtyAccEntry ::= SEQUENCE
+    {
+        unisVtyAccUserIndex         Integer32,
+        unisVtyAccConnway           INTEGER,
+        unisVtyAccAclNum            Integer32,
+        unisVtyAccEntryRowStatus    RowStatus
+    }
+
+unisVtyAccUserIndex OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The relative index of the user interface of vty.
+        "
+    ::= { unisVtyAccEntry 1 }
+
+unisVtyAccConnway OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            inbound(1),
+            outbound(2),
+            linkinbound(3),
+            acl6inbound(11),
+            acl6outbound(12)
+        }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        inbound(1):Filter login connections from current UI with ipv4 layer acl.
+        outbound(2):Filter logout connections from current UI with ipv4 layer acl.
+        linkinbound(3):Filter login connections from current UI with link layer acl.
+        acl6inbound(11):Filter login connections from current UI with ipv6 layer acl.
+        acl6outbound(12):Filter logout connections from current UI with ipv6 layer acl.
+        "
+    ::= { unisVtyAccEntry 2 }
+
+unisVtyAccAclNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The filter rule number of ACL.
+        "
+    ::= { unisVtyAccEntry 3 }
+
+unisVtyAccEntryRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The status of this conceptual row. Now only support CreateAndGo and
+        Destroy and Active.
+        "
+    ::= { unisVtyAccEntry 4 }
+
+
+-- unisConStatus=================================================================
+unisConStatus OBJECT IDENTIFIER ::= { unisUIMgtObjects 3 }
+
+-- unisConStatusTable============================================================
+unisConStatusTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisConStatusEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The current status of CONSOLE user interface. A group of
+        attributes are used to describe the current status.
+        "
+    ::= { unisConStatus 1 }
+
+unisConStatusEntry OBJECT-TYPE
+    SYNTAX      UnisConStatusEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        An entry of unisConStatusTable.
+        "
+    INDEX
+        {
+            unisConUserIndex
+        }
+    ::= { unisConStatusTable 1 }
+
+UnisConStatusEntry ::= SEQUENCE
+    {
+        unisConUserIndex    Integer32,
+        unisConReAuth       INTEGER
+    }
+
+unisConUserIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The index of the user interface of CONSOLE.
+        It's equal to current UserID.
+        "
+    ::= { unisConStatusEntry 1 }
+
+unisConReAuth OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            disable(1),
+            enable(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The re-authentication attribute of current user interface.
+        After disconnection of current user interface, connection
+        is rebuilt, at the moment
+        disable(1): re-authentication is not need.
+        enable(2): re-authentication is need.
+        "
+    ::= { unisConStatusEntry 2 }
+
+-- unisUIMgtMIBConformance18=====================================================
+unisUIMgtMIBConformance18 OBJECT IDENTIFIER ::= { unisUIMgt 2 }
+
+unisUIMgtMIBCompliances OBJECT IDENTIFIER ::= { unisUIMgtMIBConformance18 1 }
+
+unisUIMgtMIBCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement"
+    MODULE -- this module
+    MANDATORY-GROUPS
+        {
+            unisUIMgtBasicGroup,
+            unisConStatusGroup
+        }
+    ::= { unisUIMgtMIBCompliances 1 }
+
+unisUIMgtManMIBGroups OBJECT IDENTIFIER ::= { unisUIMgtMIBConformance18 2 }
+
+unisUIMgtBasicGroup OBJECT-GROUP
+    OBJECTS
+        {
+            unisVtyAccAclNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects for a basic implement."
+    ::= { unisUIMgtManMIBGroups 1 }
+
+unisConStatusGroup OBJECT-GROUP
+    OBJECTS
+        {
+            unisConReAuth
+        }
+    STATUS      current
+    DESCRIPTION
+        "A collection of current user interface status."
+    ::= { unisUIMgtManMIBGroups 2 }
+
+END

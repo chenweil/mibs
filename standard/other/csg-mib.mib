@@ -1,0 +1,3221 @@
+-- *****************************************************************
+-- CSG-MIB.mib
+-- Version info
+-- At Fri Sep 21 11:30:00 2018
+-- This version of MIB is created just for management of base and user.
+-- Copyright(c) 2003-2017 by China Southern Power Grid£¨csg£©
+-- All rights reserved
+-- *****************************************************************
+
+CSG-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+            ifIndex
+        FROM IF-MIB
+            Integer32, Unsigned32, IpAddress, OBJECT-TYPE, MODULE-IDENTITY, enterprises,
+            NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+            TruthValue, MacAddress, RowStatus, TEXTUAL-CONVENTION, DisplayString
+        FROM SNMPv2-TC;
+
+-- begin
+csg MODULE-IDENTITY
+    LAST-UPDATED "201809210000Z"  -- Sep 21, 2018
+    ORGANIZATION
+        "csg Technology Co., Ltd."
+    CONTACT-INFO
+        "csg Science & Technology Co., ltd.
+        E-mail: support@csg.com"
+    DESCRIPTION
+        "
+        This csg MIB.
+        "
+    REVISION     "201809210000Z"   -- Sep 21, 2018
+    DESCRIPTION  "version 1.0"
+    ::= { enterprises 9636}
+
+PortList ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "
+        Each octet within this value specifies a set of eight
+        ports, with the first octet specifying ports 1 through
+        8, the second octet specifying ports 9 through 16, etc.
+        Within each octet, the most significant bit represents
+        the lowest numbered port, and the least significant bit
+        represents the highest numbered port. Thus, each port
+        of the bridge is represented by a single bit within the
+        value of this object. If that bit has a value of '1'
+        then that port is included in the set of ports; the port
+        is not included if its bit has a value of '0'.
+        "
+    SYNTAX      OCTET STRING
+
+Vlanset ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "
+        Each octet within this value specifies a set of eight
+        vlans, with the first octet specifying vlan 1 through
+        8, the second octet specifying vlan 9 through 16, etc.
+        Within each octet, the most significant bit represents
+        the lowest numbered vlan, and the least significant bit
+        represents the highest numbered vlan. Thus, each vlan
+        is represented by a single bit within the value of this
+        object. If that bit has a value of '1' then that vlan
+        is included in the set of vlans; the vlan is not included
+        if its bit has a value of '0'.
+        "
+    SYNTAX    OCTET STRING (SIZE (512))
+
+EnableVar ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "
+        enable or disable a function.
+        "
+    SYNTAX      INTEGER
+        {
+            enable(1),
+            disable(2)
+        }
+
+-- csg OBJECT IDENTIFIER ::= { enterprises 9636}
+
+-- csg Agent
+csgAgent OBJECT IDENTIFIER ::= { csg 1 }
+
+csgSystem OBJECT IDENTIFIER ::= { csgAgent 1 }
+
+-- csg Information objects
+csgInformation OBJECT IDENTIFIER ::= { csgSystem 4 }
+
+PortAlarmEventList ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "
+        The low three bits of An OCTET STRING represents an alarm
+        events enabled or existed list on a port, in which each bit
+        represents an alarm event type. the other bits of An OCTET
+        STRING are not used. The figure shown below illustrates the
+        format of an alarm list.
+                     7 6 5 4 3 2 1 0
+                    +-+-+-+-+-+-+-+-+
+                    |               |
+                    +-+-+-+-+-+-+-+-+
+                     | | | | | | | |
+                     | | | | | | | +- none
+                     | | | | | | +--- none
+                     | | | | | +----- none
+                     | | | | +------- none
+                     | | | +--------- none
+                     | | +----------- not-forwarding
+                     | +------------- link-fault
+                     +--------------- link-down
+        The link-down bit set 1 represents that link-down event alarm output
+        is enabled on port, OR the link-down bit set 1 represents that link-down
+        event occured on port.
+        The bit represents alarm output enabled in mibs:
+                                            csgAlarmPortSyslogEvList
+                                            csgAlarmPortNotifiesEvList
+                                            csgAlarmPortRelayEvList
+        The bit represents alarm occured in mibs: csgAlarmPortEvList.
+        "
+    SYNTAX OCTET STRING (SIZE (1))
+
+-- Temperature group
+csgTemperature OBJECT IDENTIFIER ::= { csgInformation 2 }
+
+csgTemperatureValue OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Celsius"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The current temperature of the device.
+        "
+   ::= { csgTemperature 1 }
+
+csgTemperatureMin OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Celsius"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The minimum temperature that has occured.
+        "
+    ::= { csgTemperature 2 }
+
+csgTemperatureMax OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Celsius"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The maximum temperature that has occured.
+        "
+    ::= { csgTemperature 3 }
+
+csgTemperatureThresholdLow OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Celsius"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Low threshold of the temperature alarm.
+        "
+    ::= { csgTemperature 5 }
+
+csgTemperatureThresholdHigh OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Celsius"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        High threshold of the temperature alarm.
+        "
+    ::= { csgTemperature 6 }
+
+-- Vlot  Information
+csgVolt OBJECT IDENTIFIER ::= { csgInformation 3 }
+
+csgVoltTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF    CsgVoltEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        A table of device vlot and associated properties.
+        "
+    ::= { csgVolt 1 }
+
+csgVoltEntry OBJECT-TYPE
+    SYNTAX      CsgVoltEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        Table entry for device vlot.
+        "
+    INDEX
+        {
+            csgVoltIndex
+        }
+    ::= { csgVoltTable 1 }
+
+CsgVoltEntry ::= SEQUENCE
+    {
+        csgVoltIndex            Integer32,
+        csgVoltReference        Integer32,
+        csgVoltValue            Integer32,
+        csgVoltMin              Integer32,
+        csgVoltMax              Integer32,
+        csgVoltThresholdLow     Integer32,
+        csgVoltThresholdHigh    Integer32
+    }
+
+csgVoltIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        An index based 1 that uniquely identifies a volt entry.
+        "
+    ::= { csgVoltEntry 1 }
+
+csgVoltReference OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "mV"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The reference volt.
+        "
+    ::= { csgVoltEntry 2 }
+
+csgVoltValue OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "mV"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The current value.
+        "
+    ::= { csgVoltEntry 3 }
+
+csgVoltMin OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "mV"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The minimum value that has occured.
+        "
+    ::= { csgVoltEntry 4 }
+
+csgVoltMax OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "mV"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The maximum value that has occured.
+        "
+    ::= { csgVoltEntry 5 }
+
+csgVoltThresholdLow OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "mV"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The low threshold of the volt alarm.
+        "
+    ::= { csgVoltEntry 7 }
+
+csgVoltThresholdHigh OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "mV"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The high threshold of the volt alarm.
+        "
+    ::= { csgVoltEntry 8 }
+
+-- csgAlarm group
+csgAlarm OBJECT IDENTIFIER ::= { csgInformation 7 }
+
+-- csgAlarmTrap trap
+csgAlarmTrap OBJECT IDENTIFIER ::= { csgAlarm 1 }
+
+csgAlarmInformationTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            csgAlarmCurtSource,
+            csgAlarmCurtDescr,
+            csgAlarmCurtTimestamp,
+            csgAlarmCurtType
+        }
+    STATUS  current
+    DESCRIPTION
+        "
+        Trap transfer alarm information in the alarm history table.
+        "
+    ::= { csgAlarmTrap 1 }
+
+-- csgAlarmGlobal group
+csgAlarmGlobal OBJECT IDENTIFIER ::= { csgAlarm 2 }
+
+csgAlarmTrapEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Indicates whether the global alarm trap is enabled.
+        "
+    DEFVAL { disable }
+    ::= { csgAlarmGlobal 1 }
+
+csgAlarmSyslogEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Indicates whether the global alarm syslog is enabled.
+        "
+    DEFVAL { disable }
+    ::= { csgAlarmGlobal 2 }
+
+csgAlarmClear OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        This object instructs the management entity to clear the whole current alarm information.
+        "
+    ::= { csgAlarmGlobal 3 }
+
+-- csgAlarmPower group
+csgAlarmPower OBJECT IDENTIFIER ::= { csgAlarm 3 }
+
+csgAlarmPowerTrapEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Indicates whether the power alarm trap is enabled.
+        "
+    DEFVAL { enable }
+    ::= { csgAlarmPower 1 }
+
+csgAlarmPowerRelayEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Indicates whether the power alarm relay is enabled.
+        "
+    DEFVAL { enable }
+    ::= { csgAlarmPower 2 }
+
+csgAlarmPowerSyslogEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Indicates whether the power alarm syslog is enabled.
+        "
+    DEFVAL { enable }
+    ::= { csgAlarmPower 3 }
+
+csgAlarmPowerStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            dualPowerOn(1),
+            dualPowerOff(2),
+            power1Off(3),
+            power2Off(4)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The status of power alarm.
+        "
+    ::= { csgAlarmPower 6 }
+
+-- csgAlarmTemperature group
+csgAlarmTemperature OBJECT IDENTIFIER ::= { csgAlarm 4 }
+
+csgAlarmTemperatureTrapEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Indicates whether the temperature alarm trap is enabled.
+        "
+    DEFVAL { enable }
+    ::= { csgAlarmTemperature 1 }
+
+csgAlarmTemperatureRelayEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Indicates whether the temperature alarm relay is enabled.
+        "
+    DEFVAL { enable }
+    ::= { csgAlarmTemperature 2 }
+
+csgAlarmTemperatureSyslogEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Indicates whether the temperature alarm syslog is enabled.
+        "
+    DEFVAL { enable }
+    ::= { csgAlarmTemperature 3 }
+
+-- csgAlarmVolt group
+csgAlarmVoltage OBJECT IDENTIFIER ::= { csgAlarm 5 }
+
+csgAlarmVoltTrapEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Indicates whether the volt alarm trap is enabled.
+        "
+    DEFVAL { enable }
+    ::= { csgAlarmVoltage 1 }
+
+csgAlarmVoltRelayEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Indicates whether the volt alarm relay is enabled.
+        "
+    DEFVAL { enable }
+    ::= { csgAlarmVoltage 2 }
+
+csgAlarmVoltSyslogEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Indicates whether the volt alarm syslog is enabled.
+        "
+    DEFVAL { enable }
+    ::= { csgAlarmVoltage 3 }
+
+--port fault alarm
+csgAlarmPort OBJECT IDENTIFIER ::= { csgAlarm 6 }
+
+csgAlarmPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF  CsgAlarmPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        A table of port alarm information.
+        "
+    ::= { csgAlarmPort 1 }
+
+csgAlarmPortEntry  OBJECT-TYPE
+    SYNTAX      CsgAlarmPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        Table entry for port alarm information.
+        "
+    INDEX
+        {
+            csgAlarmPortIndex
+        }
+    ::= { csgAlarmPortTable 1 }
+
+CsgAlarmPortEntry ::= SEQUENCE
+    {
+        csgAlarmPortIndex           Integer32,
+        csgAlarmPortSyslogEvList    PortAlarmEventList,
+        csgAlarmPortNotifiesEvList  PortAlarmEventList,
+        csgAlarmPortRelayEvList     PortAlarmEventList
+    }
+
+csgAlarmPortIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This object index of alarm port entry.
+        "
+    ::= { csgAlarmPortEntry 1 }
+
+csgAlarmPortSyslogEvList OBJECT-TYPE
+    SYNTAX      PortAlarmEventList
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The port alarm event list of syslog enable status.
+        "
+    ::= { csgAlarmPortEntry 2 }
+
+csgAlarmPortNotifiesEvList OBJECT-TYPE
+    SYNTAX      PortAlarmEventList
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The port alarm event list of notifies enable status.
+        "
+    ::= { csgAlarmPortEntry 3 }
+
+csgAlarmPortRelayEvList OBJECT-TYPE
+    SYNTAX      PortAlarmEventList
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The port alarm event list of relay enable status.
+        "
+    ::= { csgAlarmPortEntry 4 }
+
+--Alarm Curent Information
+csgAlarmCurrent    OBJECT IDENTIFIER ::= { csgAlarm 8 }
+
+csgAlarmCurtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CsgAlarmCurtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        A table of current alarm information.
+        "
+    ::= { csgAlarmCurrent 1 }
+
+csgAlarmCurtEntry OBJECT-TYPE
+    SYNTAX      CsgAlarmCurtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        Table entry for current alarm information.
+        "
+    INDEX
+        {
+            csgAlarmCurtIndex
+        }
+    ::= { csgAlarmCurtTable 1 }
+
+CsgAlarmCurtEntry ::= SEQUENCE
+    {
+        csgAlarmCurtIndex           Integer32,
+        csgAlarmCurtSource          Integer32,
+        csgAlarmCurtDescr           OCTET STRING,
+        csgAlarmCurtTimestamp       OCTET STRING,
+        csgAlarmCurtType            INTEGER
+    }
+
+csgAlarmCurtIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This object index of alarm current entry.
+        "
+    ::= { csgAlarmCurtEntry 1 }
+
+csgAlarmCurtSource OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The source of alarm information,switch or port.
+        "
+    ::= { csgAlarmCurtEntry 2 }
+
+csgAlarmCurtDescr OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE (0..64))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "
+        The description of alarm information.
+        "
+    ::= { csgAlarmCurtEntry 3 }
+
+csgAlarmCurtTimestamp OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..64))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The timestamp of alarm information.
+        "
+    ::= { csgAlarmCurtEntry 4 }
+
+csgAlarmCurtType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            dev-power-down(0),
+            power-abnormal(1),
+            high-temperature(2),
+            low-temperature(3),
+            high-volt(4),
+            low-volt(5),
+            link-down(6)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The type of alarm information.
+        "
+    ::= { csgAlarmCurtEntry 5 }
+
+-- begin
+
+-- csg csgSeries
+csgSeries OBJECT IDENTIFIER ::= { csg 6 }
+
+-- csgSwitch
+csgSwitch OBJECT IDENTIFIER ::= { csgSeries 1}
+
+-- csgSwSystem
+csgSwSystem OBJECT IDENTIFIER ::= { csgSwitch 1}
+
+-- csgCommonFunctionGroup
+
+csgCommonFunctionGroup OBJECT IDENTIFIER ::= { csgSwSystem 1}
+-- csgConfigLoadOperation
+
+csgConfigLoadOperation OBJECT-TYPE
+    SYNTAX          INTEGER
+        {
+            saving(1),
+            erasing(2),
+            reboot(3)
+        }
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "
+        Syetem Load Configuration .Includes to erase the start-up config,
+        or to save the running config.
+        "
+    ::= { csgCommonFunctionGroup 1 }
+
+-- begin
+
+-- csg Agent
+-- csgAgent OBJECT IDENTIFIER ::= { csg 1 }
+
+-- =======================================================================
+--  products
+-- =======================================================================
+--
+--   Common MIB for Optical System Group
+-- =======================================================================
+--  optSysMgmt              OBJECT IDENTIFIER ::= { csgOptSysCommon 1 }
+--  optSysModules           OBJECT IDENTIFIER ::= { csgOptSysCommon 2 }
+--  optAgentCapability      OBJECT IDENTIFIER ::= { csgOptSysCommon 3 }
+--  optUdSysMgmt            OBJECT IDENTIFIER ::= { csgOptSysCommon 4 }
+--  optUdSysModules         OBJECT IDENTIFIER ::= { csgOptSysCommon 5 }
+
+-- ======================================================================
+-- csg-system-mib.mib
+-- ======================================================================
+-- csgSystem OBJECT IDENTIFIER ::= { csgAgent 1 }
+
+--
+-- CSG CPU objects
+--
+
+csgCpu OBJECT IDENTIFIER ::= { csgSystem 1 }
+--------------------------------------------------------------------------
+-- csg CPU scalars
+--------------------------------------------------------------------------
+
+csgCpuBusy5Per OBJECT-TYPE
+    SYNTAX      Integer32 (0..100)
+    UNITS       "percent"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        CPU busy percentage in the last 5 second
+        period,gathering data at the rate 200 times
+        per second. Not the last 1 realtime seconds
+        but the last 1 second period in the scheduler.
+        "
+    ::= { csgCpu 2 }
+
+csgCpuBusy10Per OBJECT-TYPE
+    SYNTAX      Integer32 (0..100)
+    UNITS       "percent"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        CPU busy percentage in the last 10 second
+        period,gathering data at the rate 200 times
+        per second. Not the last 1 realtime seconds
+        but the last 1 second period in the scheduler.
+        "
+    ::= { csgCpu 3 }
+
+csgCpuBusy30Per OBJECT-TYPE
+    SYNTAX      Integer32 (0..100)
+    UNITS       "percent"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        CPU busy percentage in the last 30 second
+        period,gathering data at the rate 200 times
+        per second. Not the last 1 realtime seconds
+        but the last 1 second period in the scheduler.
+        "
+    ::= { csgCpu 4 }
+
+csgCpuBusy60Per OBJECT-TYPE
+    SYNTAX      Integer32 (0..100)
+    UNITS       "percent"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        CPU busy percentage in the last 60 second
+        period,gathering data at the rate 200 times
+        per second. Not the last 1 realtime seconds
+        but the last 1 second period in the scheduler.
+        "
+    ::= { csgCpu 5 }
+
+csgCpuBusy300Per OBJECT-TYPE
+    SYNTAX      Integer32 (0..100)
+    UNITS       "percent"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        CPU busy percentage in the last 60 second
+        period,gathering data at the rate 300 times
+        per second. Not the last 1 realtime seconds
+        but the last 1 second period in the scheduler.
+        "
+    ::= { csgCpu 6 }
+
+-- begin
+-- csg Agent
+-- csgAgent OBJECT IDENTIFIER ::= { csg 1 }
+
+-- ===================================================================================
+-- csg-optical-transceiver-mib.mib
+-- ===================================================================================
+
+csgOpticalTransceiver OBJECT IDENTIFIER ::={ csgAgent 18 }
+
+-- Textual Conventions
+OpticalParameterType ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "
+        This value indicates the optical parameter that is
+        being monitored. Valid values are -OpticalParameterType
+        transceiverTemperature(1)    :transceiver temperature
+        txbiasCurrent(2)             :TX bias current
+        txPower(3)                   :TX output power
+        rxPower(4)                   :RX received optical power
+        laserTemperature(5)          :laser temperature
+        p5V0supplyVoltage(6)         :+5V supply voltage
+        p3V3supplyVoltage(7)         :+3.3V supply voltage
+        p1V8supplyVoltage(8)         :+1.8V supply voltage
+        n5V2supplyVoltage(9)         :-5.2V supply voltage
+        apdBiasVoltage(10)           :APD bias voltage
+        p5V0supplyCurrent(11)        :+5V supply currnet
+        p3V3supplyCurrent(12)        :+3.3V supply currnet
+        p1V8supplyCurrent(13)        :+1.8V supply currnet
+        n5V2supplyCurrent(14)        :-5.2V supply currnet
+        tecCurrent(15)               :TEC currnet
+        laserWavelength(16)          :laser wavelength"
+    SYNTAX  INTEGER
+        {
+            transceiverTemperature(1),
+            txbiasCurrent(2),
+            txPower(3),
+            rxPower(4),
+            laserTemperature(5),
+            p5V0supplyVoltage(6),
+            p3V3supplyVoltage(7),
+            p1V8supplyVoltage(8),
+            n5V2supplyVoltage(9),
+            apdBiasVoltage(10),
+            p5V0supplyCurrent(11),
+            p3V3supplyCurrent(12),
+            p1V8supplyCurrent(13),
+            n5V2supplyCurrent(14),
+            tecCurrent(15),
+            laserWavelength(16)
+        }
+
+OpticalParameterValue ::= TEXTUAL-CONVENTION
+    STATUS     current
+    DESCRIPTION
+        "
+        The value of the optical parameter that is being monitored.
+        The range of values varies depending on the type of optical parameter being monitored,
+        as identified by a corresponding object with syntax OpticalParameterType.
+        When the optical parameter being monitored is 'XXTemperature',the supported range
+        is from -40000 to 125000, in units of 1/1000 degrees centigrade.
+        Example: A value of 23500 represents a temperature reading of 23.5 degrees C.
+        The temperature is shown in unit of degrees centigrade, and the precision is 0.1.
+        When the optical parameter being monitored is 'txbiasCurrent',the supported range
+        is from 0 to 131000, in units of 1/1000 mA.
+        Example: A value of 1000 represents a TX bias current reading of 1.0mA.
+        The 'txbiasCurrent'is shown in unit of mA, and the precision is 0.1.
+        When the optical parameter being monitored is 'txPower',the supported range
+        is from -40000 to 8200, in units of 1/1000 dbm.
+        Example: A value of 77800 represents a TX output power reading of 7.78 dBm.
+        The 'txPower' is shown in unit of dBm, and the precision is 0.1.
+        When the optical parameter being monitored is 'rxPower',the supported range
+        is from -40000 to 8200, in units of 1/1000 dbm.
+        Example: A value of 7780 represents a RX received optical power reading of 7.78 dBm.
+        The 'rxPower' is shown in unit of dBm, and the precision is 0.1.
+        When the optical parameter being monitored is 'XXsupplyVoltage',the supported range
+        is from 0 to 6550, in units of 1/1000 V.
+        Example: A value of 6000 represents a XX supply Voltage eading of 6.00V.
+        The 'XXsupplyVoltage'is shown in unit of V, and the precision is 0.01.
+        When the optical parameter being monitored is 'apdBiasVoltage,the supported range
+        is from 0 to 655300 , in units of 1/1000 V .
+        Example: A value of 600000 represents a APD BiasVoltage reading of 600.0V.
+        The 'apdBiasVoltage' is shown in unit of V, and the precision is 0.1.
+        When the optical parameter being monitored is 'XXsupplyCurrent',the supported range
+        is from 0 to 6553600, in units of 1/1000 mA .
+        Example: A value of 6000000 represents a XX supply current reading of 6000.0mA.
+        The 'XXsupplyCurrent' is shown in unit of mA, and the precision is 0.1.
+        When the optical parameter being monitored is 'tecCurrent',the supported range
+        is from 0 to 6553600, in units of 1/1000 mA .
+        Example: A value of 6000000 represents a TEC Current reading of 6000.0mA.
+        The 'tecCurrent' is shown in unit of mA, and the precision is 0.1.
+        When the optical parameter being monitored is 'laserWavelength,the supported range
+        is from 0 to 3276750, in units of 1/1000 nm .
+        Example: A value of 3000000 represents a laser wavelength reading of 3000.0nm.
+        The 'laserWavelength'is shown in unit of nm, and the precision is 0.01.
+        "
+    SYNTAX    Integer32 (-1000000 | -40000..6553600)
+
+-- MIB Global Enable Definitions
+
+csgOpticalTransceiverGlobalEnable OBJECT IDENTIFIER ::= {csgOpticalTransceiver 1 }
+
+csgOpticalTransceiverDDMEnable OBJECT-TYPE
+    SYNTAX      EnableVar
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Enable or disable digitaldiagnotic on the device.
+        this object belongs to xfp and sfp.
+        "
+    DEFVAL { disable }
+    ::={ csgOpticalTransceiverGlobalEnable 2 }
+
+-- MIB Object Definitions
+
+csgOpticalTransceiverObjects OBJECT IDENTIFIER ::= {csgOpticalTransceiver 2 }
+
+-- groups in this MIB module
+csgOpticalTransceiverInfoGroup OBJECT IDENTIFIER ::= {csgOpticalTransceiverObjects 1 }
+
+csgOpticalTransceiverDDMGroup OBJECT IDENTIFIER ::= {csgOpticalTransceiverObjects 2 }
+
+csgOpticalTransceiverStatusGroup OBJECT IDENTIFIER ::= {csgOpticalTransceiverObjects 4 }
+
+csgOpticalTransceiverHistoryAlarm OBJECT IDENTIFIER ::= {csgOpticalTransceiverObjects 9 }
+
+-- csgOpticalTransceiverInfoTable
+
+csgOpticalTransceiverInfoTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF CsgOpticalTransceiverInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        Trancetver information Table.
+        "
+    ::= { csgOpticalTransceiverInfoGroup 1 }
+
+csgOpticalTransceiverInfoEntry OBJECT-TYPE
+    SYNTAX      CsgOpticalTransceiverInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        An entry in the csgOpticalTransceiverInfoTable.
+        "
+    INDEX
+        {
+            ifIndex
+        }
+    ::={ csgOpticalTransceiverInfoTable 1 }
+
+
+CsgOpticalTransceiverInfoEntry ::= SEQUENCE
+    {
+    csgOpticalTransceiverType                   INTEGER,
+    csgOpticalTransceiverConnectorType          INTEGER,
+    csgOpticalTransceiverVendorName             OCTET STRING,
+    csgOpticalTransceiverVendorPN               OCTET STRING,
+    -- csgOpticalTransceiverVendorSN            OCTET STRING,
+    csgOpticalTransceiverMediaType              INTEGER,
+    csgOpticalTransceiverTransmissionDistance   Integer32,
+    -- csgOpticalTransceiverAbility             Unsigned32,
+    -- csgOpticalTransceiverRSSI                INTEGER,
+    -- csgOpticalTransceiverVendorRev           OCTET STRING,
+    csgOpticalTransceiverBRMax                  Integer32,
+    csgOpticalTransceiverWavelength             Integer32
+    }
+
+csgOpticalTransceiverType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            unknown(1),
+            gbic(2),
+            soldered(3),
+            sfp(4),
+            xbi(5),
+            xenpak(6),
+            xfp(7),
+            xff(8),
+            xfpE(9),
+            xpak(10),
+            x2(11),
+            sfpj(12)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object specifies the physical type of the transceiver,
+        such as xfp or sfp, and so on.
+        this object belongs to xfp and sfp.
+        "
+    ::= { csgOpticalTransceiverInfoEntry 1 }
+
+csgOpticalTransceiverConnectorType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            unknown(1),
+            sc(2),
+            db9(3),
+            hssdc(4),
+            bncTnc(5),
+            fiberCoaxialHead(6),
+            fiberJack(7),
+            lc(8),
+            mtRj(9),
+            mu(10),
+            sg(11),
+            fiberPigtail(12),
+            mpoParallelOptic(13),
+            hssdcII(14),
+            copper(15),
+            rj45(16)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object specifies the connector type of the transceiver,
+        unknown, sc, db9, hssdc, bnc_tnc, fiber_coaxial_head, fiber_outlet,
+        lc, mt_rj, mu, sg, fiber_pigtail, mpo_parallel_optic , hssdcII,
+        copper, rj45.
+        this object belongs to xfp and sfp.
+        "
+    ::= { csgOpticalTransceiverInfoEntry 2 }
+
+csgOpticalTransceiverVendorName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        Vendor name of the interface.
+        this object belongs to xfp and sfp.
+        "
+    ::= { csgOpticalTransceiverInfoEntry 3 }
+
+csgOpticalTransceiverVendorPN OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        Vendor part number of the interface.
+        this object belongs to xfp and sfp.
+        "
+    ::= { csgOpticalTransceiverInfoEntry 4 }
+
+csgOpticalTransceiverMediaType OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        singleMode(1),
+        multiModeE50(2),
+        multiMode50(3),
+        multiMode625(4),
+        copper(5),
+        singleModeKm(6),
+        multiModeOM3(7)
+    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        Types of the fiber,
+        single_mode, multi_modeE50, multi_mode50, multi_mode625, copper.
+        single_modeKm, multi_modeOM3
+        this object belongs to xfp and sfp.
+        "
+    ::= { csgOpticalTransceiverInfoEntry 6 }
+
+csgOpticalTransceiverTransmissionDistance OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The max distance which the interface could transmit,
+        measured in meter.
+        The object will be shown in unit of Km, and the precision is 0.001.
+        this object belongs to xfp and sfp.
+        "
+    ::= { csgOpticalTransceiverInfoEntry 7 }
+
+csgOpticalTransceiverBRMax OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        the min data rate of the transceiver,mesured in Mbps.
+        this object belongs to xfp and sfp.
+        The object will be shown in unit of Mbps, and the precision is 0.001.
+        "
+    ::= { csgOpticalTransceiverInfoEntry 13 }
+
+csgOpticalTransceiverWavelength OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        Wavelength of the interface, measured in pm(0.001nm).
+        this object belongs to xfp.
+        The object will be shown in unit of nm, and the precision is 0.01.
+        "
+    ::= { csgOpticalTransceiverInfoEntry 16 }
+
+-- csgOpticalDDMTable
+
+csgOpticalTransceiverDDMTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CsgOpticalTransceiverDDMEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table provides objects to monitor optical
+        parameters in a network element."
+    ::={ csgOpticalTransceiverDDMGroup 1 }
+
+csgOpticalTransceiverDDMEntry OBJECT-TYPE
+    SYNTAX      CsgOpticalTransceiverDDMEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in the csgOpticalTransceiverMonTable provides objects to
+        monitor an optical parameter at an optical interface.
+        "
+    INDEX
+        {
+            ifIndex,
+            csgOpticalTransceiverParameterType
+        }
+    ::={ csgOpticalTransceiverDDMTable 1 }
+
+CsgOpticalTransceiverDDMEntry ::= SEQUENCE
+    {
+        csgOpticalTransceiverParameterType             OpticalParameterType,
+        csgOpticalTransceiverParameterValue            OpticalParameterValue,
+        csgOpticalTransceiverParamHighAlarmThresh      OpticalParameterValue,
+        csgOpticalTransceiverParamHighWarningThresh    OpticalParameterValue,
+        csgOpticalTransceiverParamLowAlarmThresh       OpticalParameterValue,
+        csgOpticalTransceiverParamLowWarningThresh     OpticalParameterValue,
+        csgOpticalTransceiverParamAlarmStatus          INTEGER
+        -- csgOpticalTransceiverDDMValidStatus         INTEGER
+    }
+
+csgOpticalTransceiverParameterType OBJECT-TYPE
+    SYNTAX      OpticalParameterType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This object specifies the optical parameter that is being
+        monitored in this entry.
+        This object belongs to xfp/sfp.
+        "
+    ::={ csgOpticalTransceiverDDMEntry 1 }
+
+csgOpticalTransceiverParameterValue OBJECT-TYPE
+    SYNTAX      OpticalParameterValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object gives the value measured for the particular
+        optical parameter specified by the csgOpticalMonParameterType
+        object.
+        This object belongs to xfp/sfp.
+        "
+    ::={ csgOpticalTransceiverDDMEntry 2 }
+
+csgOpticalTransceiverParamHighAlarmThresh OBJECT-TYPE
+    SYNTAX      OpticalParameterValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object gives the high alarm threshold on the
+        optical parameter being monitored.
+        An alarm condition will be raised if the value given by
+        csgOpticalParameterValue goes from below the value of
+        this object to above the value of this object, or if
+        the initial value of csgOpticalParameterValue exceeds the value
+        of this object. This alarm will be indicated in the
+        csgOpticalParamAlarmStatus object.
+        This object belongs to xfp/sfp.
+        "
+    ::={ csgOpticalTransceiverDDMEntry 3 }
+
+csgOpticalTransceiverParamHighWarningThresh OBJECT-TYPE
+    SYNTAX      OpticalParameterValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object is used to set a high warning threshold on
+        the optical parameter being monitored.
+        A threshold crossing condition will be indicated if the value
+        given by csgOpticalParameterValue goes from below the value
+        of this object to above the value of this
+        object, or if the initial value of csgOpticalParameterValue
+        exceeds the value of this object. This alarm will be indicated in the
+        csgOpticalParamAlarmStatus object.
+        This object belongs to xfp/sfp.
+        "
+    ::={ csgOpticalTransceiverDDMEntry 4 }
+
+csgOpticalTransceiverParamLowAlarmThresh OBJECT-TYPE
+    SYNTAX      OpticalParameterValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object is used to set a low alarm threshold on the
+        optical parameter being monitored.
+        An alarm condition will be raised if the value given by
+        csgOpticalParameterValue goes from above the value of
+        this object to below the value of this object, or if
+        the initial value of csgOpticalParameterValue is lower than the
+        value of this object. This alarm
+        will be indicated in the csgOpticalParamAlarmStatus object.
+        This object belongs to xfp/sfp.
+        "
+    ::={ csgOpticalTransceiverDDMEntry 5 }
+
+csgOpticalTransceiverParamLowWarningThresh OBJECT-TYPE
+    SYNTAX      OpticalParameterValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object is used to set a low warning threshold on
+        the optical parameter being monitored.
+        A threshold crossing condition will be indicated if the value
+        given by csgOpticalParameterValue goes from above the value
+        of this object to below the value of this
+        object, or if the initial value of csgOpticalParameterValue
+        object is lower than the value of this object. For
+        network elements in the status
+        indications, this threshold violation will be indicated in the
+        csgOpticalParamAlarmStatus object.
+        This object belongs to xfp/sfp.
+        "
+    ::={ csgOpticalTransceiverDDMEntry 6 }
+
+csgOpticalTransceiverParamAlarmStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            normal(1),
+            high-alarm(2),
+            high-warning(3),
+            low-alarm(4),
+            low-warning(5)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object is used to indicate the current status of
+        the thresholds for the monitored optical parameter
+        on the interface.
+        If a threshold is currently being exceeded on the
+        interface, the object  will be set. Otherwise,
+        the object will be set to 1.
+        This object belongs to xfp/sfp.
+        "
+    ::={ csgOpticalTransceiverDDMEntry 7 }
+
+-- csgOpticalTransceiverCurrentStatus Table
+csgOpticalTransceiverCurrentStatusTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CsgOpticalTransceiverCurrentStatusEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table stores the hard ware information and the information
+        set by user of the transceiver.
+        This object belongs to xfp/sfp.
+        "
+    ::={ csgOpticalTransceiverStatusGroup 1 }
+
+csgOpticalTransceiverCurrentStatusEntry OBJECT-TYPE
+    SYNTAX      CsgOpticalTransceiverCurrentStatusEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        An entry in the csgOpticalTransceiverCurrentStatusTable. It contains
+        performance monitoring data for an optical parameter,
+        collected over a previous interval.
+        This object belongs to xfp/sfp.
+        "
+    INDEX
+        {
+            ifIndex
+        }
+    ::={ csgOpticalTransceiverCurrentStatusTable 1 }
+
+CsgOpticalTransceiverCurrentStatusEntry ::= SEQUENCE
+    {
+        csgOpticalTransceiverHwInfoAbsStatus                INTEGER
+        -- csgOpticalTransceiverPortNotifyEnable            EnableVar,
+        -- csgOpticalTransceiverPortDDMEnable               EnableVar,
+        -- csgOpticalTransceiverTxFaultCount                Integer32,
+        -- csgOpticalTransceiverTxFaultStatus               INTEGER
+    }
+
+csgOpticalTransceiverHwInfoAbsStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            absent(1),
+            present(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object specifies if the optical module is absent
+        present,absent.
+        This object belongs to xfp and sfp.
+        "
+    ::={ csgOpticalTransceiverCurrentStatusEntry 1 }
+
+-- =========History alarm table====
+-- csgOpticalTransceiverPMInterval Table
+
+csgOpticalTransceiverHistoryAlarmTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CsgOpticalTransceiverHistoryAlarmEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This is Alarm History Table.
+        "
+    ::={ csgOpticalTransceiverHistoryAlarm 1 }
+
+csgOpticalTransceiverHistoryAlarmEntry OBJECT-TYPE
+    SYNTAX      CsgOpticalTransceiverHistoryAlarmEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        An entry in csgOpticalTransceiverHistoryAlarmTable.
+        "
+    INDEX
+        {
+            csgOpticalTransceiverAlarmIndex
+        }
+    ::={ csgOpticalTransceiverHistoryAlarmTable 1 }
+
+CsgOpticalTransceiverHistoryAlarmEntry ::= SEQUENCE
+    {
+        csgOpticalTransceiverAlarmIndex                  Integer32,
+        csgOpticalTransceiverHistAlarmPortIndex          Integer32,
+        csgOpticalTransceiverHistAlarmParameterType      OpticalParameterType,
+        csgOpticalTransceiverHistAlarmParameterValue     OpticalParameterValue,
+        csgOpticalTransceiverParamHistAlarmStatus        INTEGER,
+        csgOpticalTransceiverParamHistAlarmTime          OCTET STRING
+    }
+
+csgOpticalTransceiverAlarmIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This index of alarm history entry.
+        "
+    ::= { csgOpticalTransceiverHistoryAlarmEntry 1 }
+
+csgOpticalTransceiverHistAlarmPortIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The port index of alarm history entry.
+        "
+    ::= { csgOpticalTransceiverHistoryAlarmEntry 2 }
+
+csgOpticalTransceiverHistAlarmParameterType OBJECT-TYPE
+    SYNTAX      OpticalParameterType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object specifies the optical parameter that is being
+        monitored, in this entry.
+        This object belongs to xfp/sfp.
+        "
+    ::={ csgOpticalTransceiverHistoryAlarmEntry 3 }
+
+csgOpticalTransceiverHistAlarmParameterValue OBJECT-TYPE
+    SYNTAX      OpticalParameterValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object gives the value of the measured optical
+        parameter.
+        "
+    ::={ csgOpticalTransceiverHistoryAlarmEntry 4 }
+
+csgOpticalTransceiverParamHistAlarmStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            normal(1),
+            high-alarm(2),
+            high-warning(3),
+            low-alarm(4),
+            low-warning(5)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        This object is used to indicate the current status of Alarm.
+        "
+    ::={ csgOpticalTransceiverHistoryAlarmEntry 5 }
+
+csgOpticalTransceiverParamHistAlarmTime OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..64))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The timestamp of alarm information.
+        "
+    ::= { csgOpticalTransceiverHistoryAlarmEntry 6 }
+
+-- begin
+
+-- CSG Series
+-- csgSeries OBJECT IDENTIFIER ::= { csg 6 }
+
+-- =======================================================================
+--
+--   Common Switch management root MIB
+-- =======================================================================
+-- CSG Switch
+-- csgSwitch OBJECT IDENTIFIER ::= { csgSeries 1 }
+
+-- =============================================================================
+-- CSG-LLDP-MIB.mib
+-- =============================================================================
+
+csgLldp OBJECT IDENTIFIER ::= { csgSwitch 57 }
+
+csgLldpFuncSet OBJECT IDENTIFIER ::= { csgLldp 2 }
+
+--
+-- Sections of the CSG LLDP MIB
+--
+
+csgLldpConfig OBJECT IDENTIFIER ::= { csgLldpFuncSet 1 }
+
+csgLldpEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The vlalue indicats that LLDP is valid when it is set TRUE.
+        The default value is FALSE.
+        "
+    DEFVAL { false }
+    ::= { csgLldpConfig 1 }
+
+csgPortFunction OBJECT IDENTIFIER ::= { csgSwitch 58 }
+
+csgPortAdminStatusAutoShutdown OBJECT IDENTIFIER ::= { csgPortFunction 1 }
+
+csgPortAdminStatusAutoShutdownTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CsgPortAdminStatusAutoShutdownEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        A list of PortAdminStatusAutoShutdown parameter table.
+        "
+    ::= { csgPortAdminStatusAutoShutdown 1 }
+
+csgPortAdminStatusAutoShutdownEntry OBJECT-TYPE
+    SYNTAX      CsgPortAdminStatusAutoShutdownEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        A list of PortAdminStatusAutoShutdown parameter table entries.
+        "
+    INDEX
+        {
+            csgPortAdminStatusAutoShutdownIfIndex
+        }
+    ::= { csgPortAdminStatusAutoShutdownTable 1 }
+
+CsgPortAdminStatusAutoShutdownEntry ::=SEQUENCE
+    {
+        csgPortAdminStatusAutoShutdownIfIndex Integer32,
+        csgPortAdminStatusAutoShutdownEnable  INTEGER
+    }
+
+csgPortAdminStatusAutoShutdownIfIndex OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "
+        ifIndex
+        "
+    ::= { csgPortAdminStatusAutoShutdownEntry 1 }
+
+csgPortAdminStatusAutoShutdownEnable OBJECT-TYPE
+    SYNTAX          INTEGER
+        {
+            open(1),
+            close(2)
+        }
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "
+        Whether the port management status is automatically closed or not.
+        "
+    ::= { csgPortAdminStatusAutoShutdownEntry 2 }
+
+csgPortAdminStatusAutoShutdownTime OBJECT-TYPE
+    SYNTAX          Integer32(30..600)
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "
+        Port management status auto shutdown configuration time.
+        "
+    ::= { csgPortAdminStatusAutoShutdown 2 }
+
+csgPortIpMacBind OBJECT IDENTIFIER ::= { csgPortFunction 2}
+
+csgPortIpMacBindTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CsgPortIpMacBindEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        A list of PORT IP MAC BIND parameter table.
+        "
+    ::= { csgPortIpMacBind 1 }
+
+csgPortIpMacBindEntry OBJECT-TYPE
+    SYNTAX      CsgPortIpMacBindEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        A list of PORT IP MAC BIND parameter table entries.
+        "
+    INDEX
+        {
+            ifIndex,
+            csgPortIpMacBindNum
+        }
+    ::= { csgPortIpMacBindTable 1 }
+
+CsgPortIpMacBindEntry ::= SEQUENCE
+    {
+        csgPortIpMacBindNum       Integer32,
+        csgPortIpMacBindMac       MacAddress,
+        csgPortIpMacBindIpAddress IpAddress,
+        csgPortIpMacBindRowStatus INTEGER
+    }
+
+csgPortIpMacBindNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        TABLE NUM
+        "
+    ::= { csgPortIpMacBindEntry 1 }
+
+csgPortIpMacBindMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        PORT BIND MAC
+        "
+    ::= { csgPortIpMacBindEntry 2 }
+
+csgPortIpMacBindIpAddress OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        PORT BIND IPADDRESS
+        "
+    ::= { csgPortIpMacBindEntry 3 }
+
+csgPortIpMacBindRowStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            active(1),
+            notInService(2),
+            notReady(3),
+            createAndGo(4),
+            createAndWait(5),
+            destroy(6)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        ROW STATUS
+        "
+    ::= { csgPortIpMacBindEntry 4 }
+
+csgPortDeviceIpMac OBJECT IDENTIFIER ::= { csgPortFunction 3 }
+
+csgPortDeviceIpMacBindWrongfulAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            csgPortDeviceIfIndex,
+            csgPortDeviceMac,
+            csgPortDeviceIpAddress
+        }
+    STATUS      current
+    DESCRIPTION
+        "
+        PortDeviceBindWrongfulAlarm
+        "
+    ::= { csgPortDeviceIpMac 2 }
+
+csgPortDeviceIpMacBindCorrectAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            csgPortDeviceIfIndex,
+            csgPortDeviceMac,
+            csgPortDeviceIpAddress
+        }
+    STATUS      current
+    DESCRIPTION
+        "
+        PortDeviceBindWrongfulAlarm
+        "
+    ::= { csgPortDeviceIpMac 3 }
+
+csgPortDeviceIpMacTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CsgPortDeviceIpMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        A list of PORT IP_MAC parameter table.
+        "
+    ::= { csgPortDeviceIpMac 1 }
+
+csgPortDeviceIpMacEntry OBJECT-TYPE
+    SYNTAX      CsgPortDeviceIpMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        A list of PORT DEVICE IP_MAC parameter table entries.
+        "
+    INDEX
+        {
+            csgPortDeviceIfIndex
+        }
+    ::= { csgPortDeviceIpMacTable 1 }
+
+CsgPortDeviceIpMacEntry ::= SEQUENCE
+    {
+        csgPortDeviceIfIndex      Integer32,
+        csgPortDeviceMac          MacAddress,
+        csgPortDeviceIpAddress    IpAddress
+    }
+
+csgPortDeviceIfIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "
+        IFINDEX
+        "
+    ::= { csgPortDeviceIpMacEntry 1 }
+
+csgPortDeviceMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        PORT DEVICE MAC
+        "
+    ::= { csgPortDeviceIpMacEntry 2 }
+
+csgPortDeviceIpAddress OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        PORT DEVICE IPADDRESS
+        "
+    ::= { csgPortDeviceIpMacEntry 3 }
+
+-- begin
+
+-- csg Agent
+-- csgAgent OBJECT IDENTIFIER ::= { csg 1 }
+
+-- ======================================================================================
+-- csg-mcast-mib.mib
+-- ======================================================================================
+
+csgMcast OBJECT IDENTIFIER ::= { csgAgent 27 }
+csgMcastObjects OBJECT IDENTIFIER ::= { csgMcast 2 }
+csgMcastScalar OBJECT IDENTIFIER ::= { csgMcastObjects 1}
+csgMcastL2 OBJECT IDENTIFIER ::= { csgMcastObjects 2}
+
+--
+-- Global Group
+--
+
+csgMulticastFilterEnable OBJECT-TYPE
+    SYNTAX      EnableVar
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        False indicates forward unregistered multicast traffic of the device;
+        True indicates filter all unregistered multicast traffic.
+        "
+    DEFVAL { 2 }
+    ::= { csgMcastScalar 1 }
+
+--
+-- csgMcastL2
+--
+
+csgL2MulticastMaxGroupNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The max number of L2 multicast group supported by hardware.
+        "
+    DEFVAL { 0 }
+    ::= { csgMcastL2 1 }
+
+csgL2MulticastCurrentGroupNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The current number of multicast groups in the l2 multicast address table.
+        "
+    DEFVAL { 0 }
+    ::= { csgMcastL2 2 }
+
+--
+-- L2MulticastAddressTable
+--
+
+csgL2MulticastAddressTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CsgL2MulticastAddressEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        This table provides the information of l2 multicast address.
+        "
+    ::= { csgMcastL2 3 }
+
+csgL2MulticastAddressEntry OBJECT-TYPE
+    SYNTAX      CsgL2MulticastAddressEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        Each entry provides a l2 multicast address information. Entries
+        can be created as a static multicast address.
+        "
+    INDEX
+        {
+            csgL2MulticastMVlan,
+            csgL2MulticastAddress
+        }
+    ::= { csgL2MulticastAddressTable 1 }
+
+CsgL2MulticastAddressEntry ::= SEQUENCE
+    {
+        csgL2MulticastMVlan               Integer32,
+        csgL2MulticastAddress             MacAddress,
+        csgL2MulticastEgressPortlist      PortList,
+        csgL2MulticastStaticPortlist      PortList,
+        csgL2MulticastRowStatus           RowStatus
+    }
+
+csgL2MulticastMVlan OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The vlan-id in a frame to which this entry's forwarding information applies.
+        "
+    ::= { csgL2MulticastAddressEntry 1 }
+
+csgL2MulticastAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The destination MAC address in a frame to which this entry's forwarding
+        information applies. This object must take the value of a Multicast or
+        Broadcast address.
+        "
+    ::= { csgL2MulticastAddressEntry 2 }
+
+csgL2MulticastEgressPortlist OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The set of ports to which frames destined for a specific Multicast must be forwarded.
+        "
+    ::= { csgL2MulticastAddressEntry 3 }
+
+csgL2MulticastStaticPortlist OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+          "
+          The set of ports to which frames received destined for a specific Multicast must be
+          forwarded, regardless of any dynamic information e.g. from GMRP.
+          "
+    ::= { csgL2MulticastAddressEntry 4 }
+
+csgL2MulticastRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        The row status of the csgL2MulticastAddress table.
+        "
+    ::= { csgL2MulticastAddressEntry 5 }
+
+-- begin
+
+-- CSG Switch
+-- csgSwitch OBJECT IDENTIFIER ::= { csgSeries 1 }
+
+-- ======================================================================
+-- csg-system-mib.mib
+-- ======================================================================
+-- csgSystem OBJECT IDENTIFIER ::= { csgAgent 1 }
+
+--
+-- CSG Memory objects
+--
+csgMemory OBJECT IDENTIFIER ::= { csgSystem 3 }
+
+csgTotalMemory OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "Byte"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "
+        The total memory of the system as reported by the
+        operating system.
+        "
+    ::= { csgMemory 1 }
+
+csgAvailableMemory OBJECT-TYPE
+    SYNTAX       Integer32
+    UNITS        "Byte"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "
+        The available total memory of the system as reported by the
+        operating system.
+        "
+    ::= { csgMemory 2}
+
+csgMaxUtilmemory OBJECT-TYPE
+    SYNTAX       Integer32
+    UNITS        "percent"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "
+        The maximum memory utilization by this system since
+        system starting.
+        "
+    ::= { csgMemory 3 }
+
+-- begin
+-- CSG Series
+-- csgSeries OBJECT IDENTIFIER ::= { csg 6 }
+
+-- =======================================================================
+--
+--   Common Switch management root MIB
+-- =======================================================================
+-- CSG Switch
+-- csgSwitch OBJECT IDENTIFIER ::= { csgSeries 1 }
+-- ============================================================================
+-- csg-interface-port-mib.mib
+-- ============================================================================
+-- csgSwSystem OBJECT IDENTIFIER ::= { csgSwitch 1 }
+-- =====================================================================================
+-- csg-system-mib.smi
+-- =====================================================================================
+csgPortInfoConfig OBJECT IDENTIFIER ::= { csgSwSystem 4 }
+
+-- csgPortInfoConfig
+
+csgPortTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF CsgPortEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        A table of switch port and associated properties.
+        "
+    ::= { csgPortInfoConfig 1 }
+
+csgPortEntry OBJECT-TYPE
+    SYNTAX       CsgPortEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "
+        Table entry for switch port control and status information.
+        "
+    INDEX
+        {
+            csgPortIndex
+        }
+    ::= { csgPortTable 1 }
+
+CsgPortEntry ::= SEQUENCE
+    {
+        csgPortIndex                    Integer32,
+        csgPortDuplexSpeed              INTEGER,
+        csgPortType                     Integer32
+    }
+
+csgPortIndex OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        An index based 1 that uniquely identifies a system interface.
+        "
+    ::= { csgPortEntry 1 }
+
+csgPortDuplexSpeed OBJECT-TYPE
+    SYNTAX     INTEGER
+    {
+        autonegotiate(1),
+        half-10(2),
+        full-10(3),
+        half-100(4),
+        full-100(5),
+        half-1000(6),
+        full-1000(7)
+    }
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        The desired speed and duplex for this interface. If the selected
+        control is not possible on the interface, a value of illegal(99)
+        is returned. If the port type does NOT support the default
+        of autonegotiate(1), then the application initializes the
+        port to a valid value (e.g., 1000full(6)). Note that not all
+        controls are possible for all interfaces. For example, only
+        full-1000(6) is available for Gigabit Ethernet interfaces.
+        "
+    DEFVAL { autonegotiate }
+    ::= { csgPortEntry 7 }
+
+csgPortType OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "
+        The port type for this interface. The port type is E(0) expressed as
+        10M RJ45 port,FE(1) expressed as 100M RJ45 port,GE(2) expressed as
+        1000M RJ45 port,FX(3) expressed as 100M optical port,GX(4) expressed
+        as 1000M optical port,GXH(5) expressed as 10000M optical port.
+        "
+    ::= { csgPortEntry 8 }
+
+-- begin
+
+-- CSG Series
+-- csgSeries OBJECT IDENTIFIER ::= { csg 6 }
+
+-- =======================================================================
+--
+--   Common Switch management root MIB
+-- =======================================================================
+-- CSG Switch
+-- csgSwitch OBJECT IDENTIFIER ::= { csgSeries 1 }
+
+-- ==============================================================================
+-- CSG-PORTMIRROR-MIB.smi
+-- ==============================================================================
+
+csgPortMirror OBJECT IDENTIFIER ::= { csgSwitch 4 }
+
+-- define groups
+csgBaseConfig OBJECT IDENTIFIER ::= { csgPortMirror 1 }
+
+-- config some scalar
+csgPortMirrorEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Enable or disable port mirroring.
+        "
+    DEFVAL { disable }
+    ::= { csgBaseConfig 1 }
+
+csgMirrorToPort OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        The monitor port.
+        "
+    ::= { csgBaseConfig 2}
+
+csgIngressMirrorPorts OBJECT-TYPE
+    SYNTAX     PortList
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Ingress Monitored ports mask. Bit mask which selectively allows any port with
+        its corresponding bit set, to be mirrored to the monitor port.
+        "
+    ::= { csgBaseConfig 4 }
+
+csgEgressMirrorPorts OBJECT-TYPE
+    SYNTAX     PortList
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Egress Monitored ports mask. Bit mask which selectively allows any port with
+        its corresponding bit set, to be mirrored to the monitor port.
+        "
+    ::= { csgBaseConfig 5 }
+
+-- begin
+
+-- csg Agent
+-- csgAgent OBJECT IDENTIFIER ::= { csg 1 }
+
+-- ======================================================================
+-- csg-system-mib.mib
+-- ======================================================================
+-- csgSystem OBJECT IDENTIFIER ::= { csgAgent 1 }
+
+--
+-- CSG POWER objects
+--
+csgPower OBJECT IDENTIFIER ::= { csgSystem 5 }
+
+csgPower1InputStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            up(1),
+            down(2)
+        }
+    UNITS       "Byte"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        The status of the first power input.
+        "
+    ::= { csgPower 1 }
+
+csgPower2InputStatus OBJECT-TYPE
+    SYNTAX     INTEGER
+        {
+            up(1),
+            down(2)
+        }
+    UNITS      "Byte"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "
+        The status of the second power input.
+        "
+    ::= { csgPower 2 }
+
+-- begin
+
+-- csg Agent
+-- csgAgent OBJECT IDENTIFIER ::= { csg 1 }
+
+-- ===================================================================================
+-- csg-qos-mib.mib
+-- ===================================================================================
+csgQosMIB OBJECT IDENTIFIER ::= { csgAgent 33 }
+
+------------------------------------------------------------------------------
+--  define groups in raisecomQosMIB
+------------------------------------------------------------------------------
+csgQosCfg OBJECT IDENTIFIER ::={ csgQosMIB 1 }
+csgPortRateControl OBJECT IDENTIFIER ::={ csgQosMIB 7 }
+-- ----------------------------------------------------------------------------
+-- csgQosCfg group------------
+-- csgQosCfg group scale MIB--
+-- ----------------------------------
+
+csgQosQueueScheduler OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            sp(1),
+            wrr(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        the global mode queue scheduler mode on the port.
+        sp indicates strict priority queue mode.
+        wrr indicates Weighted Round Robin queue mode.
+        drr indicates Deficit Round Robin queue mode.
+        wfq indicates Weighted Fair Queuing queue mode.
+        "
+    ::= { csgQosCfg 3 }
+
+-----------------------------------------------------------
+-- csgQosCfg group csgQosCosMapingTable ----
+-----------------------------------------------------------
+
+csgQosCosMappingTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF CsgQosCosMappingEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        This table describes the mapping from the cos to the local priority.
+        "
+    ::= { csgQosCfg 13 }
+
+csgQosCosMappingEntry OBJECT-TYPE
+    SYNTAX     CsgQosCosMappingEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        Table entry for cos mapping to local priority
+        "
+    INDEX
+        {
+            csgQosCosValue
+        }
+    ::= { csgQosCosMappingTable 1 }
+
+CsgQosCosMappingEntry ::= SEQUENCE
+    {
+        csgQosCosValue          Integer32,
+        csgQosCosLocalPriority  Integer32
+    }
+
+csgQosCosValue OBJECT-TYPE
+    SYNTAX      Integer32(0..7)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        Cos value,the index of rcQosCosMappingEntry.
+        "
+    ::= { csgQosCosMappingEntry 1}
+
+csgQosCosLocalPriority OBJECT-TYPE
+    SYNTAX      Integer32(0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        The local priority which the cos value mapped to.
+        "
+    ::= { csgQosCosMappingEntry 2 }
+
+-----------------------------------------------------------
+-- csgQosCfg group csgPortRateControlTable ----
+-----------------------------------------------------------
+
+csgIfProtect OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(0),
+            disable(1)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Enable port protect.
+        "
+    ::= { csgPortRateControl 1 }
+
+csgPortRateControlTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF CsgPortRateControlEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        A configable table for rate limit base on port.
+        "
+    ::= { csgPortRateControl 2 }
+
+csgPortRateControlEntry OBJECT-TYPE
+    SYNTAX     CsgPortRateControlEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        Table entry for for rate limit base on port.
+        "
+    INDEX
+        {
+            csgPortRateIndex
+        }
+    ::= { csgPortRateControlTable 1 }
+
+CsgPortRateControlEntry ::= SEQUENCE
+    {
+        csgPortRateIndex                 Integer32,
+        csgPorttwowayRate                Integer32,
+        csgPortIngressRate               Integer32,
+        csgPortEgressRate                Integer32,
+        csgPortRateLimitUnitDescr        Integer32,
+        csgPortInFrameCon                Integer32,
+        csgPortOutFrameCon               Integer32
+    }
+
+csgPortRateIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The ifIndex of the port.
+        "
+    ::= { csgPortRateControlEntry 1}
+
+csgPorttwowayRate OBJECT-TYPE
+    SYNTAX        Integer32
+    UNITS         "kbps"
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+        "
+        Speed limit configuration in both way. Unit: kbps.
+        "
+    ::= { csgPortRateControlEntry 2 }
+
+csgPortIngressRate OBJECT-TYPE
+    SYNTAX        Integer32
+    UNITS         "kbps"
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+        "
+        Speed limit configuration in ingress way. Unit: kbps.
+        "
+    ::= { csgPortRateControlEntry 3 }
+
+csgPortEgressRate OBJECT-TYPE
+    SYNTAX        Integer32
+    UNITS         "kbps"
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+        "
+        Speed limit configuration in egress way. Unit: kbps.
+        "
+    ::= { csgPortRateControlEntry 4 }
+
+csgPortRateLimitUnitDescr OBJECT-TYPE
+    SYNTAX        Integer32
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+        "
+        Port Speed limit configuration in the bandwidth. Unit: 64kbps.
+        "
+    ::= { csgPortRateControlEntry 5 }
+
+csgPortInFrameCon OBJECT-TYPE
+    SYNTAX        Integer32
+    UNITS         "B"
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+        "
+        Inbound frame gap configuration in ingress way. Unit: B.
+        "
+    ::= { csgPortRateControlEntry 6 }
+
+csgPortOutFrameCon OBJECT-TYPE
+    SYNTAX        Integer32
+    UNITS         "B"
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+        "
+        Inbound frame gap configuration in egress way. Unit: B.
+        "
+    ::= { csgPortRateControlEntry 7 }
+
+-- begin
+
+-- CSG Series
+-- csgSeries OBJECT IDENTIFIER ::= { csg 6 }
+
+-- =======================================================================
+--
+--   Common Switch management root MIB
+-- =======================================================================
+-- CSG Switch
+-- csgSwitch OBJECT IDENTIFIER ::= { csgSeries 1 }
+
+-- =======================================================================
+--
+--   RSTP-MIB
+-- =======================================================================
+csgSpanningTree OBJECT IDENTIFIER ::= { csgSwitch 85 }
+
+csgSpanningTreeRoot OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (8))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreeRoot
+        "
+    ::= { csgSpanningTree 1 }
+
+csgSpanningTreeBridgePriority OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreeBridgePriority
+        "
+    ::= { csgSpanningTree 2 }
+
+csgSpanningTreeHelloTime OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreeHelloTime
+        "
+    ::= { csgSpanningTree 3 }
+
+csgSpanningTreeMaxAge OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreeMaxAge
+        "
+    ::= { csgSpanningTree 4 }
+
+csgSpanningTreeForwardingDelay OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreeForwardingDelay
+        "
+    ::= { csgSpanningTree 5 }
+
+csgSpanningTreeEnable OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreeEnable
+        "
+    ::= { csgSpanningTree 7 }
+
+csgSpanningTreeType OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreeType
+        "
+    ::= { csgSpanningTree 8 }
+
+--
+-- RSTP Table
+--
+
+csgSpanningTreeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CsgSpanningTreeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreeTable
+        "
+    ::= { csgSpanningTree 6 }
+
+csgSpanningTreeEntry OBJECT-TYPE
+    SYNTAX      CsgSpanningTreeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreeEntry
+        "
+    INDEX
+        {
+            csgSpanningTreeIndex
+        }
+    ::= {csgSpanningTreeTable 1 }
+
+CsgSpanningTreeEntry ::= SEQUENCE
+    {
+        csgSpanningTreeIndex        Integer32,
+        csgEnableSpanningTree       INTEGER,
+        csgSpanningTreePortPriority Integer32,
+        csgSpanningTreePortCost     Integer32,
+        csgSpanningTreePortStatus   INTEGER,
+        csgSpanningTreePortRole     INTEGER,
+        csgSpanningTreePortEdge     Integer32
+    }
+
+csgSpanningTreeIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreeIndex
+        "
+    ::= { csgSpanningTreeEntry 1 }
+
+csgEnableSpanningTree OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            disable(0),
+            enable(1)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgEnableSpanningTree
+        "
+    ::= { csgSpanningTreeEntry 2 }
+
+csgSpanningTreePortPriority OBJECT-TYPE
+    SYNTAX      Integer32 (16..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+            csgSpanningTreePortPriority
+        "
+    ::= { csgSpanningTreeEntry 3 }
+
+csgSpanningTreePortCost OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreePortCost
+        "
+    ::= { csgSpanningTreeEntry 4 }
+
+csgSpanningTreePortStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            disabled(1),
+            blocking(2),
+            listening(3),
+            learning(4),
+            forwarding(5),
+            broken(6)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreePortStatus
+        "
+    ::= { csgSpanningTreeEntry 5 }
+
+csgSpanningTreePortRole OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            disabledPort(0),
+            alternatePort(1),
+            backupPort(2),
+            rootPort(3),
+            designatedPort(4)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreePortRole
+        "
+    ::= { csgSpanningTreeEntry 6 }
+
+csgSpanningTreePortEdge OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgSpanningTreePortEdge
+        "
+    ::= { csgSpanningTreeEntry 7 }
+
+-- begin
+
+-- csg Agent
+-- csgAgent OBJECT IDENTIFIER ::= { csg 1 }
+
+-- =======================================================================
+--
+-- products
+-- =======================================================================
+-- CSG SNTP
+
+csgSntp OBJECT IDENTIFIER ::= { csgAgent 231 }
+
+csgSntpServer OBJECT IDENTIFIER ::= { csgSntp 1 }
+
+csgSntpClient OBJECT IDENTIFIER ::= { csgSntp 2 }
+
+csgSntpServerEnable OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            disable(0),
+            enable(1)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        SNTP server enable.
+        "
+    ::= { csgSntpServer 1 }
+
+csgSntpClinetEnable OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            disable(0),
+            enable(1)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        SNTP client enable.
+        "
+    ::= { csgSntpClient 1 }
+
+csgSntpClinetTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CsgSntpClinetEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        A list of SNTP client parameter table entries.
+        "
+    ::= { csgSntpClient 2 }
+
+csgSntpClinetEntry OBJECT-TYPE
+    SYNTAX      CsgSntpClinetEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        A collection of SNTP client parameter set table.
+        "
+    INDEX
+        {
+            csgSntpServerIp
+        }
+    ::= { csgSntpClinetTable 1 }
+
+CsgSntpClinetEntry ::= SEQUENCE
+    {
+        csgSntpServerIp     IpAddress,
+        csgSntpServerStatus INTEGER,
+        csgSntpInterval     Integer32
+    }
+
+csgSntpServerIp OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        SNTP server IP address.
+        "
+    ::= { csgSntpClinetEntry 1 }
+
+csgSntpServerStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            active(1),
+            notInService(2),
+            notReady(3),
+            createAndGo(4),
+            createAndWait(5),
+            destroy(6)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        SNTP server status.
+        "
+    ::= { csgSntpClinetEntry 2 }
+
+csgSntpInterval OBJECT-TYPE
+    SYNTAX      Integer32 (10..16284)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        SNTP server packet sending interval.
+        "
+    ::= { csgSntpClinetEntry 3 }
+
+
+-- begin
+
+-- CSG Series
+-- csgSeries OBJECT IDENTIFIER ::= { csg 6 }
+
+-- =======================================================================
+--
+--   Common Switch management root MIB
+-- =======================================================================
+-- CSG Switch
+-- csgSwitch OBJECT IDENTIFIER ::= { csgSeries 1 }
+
+-- ============================================================================
+-- csgSwSystem OBJECT IDENTIFIER ::= { csgSwitch 1 }
+
+-- =====================================================================================
+-- CSG-STATIC-ROUTE-MIB
+-- =====================================================================================
+csgStaticRounteConfig OBJECT IDENTIFIER ::= { csgSwSystem 21 }
+
+-- csgStaticRounteConfig
+
+csgIpStaticRouteTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF CsgIpStaticRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        A table of static route information.
+        "
+    ::= { csgStaticRounteConfig 1 }
+
+csgIpStaticRouteEntry OBJECT-TYPE
+    SYNTAX     CsgIpStaticRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        An entry in csgIpStaticRouteTable.
+        "
+    INDEX
+        {
+            csgIpStaticRouteDest,
+            csgIpStaticRouteMask,
+            csgIpStaticNextHop
+        }
+    ::= { csgIpStaticRouteTable 1 }
+
+CsgIpStaticRouteEntry ::= SEQUENCE
+    {
+        csgIpStaticRouteDest        IpAddress,
+        csgIpStaticRouteMask        IpAddress,
+        csgIpStaticNextHop          IpAddress,
+        csgIpStaticRouteIfIndex     Integer32,
+        csgIpStaticDistance         Unsigned32,
+        csgIpStaticDescription      OCTET STRING,
+        csgIpStaticRouteTag         Unsigned32,
+        csgIpStaticValid            TruthValue,
+        csgIpStaticRowStatus        RowStatus
+    }
+
+csgIpStaticRouteDest OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        The static route host or subnet IP destination address.All IP destination addresses must be non-zero.
+        "
+    ::= { csgIpStaticRouteEntry 1 }
+
+csgIpStaticRouteMask OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        The mask for this IP destination.
+        It contains 1's in the bit positions for the net and subnet IDs and 0's in the bit positions for host ID.
+        The 1's must be contiguous,starting with the left most bit.
+        "
+    ::= { csgIpStaticRouteEntry 2 }
+
+csgIpStaticNextHop OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        The IP address of the next hop of this route.
+        "
+    ::= { csgIpStaticRouteEntry 3 }
+
+csgIpStaticRouteIfIndex OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "
+        The index value which uniquely identifies the local interface
+        through which the next hop of this route should be reached.
+        "
+    ::= { csgIpStaticRouteEntry 4 }
+
+csgIpStaticDistance OBJECT-TYPE
+    SYNTAX     Unsigned32(1.. 255)
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "
+        the AD lower,the priority higher.
+        "
+    ::= { csgIpStaticRouteEntry 5 }
+
+csgIpStaticDescription OBJECT-TYPE
+    SYNTAX     OCTET STRING (SIZE(1..60))
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "
+        Description of the route.
+        "
+    ::= { csgIpStaticRouteEntry 6 }
+
+csgIpStaticRouteTag OBJECT-TYPE
+    SYNTAX     Unsigned32(1..4294967295)
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "
+        Used to tag external routes.
+        "
+    ::= { csgIpStaticRouteEntry 7 }
+
+csgIpStaticValid OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "
+        By setting this object to true(1), the user indicates the
+        desire to use hardware routing for this entry.
+        To disable hardware routing for this entry, set this object to false(2).
+        "
+    DEFVAL { false }
+    ::= { csgIpStaticRouteEntry 8 }
+
+csgIpStaticRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+        DURABLE:
+        This object indicates the status of this entry.  A row in this
+        table must be created using the createAndWait(5) action state
+        (i.e., createAndGo(4) is not supported).  This object can only
+        be set to active(1) after all objects for this row are valid.
+        The 'raisecomL3IpStaticName' is optional.
+        Note that the notInService(2) state is not supported. Objects
+        in this table row can be changed when this object is notReady(3)
+        or active(1).
+        "
+    ::= { csgIpStaticRouteEntry 9 }
+
+-- begin
+
+-- CSG Series
+-- csgSeries OBJECT IDENTIFIER ::= { csg 6 }
+
+-- =======================================================================
+--
+--   Common Switch management root MIB
+-- =======================================================================
+-- CSG Switch
+
+-- csgSwSystem OBJECT IDENTIFIER ::= { csgSwitch 1 }
+
+-- =====================================================================================
+-- csg-system-mib.smi
+-- =====================================================================================
+csgSwitchConfig OBJECT IDENTIFIER ::= { csgSwSystem 3 }
+
+csgStormControlBcastEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Set the Storm control for broadcast on the interface to enable(1) or disable(2).
+        "
+     DEFVAL { enable }
+    ::= { csgSwitchConfig 2 }
+
+csgStormControlMcastEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Set the Storm control for multicast on the interface to enable(1) or disable(2).
+        "
+    DEFVAL { disable }
+    ::= { csgSwitchConfig 3 }
+
+csgStormControlDlfEnable OBJECT-TYPE
+    SYNTAX     EnableVar
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        Set the Storm control for DLF on the interface to enable(1) or disable(2).
+        "
+    DEFVAL { disable }
+    ::= { csgSwitchConfig 4 }
+
+csgStormControlpps OBJECT-TYPE
+    SYNTAX     Integer32 (1..262143)
+    UNITS      "pps"
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        The limit number for storm control on the interface.
+        "
+    ::= { csgSwitchConfig 5 }
+
+csgStormControlbps OBJECT-TYPE
+    SYNTAX     Integer32 (0..1073741823)
+    UNITS      "bps"
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        The limit number for storm control on the interface.
+        "
+    ::= { csgSwitchConfig 6 }
+
+ csgStormControlUnit OBJECT-TYPE
+    SYNTAX     INTEGER
+        {
+            pps(1),
+            bps(2),
+            all(3)
+        }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "
+        unit of value for storm control.
+        "
+    ::= { csgSwitchConfig 7}
+
+-- begin
+
+
+-- CSG Series
+-- csgSeries OBJECT IDENTIFIER ::= { csg 6 }
+
+-- =======================================================================
+--
+--   Common Switch management root MIB
+-- =======================================================================
+-- CSG Switch
+-- csgSwitch OBJECT IDENTIFIER ::= { csgSeries 1 }
+
+-- =======================================================================
+--
+--   CSG-VLAN-MIB
+-- =======================================================================
+csgVlanExt OBJECT IDENTIFIER ::= { csgSwitch 182 }
+csgdot1qPortVlanExt OBJECT IDENTIFIER ::= { csgVlanExt 1 }
+
+-- =======================================================================
+--
+--   csgdot1qPortVlanExtTable
+-- =======================================================================
+csgdot1qPortVlanExtTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF Csgdot1qPortVlanExtEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        " "
+    ::= { csgdot1qPortVlanExt 3 }
+
+csgdot1qPortVlanExtEntry OBJECT-TYPE
+    SYNTAX     Csgdot1qPortVlanExtEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        " "
+    INDEX
+        {
+            csgDot1Port
+        }
+    ::= { csgdot1qPortVlanExtTable 1 }
+
+Csgdot1qPortVlanExtEntry ::= SEQUENCE
+    {
+        csgDot1Port                  Integer32,
+        csgDot1qPvid                 Integer32,
+        csgdot1qPortSwitchingMode    INTEGER,
+        csgdot1qPortAllowedVlans     Vlanset,
+        csgdot1qPortUntaggedVlans    Vlanset
+    }
+
+csgDot1Port OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgDot1Port
+        "
+    ::= { csgdot1qPortVlanExtEntry 1}
+
+csgDot1qPvid OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgDot1qPvid
+        "
+    ::= { csgdot1qPortVlanExtEntry 2 }
+
+csgdot1qPortSwitchingMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            access(1),
+            trunk(2),
+            hybrid(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgdot1qPortSwitchingMode
+        "
+    ::= { csgdot1qPortVlanExtEntry 3 }
+
+csgdot1qPortAllowedVlans OBJECT-TYPE
+    SYNTAX      Vlanset
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgdot1qPortAllowedVlans
+        "
+    ::= { csgdot1qPortVlanExtEntry 4 }
+
+csgdot1qPortUntaggedVlans OBJECT-TYPE
+    SYNTAX      Vlanset
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        csgdot1qPortUntaggedVlans
+        "
+    ::= { csgdot1qPortVlanExtEntry 5 }
+
+
+-- begin
+
+-- CSG Series
+-- csgSeries OBJECT IDENTIFIER ::= { csg 6 }
+
+-- =======================================================================
+--
+--   Common Switch management root MIB
+-- =======================================================================
+-- CSG Switch
+-- csgSwitch OBJECT IDENTIFIER ::= { csgSeries 1 }
+
+-- =======================================================================
+--  TFTP/FTP mib
+-- =======================================================================
+
+csgfileTransfer OBJECT IDENTIFIER ::= { csgSwitch 222 }
+
+csgFileTransferServe OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Server IP address. the format is just as followed by '172.29.80.101'.
+        "
+    ::= { csgfileTransfer 1 }
+
+csgFirmwarePath OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        File path name in the firmware of server.
+        "
+    ::= { csgfileTransfer 2 }
+
+csglogPathName OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Log file path name in the server.
+        "
+    ::= { csgfileTransfer 3 }
+
+csgconfPathName OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Config file path name in the server.
+        "
+    ::= { csgfileTransfer 4 }
+
+csgFileTransferUpdate OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            importFirmware(1),
+            importConfig(2),
+            exportConfig(3),
+            exportLog(4)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        File transfer mode.
+        "
+    ::= { csgfileTransfer 5 }
+
+csgFileTransferType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            tFTP(1),
+            fTP(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        File transfer type.
+        "
+    ::= { csgfileTransfer 6 }
+
+csgUsername OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        the ftp User name.
+        "
+    ::= { csgfileTransfer 7 }
+
+csgPassword OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        the ftp Password.
+        "
+    ::= { csgfileTransfer 8 }
+
+-- begin
+
+-- csg Agent
+-- csgAgent OBJECT IDENTIFIER ::= { csg 1 }
+-- csgSyslogServer
+csgSyslogServer OBJECT IDENTIFIER ::= { csgAgent 235}
+
+csgSyslogSetting OBJECT IDENTIFIER ::= { csgSyslogServer 1 }
+
+csgLogServerOff OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            on(0),
+            off(1)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        This enable the system log.
+        "
+    ::= { csgSyslogSetting 1 }
+
+csgLogServerTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CsgLogServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "
+        The GMRP setting table.
+        "
+    ::= { csgSyslogSetting 2 }
+
+csgLogServerEntry OBJECT-TYPE
+    SYNTAX     CsgLogServerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "
+        The GMRP Setting Entry.
+        "
+    INDEX
+        {
+            csgLogServeLevel,
+            csgLogServeAddr
+        }
+    ::= { csgLogServerTable 1 }
+
+CsgLogServerEntry ::= SEQUENCE
+    {
+        csgLogServeLevel          INTEGER,
+        csgLogServeAddr           IpAddress,
+        csgLogServeAddrRowStatus  INTEGER
+    }
+
+csgLogServeLevel OBJECT-TYPE
+    SYNTAX     INTEGER
+        {
+            emerg(0),
+            alert(1),
+            critical(2),
+            error(3),
+            warning(4),
+            notice(5),
+            info(6),
+            debug(7)
+        }
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        " "
+    ::= { csgLogServerEntry 1 }
+
+csgLogServeAddr OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        " "
+    ::= { csgLogServerEntry 2 }
+
+csgLogServeAddrRowStatus OBJECT-TYPE
+    SYNTAX     INTEGER
+        {
+            active(1),
+            notInService(2),
+            notReady(3),
+            createAndGo(4),
+            createAndWait(5),
+            destroy(6)
+        }
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        " "
+    ::= { csgLogServerEntry 3 }
+
+END

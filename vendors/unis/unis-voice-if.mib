@@ -1,0 +1,201 @@
+-- ==========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The purpose of this MIB file is to provide the definition of
+--              the voice interface general configuration.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2007-12-10 Initial version, created by Qu Pingping
+-- ==========================================================================
+UNIS-VOICE-IF-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        OBJECT-TYPE, MODULE-IDENTITY, Integer32
+    FROM SNMPv2-SMI
+        DisplayString
+    FROM SNMPv2-TC
+        ifIndex
+    FROM IF-MIB
+        unisVoice
+    FROM UNIS-OID-MIB;
+
+unisVoiceInterface MODULE-IDENTITY
+    LAST-UPDATED "200712101700Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file is to provide the definition of the voice
+        interface general configuration."
+    REVISION "200712101700Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisVoice 13 }
+
+unisVoiceIfObjects OBJECT IDENTIFIER ::= { unisVoiceInterface 1 }
+
+--===========================================================================
+--                            unisVoiceIfConfigTable
+--
+--===========================================================================
+unisVoiceIfConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UNISVoiceIfConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table contains configurable parameters for both analog
+        voice interface and digital voice interface."
+    ::= { unisVoiceIfObjects 1 }
+
+unisVoiceIfConfigEntry OBJECT-TYPE
+    SYNTAX      UNISVoiceIfConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The entry of voice interface table."
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisVoiceIfConfigTable 1 }
+
+UNISVoiceIfConfigEntry ::= SEQUENCE
+    {
+        unisVoiceIfCfgCngOn                INTEGER,
+        unisVoiceIfCfgNonLinearSwitch      INTEGER,
+        unisVoiceIfCfgInputGain            Integer32,
+        unisVoiceIfCfgOutputGain           Integer32,
+        unisVoiceIfCfgEchoCancelSwitch     INTEGER,
+        unisVoiceIfCfgEchoCancelDelay      Integer32,
+        unisVoiceIfCfgTimerDialInterval    Integer32,
+        unisVoiceIfCfgTimerFirstDial       Integer32,
+        unisVoiceIfCfgPrivateline          DisplayString,
+        unisVoiceIfCfgRegTone              OCTET STRING
+    }
+
+unisVoiceIfCfgCngOn OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates whether the silence gaps should be
+        filled with background noise. It is applicable to FXO, FXS,
+        E&M subscriber lines and E1/T1 voice subscriber line."
+    DEFVAL { enable }
+    ::= { unisVoiceIfConfigEntry 1 }
+
+unisVoiceIfCfgNonLinearSwitch OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object expresses the nonlinear processing is enable
+        or disable for the voice interface. It is applicable to FXO,
+        FXS, E&M subscriber lines and E1/T1 voice subscriber line.
+        Currently, only digital voice subscriber lines can be set
+        disabled."
+    DEFVAL { enable }
+    ::= { unisVoiceIfConfigEntry 2 }
+
+unisVoiceIfCfgInputGain OBJECT-TYPE
+    SYNTAX      Integer32(-140..139)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the amount of gain added to the receiver
+        side of the voice interface. Unit is 0.1 db. It is applicable to
+        FXO, FXS, E&M subscriber lines and E1/T1 voice subscriber line."
+    DEFVAL { 0 }
+    ::= { unisVoiceIfConfigEntry 3 }
+
+unisVoiceIfCfgOutputGain OBJECT-TYPE
+    SYNTAX      Integer32(-140..139)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the amount of gain added to the send side
+        of the voice interface. Unit is 0.1 db. It is applicable to FXO,
+        FXS, E&M subscriber lines and E1/T1 voice subscriber line."
+    DEFVAL { 0 }
+    ::= { unisVoiceIfConfigEntry 4 }
+
+unisVoiceIfCfgEchoCancelSwitch OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates whether the echo cancellation is enabled.
+        It is applicable to FXO, FXS, E&M subscriber lines and E1/T1 voice
+        subscriber line."
+    DEFVAL { enable }
+    ::= { unisVoiceIfConfigEntry 5 }
+
+unisVoiceIfCfgEchoCancelDelay OBJECT-TYPE
+    SYNTAX      Integer32(0..64)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the delay of the echo cancellation for
+        the voice interface. This value couldn't be modified unless
+        unisVoiceIfCfgEchoCancelSwitch is enable. Unit is milliseconds.
+        It is applicable to FXO, FXS, E&M subscriber lines and E1/T1
+        voice subscriber line. The default value of this object is 32."
+    ::= { unisVoiceIfConfigEntry 6 }
+
+unisVoiceIfCfgTimerDialInterval OBJECT-TYPE
+    SYNTAX      Integer32(1..300)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The interval, in seconds, between two dialing numbers.
+        The default value of this object is 10 seconds. It is
+        applicable to FXO, FXS, E&M subscriber lines and E1/T1 with
+        loop-start or ground-start protocol voice subscriber line."
+    ::= { unisVoiceIfConfigEntry 7 }
+
+unisVoiceIfCfgTimerFirstDial OBJECT-TYPE
+    SYNTAX      Integer32(1..300)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The period of time, in seconds, before dialing the first
+        number. The default value of this object is 10 seconds. It
+        is applicable to FXO, FXS subscriber lines and E1/T1 with
+        loop-start or ground-start protocol voice subscriber line."
+    ::= { unisVoiceIfConfigEntry 8 }
+
+unisVoiceIfCfgPrivateline OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..31))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the E.164 phone number for plar mode.
+        It is applicable to FXO, FXS, E&M subscriber lines and E1/T1
+        voice subscriber line."
+    ::= { unisVoiceIfConfigEntry 9 }
+
+unisVoiceIfCfgRegTone OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0|2..3))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object uses 2 or 3 letter country code specify voice
+        parameters of different countrys. This value will take effect
+        on all voice interfaces of all cards on the device."
+    ::= { unisVoiceIfConfigEntry 10 }
+
+END

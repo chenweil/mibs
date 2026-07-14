@@ -1,0 +1,1606 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Power over ethernet extend MIB
+-- Reference: POWER-ETHERNET-MIB
+-- Version: V1.7
+-- History:
+--   V1.0 2004-07-24 Created by Gaolong
+--   V1.1 2004-09-08 Update file by Gaolong for some syntax errors.
+--   V1.2 2004-11-19 Update file by liuhongxu for poe need.
+--                   add unisMainPsePriorityMode¡¢unisPsePowerMaxValue¡¢
+--                   unispsePDChangNotification adjust the objects' sequence of
+--                   unisPsePortTable and unisMainPseTable add the description
+--                   of MANDATORY-GROUPS in unisPseCompliance.
+--   V1.3 2004-12-16 Update file by liuhongxu for poe profile
+--                   add unisPsePortProfile, unisPseProfilesTable
+--                   change the name of unisPseProfileIndex add
+--                   unisPseProfileApplyNum.  adjust the format of this mib.
+--   V1.4 2005-03-29 Update file by Wangzhaoyan for poe pow need.
+--                   add unisPOEPowerObjects, unisPOEThresholdLimitObjs,
+--                   unisPOESupModuleInfoObjs, unisPOEDCOutStateObjects,
+--                   unisPOEDCDCOutInfoObjects, unisPOEACSwitchStateModuleObjs,
+--                   unisPOEInCurStateObjects, unisPOEAlarmStateObjects and the
+--                   sub-nodes.  add 17 traps change the node name from
+--                   unispsePDChangNotification to unispsePDChangeNotification
+--                   change some detail as the suggestion from Wangyingxia and
+--                   Yangyang.  adjust the format of this mib.
+--   V1.5 2005-11-21 Update file by Liweizhen for controling the power-management
+--                   policy of PSE or PD.  Add unisPsePolicyMode, unisPDPolicyMode,
+--                   unisMainPsePowerPriority.
+--                   Delete some description of unisPsePortProfileIndex node.
+--                   Change the description of unisPseProfilePowerMode node.
+--                   Change SYNTAX OCTET STRING range for the following nodes:
+--                   unisPOEPowerType, unisPOESupervisionModuleName,
+--                   unisPOESMFactorName, unisPOEModuleHardVerInfo.
+--                   Adjust the format of this mib.
+--   V1.6 2015-07-21 Update file by Fangliwen for profile power limit.
+--                   Change the syntax of unisPseProfilePowerLimit node.
+--   V1.7 2019-5-23  Update file for PoE-AI. Add the following nodes:
+--                   unisPsePDDisableNotification,unisPsePortGroupIndex,
+--                   unisPsePortIndex and unisPsePortDisableInfo.
+-- =================================================================
+UNIS-POWER-ETH-EXT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+      unisCommon
+              FROM UNIS-OID-MIB
+      pethPsePortGroupIndex, pethPsePortIndex,
+      pethMainPseGroupIndex, pethPsePortDetectionStatus
+              FROM POWER-ETHERNET-MIB
+      OBJECT-GROUP, MODULE-COMPLIANCE, NOTIFICATION-GROUP
+              FROM SNMPv2-CONF
+      Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+              FROM SNMPv2-SMI
+      DisplayString, RowStatus, TEXTUAL-CONVENTION
+              FROM SNMPv2-TC;
+
+
+unisPowerEthernetExt MODULE-IDENTITY
+      LAST-UPDATED "201905230000Z"      -- May 23, 2019 at 00:00 GMT
+
+      ORGANIZATION
+          "Unisyue Technologies Co., Ltd."
+      CONTACT-INFO
+          ""
+      DESCRIPTION
+              "Description."
+      REVISION "201905230000Z"
+      DESCRIPTION
+          "Add the following nodes:
+          unisPsePDDisableNotification,unisPsePortGroupIndex,
+          unisPsePortIndex and unisPsePortDisableInfo."
+      REVISION      "201507250000Z"
+      DESCRIPTION
+          "The initial version of this MIB module."
+          ::= { unisCommon 14 }
+
+
+--
+-- Node definitions
+--
+
+unisPsePortTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF UnisPsePortEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The indexing scheme is taken form that used by
+             the IETF Power MIB.  The same indexing scheme is
+             used to give continuity in behaviour between
+             that standard and this extensions definitioin."
+      ::= { unisPowerEthernetExt 1 }
+
+
+unisPsePortEntry OBJECT-TYPE
+      SYNTAX UnisPsePortEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The pethPsePortGroupIndex is imported from the IETF Power MIB
+             and uniquely identifies the group containing the port to which
+             power ethernet PSE is connected.  Group means (box in the stack,
+             module in a rack).
+
+             The pethPsePortPowerIndex is imported from the IETF Power MIB
+             and uniquely identifies the power ethernet PSE port within group
+             pethPseGroupIndex to which the power Ethernet PSE entry is
+             connected.  This value will match the local port number on a
+             switch."
+      INDEX { pethPsePortGroupIndex, pethPsePortIndex }
+      ::= { unisPsePortTable 1 }
+
+
+UnisPsePortEntry ::=
+      SEQUENCE {
+              unisPsePortFaultDescription
+                      DisplayString,
+              unisPsePortPeakPower
+                      Integer32,
+              unisPsePortAveragePower
+                      Integer32,
+              unisPsePortCurrentPower
+                      Integer32,
+              unisPsePortPowerLimit
+                      Integer32,
+              unisPsePortProfileIndex
+                      Integer32
+      }
+
+unisPsePortFaultDescription OBJECT-TYPE
+      SYNTAX DisplayString
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "The object supports the fault category of the IETF Power MIB [1]
+             pethPsePortDetectionStatus object.  A textual description
+             containing more information about the nature of this fault is
+             provided by this object.  Typically this will detail the precise
+             PoE hardware state which is causing the pethPsePortDetectionStatus
+             object to be in the 'fault' state.
+             It is a DisplayString of up to 255 characters."
+      ::= { unisPsePortEntry 2 }
+
+
+unisPsePortPeakPower OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "The object specifies the peak power which has been consumed by
+             the port.  It is defined as the highest measured value of power
+             in milliWatts that has been consumed by the port.  Its value
+             is only reset when link is lost, the port is PoE disabled or
+             when it is manually reset by the user asspecified below.
+             It is a read/write integer value with units of milliWatts.
+             Writing a value of zero to this object resets its value
+             to zero.  Writing any other value to this object has no
+             effect on its value and an error is returned."
+      ::= { unisPsePortEntry 3 }
+
+
+unisPsePortAveragePower OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "The object specifies the average power which has been consumed
+             by the port.  This object is a read/write integer value with
+             units of milliWatts.  Writing a value of zero to this object
+             resets its value to zero.  Writing any other value to this
+             object has no effect on its value and an error is returned."
+      ::= { unisPsePortEntry 4 }
+
+
+unisPsePortCurrentPower OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+              "The object specifies the power currently being consumed by the port.
+              It is a read only integer value with units of milliWatts."
+      ::= { unisPsePortEntry 5 }
+
+
+unisPsePortPowerLimit OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+              "The object specifies the power limit set for this port.
+              The PSE will not supply more than this level of power to the
+              specified port.
+              It is a read/write integer value with units of milliWatts."
+      ::= { unisPsePortEntry 6 }
+
+unisPsePortProfileIndex OBJECT-TYPE
+      SYNTAX Integer32 (0..100)
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Indicates the power profile which is currently associated
+             with this port.  This object references the corresponding
+             unisPseProfileIndex object in the power profiles table.  A
+             value of zero is a special case and indicates that no
+             power profile is currently associated with this port.  When
+             unisPseProfileIndex is set to an index of existent profile,
+             pethPsePortPowerPairs, pethPsePortPowerPriority,
+             pethPsePortAdminEnable and unisPsePortPowerLimit will be
+             set to the same as corresponding value.  PethPsePortPowerPairs,
+             pethPsePortPowerPriority and pethPsePortAdminEnable are objects
+             of rfc3621-Power-Ethernet.mib."
+      ::= { unisPsePortEntry 7 }
+
+
+unisMainPseTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF UnisMainPseEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+              "Description."
+      ::= { unisPowerEthernetExt 2 }
+
+
+unisMainPseEntry OBJECT-TYPE
+      SYNTAX UnisMainPseEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The pethMainPseGroupIndex is imported from the IETF Power MIB
+             and uniquely identifies the group containing the port to which
+             power ethernet PSE is connected.  Group means (box in the stack,
+             module in a rack) and the value 1 MUST be used for non-modular
+             devices."
+      INDEX { pethMainPseGroupIndex }
+      ::= { unisMainPseTable 1 }
+
+
+UnisMainPseEntry ::=
+      SEQUENCE {
+              unisMainPsePowerLimit
+                         Integer32,
+              unisMainPseAveragePower
+                         Integer32,
+              unisMainPsePeakPower
+                         Integer32,
+              unisMainGuaranteedPowerRemaining
+                         Integer32,
+              unisMainPsePriorityMode
+                         INTEGER,
+              unisMainPseLegacy
+                         INTEGER,
+              unisMainPsePowerPriority
+                         INTEGER
+              }
+
+unisMainPsePowerLimit OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "The object specifies the power limit set for the unit as a whole.
+             The PoE unit will already have a nominal power defined by the
+             IETF Power MIB [1] pethMainPsePower object.  This OPTIONAL object
+             specifies a further limit to this nominal power value.  This may
+             be useful to control the thermals of the unit, or for internal
+             testing purposes.  One possible use for this object may be to lower
+             the power consumption of the unit if one or more of the internal
+             fans have broken.  It is a read/write integer value with units of
+             Watts (note - Watts is chosen instead of milliWatts here since
+             the IETF Power MIB [1] measures unit based parameters, such as
+             the pethMainPsePower object, in units of Watts)."
+      ::= { unisMainPseEntry 1 }
+
+
+unisMainPseAveragePower OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "The object specifies the average power which has been consumed
+             by the port.  It is a read/write integer value with units of
+             Watts (note - Watts is chosen instead of milliWatts here since
+             the IETF Power MIB [1] measures unit based parameters, such as
+             the pethMainPsePower object, in units of Watts).  Writing a value
+             of zero to this object resets its value to zero.  Writing any
+             other value to this object has no effect on its value and an error
+             is returned."
+      ::= { unisMainPseEntry 2 }
+
+
+unisMainPsePeakPower OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "The object specifies the peak power which has been consumed for PoE.
+             It is defined as the highest measured value of power in milliWatts
+             that has been consumed at any one point in time by the sum of the PoE
+             ports.  Its value is only reset when the unit is powered on or when
+             it is manually reset by the user as specifiedbelow.  It is a read/write
+             integer value with units of Watts (note - Watts is chosen instead of
+             milliWatts here since the IETF Power MIB [1] measures unit based
+             parameters, such as the pethMainPsePower object, in units of Watts).
+             Writing a value of zero to this object resets its value to zero.
+             Writing any other value to this object has noeffect on its value
+             and an error is returned."
+      ::= { unisMainPseEntry 3 }
+
+
+unisMainGuaranteedPowerRemaining OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The object specifies the amount of power remaining in the guaranteed
+             power pool.  Each time a port is placed into guaranteed mode it
+             reserves a set amount of power out of the total guaranteed power
+             pool for the system.  This intention of this object is to give the
+             client of this MIB (whether that be the CLI or the Web interface or
+             the end user) an indication of how many ports can still be placed
+             into guaranteed mode.  It is a read only integer value with units of
+             Watts(note - Watts is chosen instead of milliWatts here since the
+             IETF Power MIB [1] measures unit based parameters,such as the
+             pethMainPsePower object, in units of Watts)."
+      ::= { unisMainPseEntry 4 }
+
+
+unisMainPsePriorityMode OBJECT-TYPE
+      SYNTAX INTEGER   {
+              disconnection(0),
+              non-disconnection(1)
+              }
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Describes or controls the priority mode on slot which must be
+             enabled firstly.  When a new board is inserted, and the power is
+             over-load, a value of disconnection(0) means that the power will
+             stop supply to the low priority slot ; A value of non-disconnection(1)
+             means that the slot still supply when a new board is inserted, and
+             the power is over-load too."
+      ::= { unisMainPseEntry 5 }
+
+unisMainPseLegacy OBJECT-TYPE
+      SYNTAX INTEGER   {
+             enable(0),
+             disable(1)
+              }
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Describes or controls the legacy mode on slot which must be enabled
+             firstly.  Legacy mode: standard or nonstandard PD detection mode."
+      ::= { unisMainPseEntry 6 }
+
+unisMainPsePowerPriority OBJECT-TYPE
+      SYNTAX INTEGER   {
+             critical(1),
+             high(2),
+             low(3)
+              }
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Describes or controls the priority of the PSE.  The priority
+             will be used by the PSE policy to prevent from power overloading.
+             If the priority of PSE is set to critical, the PSE will turn into
+             guaranteed mode.  The priority could be used by a control mechanism
+             that prevents power overloading by disconnecting PSEs with lower
+             power priority.  PSEs that connect devices critical to the
+             application should be set to higher priority."
+      ::= { unisMainPseEntry 7 }
+
+-- Power Profile PSE table
+unisPseProfilesTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF UnisPseProfilesEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "A table of objects representing a set of power profiles.
+             Power profiles can be applied to PoE ports, which have the
+             effect of automatically setting the priority, power limit
+             and PoE enable MIB objects to the values specified in the
+             power profile."
+      ::= { unisPowerEthernetExt 7 }
+
+unisPseProfilesEntry OBJECT-TYPE
+      SYNTAX UnisPseProfilesEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "A set of objects that display and control the Main power of a PSE."
+      INDEX    { unisPseProfileIndex }
+      ::= { unisPseProfilesTable 1 }
+
+UnisPseProfilesEntry ::= SEQUENCE {
+             unisPseProfileIndex     Integer32,
+             unisPseProfileName      DisplayString,
+             unisPseProfilePowerMode      INTEGER,
+             unisPseProfilePowerLimit     Integer32,
+             unisPseProfilePriority       INTEGER,
+             unisPseProfilePairs          INTEGER,
+             unisPseProfileApplyNum       Integer32,
+             unisPseProfileRowStatus      RowStatus
+                }
+
+unisPseProfileIndex OBJECT-TYPE
+      SYNTAX Integer32 (1..100)
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The index of the profile.  This uniquely allow the profile to be
+             identified."
+      ::= { unisPseProfilesEntry 1 }
+
+unisPseProfileName OBJECT-TYPE
+      SYNTAX DisplayString (SIZE(1..15))
+      MAX-ACCESS read-create
+      STATUS current
+      DESCRIPTION
+            "Assigns the profile a name with which the settings
+            can be assiciated with.  For example, 'NBX Phone'."
+      ::= { unisPseProfilesEntry 2 }
+
+unisPseProfilePowerMode OBJECT-TYPE
+      SYNTAX INTEGER {
+                powerDisabled (1),
+                powerEnabled (2)
+               }
+      MAX-ACCESS read-create
+      STATUS current
+      DESCRIPTION
+             "The power mode associated with this power profile.  There
+             are two possible power modes as follows: powerDisabled,
+             powerEnabled.  When a power profile is applied to a PSE port,
+             this value dictates the settings of the ports pethPsePortPowerPriority
+             and pethPsePortAdminEnable objects."
+      ::= { unisPseProfilesEntry 3 }
+
+unisPseProfilePowerLimit OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-create
+      STATUS current
+      DESCRIPTION
+             "The power limit to be applied to the ports unisPsePortPowerLimit
+              object when the profile is applied to the PSE port.  Expressed in
+              milliWatts."
+      ::= { unisPseProfilesEntry 4 }
+
+unisPseProfilePriority OBJECT-TYPE
+      SYNTAX INTEGER   {
+                critical(1),
+                high(2),
+                low(3)
+               }
+      MAX-ACCESS read-create
+      STATUS current
+      DESCRIPTION
+             "This object controls the priority of the port from the point of
+             view of a power management algorithm.  The priority that is set
+             by this variable could be used by a control mechanism that
+             prevents over current situations by disconnecting first ports
+             with lower power priority.  Ports that connect devices critical
+             to the operation of the network - like the E911 telephones
+             ports - should be set to higher priority."
+      ::= { unisPseProfilesEntry 5 }
+
+unisPseProfilePairs OBJECT-TYPE
+      SYNTAX INTEGER   {
+                signal(1),
+                spare(2)
+                }
+      MAX-ACCESS read-create
+      STATUS current
+      DESCRIPTION
+             "Describes or controls the pairs in use.  If the value of
+             pethPsePortPowerPairsControl is true, this object is writable.
+             A value of signal(1) means that the signal pairs only are in use.
+             A value of spare(2) means that the spare pairs only are in use."
+      REFERENCE
+             "IEEE Std 802.3af Section 30.9.1.1.4 aPSEPowerPairs"
+      ::= { unisPseProfilesEntry 6 }
+
+unisPseProfileApplyNum OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The number of this profile which has been applied.
+             If unisPseProfileApplyNum is not zero, user can't
+             change the current line."
+      ::= { unisPseProfilesEntry 7 }
+
+unisPseProfileRowStatus OBJECT-TYPE
+      SYNTAX RowStatus
+      MAX-ACCESS read-create
+      STATUS current
+      DESCRIPTION
+             "The status of this classifier.
+             If unisPseProfileApplyNum is not zero, user can't
+             delete the current line."
+      ::= { unisPseProfilesEntry 8 }
+
+unisPseAutoDetectActive OBJECT-TYPE
+      SYNTAX INTEGER
+                {
+                notSupported(1),
+                disabled(2),
+                enabled(3)
+                }
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "The object specifies whether the device auto-detection feature is
+             active.  If this object is set to Active, and a known powered device
+             is detected, then the port will automatically switch to Auto-Guaranteed
+             mode.  This is a stackwide object (ie. it is not referenced by
+             group index)."
+      ::= { unisPowerEthernetExt 3 }
+
+unisPsePowerMaxValue OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "The object specifies the max poe power for lanswitch.
+             The value should between the power currently and the max power."
+      ::= { unisPowerEthernetExt 5 }
+
+unisPsePolicyMode OBJECT-TYPE
+      SYNTAX INTEGER
+              {
+              disabled(1),
+              priority(2)
+              }
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "The PSE policy only applies to the situation that when a new
+             board (PSE) is inserted, and the power is overload.
+             A value of priority(2) means that the power will stop supplying
+             to the low priority PSE.  About PSE priority, please refer to
+             unisMainPsePowerPriority.  A value of disabled(1) means that the
+             power will stop supplying to the new inserted PSE.  The default
+             value of this object is disabled(1)."
+      ::= { unisPowerEthernetExt 9 }
+
+unisPDPolicyMode OBJECT-TYPE
+      SYNTAX INTEGER
+              {
+              disabled(1),
+              priority(2)
+              }
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "The PD policy only applies to the situation that when a new
+             PD is inserted, and the power of PSE is overload.
+             A value of priority(2) means that the power will stop supplying
+             to the low priority port PD.  About port priority, please refer
+             to pethPsePortPowerPriority.  A value of disabled(1) means that
+             the slot stop supplying to the new inserted PD.  The default
+             value of this object is disabled(1)."
+      ::= { unisPowerEthernetExt 10 }
+
+unispseportNotification  OBJECT IDENTIFIER ::= { unisPowerEthernetExt 6 }
+
+-- Notification  Control  Objects
+
+unispsePDChangeNotification NOTIFICATION-TYPE
+      OBJECTS { pethPsePortDetectionStatus }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates if PD has been inserted or pulled out."
+      ::= { unispseportNotification 1 }
+
+unisPOEDisconnectNotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOEAlarmModuleInfoIndex, unisPOEModuleDisconnect }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the POE power module does not disconnect."
+      ::= { unispseportNotification 2 }
+
+unisPOEInputErrorNotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOEAlarmModuleInfoIndex, unisPOEModuleInputError }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the POE power module input error."
+      ::= { unispseportNotification 3 }
+
+unisPOEOutputErrorNotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOEAlarmModuleInfoIndex, unisPOEModuleOutputError }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the POE power module output error."
+      ::= { unispseportNotification 4 }
+
+unisPOEOverVoltageNotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOEAlarmModuleInfoIndex, unisPOEModuleOverVoltage }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the POE power module overruns the
+             voltage limit."
+      ::= { unispseportNotification 5 }
+
+unisPOEOverTempNotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOEAlarmModuleInfoIndex, unisPOEModuleOverTemp }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the POE power module overruns the
+             temperature limit."
+      ::= { unispseportNotification 6 }
+
+unisPOEFanErrorNotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOEAlarmModuleInfoIndex, unisPOEModuleFanError }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the POE power module fan error."
+      ::= { unispseportNotification 7 }
+
+unisPOEModuleShutdownNotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOEAlarmModuleInfoIndex, unisPOEModuleShutdown }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the POE power module is closed."
+      ::= { unispseportNotification 8 }
+
+unisPOECurRestrictedNotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOEAlarmModuleInfoIndex, unisPOEModuleCurRestricted }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the POE power module current is restricted."
+      ::= { unispseportNotification 9 }
+
+unisPOEACSwitchNotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOEACSwitchStateIndex, unisPOEACSwitchState }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the AC input switch alarm of this POE power."
+      ::= { unispseportNotification 10 }
+
+unisPOEACInCurANotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOEInCurAState }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the AC input current A alarm state of
+             this POE power."
+      ::= { unispseportNotification 11 }
+
+unisPOEACInCurBNotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOEInCurBState }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the AC input current B alarm state of
+             this POE power."
+      ::= { unispseportNotification 12 }
+
+unisPOEACInCurCNotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOEInCurCState }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the AC input current C alarm state of
+             this POE power."
+      ::= { unispseportNotification 13 }
+
+unisPOEACSwitchVolABNotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOESwitchStateVolExIndex, unisPOESwitchStateInVolAB}
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the AC input voltage AB alarm state of
+             this POE power."
+      ::= { unispseportNotification 14 }
+
+unisPOEACSwitchVolBCNotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOESwitchStateVolExIndex, unisPOESwitchStateInVolBC}
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the AC input voltage BC alarm state of
+             this POE power."
+      ::= { unispseportNotification 15 }
+
+unisPOEACSwitchVolCANotification  NOTIFICATION-TYPE
+      OBJECTS { unisPOESwitchStateVolExIndex, unisPOESwitchStateInVolCA }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the AC input voltage CA alarm state of
+             this POE power."
+      ::= { unispseportNotification 16 }
+
+unisPOEDCOutVolNotification NOTIFICATION-TYPE
+      OBJECTS { unisPOEDCOutStateIndex, unisPOEDCOutDCVolAlarm }
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the DC output alarm of this POE power."
+      ::= { unispseportNotification 17 }
+
+unisPOEShutdownNotification NOTIFICATION-TYPE
+      STATUS current
+      DESCRIPTION
+             "This notification indicates the whole POE power has been shutdown."
+      ::= { unispseportNotification 18 }
+unisPseComformance OBJECT IDENTIFIER ::= { unisPowerEthernetExt 4 }
+
+unisPseCompliances OBJECT IDENTIFIER ::= { unisPseComformance 1 }
+
+unisPseCompliance MODULE-COMPLIANCE
+      STATUS current
+      DESCRIPTION
+             "Description."
+      MODULE  -- this module
+      MANDATORY-GROUPS {    unisPsePortGroup,
+                            unisMainPseGroup,
+                            unisPseScalarGroup,
+                            unisPsePDNotificationGroup
+                       }
+      GROUP unisPseProfilesGroup
+      DESCRIPTION
+             "This group is mandatory only for executing POE commands as a batch."
+      ::= { unisPseCompliances 1 }
+
+unisPseGroup OBJECT IDENTIFIER ::= { unisPseComformance 2 }
+
+unisPsePortGroup OBJECT-GROUP
+      OBJECTS { unisPsePortProfileIndex, unisPsePortPowerLimit, unisPsePortCurrentPower,
+                unisPsePortAveragePower, unisPsePortPeakPower, unisPsePortFaultDescription,
+                unisMainPsePriorityMode
+              }
+      STATUS current
+      DESCRIPTION
+             "A collection of objects should be supported at the same time."
+      ::= { unisPseGroup 1 }
+
+unisMainPseGroup OBJECT-GROUP
+      OBJECTS { unisMainPsePowerLimit, unisMainPseAveragePower, unisMainPsePeakPower,
+                unisMainGuaranteedPowerRemaining }
+      STATUS current
+      DESCRIPTION
+             "A collection of objects should be supported at the same time."
+      ::= { unisPseGroup 2 }
+
+unisPseScalarGroup OBJECT-GROUP
+      OBJECTS { unisPseAutoDetectActive, unisPsePowerMaxValue, unisPsePolicyMode ,
+                unisPDPolicyMode }
+      STATUS current
+      DESCRIPTION
+             "A collection of scalar objects supported."
+      ::= { unisPseGroup 3 }
+
+unisPsePDNotificationGroup NOTIFICATION-GROUP
+      NOTIFICATIONS { unispsePDChangeNotification }
+      STATUS current
+      DESCRIPTION
+             "PD Change Notification."
+      ::= { unisPseGroup 4 }
+
+unisPseProfilesGroup OBJECT-GROUP
+      OBJECTS { unisPseProfileName, unisPseProfilePowerMode,
+                unisPseProfilePowerLimit, unisPseProfilePriority,
+                unisPseProfilePairs, unisPseProfileApplyNum, unisPseProfileRowStatus}
+      STATUS current
+      DESCRIPTION
+             "A collection of objects should be supported at the same time."
+      ::= { unisPseGroup 5 }
+
+unisPOEPowerThresholdLimitGroup OBJECT-GROUP
+      OBJECTS { unisPOEThresholdACMimimum, unisPOEThresholdACMaximum,
+                unisPOEThresholdDCMinimum, unisPOEThresholdDCMaximum }
+      STATUS current
+      DESCRIPTION
+             "Power threshold limits group."
+      ::= { unisPseGroup 6 }
+
+unisPOEPowerSupInfoGroup OBJECT-GROUP
+      OBJECTS { unisPOEPowerType, unisPOEPowerModuleNum, unisPOESupervisionModuleName,
+                unisPOESMMajorVersion, unisPOESMMinorVersion, unisPOESMFactorName}
+      STATUS current
+      DESCRIPTION
+             "The basic Power information group."
+      ::= { unisPseGroup 7 }
+
+unisPOEPowerDCOutStateGroup OBJECT-GROUP
+      OBJECTS { unisPOEDCOutStateModuleNum }
+      STATUS current
+      DESCRIPTION
+             "The DC out power state group."
+      ::= { unisPseGroup 8 }
+
+unisPOEPowerDCOutInfoGroup OBJECT-GROUP
+      OBJECTS { unisPOEDCOutCurNum }
+      STATUS current
+      DESCRIPTION
+             "The power AC input switch information group"
+      ::= { unisPseGroup 9 }
+
+unisPOEPowerACSwitchStateModuleGroup OBJECT-GROUP
+      OBJECTS { unisPOEACSwitchStateModuleNum}
+      STATUS current
+      DESCRIPTION
+             "PD Change Notification."
+      ::= { unisPseGroup 10 }
+
+unisPOEPowerInCurStateGroup OBJECT-GROUP
+      OBJECTS { unisPOEInCurStateModuleNum, unisPOEInCurAState, unisPOEInCurBState,
+                unisPOEInCurCState}
+      STATUS current
+      DESCRIPTION
+             "PD Change Notification."
+      ::= { unisPseGroup 11 }
+
+unisPOEPowerAlarmStateGroup OBJECT-GROUP
+      OBJECTS { unisPOEAlarmStateModuleNum }
+      STATUS current
+      DESCRIPTION
+              "PD Change Notification."
+      ::= { unisPseGroup 12 }
+
+ACAlarmState ::= TEXTUAL-CONVENTION
+      STATUS current
+      DESCRIPTION
+           "AC Alarm State."
+      SYNTAX INTEGER{
+                normal     (1),
+                underLimit (2),
+                aboveLimit (3),
+                lackPhrase (4),
+                fuseBroken (5),
+                switchOff  (6),
+                otherError (7)
+                   }
+
+DCAlarmState ::= TEXTUAL-CONVENTION
+     STATUS current
+     DESCRIPTION
+         "DC Alarm State."
+     SYNTAX INTEGER{
+                normal     (1),
+                underLimit (2),
+                aboveLimit (3),
+                fuseBroken (4),
+                switchOff  (5),
+                otherError (6)
+                   }
+
+SwitchState ::= TEXTUAL-CONVENTION
+     STATUS current
+     DESCRIPTION
+        "Switch State."
+SYNTAX INTEGER   {
+               on            (1),
+               off           (2),
+               highVoltInput (3),
+               lowVoltInput  (4)
+                  }
+
+ModuleAlarmState ::= TEXTUAL-CONVENTION
+   STATUS current
+   DESCRIPTION
+      "Module Alarm State."
+   SYNTAX INTEGER   {
+                    normal (1),
+                    alarm  (2)
+                      }
+
+unisPOEPowerObjects OBJECT IDENTIFIER ::= { unisPowerEthernetExt 8 }
+
+unisPOEThresholdLimitObjs OBJECT IDENTIFIER ::= { unisPOEPowerObjects 1 }
+
+unisPOEThresholdACMimimum OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..10))
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Input threshold AC minimum.
+             It is a read-write node.
+             The value of this node is 'OCTET STRING',
+             it is used to describe a float value.
+             So this string should fit the following rule:
+             1. This string should be terminated by '\0';
+             2. Every characters should be number or radix point;
+             3. The radix point should occur only once, and it should not
+             be the first or the last character of the string.
+             The value of this node should be smaller than 264.0V and larger than 90.0V.
+             And it should be smaller than the unisPOEThresholdACMaximum."
+      ::= { unisPOEThresholdLimitObjs 1 }
+
+unisPOEThresholdACMaximum OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..10))
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Input threshold AC maximum.
+             It is a read-write node.
+             The value of this node is 'OCTET STRING',
+             it is used to describe a float value.
+             So this string should fit the following rule:
+             1. This string should be terminated by '\0';
+             2. Every characters should be number or radix point;
+             3. The radix point should occur only once, and it should not
+             be the first or the last character of the string.
+             It should be smaller than 264.0V and larger than 90.0V.
+             And it should be larger than the unisPOEThresholdACMinimum."
+      ::= { unisPOEThresholdLimitObjs 2 }
+
+unisPOEThresholdDCMinimum OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..10))
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Input threshold DC minimum.
+             It is a read-write node.
+             The value of this node is 'OCTET STRING',
+             it is used to describe a float value.
+             So this string should fit the following rule:
+             1. This string should be terminated by '\0';
+             2. Every characters should be number or radix point;
+             3. The radix point should occur only once, and it should not
+             be the first or the last character of the string.
+             It should be smaller than 47.0V and larger than 45.0V."
+      ::= { unisPOEThresholdLimitObjs 3 }
+
+unisPOEThresholdDCMaximum OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..10))
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Input threshold DC maximum.
+             It is a read-write node.
+             The value of this node is 'OCTET STRING',
+             it is used to describe a float value.
+             So this string should fit the following rule:
+             1. This string should be terminated by '\0';
+             2. Every characters should be number or radix point;
+             3. The radix point should occur only once, and it should not
+             be the first or the last character of the string.
+             It should be smaller than 57.0V and larger than 55.0V."
+      ::= { unisPOEThresholdLimitObjs 4 }
+
+unisPOESupModuleInfoObjs OBJECT IDENTIFIER ::= { unisPOEPowerObjects 2 }
+
+unisPOEPowerType OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..127))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The type of the power."
+      ::= { unisPOESupModuleInfoObjs 1 }
+
+unisPOEPowerModuleNum OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The number of the power modules."
+      ::= { unisPOESupModuleInfoObjs 2 }
+
+unisPOESupervisionModuleName OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..127))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The object specifies the Supervision Module name on this POE power."
+      ::= { unisPOESupModuleInfoObjs 3 }
+
+unisPOESMMajorVersion OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The object specifies the high byte of the monitor module version."
+      ::= { unisPOESupModuleInfoObjs 4 }
+
+unisPOESMMinorVersion OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The object specifies the low byte of the monitor module version."
+      ::= { unisPOESupModuleInfoObjs 5 }
+
+unisPOESMFactorName OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..127))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The object specifies the name of the manufactor."
+      ::= { unisPOESupModuleInfoObjs 6 }
+
+unisPOEModuleInfoTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF UnisPOEModuleInfoEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The table of the module information on this POE power."
+      ::= { unisPOESupModuleInfoObjs 7 }
+
+unisPOEModuleInfoEntry OBJECT-TYPE
+      SYNTAX UnisPOEModuleInfoEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The entry of the module information on this POE power."
+      INDEX { unisPOEModuleIndex }
+      ::= { unisPOEModuleInfoTable 1 }
+
+UnisPOEModuleInfoEntry ::=
+      SEQUENCE {
+                 unisPOEModuleIndex
+                         Integer32,
+                 unisPOEModuleID
+                         Integer32,
+                 unisPOEModuleInfoPower
+                         Integer32,
+                 unisPOEModuleHardVerInfo
+                         OCTET STRING
+                }
+
+unisPOEModuleIndex OBJECT-TYPE
+      SYNTAX Integer32 (1..2147483647)
+      MAX-ACCESS accessible-for-notify
+      STATUS current
+      DESCRIPTION
+             "The index of the current module on this POE power.
+             It is also the index of unisPOEModuleInfoTable.
+             The range of this node is from 1 to unisPOEPowerModuleNum."
+      ::= { unisPOEModuleInfoEntry 1 }
+
+unisPOEModuleID OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The ID of the current module on this POE power."
+      ::= { unisPOEModuleInfoEntry 2 }
+
+unisPOEModuleInfoPower OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The power of the current module on this POE power."
+      ::= { unisPOEModuleInfoEntry 3 }
+
+unisPOEModuleHardVerInfo OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..127))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The hardware version information of the current module on this POE power."
+      ::= { unisPOEModuleInfoEntry 4 }
+
+unisPOEDCOutStateObjects OBJECT IDENTIFIER ::= { unisPOEPowerObjects 3 }
+
+unisPOEDCOutStateModuleNum OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The module number on this POE power.
+             It is the maximum of the unisPOEDCOutStateIndex."
+      ::= { unisPOEDCOutStateObjects 1 }
+
+unisPOEDCOutStateTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF UnisPOEDCOutStateEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The table of DC output power state on this POE power."
+      ::= { unisPOEDCOutStateObjects 2 }
+
+unisPOEDCOutStateEntry OBJECT-TYPE
+      SYNTAX UnisPOEDCOutStateEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The entry of the DC output power state on this POE power."
+      INDEX { unisPOEDCOutStateIndex }
+      ::= { unisPOEDCOutStateTable 1 }
+
+      UnisPOEDCOutStateEntry ::=
+              SEQUENCE {
+                       unisPOEDCOutStateIndex
+                               Integer32,
+                       unisPOEDCOutDCVolAlarm
+                               DCAlarmState
+                    }
+
+unisPOEDCOutStateIndex OBJECT-TYPE
+      SYNTAX Integer32 (1..2147483647)
+      MAX-ACCESS accessible-for-notify
+      STATUS current
+      DESCRIPTION
+             "The index of the DC output power state on this POE power.
+             The range of this node is from 1 to unisPOEDCOutStateModuleNum."
+      ::= { unisPOEDCOutStateEntry 1 }
+
+unisPOEDCOutDCVolAlarm OBJECT-TYPE
+      SYNTAX DCAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The DC output alarm of the DC output power state on this POE power.
+             The value of this node will be the following values:
+                                 normal     (1),
+                                 underLimit (2),
+                                 aboveLimit (3),
+                                 fuseBroken (4),
+                                 switchOff  (5),
+                                 otherError (6)."
+      ::= { unisPOEDCOutStateEntry 2 }
+
+unisPOEDCOutInfoObjects OBJECT IDENTIFIER ::= { unisPOEPowerObjects 4 }
+
+unisPOEDCOutCurNum OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The number of DC output current on this POE power.
+             It is the maximum of unisPOEDCOutInfoIndex."
+      ::= { unisPOEDCOutInfoObjects 1 }
+
+unisPOEDCOutInfoTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF UnisPOEDCOutInfoEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The table of the DC output information on this POE power."
+      ::= { unisPOEDCOutInfoObjects 2 }
+
+unisPOEDCOutInfoEntry OBJECT-TYPE
+      SYNTAX UnisPOEDCOutInfoEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The entry of the DC output information on this POE power."
+      INDEX { unisPOEDCOutInfoIndex }
+      ::= { unisPOEDCOutInfoTable 1 }
+
+UnisPOEDCOutInfoEntry ::=
+      SEQUENCE {
+                unisPOEDCOutInfoIndex
+                        Integer32,
+                unisPOEDCOutVol
+                        OCTET STRING,
+                unisPOEDCOutInfoLoadCur
+                        OCTET STRING
+              }
+
+unisPOEDCOutInfoIndex OBJECT-TYPE
+      SYNTAX Integer32 (1..2147483647)
+      MAX-ACCESS accessible-for-notify
+      STATUS current
+      DESCRIPTION
+             "The index of the DC output information on this POE POWER.
+             The range of this node is from 1 to unisPOEDCOutCurNum."
+      ::= { unisPOEDCOutInfoEntry 1 }
+
+unisPOEDCOutVol OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..10))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The DC output voltage of the current DC output on this POE power."
+      ::= { unisPOEDCOutInfoEntry 2 }
+
+unisPOEDCOutInfoLoadCur OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..10))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The total load current of the current DC output on this POE power."
+      ::= { unisPOEDCOutInfoEntry 3 }
+
+unisPOEACSwitchStateModuleObjs OBJECT IDENTIFIER ::= { unisPOEPowerObjects 5 }
+
+unisPOEACSwitchStateModuleNum OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The number of the AC swtich state module on this POE power.
+             It is the maximum of unisPOEACSwitchStateIndex."
+      ::= { unisPOEACSwitchStateModuleObjs 1 }
+
+unisPOEACSwitchStateTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF UnisPOEACSwitchStateEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The table of the AC switch state on this POE power."
+      ::= { unisPOEACSwitchStateModuleObjs 2 }
+
+unisPOEACSwitchStateEntry OBJECT-TYPE
+      SYNTAX UnisPOEACSwitchStateEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The entry of the AC switch state on this POE power."
+      INDEX { unisPOEACSwitchStateIndex }
+      ::= { unisPOEACSwitchStateTable 1 }
+
+UnisPOEACSwitchStateEntry ::=
+      SEQUENCE {
+                unisPOEACSwitchStateIndex
+                        Integer32,
+                unisPOEACSwitchState
+                        SwitchState
+               }
+
+unisPOEACSwitchStateIndex OBJECT-TYPE
+      SYNTAX Integer32 (1..2147483647)
+      MAX-ACCESS accessible-for-notify
+      STATUS current
+      DESCRIPTION
+             "The index of the AC switch state on this POE power.
+             The range of this node is from 1 to unisPOEACSwitchStateModuleNum."
+      ::= { unisPOEACSwitchStateEntry 1 }
+
+unisPOEACSwitchState OBJECT-TYPE
+      SYNTAX SwitchState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The AC switch state on this POE power.
+             The value of this node will be one of the following values:
+                                 on             (1),
+                                 off            (2),
+                                 highVoltInput  (3),
+                                 lowVoltInput   (4)"
+      ::= { unisPOEACSwitchStateEntry 2 }
+
+unisPOEInCurStateObjects OBJECT IDENTIFIER ::= { unisPOEPowerObjects 6 }
+
+unisPOEInCurStateModuleNum OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The DC input current state of the module on this POE power.
+             It is the maximum of the unisPOESwitchStateVolExIndex."
+      ::= { unisPOEInCurStateObjects 1 }
+
+unisPOEInCurAState OBJECT-TYPE
+      SYNTAX ACAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The current A state in the DC input on this POE power.
+                                 normal     (1),
+                                 underLimit (2),
+                                 aboveLimit (3),
+                                 lackPhrase (4),
+                                 fuseBroken (5),
+                                 switchOff  (6),
+                                 otherError (7)."
+      ::= { unisPOEInCurStateObjects 2 }
+
+unisPOEInCurBState OBJECT-TYPE
+      SYNTAX ACAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The current B state in the DC input on this POE power.
+             The value of this node will be one of the following values:
+                                 normal     (1),
+                                 underLimit (2),
+                                 aboveLimit (3),
+                                 lackPhrase (4),
+                                 fuseBroken (5),
+                                 switchOff  (6),
+                                 otherError (7)."
+      ::= { unisPOEInCurStateObjects 3 }
+
+unisPOEInCurCState OBJECT-TYPE
+      SYNTAX ACAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The current C state in the DC input on this POE power.
+             The value of this node will be one of the following values:
+                                 normal     (1),
+                                 underLimit (2),
+                                 aboveLimit (3),
+                                 lackPhrase (4),
+                                 fuseBroken (5),
+                                 switchOff  (6),
+                                 otherError (7)."
+      ::= { unisPOEInCurStateObjects 4 }
+
+unisPOESwitchStateVolExTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF UnisPOESwitchStateVolExEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "All alarm status of the VOL status.
+             The value of this node will be one of the following values:
+                                 normal     (1),
+                                 underLimit (2),
+                                 aboveLimit (3),
+                                 lackPhrase (4),
+                                 fuseBroken (5),
+                                 switchOff  (6),
+                                 otherError (7)."
+      ::= { unisPOEInCurStateObjects 5 }
+
+unisPOESwitchStateVolExEntry OBJECT-TYPE
+      SYNTAX UnisPOESwitchStateVolExEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The unisPOESwitchStateVolExIndex will match the number of the VOL status."
+      INDEX { unisPOESwitchStateVolExIndex }
+      ::= { unisPOESwitchStateVolExTable 1 }
+
+UnisPOESwitchStateVolExEntry ::=
+      SEQUENCE {
+               unisPOESwitchStateVolExIndex
+                       Integer32,
+               unisPOESwitchStateInVolAB
+                       ACAlarmState,
+               unisPOESwitchStateInVolBC
+                       ACAlarmState,
+               unisPOESwitchStateInVolCA
+                       ACAlarmState
+               }
+
+unisPOESwitchStateVolExIndex OBJECT-TYPE
+      SYNTAX Integer32 (1..2147483647)
+      MAX-ACCESS accessible-for-notify
+      STATUS current
+      DESCRIPTION
+             "The object species the index of the VOL status.
+             The range of this node is from 1 to unisPOEInCurStateModuleNum."
+      ::= { unisPOESwitchStateVolExEntry 1 }
+
+unisPOESwitchStateInVolAB OBJECT-TYPE
+      SYNTAX ACAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The object specifies the VOL AB alarm in each VOL status.
+             The value of this node will be one of the following values:
+                                 normal     (1),
+                                 underLimit (2),
+                                 aboveLimit (3),
+                                 lackPhrase (4),
+                                 fuseBroken (5),
+                                 switchOff  (6),
+                                 otherError (7)."
+      ::= { unisPOESwitchStateVolExEntry 2 }
+
+unisPOESwitchStateInVolBC OBJECT-TYPE
+      SYNTAX ACAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The object specifies the VOL BC alarm in each VOL status.
+             The value of this node will be one of the following values:
+                                 normal     (1),
+                                 underLimit (2),
+                                 aboveLimit (3),
+                                 lackPhrase (4),
+                                 fuseBroken (5),
+                                 switchOff  (6),
+                                 otherError (7)."
+      ::= { unisPOESwitchStateVolExEntry 3 }
+
+unisPOESwitchStateInVolCA OBJECT-TYPE
+      SYNTAX ACAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The object specifies the VOL CA alarm in each VOL status.
+             The value of this node will be one of the following values:
+                                 normal     (1),
+                                 underLimit (2),
+                                 aboveLimit (3),
+                                 lackPhrase (4),
+                                 fuseBroken (5),
+                                 switchOff  (6),
+                                 otherError (7)."
+      ::= { unisPOESwitchStateVolExEntry 4 }
+
+unisPOEAlarmStateObjects OBJECT IDENTIFIER ::= { unisPOEPowerObjects 7 }
+
+unisPOEAlarmStateModuleNum OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The object specifies the number of the power modules in alarm state."
+      ::= { unisPOEAlarmStateObjects 1 }
+
+unisPOEAlarmStateInfoTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF UnisPOEAlarmStateInfoEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "All alarm states in the POE power modules."
+      ::= { unisPOEAlarmStateObjects 2 }
+
+unisPOEAlarmStateInfoEntry OBJECT-TYPE
+      SYNTAX UnisPOEAlarmStateInfoEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+             "The unisPOEAlarmModuleInfoIndex will match the number
+             of the power module."
+INDEX { unisPOEAlarmModuleInfoIndex }
+      ::= { unisPOEAlarmStateInfoTable 1 }
+
+UnisPOEAlarmStateInfoEntry ::=
+      SEQUENCE {
+               unisPOEAlarmModuleInfoIndex
+                       Integer32,
+               unisPOEModuleDisconnect
+                       ModuleAlarmState,
+               unisPOEModuleInputError
+                       ModuleAlarmState,
+               unisPOEModuleOutputError
+                       ModuleAlarmState,
+               unisPOEModuleOverVoltage
+                       ModuleAlarmState,
+               unisPOEModuleOverTemp
+                       ModuleAlarmState,
+               unisPOEModuleFanError
+                       ModuleAlarmState,
+               unisPOEModuleShutdown
+                       ModuleAlarmState,
+               unisPOEModuleCurRestricted
+                       ModuleAlarmState
+               }
+
+unisPOEAlarmModuleInfoIndex OBJECT-TYPE
+      SYNTAX Integer32 (1..2147483647)
+      MAX-ACCESS accessible-for-notify
+      STATUS current
+      DESCRIPTION
+             "The index specifies the index of the UnisPOEAlarmStateInfoEntry table.
+             The range of this node is from 1 to unisPOEAlarmStateModuleNum."
+      ::= { unisPOEAlarmStateInfoEntry 1 }
+
+unisPOEModuleDisconnect OBJECT-TYPE
+      SYNTAX ModuleAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The node specifies the alarm state:
+             The module does not link.
+             The value of this node is one of the following values:
+                              normal (1),
+                              alarm  (2)."
+      ::= { unisPOEAlarmStateInfoEntry 2 }
+
+unisPOEModuleInputError OBJECT-TYPE
+      SYNTAX ModuleAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The node specifies the alarm state:
+                                 Input error.
+             The value of this node is one of the following values:
+                                 normal (1),
+                                 alarm  (2)."
+      ::= { unisPOEAlarmStateInfoEntry 3 }
+
+unisPOEModuleOutputError OBJECT-TYPE
+      SYNTAX ModuleAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The node specifies the alarm state:
+                                 Output error.
+             The value of this node is one of the following values:
+                                 normal (1),
+                                 alarm  (2)."
+      ::= { unisPOEAlarmStateInfoEntry 4 }
+
+unisPOEModuleOverVoltage OBJECT-TYPE
+      SYNTAX ModuleAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The node specifies the alarm state:
+                                 The voltage is too high.
+             The value of this node is one of the following values:
+                                 normal (1),
+                                 alarm  (2)."
+      ::= { unisPOEAlarmStateInfoEntry 5 }
+
+unisPOEModuleOverTemp OBJECT-TYPE
+      SYNTAX ModuleAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The node specifies the alarm state:
+                                 The temperature is too high.
+             The value of this node is one of the following values:
+                                 normal (1),
+                                 alarm  (2)."
+      ::= { unisPOEAlarmStateInfoEntry 6 }
+
+unisPOEModuleFanError OBJECT-TYPE
+      SYNTAX ModuleAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The node specifies the alarm state:
+                                 The fan error.
+             The value of this node is one of the following values:
+                                 normal (1),
+                                 alarm  (2)."
+      ::= { unisPOEAlarmStateInfoEntry 7 }
+
+unisPOEModuleShutdown OBJECT-TYPE
+      SYNTAX ModuleAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The node specifies the alarm state:
+                                 The module is shutdown.
+             The value of this node is one of the following values:
+                                 normal (1),
+                                 alarm  (2)."
+      ::= { unisPOEAlarmStateInfoEntry 8 }
+
+unisPOEModuleCurRestricted OBJECT-TYPE
+      SYNTAX ModuleAlarmState
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The node specifies the alarm state:
+                                 The module limit the current.
+             The value of this node is one of the following values:
+                                 normal (1),
+                                 alarm  (2)."
+      ::= { unisPOEAlarmStateInfoEntry 9 }
+
+UnisPDDisableState ::= TEXTUAL-CONVENTION
+      STATUS current
+      DESCRIPTION
+           "PD disabled State."
+      SYNTAX INTEGER{
+             unknown(0),
+             overInrush(1),
+             lessMPSCurrent(2),
+             peakPower(3),
+             overVoltage(4),
+             underVoltage(5),
+             overTemperature(6),
+             shortCircuit(7)
+                   }
+
+unisPseNotification  OBJECT IDENTIFIER ::= { unisPowerEthernetExt 11 }
+unisPseNotificationPrefix OBJECT IDENTIFIER ::= { unisPseNotification 0 }
+
+    unisPsePDDisableNotification NOTIFICATION-TYPE
+      OBJECTS{ unisPsePortGroupIndex, unisPsePortIndex, unisPsePortDisableInfo }
+      STATUS current
+      DESCRIPTION
+            "The PD has been powered off."
+      ::= { unisPseNotificationPrefix 1 }
+
+unisPseNotificationObjects OBJECT IDENTIFIER ::= { unisPseNotification 1 }
+
+       unisPsePortGroupIndex OBJECT-TYPE
+       SYNTAX      Integer32 (1..2147483647)
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+           "This variable uniquely identifies the group
+            containing the port to which a power Ethernet PSE is
+            connected."
+       ::= { unisPseNotificationObjects 1 }
+
+     unisPsePortIndex OBJECT-TYPE
+       SYNTAX      Integer32 (1..2147483647)
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+           "This variable uniquely identifies the power Ethernet PSE
+            port within group pethPsePortGroupIndex to which the
+            power Ethernet PSE entry is connected."
+       ::= { unisPseNotificationObjects 2 }
+
+     unisPsePortDisableInfo OBJECT-TYPE
+      SYNTAX UnisPDDisableState
+          MAX-ACCESS  accessible-for-notify
+          STATUS      current
+          DESCRIPTION
+              "
+              Reason that caused PSE port power failure.
+              The calue of this node is one of the following values:
+              unknown(0),
+              overInrush(1),
+              lessMPSCurrent(2),
+              peakPower(3),
+              overVoltage(4),
+              underVoltage(5),
+              overTemperature(6),
+              shortCircuit(7).
+              "
+          ::= { unisPseNotificationObjects 3 }
+
+END
+

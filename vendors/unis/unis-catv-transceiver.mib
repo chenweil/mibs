@@ -1,0 +1,229 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: CATV transceiver MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 created by xujun.
+--     Initial version of the MIB
+-- =================================================================
+UNIS-CATV-TRANSCEIVER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        Integer32, OBJECT-TYPE, MODULE-IDENTITY,
+        NOTIFICATION-TYPE
+    FROM SNMPv2-SMI;
+
+unisCATVTransceiver MODULE-IDENTITY
+    LAST-UPDATED "200807251008Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "
+        The objects in this MIB module are used to manage and
+        display common configuration for CATV(Community Antenna
+        Television) transceiver module.
+        "
+    ::= { unisCommon 94 }
+
+--
+-- unisCATVTransceiverStatus
+--
+
+unisCATVTransStatus OBJECT IDENTIFIER ::= { unisCATVTransceiver 1 }
+
+unisCATVTransStatusScalarObjects OBJECT IDENTIFIER ::= { unisCATVTransStatus 1 }
+
+unisCATVTransState OBJECT-TYPE
+    SYNTAX     INTEGER
+    {
+        on         (1),
+        off        (2)
+    }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "
+         The state of CATV transceiver.
+         "
+    ::= { unisCATVTransStatusScalarObjects 1 }
+
+unisCATVTransInputPwr OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "dbm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "
+         The input power of CATV transceiver.
+         If transceiver is not on site,
+         the value should be zero.
+         "
+    ::= { unisCATVTransStatusScalarObjects 2 }
+
+unisCATVTransOutputLevel OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "dbuv"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "
+         The output level of CATV transceiver.
+         If transceiver is not on site,
+         the value should be zero.
+         "
+    ::= { unisCATVTransStatusScalarObjects 3 }
+
+unisCATVTransTemperature OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "centigrade"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "
+         The temperature of CATV transceiver.
+         If transceiver is not on site,
+         the value should be zero.
+         "
+    ::= { unisCATVTransStatusScalarObjects 4 }
+
+
+--
+-- unisCATVTransceiverMan
+--
+
+unisCATVTransceiverMan OBJECT IDENTIFIER ::= { unisCATVTransceiver 2 }
+
+unisCATVTransCtrlScalarObjects OBJECT IDENTIFIER ::= { unisCATVTransceiverMan 1 }
+
+unisCATVTransInputPwrLowerThr OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "dbm"
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        A threshold for the CATV transceiver's input power.
+        When the input power of CATV transceiver is lower
+        than threshold, a trap should be generated.
+        "
+    ::= { unisCATVTransCtrlScalarObjects 1 }
+
+unisCATVTransOutputLvlLowerThr OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "dbuv"
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        A threshold for the CATV transceiver's output level.
+        When the output level of CATV transceiver is lower
+        than threshold, a trap should be generated.
+        "
+    ::= { unisCATVTransCtrlScalarObjects 2 }
+
+unisCATVTransTempratureUpperThr OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "¡æ"
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "
+        A threshold for the CATV transceiver's temperature.
+        When the temperature of CATV transceiver is higher
+        than threshold, a trap should be generated.
+        "
+    ::= { unisCATVTransCtrlScalarObjects 3 }
+
+
+--
+-- unisCATVTransceiver NOTIFICATION
+--
+
+unisCATVTansTrap OBJECT IDENTIFIER ::= { unisCATVTransceiver 3 }
+
+unisCATVTransTrapPrefix OBJECT IDENTIFIER ::= {unisCATVTansTrap 0}
+
+unisCATVTransInputPwrTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisCATVTransInputPwr
+        }
+    STATUS current
+    DESCRIPTION
+        "
+        A unisCATVTransInputPwrTrap notification is sent when the
+        input power of CATV transceiver is lower than the threshold.
+        "
+    ::= { unisCATVTransTrapPrefix 1 }
+
+unisCATVTransInputPwrReTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisCATVTransInputPwr
+        }
+    STATUS current
+    DESCRIPTION
+        "
+        A unisCATVTransInputPwrReTrap notification is sent when the
+        input power of CATV transceiver recovered from the last trap.
+        "
+    ::= { unisCATVTransTrapPrefix 2 }
+
+unisCATVTransOutputLvlTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisCATVTransOutputLevel
+        }
+    STATUS current
+    DESCRIPTION
+        "
+        A unisCATVTransOutputLvlTrap notification is sent when the
+        output level of CATV transceiver is lower than the threshold.
+        "
+    ::= { unisCATVTransTrapPrefix 3 }
+
+unisCATVTransOutputLvlReTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisCATVTransOutputLevel
+        }
+    STATUS current
+    DESCRIPTION
+        "
+        A unisCATVTransOutputLvlReTrap notification is sent when the
+        output level of CATV transceiver recovered from the last trap.
+        "
+    ::= { unisCATVTransTrapPrefix 4 }
+
+unisCATVTransTemperatureTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisCATVTransTemperature
+        }
+    STATUS current
+    DESCRIPTION
+        "
+        A unisCATVTransTemperatureTrap notification is sent when the
+        temperature of CATV transceiver is higher than the threshold.
+        "
+    ::= { unisCATVTransTrapPrefix 5 }
+
+unisCATVTransTemperatureReTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisCATVTransTemperature
+        }
+    STATUS current
+    DESCRIPTION
+        "
+        A unisCATVTransTemperatureReTrap notification is sent when the
+        temperature of CATV transceiver recovered from the last trap.
+        "
+    ::= { unisCATVTransTrapPrefix 6 }
+END

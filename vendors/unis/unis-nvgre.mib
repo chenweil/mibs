@@ -1,0 +1,372 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The NVGRE(Network Virtualization using
+--                        Generic Routing Encapsulation) MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2014-03-11 Initial version created by Neng Yan
+-- =============================================================================
+UNIS-NVGRE-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+        RowStatus, MacAddress
+    FROM SNMPv2-TC
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Unsigned32, Counter64
+    FROM SNMPv2-SMI
+        unisCommon
+    FROM UNIS-OID-MIB;
+
+-- =============================================================================
+-- module identity part
+-- =============================================================================
+unisNvgre MODULE-IDENTITY
+    LAST-UPDATED
+        "201403110900Z"        -- Mar 11, 2014 at 09:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The NVGRE MIB."
+    REVISION
+        "201403110900Z"   -- Mar 11, 2014 at 09:00 GMT
+    DESCRIPTION
+        "Initial version."
+    ::= { unisCommon 156 }
+
+-- =============================================================================
+-- object definition begin
+-- =============================================================================
+
+unisNvgreObjects      OBJECT IDENTIFIER ::= { unisNvgre 1 }
+
+unisNvgreScalarGroup OBJECT IDENTIFIER ::= { unisNvgreObjects 1 }
+
+unisNvgreNextNvgreID    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Next available NVGRE ID(identifier), in the range of 4096 to 16777214.
+        The invalid value 4294967295 indicates that no ID can be set."
+    ::= { unisNvgreScalarGroup 1 }
+
+unisNvgreConfigured    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of currently configured NVGREs."
+    ::= { unisNvgreScalarGroup 2 }
+
+-- =============================================================================
+-- unisNvgreTable Definition
+-- =============================================================================
+unisNvgreTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisNvgreEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for NVGRE parameters."
+    ::= { unisNvgreObjects 2 }
+
+unisNvgreEntry  OBJECT-TYPE
+    SYNTAX      UnisNvgreEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry represents the parameters of an NVGRE."
+    INDEX
+    {
+        unisNvgreID
+    }
+    ::= { unisNvgreTable 1 }
+
+UnisNvgreEntry ::=
+    SEQUENCE
+    {
+        unisNvgreID                 Unsigned32,
+        unisNvgreVsiIndex           Unsigned32,
+        unisNvgreRemoteMacCount     Unsigned32,
+        unisNvgreRowStatus          RowStatus
+    }
+
+unisNvgreID    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The NVGRE ID, in the range of 4096 to 16777214."
+    ::= { unisNvgreEntry 1 }
+
+unisNvgreVsiIndex    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "VSI index.  A unique index for the conceptual row identifying
+         a VSI(Virtual Switch Instance) in the unisVsiTable."
+    ::= { unisNvgreEntry 2 }
+
+unisNvgreRemoteMacCount    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Remote MAC(Media Access Control) address count of this NVGRE."
+    ::= { unisNvgreEntry 3 }
+
+unisNvgreRowStatus     OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry.  When a row in this
+         table is in active state, no objects in that row
+         can be modified by the agent."
+    ::= { unisNvgreEntry 4 }
+
+-- =============================================================================
+-- End of unisNvgreTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisNvgreTunnelTable Definition
+-- =============================================================================
+unisNvgreTunnelTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisNvgreTunnelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for NVGRE tunnel parameters."
+    ::= { unisNvgreObjects 3 }
+
+unisNvgreTunnelEntry  OBJECT-TYPE
+    SYNTAX      UnisNvgreTunnelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry represents the parameters of an NVGRE tunnel."
+    INDEX
+    {
+        unisNvgreID,
+        unisNvgreTunnelID
+    }
+    ::= { unisNvgreTunnelTable 1 }
+
+UnisNvgreTunnelEntry ::=
+    SEQUENCE
+    {
+        unisNvgreTunnelID             Unsigned32,
+        unisNvgreTunnelRowStatus      RowStatus,
+        unisNvgreTunnelOctets         Counter64,
+        unisNvgreTunnelPackets        Counter64
+    }
+
+unisNvgreTunnelID    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A unique index for tunnel."
+    ::= { unisNvgreTunnelEntry 1 }
+
+unisNvgreTunnelRowStatus     OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisNvgreTunnelEntry 2 }
+
+unisNvgreTunnelOctets   OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The number of octets that have been forwarded over the tunnel."
+    ::= { unisNvgreTunnelEntry 3 }
+
+unisNvgreTunnelPackets  OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The number of packets that have been forwarded over the tunnel."
+    ::= { unisNvgreTunnelEntry 4 }
+
+-- =============================================================================
+-- End of unisNvgreTunnelTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisNvgreTunnelBoundTable Definition
+-- =============================================================================
+unisNvgreTunnelBoundTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisNvgreTunnelBoundEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for the number of NVGREs to which the tunnel is bound."
+    ::= { unisNvgreObjects 4 }
+
+unisNvgreTunnelBoundEntry  OBJECT-TYPE
+    SYNTAX      UnisNvgreTunnelBoundEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry represents the number of NVGREs to which a tunnel is bound."
+    INDEX
+    {
+        unisNvgreTunnelID
+    }
+    ::= { unisNvgreTunnelBoundTable 1 }
+
+UnisNvgreTunnelBoundEntry ::=
+    SEQUENCE
+    {
+        unisNvgreTunnelBoundNvgreNum  Unsigned32
+    }
+
+unisNvgreTunnelBoundNvgreNum    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NVGREs to which this tunnel is bound."
+    ::= { unisNvgreTunnelBoundEntry 1 }
+
+-- =============================================================================
+-- End of unisNvgreTunnelBoundTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisNvgreMacTable Definition
+-- =============================================================================
+unisNvgreMacTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisNvgreMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for NVGRE remote MAC addresses."
+    ::= { unisNvgreObjects 5 }
+
+unisNvgreMacEntry  OBJECT-TYPE
+    SYNTAX      UnisNvgreMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An NVGRE remote MAC address."
+    INDEX
+    {
+        unisNvgreVsiIndex,
+        unisNvgreMacAddr
+    }
+    ::= { unisNvgreMacTable 1 }
+
+UnisNvgreMacEntry ::=
+    SEQUENCE
+    {
+        unisNvgreMacAddr            MacAddress,
+        unisNvgreMacTunnelID        Unsigned32,
+        unisNvgreMacType            INTEGER
+    }
+
+unisNvgreMacAddr    OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "MAC address."
+    ::= { unisNvgreMacEntry 1 }
+
+unisNvgreMacTunnelID    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A unique index for tunnel."
+    ::= { unisNvgreMacEntry 2 }
+
+unisNvgreMacType    OBJECT-TYPE
+    SYNTAX      INTEGER{
+                 selfLearned (1),
+                 staticConfigured (2),
+                 protocolLearned (3)
+                 }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The type of an MAC address."
+    ::= { unisNvgreMacEntry 3 }
+
+-- =============================================================================
+-- End of unisNvgreMacTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisNvgreStaticMacTable Definition
+-- =============================================================================
+unisNvgreStaticMacTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisNvgreStaticMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for NVGRE static remote MAC addresses."
+    ::= { unisNvgreObjects 6 }
+
+unisNvgreStaticMacEntry  OBJECT-TYPE
+    SYNTAX      UnisNvgreStaticMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An NVGRE static MAC address."
+    INDEX
+    {
+        unisNvgreVsiIndex,
+        unisNvgreStaticMacAddr
+    }
+    ::= { unisNvgreStaticMacTable 1 }
+
+UnisNvgreStaticMacEntry ::=
+    SEQUENCE
+    {
+        unisNvgreStaticMacAddr         MacAddress,
+        unisNvgreStaticMacTunnelID     Unsigned32,
+        unisNvgreStaticMacRowStatus    RowStatus
+    }
+
+unisNvgreStaticMacAddr    OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Static MAC address."
+    ::= { unisNvgreStaticMacEntry 1 }
+
+unisNvgreStaticMacTunnelID    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "A unique index for tunnel."
+    ::= { unisNvgreStaticMacEntry 2 }
+
+unisNvgreStaticMacRowStatus     OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry.  When a row in this
+         table is in active state, no objects in that row
+         can be modified by the agent."
+    ::= { unisNvgreStaticMacEntry 3 }
+
+-- =============================================================================
+-- End of unisNvgreStaticMacTable Definition
+-- =============================================================================
+
+END

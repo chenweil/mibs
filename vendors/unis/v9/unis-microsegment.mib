@@ -1,0 +1,351 @@
+-- =========================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB file is used for management of
+--              microsementation information.
+-- Reference:
+-- Version: 1.0
+-- History:
+-- V1.0 Initial version, created by lizhaocheng.
+-- ==========================================================================
+UNIS-MICROSEGMENT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, IpAddress, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    InetAddressPrefixLength
+        FROM INET-ADDRESS-MIB;
+
+unisMicroSegment MODULE-IDENTITY
+    LAST-UPDATED "202211141547Z"        --Nov 14, 2022 at 15:47 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB contains objects to manage configuration and
+         monitor running state for microsegmentation feature.
+
+            *********************************
+                    MIB Tables
+            **********************************
+         This MIB consists of the following tables:
+            1 :  unisMSegNotifications
+            2 :  unisMSegObjects
+        "
+    REVISION "202211141547Z"        --Nov 14, 2022 at 15:47 GMT
+    DESCRIPTION
+        "Initial revision.
+         Add unisMSegNotifications.
+         Add unisMSegObjects."
+    ::= { unisCommon 258 }
+
+--
+-- direction
+--
+UnisMSegDirection ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Inbound or outbound."
+    SYNTAX INTEGER
+    {
+        inbound(1),
+        outbound(2)
+    }
+
+--
+-- micseg apply type
+--
+UnisMSegApplyObjType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Type of apply microsegment."
+    SYNTAX INTEGER
+    {
+        mqc(1),
+        pfilter(2),
+        pbr(3),
+        portal(4),
+        telemetryStream(5),
+        mod(6),
+        netStream(7),
+        other(8)
+    }
+
+--
+-- Top level structure
+--
+
+unisMSegNotifications  OBJECT IDENTIFIER ::= { unisMicroSegment 0 }
+unisMSegObjects        OBJECT IDENTIFIER ::= { unisMicroSegment 1 }
+
+--
+-- type definitions
+--
+-- Notification Objects
+--
+unisMSegNotifyVarObjects OBJECT IDENTIFIER ::= { unisMSegObjects 1 }
+
+unisMSegNotifyIPAddress OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "IPv4 address."
+    ::= { unisMSegNotifyVarObjects 1 }
+
+unisMSegNotifyIPMask OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Mask of IPv4 address."
+    ::= { unisMSegNotifyVarObjects 2 }
+
+unisMSegNotifyVpnInstanceName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(1..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The VPN instance of microsegment member."
+    ::= { unisMSegNotifyVarObjects 3 }
+
+unisMSegNotifySegmentID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+
+    DESCRIPTION
+        "microsegment ID."
+    ::= { unisMSegNotifyVarObjects 4 }
+
+unisMSegNotifySlotID OBJECT-TYPE
+    SYNTAX Integer32 (0..65534)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The slot number."
+    ::= { unisMSegNotifyVarObjects 5 }
+
+unisMSegNotifyIPv6Address OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "IPv6 address."
+    ::= { unisMSegNotifyVarObjects 6 }
+
+unisMSegNotifyIPv6Mask OBJECT-TYPE
+    SYNTAX InetAddressPrefixLength
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The length of the prefix (in bits) associated with
+        the IPv6 address of this entry."
+    ::= { unisMSegNotifyVarObjects 7 }
+
+unisMSegNotifyIfName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(1..47))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The interface name."
+    ::= { unisMSegNotifyVarObjects 8 }
+
+unisMSegNotifyDirection OBJECT-TYPE
+    SYNTAX UnisMSegDirection
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Direction."
+    ::= { unisMSegNotifyVarObjects 9 }
+
+unisMSegNotifySrcSegmentID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "source microsegment ID."
+    ::= { unisMSegNotifyVarObjects 10 }
+
+unisMSegNotifyDstSegmentID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "destination microsegment ID."
+    ::= { unisMSegNotifyVarObjects 11 }
+
+unisMSegNotifyProtocol OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The protocol index."
+    ::= { unisMSegNotifyVarObjects 12 }
+
+unisMSegNotifySrcPort OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "source port."
+    ::= { unisMSegNotifyVarObjects 13 }
+
+unisMSegNotifyDstPort OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "destination port."
+    ::= { unisMSegNotifyVarObjects 14 }
+
+unisMSegApplyType OBJECT-TYPE
+    SYNTAX UnisMSegApplyObjType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Direction."
+    ::= { unisMSegNotifyVarObjects 15 }
+
+--
+-- MicoSegment notifications
+--
+unisMSegMemAlarm NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSegNotifyIPAddress,
+        unisMSegNotifyIPMask,
+        unisMSegNotifyVpnInstanceName,
+        unisMSegNotifySegmentID,
+        unisMSegNotifySlotID
+    }
+    STATUS current
+    DESCRIPTION
+        "Failed to add microsegment member."
+    ::= { unisMSegNotifications 1 }
+
+unisMSegMemAlarmRecover NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSegNotifyIPAddress,
+        unisMSegNotifyIPMask,
+        unisMSegNotifyVpnInstanceName,
+        unisMSegNotifySegmentID,
+        unisMSegNotifySlotID
+    }
+    STATUS current
+    DESCRIPTION
+        "recovered to add microsegment member."
+    ::= { unisMSegNotifications 2 }
+
+unisMSegMemIPv6Alarm NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSegNotifyIPv6Address,
+        unisMSegNotifyIPv6Mask,
+        unisMSegNotifyVpnInstanceName,
+        unisMSegNotifySegmentID,
+        unisMSegNotifySlotID
+    }
+    STATUS current
+    DESCRIPTION
+        "Failed to add microsegment ipv6 member."
+    ::= { unisMSegNotifications 3 }
+
+unisMSegMemIPv6AlarmRecover NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSegNotifyIPv6Address,
+        unisMSegNotifyIPv6Mask,
+        unisMSegNotifyVpnInstanceName,
+        unisMSegNotifySegmentID,
+        unisMSegNotifySlotID
+    }
+    STATUS current
+    DESCRIPTION
+        "recovered to add microsegment ipv6 member."
+    ::= { unisMSegNotifications 4 }
+
+unisMSegEnableAlarm NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSegNotifySlotID
+    }
+    STATUS current
+    DESCRIPTION
+        "Failed to enable the microsegment."
+    ::= { unisMSegNotifications 5 }
+
+unisMSegEnableAlarmRecover NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSegNotifySlotID
+    }
+    STATUS current
+    DESCRIPTION
+        "recovered to enable the microsegment."
+    ::= { unisMSegNotifications 6 }
+
+unisMSegCreateAlarm NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSegNotifySegmentID,
+        unisMSegNotifySlotID
+    }
+    STATUS current
+    DESCRIPTION
+        "Failed to add microsegment group."
+    ::= { unisMSegNotifications 7 }
+
+unisMSegCreateAlarmRecover NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSegNotifySegmentID,
+        unisMSegNotifySlotID
+    }
+    STATUS current
+    DESCRIPTION
+        "recovered to add microsegment group."
+    ::= { unisMSegNotifications 8 }
+
+unisMSegPolicyAlarm NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSegNotifyIfName,
+        unisMSegNotifyDirection,
+        unisMSegNotifySrcSegmentID,
+        unisMSegNotifyDstSegmentID,
+        unisMSegNotifyProtocol,
+        unisMSegNotifySrcPort,
+        unisMSegNotifyDstPort,
+        unisMSegNotifySlotID,
+        unisMSegApplyType
+    }
+    STATUS current
+    DESCRIPTION
+        "recovered to apply the microsegment group."
+    ::= { unisMSegNotifications 9 }
+
+unisMSegPolicyAlarmRecover NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSegNotifyIfName,
+        unisMSegNotifyDirection,
+        unisMSegNotifySrcSegmentID,
+        unisMSegNotifyDstSegmentID,
+        unisMSegNotifyProtocol,
+        unisMSegNotifySrcPort,
+        unisMSegNotifyDstPort,
+        unisMSegNotifySlotID,
+        unisMSegApplyType
+    }
+    STATUS current
+    DESCRIPTION
+        "recovered to apply the microsegment group."
+    ::= { unisMSegNotifications 10 }
+END

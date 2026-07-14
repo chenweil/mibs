@@ -1,0 +1,512 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The VXLAN(Virtual eXtensible Local Area Network) MIB
+-- Reference:
+-- Version: V1.2
+-- History:
+--   V1.0 2013-11-21 Initial version created by Neng Yan
+--   V1.1 2015-02-11 Modified by Neng Yan.  Values 'unknown(0)', 'openflow(4)',
+--                   and 'ovsdb(5)' were added for data type 'unisVxlanMacType'
+--   V1.2 2019-03-04 Modified by lipeng, added unisVxlanTunnelInputOctets,
+--                   unisVxlanTunnelOutputOctets, unisVxlanTunnelInputPackets,
+--                   unisVxlanTunnelOutputPackets, unisVxlanTunnelInputDiscards,
+--                   unisVxlanTunnelOutputDiscards
+-- =============================================================================
+UNIS-VXLAN-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+        RowStatus, TruthValue, MacAddress
+    FROM SNMPv2-TC
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Unsigned32, Counter64
+    FROM SNMPv2-SMI
+        InetAddressType,
+        InetAddress
+    FROM INET-ADDRESS-MIB
+        unisCommon
+    FROM UNIS-OID-MIB;
+
+-- =============================================================================
+-- module identity part
+-- =============================================================================
+unisVxlan MODULE-IDENTITY
+    LAST-UPDATED
+        "201903041650Z"        -- Mar 4, 2019 at 16:50 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The overlay MIB."
+    REVISION
+        "201903041650Z"   -- Mar 4, 2019 at 16:50 GMT
+    DESCRIPTION
+        "Added unisVxlanTunnelInputOctets,
+         unisVxlanTunnelOutputOctets, unisVxlanTunnelInputPackets,
+         unisVxlanTunnelOutputPackets, unisVxlanTunnelInputDiscards,
+         unisVxlanTunnelOutputDiscards."
+    REVISION
+        "201502110900Z"   -- Feb 11, 2015 at 09:00 GMT
+    DESCRIPTION
+        "Values 'unknown(0)', 'openflow(4)', and 'ovsdb(5)' were added
+         for data type 'unisVxlanMacType'."
+    REVISION
+        "201311210900Z"   -- Nov 21, 2013 at 09:00 GMT
+    DESCRIPTION
+        "Initial version."
+    ::= { unisCommon 150 }
+
+-- =============================================================================
+-- object definition begin
+-- =============================================================================
+
+unisVxlanObjects      OBJECT IDENTIFIER ::= { unisVxlan 1 }
+
+unisVxlanScalarGroup OBJECT IDENTIFIER ::= { unisVxlanObjects 1 }
+
+unisVxlanLocalMacNotify    OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Local MAC(Media Access Control) address report capability."
+    DEFVAL { false }
+    ::= { unisVxlanScalarGroup 1 }
+
+unisVxlanRemoteMacLearn    OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Remote MAC address self-learning capability."
+    DEFVAL { true }
+    ::= { unisVxlanScalarGroup 2 }
+
+unisVxlanNextVxlanID    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Next available VXLAN ID(identifier), in the range of 0x0 to 0xFFFFFF.
+        The invalid value 0xFFFFFFFF indicates that no ID can be set."
+    ::= { unisVxlanScalarGroup 3 }
+
+unisVxlanConfigured    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of currently configured VXLANs."
+    ::= { unisVxlanScalarGroup 4 }
+
+-- =============================================================================
+-- unisVxlanTable Definition
+-- =============================================================================
+unisVxlanTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVxlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for VXLAN parameters."
+    ::= { unisVxlanObjects 2 }
+
+unisVxlanEntry  OBJECT-TYPE
+    SYNTAX      UnisVxlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry represents the parameters of a VXLAN."
+    INDEX
+    {
+        unisVxlanID
+    }
+    ::= { unisVxlanTable 1 }
+
+UnisVxlanEntry ::=
+    SEQUENCE
+    {
+        unisVxlanID                 Unsigned32,
+        unisVxlanAddrType           InetAddressType,
+        unisVxlanGroupAddr          InetAddress,
+        unisVxlanSourceAddr         InetAddress,
+        unisVxlanVsiIndex           Unsigned32,
+        unisVxlanRemoteMacCount     Unsigned32,
+        unisVxlanRowStatus          RowStatus
+    }
+
+unisVxlanID    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The VXLAN ID."
+    ::= { unisVxlanEntry 1 }
+
+unisVxlanAddrType    OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of multicast group address."
+    ::= { unisVxlanEntry 2 }
+
+unisVxlanGroupAddr    OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Group destination address."
+    ::= { unisVxlanEntry 3 }
+
+unisVxlanSourceAddr    OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Group source address."
+    ::= { unisVxlanEntry 4 }
+
+unisVxlanVsiIndex    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "VSI index.  A unique index for the conceptual row identifying
+         a VSI in the unisVsiTable."
+    ::= { unisVxlanEntry 5 }
+
+unisVxlanRemoteMacCount    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Remote MAC address count of this VXLAN."
+    ::= { unisVxlanEntry 6 }
+
+unisVxlanRowStatus     OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry.  When a row in this
+         table is in active state, no objects in that row
+         can be modified by the agent except
+         unisVxlanGroupAddr, unisVxlanSourceAddr."
+    ::= { unisVxlanEntry 7 }
+
+-- =============================================================================
+-- End of unisVxlanTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisVxlanTunnelTable Definition
+-- =============================================================================
+unisVxlanTunnelTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVxlanTunnelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for VXLAN tunnel parameters."
+    ::= { unisVxlanObjects 3 }
+
+unisVxlanTunnelEntry  OBJECT-TYPE
+    SYNTAX      UnisVxlanTunnelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry represents the parameters of a VXLAN tunnel."
+    INDEX
+    {
+        unisVxlanID,
+        unisVxlanTunnelID
+    }
+    ::= { unisVxlanTunnelTable 1 }
+
+UnisVxlanTunnelEntry ::=
+    SEQUENCE
+    {
+        unisVxlanTunnelID             Unsigned32,
+        unisVxlanTunnelRowStatus      RowStatus,
+        unisVxlanTunnelOctets         Counter64,
+        unisVxlanTunnelPackets        Counter64,
+        unisVxlanTunnelInputOctets    Counter64,
+        unisVxlanTunnelOutputOctets   Counter64,
+        unisVxlanTunnelInputPackets   Counter64,
+        unisVxlanTunnelOutputPackets  Counter64,
+        unisVxlanTunnelInputDiscards  Counter64,
+        unisVxlanTunnelOutputDiscards Counter64
+    }
+
+unisVxlanTunnelID    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A unique index for tunnel."
+    ::= { unisVxlanTunnelEntry 1 }
+
+unisVxlanTunnelRowStatus     OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisVxlanTunnelEntry 2 }
+
+unisVxlanTunnelOctets   OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The number of octets that have been forwarded over the tunnel.
+
+        Discontinuities in the value of this counter can
+        occur at re-initialization of the management system,
+        and at other times."
+    ::= { unisVxlanTunnelEntry 3 }
+
+unisVxlanTunnelPackets  OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The number of packets that have been forwarded over the tunnel.
+
+        Discontinuities in the value of this counter can
+        occur at re-initialization of the management system
+        and at other times."
+    ::= { unisVxlanTunnelEntry 4 }
+
+unisVxlanTunnelInputOctets   OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Number of incoming bytes that have been forwarded over the tunnel."
+    ::= { unisVxlanTunnelEntry 5 }
+
+unisVxlanTunnelOutputOctets   OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Number of outgoing bytes that have been forwarded over the tunnel."
+    ::= { unisVxlanTunnelEntry 6 }
+
+unisVxlanTunnelInputPackets  OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Number of incoming packets that have been forwarded over the tunnel."
+    ::= { unisVxlanTunnelEntry 7 }
+
+unisVxlanTunnelOutputPackets  OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Number of outgoing packets that have been forwarded over the tunnel."
+    ::= { unisVxlanTunnelEntry 8 }
+
+unisVxlanTunnelInputDiscards  OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Number of incoming discarded packets that have been forwarded over
+         the tunnel."
+    ::= { unisVxlanTunnelEntry 9 }
+
+unisVxlanTunnelOutputDiscards  OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Number of outgoing discarded packets that have been forwarded over
+         the tunnel."
+    ::= { unisVxlanTunnelEntry 10 }
+
+-- =============================================================================
+-- End of unisVxlanTunnelTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisVxlanTunnelBoundTable Definition
+-- =============================================================================
+unisVxlanTunnelBoundTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVxlanTunnelBoundEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for the number of VXLANs to which the tunnel is bound."
+    ::= { unisVxlanObjects 4 }
+
+unisVxlanTunnelBoundEntry  OBJECT-TYPE
+    SYNTAX      UnisVxlanTunnelBoundEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry represents the number of VXLANs to which a tunnel is bound."
+    INDEX
+    {
+        unisVxlanTunnelID
+    }
+    ::= { unisVxlanTunnelBoundTable 1 }
+
+UnisVxlanTunnelBoundEntry ::=
+    SEQUENCE
+    {
+        unisVxlanTunnelBoundVxlanNum  Unsigned32
+    }
+
+unisVxlanTunnelBoundVxlanNum    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of VXLANs to which this tunnel is bound."
+    ::= { unisVxlanTunnelBoundEntry 1 }
+
+-- =============================================================================
+-- End of unisVxlanTunnelBoundTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisVxlanMacTable Definition
+-- =============================================================================
+unisVxlanMacTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVxlanMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for VXLAN remote MAC addresses."
+    ::= { unisVxlanObjects 5 }
+
+unisVxlanMacEntry  OBJECT-TYPE
+    SYNTAX      UnisVxlanMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A VXLAN remote MAC address."
+    INDEX
+    {
+        unisVxlanVsiIndex,
+        unisVxlanMacAddr
+    }
+    ::= { unisVxlanMacTable 1 }
+
+UnisVxlanMacEntry ::=
+    SEQUENCE
+    {
+        unisVxlanMacAddr            MacAddress,
+        unisVxlanMacTunnelID        Unsigned32,
+        unisVxlanMacType            INTEGER
+    }
+
+unisVxlanMacAddr    OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "MAC address."
+    ::= { unisVxlanMacEntry 1 }
+
+unisVxlanMacTunnelID    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A unique index for tunnel."
+    ::= { unisVxlanMacEntry 2 }
+
+unisVxlanMacType    OBJECT-TYPE
+    SYNTAX      INTEGER{
+                 unknown (0),
+                 selfLearned (1),
+                 staticConfigured (2),
+                 protocolLearned (3),
+                 openflow (4),
+                 ovsdb (5)
+                 }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The type of an MAC address.
+
+        selfLearned: Unicast address dynamically learned in the data plane.
+        staticConfigured: Unicast address manually added.
+        protocolLearned: Unicast address advertised through VXLAN IS-IS or BGP.
+               Support for VXLAN IS-IS and BGP depends on the software version.
+        openflow: Unicast address issued by a controller through OpenFlow.
+        ovsdb: Unicast address issued by a controller through OVSDB."
+    ::= { unisVxlanMacEntry 3 }
+
+-- =============================================================================
+-- End of unisVxlanMacTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisVxlanStaticMacTable Definition
+-- =============================================================================
+unisVxlanStaticMacTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVxlanStaticMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for VXLAN static remote MAC addresses."
+    ::= { unisVxlanObjects 6 }
+
+unisVxlanStaticMacEntry  OBJECT-TYPE
+    SYNTAX      UnisVxlanStaticMacEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A VXLAN static MAC address."
+    INDEX
+    {
+        unisVxlanVsiIndex,
+        unisVxlanStaticMacAddr
+    }
+    ::= { unisVxlanStaticMacTable 1 }
+
+UnisVxlanStaticMacEntry ::=
+    SEQUENCE
+    {
+        unisVxlanStaticMacAddr         MacAddress,
+        unisVxlanStaticMacTunnelID     Unsigned32,
+        unisVxlanStaticMacRowStatus    RowStatus
+    }
+
+unisVxlanStaticMacAddr    OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Static MAC address."
+    ::= { unisVxlanStaticMacEntry 1 }
+
+unisVxlanStaticMacTunnelID    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "A unique index for tunnel."
+    ::= { unisVxlanStaticMacEntry 2 }
+
+unisVxlanStaticMacRowStatus     OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry.  When a row in this
+         table is in active state, no objects in that row
+         can be modified by the agent."
+    ::= { unisVxlanStaticMacEntry 3 }
+
+-- =============================================================================
+-- End of unisVxlanStaticMacTable Definition
+-- =============================================================================
+
+END

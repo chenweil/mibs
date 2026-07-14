@@ -1,0 +1,306 @@
+-- ==================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- 
+-- Description: 802.1X MIB
+-- Reference:
+-- Version: V1.3
+-- History:
+-- 1) 2003-03-27 Fuzhenyu created  
+-- 2) v1.1 2004-08-28 chaiyongfu 
+--         change node  unisdot1xAuthServerTimeout's DEFVAL { 30 } to DEFVAL { 100 }
+--    v1.2 2004-10-12 updated by gaolong
+--         Import NOTIFICATION-TYPE
+--         Remove chinese characters
+--         Fix time format of  unispaeExtMib.
+--    v1.3 2007-10-23 updated by chaiyongfu
+--         Add node unisdot1xAuthMethod, unisdot1xpaeportMcastTrigStatus,
+--         unisdot1xpaeportHandshakeStatus
+-- ==================================================================
+
+UNIS-8021PAE-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+    unisRhw          
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE,Unsigned32,NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    
+    MODULE-IDENTITY
+            FROM SNMPv2-SMI 
+    MacAddress
+        FROM SNMPv2-TC
+
+    dot1xPaePortNumber
+            FROM IEEE8021-PAE-MIB;          
+   
+
+     unispaeExtMib MODULE-IDENTITY
+            LAST-UPDATED "200106290000Z"
+            ORGANIZATION
+                "Unisyue Technologies Co., Ltd."
+            CONTACT-INFO
+                ""
+            DESCRIPTION
+            "this file extends IEEE8021-PAE-MIB(802.1x)"
+            REVISION "200106290000Z"
+            DESCRIPTION
+            ""
+            ::= { unisRhw 6 }
+   -- ============================================================
+   -- groups in the PAE MIB
+   -- ============================================================
+
+   unispaeExtMibObjects           OBJECT IDENTIFIER ::= { unispaeExtMib 1 }    
+   unisdot1xPaeSystem             OBJECT IDENTIFIER ::= { unispaeExtMibObjects 1 }
+   unisdot1xPaeAuthenticator      OBJECT IDENTIFIER ::= { unispaeExtMibObjects 2 }
+ 
+   -- ============================================================
+
+    unisdot1xAuthQuietPeriod OBJECT-TYPE
+            SYNTAX             Unsigned32
+            MAX-ACCESS     read-write
+            STATUS             current
+            DESCRIPTION
+                    "The value, in seconds, of the quietPeriod constant
+                    currently in use by the Authenticator PAE state
+                    machine."
+            REFERENCE
+                    " 9.4.1, quietPeriod"
+            DEFVAL { 60 }
+            ::= { unisdot1xPaeSystem 1 }
+
+    unisdot1xAuthTxPeriod OBJECT-TYPE
+            SYNTAX             Unsigned32
+            MAX-ACCESS     read-write
+            STATUS             current
+            DESCRIPTION
+                    "The value, in seconds, of the txPeriod constant
+                    currently in use by the Authenticator PAE state
+                    machine."
+            REFERENCE
+                    " 9.4.1, txPeriod"
+            DEFVAL { 30 }
+            ::= { unisdot1xPaeSystem 2 }
+
+    unisdot1xAuthSuppTimeout OBJECT-TYPE
+            SYNTAX             Unsigned32
+            MAX-ACCESS     read-write
+            STATUS             current
+            DESCRIPTION
+                   "The value, in seconds, of the suppTimeout constant
+                   currently in use by the Backend Authentication state
+                   machine."
+            REFERENCE
+                   " 9.4.1, suppTimeout"
+            DEFVAL { 30 }
+            ::= { unisdot1xPaeSystem 3 }
+
+   unisdot1xAuthServerTimeout OBJECT-TYPE
+           SYNTAX             Unsigned32
+           MAX-ACCESS     read-write
+           STATUS             current
+           DESCRIPTION
+                   "The value, in seconds, of the serverTimeout constant
+                   currently in use by the Backend Authentication state
+                   machine."
+           REFERENCE
+                   " 9.4.1, serverTimeout"
+           DEFVAL { 100 }
+           ::= { unisdot1xPaeSystem 4 }
+
+   unisdot1xAuthMaxReq OBJECT-TYPE
+           SYNTAX             Unsigned32
+           MAX-ACCESS     read-write
+           STATUS             current
+           DESCRIPTION
+                   "The value of the maxReq constant currently in use by
+                   the Backend Authentication state machine."
+           REFERENCE
+                   " 9.4.1, maxReq"
+           DEFVAL { 2 }
+           ::= { unisdot1xPaeSystem 5 }
+
+   unisdot1xAuthReAuthPeriod OBJECT-TYPE
+           SYNTAX             Unsigned32
+           MAX-ACCESS     read-write
+           STATUS             current
+           DESCRIPTION
+                   "The value, in seconds, of the reAuthPeriod constant
+                   currently in use by the Reauthentication Timer state
+                   machine."
+           REFERENCE
+                   " 9.4.1, reAuthPeriod"
+           DEFVAL  { 3600 }
+           ::= { unisdot1xPaeSystem 6 }
+ 
+   unisdot1xAuthMethod OBJECT-TYPE
+           SYNTAX         INTEGER { chap(1), pap(2), eap(3) }
+           MAX-ACCESS     read-write
+           STATUS         current
+           DESCRIPTION
+                   "The value defines the 802.1X authenticatin method."
+           REFERENCE
+                   ""
+           DEFVAL  { 1 }
+           ::= { unisdot1xPaeSystem 7 }
+
+   -- ============================================================
+   -- The Authenticator Configuration Extracte Table
+   -- ============================================================
+
+   unisdot1xAuthConfigExtTable OBJECT-TYPE
+           SYNTAX             SEQUENCE OF Unisdot1xAuthConfigExtEntry
+           MAX-ACCESS     not-accessible
+           STATUS             current
+           DESCRIPTION
+                   " table extends dot1xAuthConfigTable"
+            REFERENCE
+                    " 9.4.1 Authenticator Configuration"
+            ::= { unisdot1xPaeAuthenticator 1 }
+
+    unisdot1xAuthConfigExtEntry OBJECT-TYPE
+            SYNTAX             Unisdot1xAuthConfigExtEntry
+            MAX-ACCESS     not-accessible
+            STATUS             current
+            DESCRIPTION
+                    " The configuration information for an Authenticator PAE."
+            INDEX { dot1xPaePortNumber }
+            ::= { unisdot1xAuthConfigExtTable 1 }
+            
+    Unisdot1xAuthConfigExtEntry   ::=
+    SEQUENCE {
+        unisdot1xpaeportAuthAdminStatus   INTEGER ,
+        unisdot1xpaeportControlledType    INTEGER ,
+        unisdot1xpaeportMaxUserNum        INTEGER ,
+        unisdot1xpaeportUserNumNow		INTEGER ,
+        unisdot1xpaeportClearStatistics	INTEGER ,
+        unisdot1xpaeportMcastTrigStatus   INTEGER ,
+        unisdot1xpaeportHandshakeStatus   INTEGER
+        }
+        
+    unisdot1xpaeportAuthAdminStatus  OBJECT-TYPE
+           SYNTAX             INTEGER { enabled( 1), disabled( 2) }
+           MAX-ACCESS     read-write
+           STATUS             current
+           DESCRIPTION
+                   "The administrative enable/disable state for Port Access Control in a port."
+           REFERENCE
+                   ""
+           DEFVAL  {2}
+           ::= { unisdot1xAuthConfigExtEntry 1 }
+           
+           
+    unisdot1xpaeportControlledType  OBJECT-TYPE
+           SYNTAX             INTEGER { port(1), mac(2) }
+           MAX-ACCESS     read-write
+           STATUS             current
+           DESCRIPTION
+                   "Port Access Control type , base port access control or base MAC access control"
+           REFERENCE
+                   ""
+           DEFVAL  {2}
+           ::= { unisdot1xAuthConfigExtEntry 2 }
+           
+    unisdot1xpaeportMaxUserNum  OBJECT-TYPE
+           SYNTAX             INTEGER 
+           MAX-ACCESS     read-write
+           STATUS             current
+           DESCRIPTION
+                   "the max num of online user in a port"
+           REFERENCE
+                   ""
+           DEFVAL  {256}
+           ::= { unisdot1xAuthConfigExtEntry 3 }
+          
+    unisdot1xpaeportUserNumNow  OBJECT-TYPE
+           SYNTAX             INTEGER 
+           MAX-ACCESS     read-only
+           STATUS             current
+           DESCRIPTION
+                   "the num of online user in a port now "
+           REFERENCE
+                   ""
+           ::= { unisdot1xAuthConfigExtEntry 4 }             
+      
+        
+    unisdot1xpaeportClearStatistics  OBJECT-TYPE
+           SYNTAX             INTEGER {clear(1)}
+           MAX-ACCESS     read-write
+           STATUS             current
+           DESCRIPTION
+                   "Clear various Statistics viz. "
+           REFERENCE
+                   ""
+           ::= { unisdot1xAuthConfigExtEntry 5 }    
+           
+           
+    unisdot1xpaeportMcastTrigStatus  OBJECT-TYPE
+           SYNTAX         INTEGER { enabled( 1), disabled( 2) }
+           MAX-ACCESS     read-write
+           STATUS         current
+           DESCRIPTION
+                   "The administrative enable/disable state for sending
+                   muticast EAP_REQ/ID packet."
+           REFERENCE
+                   ""
+           DEFVAL  {1}
+           ::= { unisdot1xAuthConfigExtEntry 6 }
+           
+    unisdot1xpaeportHandshakeStatus  OBJECT-TYPE
+           SYNTAX         INTEGER { enabled( 1 ), disabled( 2 ) }
+           MAX-ACCESS     read-write
+           STATUS         current
+           DESCRIPTION
+                   "The administrative enable/disable state for sending
+                   handshake EAP_REQ/ID packet."
+           REFERENCE
+                   ""
+           DEFVAL  {1}
+           ::= { unisdot1xAuthConfigExtEntry 7 }
+
+  -- trap defination
+    unisdot1xPaeTraps             OBJECT IDENTIFIER ::= { unispaeExtMibObjects 0 }
+
+    unissupplicantproxycheck NOTIFICATION-TYPE 
+      OBJECTS { unisproxycheckVlanId, unisproxycheckPortName, unisproxycheckMacAddr, unisproxycheckIpaddr, unisproxycheckUsrName }
+      STATUS current
+      DESCRIPTION ""
+      ::= { unisdot1xPaeTraps 1 }
+
+    unisproxycheckVlanId OBJECT-TYPE 
+      SYNTAX INTEGER
+      MAX-ACCESS accessible-for-notify
+      STATUS current
+      DESCRIPTION "."
+      ::= { unisdot1xPaeTraps 2 }
+
+    unisproxycheckPortName OBJECT-TYPE 
+      SYNTAX OCTET STRING
+      MAX-ACCESS accessible-for-notify
+      STATUS current
+      DESCRIPTION "."
+      ::= { unisdot1xPaeTraps 3 }
+
+    unisproxycheckMacAddr OBJECT-TYPE 
+      SYNTAX MacAddress
+      MAX-ACCESS accessible-for-notify
+      STATUS current
+      DESCRIPTION "."
+      ::= { unisdot1xPaeTraps 4 }
+      
+    unisproxycheckIpaddr OBJECT-TYPE 
+      SYNTAX IpAddress
+      MAX-ACCESS accessible-for-notify
+      STATUS current
+      DESCRIPTION "."
+      ::= { unisdot1xPaeTraps 5 } 
+              
+    unisproxycheckUsrName OBJECT-TYPE 
+      SYNTAX OCTET STRING
+      MAX-ACCESS accessible-for-notify
+      STATUS current
+      DESCRIPTION "."
+      ::= { unisdot1xPaeTraps 6 }               
+END
+               
+    

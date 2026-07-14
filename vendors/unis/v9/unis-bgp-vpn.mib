@@ -1,0 +1,1374 @@
+--  =============================================================================
+-- Copyright (c) 2024 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+--  Description: This MIB module contains managed object definitions for
+--               Border Gateway Protocol (BGP) Virtual Private Networks (VPNs).
+--  Reference:
+--  Version: V1.3
+--  History:
+--    V1.0 2021-02-04 Initial version Created by Yueyongxia
+--    V1.1 2021-06-04 Add mib table items by Wangchao
+--    V1.2 2022-08-18 Add UnisBgpAFI and UnisBgpSAFI items and a trap node
+--                    unisBgpPeerGRStatusChange by Baisong
+--    V1.3 2023-09-09 Add five trap nodes by Wangyanxiu
+--  =============================================================================
+UNIS-BGP-VPN-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        OBJECT-TYPE, MODULE-IDENTITY,
+        IpAddress, Unsigned32, Counter32, Gauge32, Integer32, NOTIFICATION-TYPE
+            FROM SNMPv2-SMI
+        TEXTUAL-CONVENTION
+            FROM SNMPv2-TC
+        InetAddressType, InetAddress
+            FROM INET-ADDRESS-MIB
+        unisCommon
+            FROM UNIS-OID-MIB;
+
+--  =============================================================================
+--  module identity part
+--  =============================================================================
+unisBgpVpn MODULE-IDENTITY
+    LAST-UPDATED "202309090000Z"        -- Sep 09, 2023 at 00:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module for management of Border Gateway Protocol (BGP)
+         Virtual Private Networks (VPNs)."
+    REVISION "202309090000Z"            -- Sep 09, 2023 at 00:00 GMT
+    DESCRIPTION
+        "Add some trap nodes for unisBgpVpn."
+    REVISION "202208180000Z"            -- Aug 18, 2022 at 00:00 GMT
+    DESCRIPTION
+        "Add a new trap unisBgpPeerGRStatusChange, in addition,
+         modify UnisBgpAFI and UnisBgpSAFI."
+    REVISION "202106040000Z"            -- Jun 04, 2021 at 00:00 GMT
+    DESCRIPTION
+        "Add some MIB nodes and trap nodes for unisBgpVpn."
+    REVISION "202102040000Z"            -- Feb 04, 2021 at 00:00 GMT
+    DESCRIPTION
+        "Update"
+    ::= { unisCommon 202 }
+
+-- Textual Conventions.
+
+UnisBgpAFI ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The Address Family Identifier(AFI) of BGP peer."
+    SYNTAX INTEGER
+                {
+                ipv4(1),
+                ipv6(2),
+                l2vpn(25),
+                l2vpnDraft(196),
+                dedicated(6000)
+                }
+
+UnisBgpSAFI ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The Subsequent Address Family Identifier(SAFI) of BGP peer."
+    SYNTAX INTEGER
+                {
+                unicast(1),
+                multicast(2),
+                mpls(4),
+                mcastVpn(5),
+                l2vpn(65),
+                mdt(66),
+                evpn(70),
+                vpn(128),
+                routeTarget(132),
+                dedicated(255)
+                }
+
+UnisBgpVpnId ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "31a"
+    STATUS       current
+    DESCRIPTION
+        "An identifier that is assigned to each MPLS/BGP VPN and
+         is used to uniquely identify it.  This is assigned by the
+         system operator or NMS and SHOULD be unique throughout
+         the MPLS domain.  If this is the case, then this identifier
+         can then be used at any LSR within a specific MPLS domain
+         to identify this MPLS/BGP VPN.  It may also be possible to
+         preserve the uniqueness of this identifier across MPLS
+         domain boundaries, in which case this identifier can then
+         be used to uniquely identify MPLS/BGP VPNs on a more global
+         basis."
+    REFERENCE
+        "RFC 2685 [VPN-RFC2685] Fox B., et al, 'Virtual Private
+         Networks Identifier', September 1999."
+    SYNTAX OCTET STRING(SIZE (0..31))
+
+--  =============================================================================
+--  unisBgpVpnObjects definition begin
+--  =============================================================================
+unisBgpVpnObjects OBJECT IDENTIFIER ::= { unisBgpVpn 1 }
+unisBgpPeers      OBJECT IDENTIFIER ::= { unisBgpVpnObjects 1 }
+unisBgpVpnRoute   OBJECT IDENTIFIER ::= { unisBgpVpnObjects 2 }
+--  =============================================================================
+--  unisBgpPeerAddrFamilyTable Definition
+--  =============================================================================
+unisBgpPeerAddrFamilyTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisBgpPeerAddrFamilyEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table is BGP peer address family table,
+         it contains the address family information of BGP peers."
+    ::= { unisBgpPeers 1 }
+
+unisBgpPeerAddrFamilyEntry OBJECT-TYPE
+    SYNTAX UnisBgpPeerAddrFamilyEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry in this table contains the information address family
+         information of BGP peers."
+    INDEX {
+            unisBgpPeerInstanceId,
+            unisBgpPeerVpnIndex,
+            unisBgpPeerAddrFamilyId,
+            unisBgpPeerSubAddrFamilyId,
+            unisBgpPeerType,
+            unisBgpPeerIPAddr
+          }
+    ::= { unisBgpPeerAddrFamilyTable 1 }
+
+UnisBgpPeerAddrFamilyEntry ::= SEQUENCE {
+    unisBgpPeerInstanceId                Unsigned32,
+    unisBgpPeerVpnIndex                  Unsigned32,
+    unisBgpPeerAddrFamilyId              UnisBgpAFI,
+    unisBgpPeerSubAddrFamilyId           UnisBgpSAFI,
+    unisBgpPeerType                      InetAddressType,
+    unisBgpPeerIPAddr                    InetAddress,
+    unisBgpPeerVpnName                   UnisBgpVpnId
+}
+
+unisBgpPeerInstanceId OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Denotes the identifier of the BGP peer instance."
+    ::= { unisBgpPeerAddrFamilyEntry 1 }
+
+unisBgpPeerVpnIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Denotes the identifier of the BGP peer instance."
+    ::= { unisBgpPeerAddrFamilyEntry 2 }
+
+unisBgpPeerAddrFamilyId OBJECT-TYPE
+    SYNTAX      UnisBgpAFI
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Denotes the identifier of the BGP peer address family."
+    ::= { unisBgpPeerAddrFamilyEntry 3 }
+
+unisBgpPeerSubAddrFamilyId OBJECT-TYPE
+    SYNTAX      UnisBgpSAFI
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Denotes the identifier of the BGP peer sub-address family."
+    ::= { unisBgpPeerAddrFamilyEntry 4 }
+
+unisBgpPeerType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Denotes the type of the BGP peer address family."
+    ::= { unisBgpPeerAddrFamilyEntry 5 }
+
+unisBgpPeerIPAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Denotes the IP address of the BGP peer."
+    ::= { unisBgpPeerAddrFamilyEntry 6 }
+
+unisBgpPeerVpnName OBJECT-TYPE
+    SYNTAX      UnisBgpVpnId
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The human-readable name of this VPN.  This MAY
+         be equivalent to the RFC2685 VPN-ID."
+    ::= { unisBgpPeerAddrFamilyEntry 7 }
+--  =============================================================================
+--  unisBgpPeerTable   Definition
+--  =============================================================================
+unisBgpPeerTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF UnisBgpPeerEntry
+     MAX-ACCESS not-accessible
+     STATUS current
+     DESCRIPTION
+         "BGP Peer Table.
+         This table contains information about the connections for BGP peers."
+     ::= { unisBgpPeers 2 }
+
+unisBgpPeerEntry OBJECT-TYPE
+     SYNTAX UnisBgpPeerEntry
+     MAX-ACCESS not-accessible
+     STATUS current
+     DESCRIPTION
+         "The information about the connections with BGP peers."
+     INDEX {
+            unisBgpPeerInstanceId,
+            unisBgpPeerVpnIndex,
+            unisBgpPeerAddrFamilyId,
+            unisBgpPeerSubAddrFamilyId,
+            unisBgpPeerType,
+            unisBgpPeerIPAddr
+          }
+     ::= { unisBgpPeerTable 1 }
+
+UnisBgpPeerEntry ::= SEQUENCE {
+    unisBgpPeerNegotiatedVersion     Unsigned32,
+    unisBgpPeerRemoteAs              Unsigned32,
+    unisBgpPeerRemoteAddr            InetAddress,
+    unisBgpPeerState                 INTEGER,
+    unisBgpPeerFsmEstablishedCounter Unsigned32,
+    unisBgpPeerFsmEstablishedTime    Gauge32,
+    unisBgpPeerGRStatus              INTEGER,
+    unisBgpPeerLastError             OCTET STRING,
+    unisBgpPeerUnAvaiReason          INTEGER,
+    unisBgpPeerAdminStatus           INTEGER
+    }
+
+unisBgpPeerNegotiatedVersion OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+         "The version negotiated with the remote BGP peer."
+    ::= { unisBgpPeerEntry 1 }
+
+unisBgpPeerRemoteAs OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The AS number of the remote BGP peer."
+    ::= { unisBgpPeerEntry 2 }
+
+
+unisBgpPeerRemoteAddr OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The IP address of the remote BGP peer."
+    ::= { unisBgpPeerEntry 3 }
+
+unisBgpPeerState OBJECT-TYPE
+     SYNTAX INTEGER
+     {
+         idle(1),
+         connect(2),
+         active(3),
+         openSent(4),
+         openConfirm(5),
+         established(6)
+      }
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+           "The status of the remote BGP peer, including:
+            1: Idle(1)
+            2: Connect(2)
+            3: Active(3)
+            4: OpenSent(4)
+            5: OpenConfirm(5)
+            6: Established(6)"
+      ::= { unisBgpPeerEntry 4 }
+
+unisBgpPeerFsmEstablishedCounter OBJECT-TYPE
+      SYNTAX Unsigned32
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+          "The Counter That Records the Times the Remote BGP Peer Is Correctly Connected
+          The counter is increased by one if the remote BGP peer is correctly connected once.
+          The counter could be set to zero."
+      ::= { unisBgpPeerEntry 5 }
+
+unisBgpPeerFsmEstablishedTime OBJECT-TYPE
+      SYNTAX Gauge32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The counter that records the times the remote BGP peer is correctly connected."
+      ::= { unisBgpPeerEntry 6 }
+
+unisBgpPeerGRStatus OBJECT-TYPE
+      SYNTAX INTEGER
+          {
+             peerNotBeingHelped(1),
+             peerRestarting(2),
+             peerFinishRestart(3),
+             peerHelping(4)
+          }
+      MAX-ACCESS accessible-for-notify
+      STATUS current
+      DESCRIPTION
+          "Graceful restart status of the BGP peer, including:
+          1: peerNotBeingHelped, indicating that the BGP peer will not be helped during restarting.
+          2: peerRestarting, indicating that the BGP peer is detected restarting.
+          3: peerFinishRestart, indicating that the BGP peer finishes the latest GR.
+          4: peerHelping, indicating that the BGP peer is helping the local end to perform GR."
+      ::= { unisBgpPeerEntry 7 }
+
+unisBgpPeerLastError OBJECT-TYPE
+      SYNTAX OCTET STRING(SIZE (0..31))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The last error code and subcode seen by this
+          peer on this connection.  If no error has
+          occurred, this field is zero.  Otherwise, the
+          first byte of this two byte OCTET STRING
+          contains the error code, and the second byte
+          contains the subcode."
+      ::= { unisBgpPeerEntry 8 }
+
+unisBgpPeerUnAvaiReason OBJECT-TYPE
+     SYNTAX INTEGER
+     {
+          otherErrCode(1),
+          errSubCodeUnspecified(2),
+          unknownErrSubcode(3),
+          connectionNoSynchronized(4),
+          badMessageLength(5),
+          badMessageType(6),
+          unsupportedVersionNumber(7),
+          badPeerAS(8),
+          badBGPIdentifier(9),
+          unsupportedOptionalParameter(10),
+          authenticationFailure(11),
+          unacceptableHoldTime(12),
+          unsupportedCapability(13),
+          malformedAttributeList(14),
+          unrecognizedWellknownAttr(15),
+          missingWellknownAttribute(16),
+          attributeFlagsError(17),
+          attributeLengthError(18),
+          invalidORIGINAttribute(19),
+          asRoutingLoop(20),
+          invalidNEXTHOPAttribute(21),
+          optionalAttributeError(22),
+          invalidNetworkField(23),
+          malformedASPATH(24),
+          receiveUnexpectedMessageinOpenSent(25),
+          receiveUnexpectedMessageinOpenConfirm(26),
+          receiveUnexpectedMessageinEstablished(27),
+          maximumNumberofPrefixesReached(28),
+          administrativeShutdown(29),
+          peerDeconfigured(30),
+          administrativeReset(31),
+          connectionRejected(32),
+          otherConfigurationChange(33),
+          connectionCollisionResolution(34),
+          outofResources(35)
+      }
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The reason of BGP states change."
+      ::= { unisBgpPeerEntry 9 }
+
+unisBgpPeerAdminStatus OBJECT-TYPE
+      SYNTAX     INTEGER {
+          stop(1),
+          start(2)
+          }
+      MAX-ACCESS read-only
+      STATUS     current
+      DESCRIPTION
+          "The desired state of the BGP connection.
+          A transition from 'stop' to 'start' will
+          cause the BGP Start Event to be generated.
+          A transition from 'start' to 'stop' will
+          cause the BGP Stop Event to be generated.
+          This parameter can be used to restart BGP
+          peer connections.  Care should be used in
+          providing write access to this object
+          without adequate authentication."
+       ::= { unisBgpPeerEntry 10 }
+--  =============================================================================
+--  unisBgpPeerRouteTable Definition
+--  =============================================================================
+unisBgpPeerRouteTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisBgpPeerRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table is BGP peer route table, it contains routing
+         information of BGP peers."
+    ::= { unisBgpPeers 3 }
+
+unisBgpPeerRouteEntry OBJECT-TYPE
+    SYNTAX UnisBgpPeerRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Denotes the routing information of BGP peers."
+    INDEX {
+            unisBgpPeerInstanceId,
+            unisBgpPeerVpnIndex,
+            unisBgpPeerAddrFamilyId,
+            unisBgpPeerSubAddrFamilyId,
+            unisBgpPeerType,
+            unisBgpPeerIPAddr
+          }
+    ::= { unisBgpPeerRouteTable 1 }
+
+UnisBgpPeerRouteEntry ::= SEQUENCE {
+    unisBgpPeerRouteRcvCount        Counter32,
+    unisBgpPeerRouteActiveCount     Counter32,
+    unisBgpPeerRouteAdvCount        Counter32,
+    unisBgpPeerRouteDistinguisher   OCTET STRING,
+    unisBgpPeerRoutePrefix          InetAddress,
+    unisBgpPeerRoutePrefixLen       Unsigned32
+}
+
+unisBgpPeerRouteRcvCount OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Denotes the number of routes received from the BGP peer."
+    ::= { unisBgpPeerRouteEntry 1 }
+
+unisBgpPeerRouteActiveCount OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Denotes the number of active routes received from the BGP peer."
+    ::= { unisBgpPeerRouteEntry 2 }
+
+unisBgpPeerRouteAdvCount OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Denotes the number of routes sent to the BGP peer."
+    ::= { unisBgpPeerRouteEntry 3 }
+
+unisBgpPeerRouteDistinguisher  OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE (0..21))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "RD of a route learned from a BGP peer."
+    ::= { unisBgpPeerRouteEntry 4 }
+
+unisBgpPeerRoutePrefix  OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Prefix of a route learned from a BGP peer."
+    ::= { unisBgpPeerRouteEntry 5 }
+
+unisBgpPeerRoutePrefixLen  OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..128)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Prefix length of a route learned from a BGP peer."
+    ::= { unisBgpPeerRouteEntry 6 }
+--  =============================================================================
+--  unisBgpPeerConfigTable Definition
+--  =============================================================================
+unisBgpPeerConfigTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisBgpPeerConfigEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table is BGP peer configuration table, it contains configuration
+        information of BGP peers."
+    ::= { unisBgpPeers 4 }
+
+unisBgpPeerConfigEntry OBJECT-TYPE
+    SYNTAX UnisBgpPeerConfigEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Denotes the configurations of BGP peers."
+    INDEX {
+            unisBgpPeerInstanceId,
+            unisBgpPeerVpnIndex,
+            unisBgpPeerAddrFamilyId,
+            unisBgpPeerSubAddrFamilyId,
+            unisBgpPeerType,
+            unisBgpPeerIPAddr
+          }
+    ::= { unisBgpPeerConfigTable 1 }
+
+UnisBgpPeerConfigEntry ::= SEQUENCE {
+    unisBgpPeerConfigRouteLimitNum       Unsigned32,
+    unisBgpPeerConfigRouteLimitThreshold Unsigned32
+}
+
+unisBgpPeerConfigRouteLimitNum OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Denotes the maximum routes received from the BGP peer."
+    ::= { unisBgpPeerConfigEntry 1 }
+
+unisBgpPeerConfigRouteLimitThreshold OBJECT-TYPE
+    SYNTAX Unsigned32 (0..100)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Denotes the alarm threshold (%) of the maximum routes received from the BGP peer."
+    ::= { unisBgpPeerConfigEntry 2 }
+
+--  =============================================================================
+--  unisBgpPeerStatisticTable Definition
+--  =============================================================================
+
+unisBgpPeerStatisticTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisBgpPeerStatisticEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "BGP neighbor statistic table.which contains BGP neighbor connection information,
+        and each BGP neighbor corresponds to a table item."
+    ::= { unisBgpPeers 5 }
+
+unisBgpPeerStatisticEntry OBJECT-TYPE
+    SYNTAX UnisBgpPeerStatisticEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry containing connection information with a BGP peer."
+    INDEX {
+            unisBgpPeerProcessId,
+            unisBgpPeerVrfInstanceId,
+            unisBgpPeerAddr
+          }
+    ::= { unisBgpPeerStatisticTable 1 }
+
+UnisBgpPeerStatisticEntry ::= SEQUENCE {
+    unisBgpPeerProcessId                      Unsigned32,
+    unisBgpPeerVrfInstanceId                Unsigned32,
+    unisBgpPeerAddr                       InetAddress,
+    unisBgpPeerFsmEstablishedTransitions      Counter32,
+    unisBgpPeerDownCounts                 Counter32,
+    unisBgpPeerInUpdateMsgs               Counter32,
+    unisBgpPeerOutUpdateMsgs              Counter32,
+    unisBgpPeerInTotalMsgs                Counter32,
+    unisBgpPeerOutTotalMsgs               Counter32
+}
+
+unisBgpPeerProcessId OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The process ID of the BGP instance."
+    ::= { unisBgpPeerStatisticEntry 1 }
+
+unisBgpPeerVrfInstanceId OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "VPN instance ID index of remote BGP peer."
+    ::= { unisBgpPeerStatisticEntry 2 }
+
+unisBgpPeerAddr OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The IP address of the BGP neighbor."
+    ::= { unisBgpPeerStatisticEntry 3 }
+
+unisBgpPeerFsmEstablishedTransitions OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "BGP FSM migrates to the established state count."
+    ::= { unisBgpPeerStatisticEntry 4 }
+
+unisBgpPeerDownCounts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Based on peer BGP FSM migration from established to non-established state count."
+    ::= { unisBgpPeerStatisticEntry 5 }
+
+unisBgpPeerInUpdateMsgs OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of Update messages received from BGP neighbors."
+    ::= { unisBgpPeerStatisticEntry 6 }
+
+unisBgpPeerOutUpdateMsgs OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of Update messages sent to BGP neighbors."
+    ::= { unisBgpPeerStatisticEntry 7 }
+
+unisBgpPeerInTotalMsgs OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of all packets received from BGP neighbors."
+    ::= { unisBgpPeerStatisticEntry 8 }
+
+unisBgpPeerOutTotalMsgs OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of all packets sent to BGP neighbors."
+    ::= { unisBgpPeerStatisticEntry 9 }
+
+--  =============================================================================
+--  unisBgpPeerSessionTable Definition
+--  =============================================================================
+unisBgpPeerSessionTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisBgpPeerSessionEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "BGP Peer Session Table.
+        This table contains BGP peer session informations."
+    ::= { unisBgpPeers 6 }
+
+unisBgpPeerSessionEntry OBJECT-TYPE
+    SYNTAX UnisBgpPeerSessionEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The information about the BGP peer sessions."
+    INDEX {
+             unisBgpPeerSessionVrfId,
+             unisBgpPeerSessionRemoteAddrType,
+             unisBgpPeerSessionRemoteAddr
+           }
+    ::= { unisBgpPeerSessionTable 1 }
+
+UnisBgpPeerSessionEntry ::= SEQUENCE {
+    unisBgpPeerSessionVrfId             Unsigned32,
+    unisBgpPeerSessionRemoteAddrType    InetAddressType,
+    unisBgpPeerSessionRemoteAddr        InetAddress,
+    unisBgpPeerSessionRemotePort        Integer32,
+    unisBgpPeerSessionLocalAddrType     InetAddressType,
+    unisBgpPeerSessionLocalAddr         InetAddress,
+    unisBgpPeerSessionLocalPort         Integer32,
+    unisBgpPeerSessionUnavailableType   INTEGER,
+    unisBgpPeerSessionLocalIfName       OCTET STRING,
+    unisBgpPeerSessionReason            INTEGER,
+    unisBgpPeerSessionVrfName           OCTET STRING,
+    unisBgpPeerSessionRouteOrigId       IpAddress,
+    unisBgpPeerSessionRouterId          IpAddress
+}
+
+unisBgpPeerSessionVrfId OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The VPN instance Id of the remote BGP peer."
+    ::= { unisBgpPeerSessionEntry 1 }
+
+unisBgpPeerSessionRemoteAddrType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "BGP peer session remote address type."
+    ::= { unisBgpPeerSessionEntry 2 }
+
+unisBgpPeerSessionRemoteAddr OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "BGP peer session remote address."
+    ::= { unisBgpPeerSessionEntry 3 }
+
+unisBgpPeerSessionRemotePort OBJECT-TYPE
+    SYNTAX     Integer32 (0..65535)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The remote port for BGP peers."
+    ::= { unisBgpPeerSessionEntry 4 }
+
+unisBgpPeerSessionLocalAddrType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "BGP peer session local address type."
+    ::= { unisBgpPeerSessionEntry 5 }
+
+unisBgpPeerSessionLocalAddr OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "BGP peer session local address."
+    ::= { unisBgpPeerSessionEntry 6 }
+
+unisBgpPeerSessionLocalPort OBJECT-TYPE
+    SYNTAX     Integer32 (0..65535)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The local port for BGP peers."
+    ::= { unisBgpPeerSessionEntry 7 }
+
+unisBgpPeerSessionUnavailableType OBJECT-TYPE
+    SYNTAX INTEGER {
+                upToDown(1),
+                alwaysDown(2)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "BGP peer unavailable type including:
+        1: Up To Down(1)
+        2: Always Down(2)"
+    ::= { unisBgpPeerSessionEntry 8 }
+
+unisBgpPeerSessionLocalIfName OBJECT-TYPE
+    SYNTAX OCTET STRING(SIZE (0..31))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "BGP peer session local IFName."
+    ::= { unisBgpPeerSessionEntry 9 }
+
+unisBgpPeerSessionReason OBJECT-TYPE
+    SYNTAX INTEGER {
+          otherErrCode(1),
+          errSubCodeUnspecified(2),
+          unknownErrSubcode(3),
+          connectionNoSynchronized(4),
+          badMessageLength(5),
+          badMessageType(6),
+          unsupportedVersionNumber(7),
+          badPeerAS(8),
+          badBGPIdentifier(9),
+          unsupportedOptionalParameter(10),
+          authenticationFailure(11),
+          unacceptableHoldTime(12),
+          unsupportedCapability(13),
+          malformedAttributeList(14),
+          unrecognizedWellknownAttr(15),
+          missingWellknownAttribute(16),
+          attributeFlagsError(17),
+          attributeLengthError(18),
+          invalidORIGINAttribute(19),
+          asRoutingLoop(20),
+          invalidNEXTHOPAttribute(21),
+          optionalAttributeError(22),
+          invalidNetworkField(23),
+          malformedASPATH(24),
+          receiveUnexpectedMessageinOpenSent(25),
+          receiveUnexpectedMessageinOpenConfirm(26),
+          receiveUnexpectedMessageinEstablished(27),
+          maximumNumberofPrefixesReached(28),
+          administrativeShutdown(29),
+          peerDeconfigured(30),
+          administrativeReset(31),
+          connectionRejected(32),
+          otherConfigurationChange(33),
+          connectionCollisionResolution(34),
+          outofResources(35)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The reason of BGP states change."
+    ::= { unisBgpPeerSessionEntry 10 }
+
+unisBgpPeerSessionVrfName OBJECT-TYPE
+    SYNTAX OCTET STRING(SIZE (0..31))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The name of the VPN instance."
+    ::= { unisBgpPeerSessionEntry 11 }
+
+unisBgpPeerSessionRouteOrigId OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Originator ID of a route learned from a BGP peer."
+    ::= { unisBgpPeerSessionEntry 12 }
+
+unisBgpPeerSessionRouterId OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Router ID of a BGP peer."
+    ::= { unisBgpPeerSessionEntry 13 }
+--  =============================================================================
+--  unisBgpPeerMessageTable Definition
+--  =============================================================================
+unisBgpPeerMessageTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisBgpPeerMessageEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Protocol Packet data Table for BGP Peers.
+        This table contains information about the protocol packet data of BGP peers."
+    ::= { unisBgpPeers 7 }
+
+unisBgpPeerMessageEntry OBJECT-TYPE
+    SYNTAX UnisBgpPeerMessageEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The information about the protocol packet data of the BGP peers."
+    INDEX {
+            unisBgpPeerInstanceId,
+            unisBgpPeerVpnIndex,
+            unisBgpPeerAddrFamilyId,
+            unisBgpPeerSubAddrFamilyId,
+            unisBgpPeerType,
+            unisBgpPeerIPAddr
+          }
+    ::= { unisBgpPeerMessageTable 1 }
+
+UnisBgpPeerMessageEntry ::= SEQUENCE {
+    unisBgpPeerInTotalMsgCounter         Counter32,
+    unisBgpPeerOutTotalMsgCounter        Counter32,
+    unisBgpPeerInOpenMsgCounter          Counter32,
+    unisBgpPeerInUpdateMsgCounter        Counter32,
+    unisBgpPeerInNotificationMsgCounter  Counter32,
+    unisBgpPeerInKeepAliveMsgCounter     Counter32,
+    unisBgpPeerInRouteFreshMsgCounter    Counter32,
+    unisBgpPeerOutOpenMsgCounter         Counter32,
+    unisBgpPeerOutUpdateMsgCounter       Counter32,
+    unisBgpPeerOutNotificationMsgCounter Counter32,
+    unisBgpPeerOutKeepAliveMsgCounter    Counter32,
+    unisBgpPeerOutRouteFreshMsgCounter   Counter32
+}
+
+unisBgpPeerInTotalMsgCounter OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of protocol packet data received from the remote BGP peer."
+    ::= { unisBgpPeerMessageEntry 1 }
+
+unisBgpPeerOutTotalMsgCounter OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of protocol packet data sent to the remote BGP peer."
+    ::= { unisBgpPeerMessageEntry 2 }
+
+unisBgpPeerInOpenMsgCounter OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of Open packet data received from the remote BGP peer."
+    ::= { unisBgpPeerMessageEntry 3 }
+
+unisBgpPeerInUpdateMsgCounter OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of Update packet data received from the remote BGP peer."
+    ::= { unisBgpPeerMessageEntry 4 }
+
+unisBgpPeerInNotificationMsgCounter OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of Notification packet data received from the remote BGP peer."
+    ::= { unisBgpPeerMessageEntry 5 }
+
+unisBgpPeerInKeepAliveMsgCounter OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of Keepalive packet data received from the remote BGP peer."
+    ::= { unisBgpPeerMessageEntry 6 }
+
+unisBgpPeerInRouteFreshMsgCounter OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of Route-Refresh packet data received from the remote BGP peer."
+    ::= { unisBgpPeerMessageEntry 7 }
+
+unisBgpPeerOutOpenMsgCounter OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of Open packet data sent to the remote BGP peer."
+    ::= { unisBgpPeerMessageEntry 8 }
+
+unisBgpPeerOutUpdateMsgCounter OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of Update packet data sent to the remote BGP peer."
+    ::= { unisBgpPeerMessageEntry 9 }
+
+unisBgpPeerOutNotificationMsgCounter OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of Notification packet data sent to the remote BGP peer."
+    ::= { unisBgpPeerMessageEntry 10 }
+
+unisBgpPeerOutKeepAliveMsgCounter OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of Keepalive packet data sent to the remote BGP peer."
+    ::= { unisBgpPeerMessageEntry 11 }
+
+unisBgpPeerOutRouteFreshMsgCounter OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of Route-Refresh packet data sent to the remote BGP peer."
+    ::= { unisBgpPeerMessageEntry 12 }
+
+--  =============================================================================
+--  unisBgpVpnRouteTable Definition
+--  =============================================================================
+
+unisBgpVpnRouteTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UnisBgpVpnRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "BGP VRF routing table."
+    ::= { unisBgpVpnRoute 1 }
+
+unisBgpVpnRouteEntry OBJECT-TYPE
+    SYNTAX     UnisBgpVpnRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "BGP routing entry."
+    INDEX { unisBgpVpnRouteType, unisBgpVpnInstName, unisBgpVpnAddressFamily }
+    ::= { unisBgpVpnRouteTable 1 }
+
+UnisBgpVpnRouteEntry ::= SEQUENCE {
+    unisBgpVpnRouteType      Unsigned32,
+    unisBgpVpnInstName       UnisBgpVpnId,
+    unisBgpVpnAddressFamily  Unsigned32,
+    unisBgpVpnCurrRouteNum   Unsigned32,
+    unisBgpVpnThresholdValue Unsigned32
+}
+
+unisBgpVpnRouteType OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Route type."
+    ::= { unisBgpVpnRouteEntry 1 }
+
+unisBgpVpnInstName OBJECT-TYPE
+     SYNTAX UnisBgpVpnId
+     MAX-ACCESS accessible-for-notify
+     STATUS current
+     DESCRIPTION
+         "VPN instance name."
+     ::= { unisBgpVpnRouteEntry 2 }
+
+unisBgpVpnAddressFamily OBJECT-TYPE
+     SYNTAX Unsigned32
+     MAX-ACCESS accessible-for-notify
+     STATUS current
+     DESCRIPTION
+         "Address family."
+     ::= { unisBgpVpnRouteEntry 3 }
+
+unisBgpVpnCurrRouteNum OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Current number of BGP peer routes."
+    ::= { unisBgpVpnRouteEntry 4 }
+
+unisBgpVpnThresholdValue OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total threshold value."
+    ::= { unisBgpVpnRouteEntry 5 }
+--  =============================================================================
+--  unisBgpVpnScalars Definition
+--  =============================================================================
+unisBgpVpnScalars OBJECT IDENTIFIER ::= { unisBgpVpnObjects 3 }
+
+unisBgpConfiguredVrfs OBJECT-TYPE
+    SYNTAX        Unsigned32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The number of VRFs on this node."
+    ::= { unisBgpVpnScalars 1 }
+
+unisBgpConfiguredIpv4Vrfs  OBJECT-TYPE
+    SYNTAX        Unsigned32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The number of IPv4-family VRFs on this node."
+    ::= { unisBgpVpnScalars 2 }
+
+unisBgpConfiguredIpv6Vrfs  OBJECT-TYPE
+    SYNTAX        Unsigned32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The number of IPv6-family VRFs on this node."
+    ::= { unisBgpVpnScalars 3 }
+
+unisBgpConfiguredIpv4Flowspec OBJECT-TYPE
+    SYNTAX        Unsigned32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The number of IPv4-Flowspec-family VRFs on this node."
+    ::= { unisBgpVpnScalars 4 }
+
+unisBgpConfiguredIpv6Flowspec  OBJECT-TYPE
+    SYNTAX        Unsigned32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The number of IPv6-Flowspec-family VRFs on this node."
+    ::= { unisBgpVpnScalars 5 }
+
+unisBgpConfiguredEvpnVrfs  OBJECT-TYPE
+    SYNTAX        Unsigned32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The number of Evpn-family VRFs on this node."
+    ::= { unisBgpVpnScalars 6 }
+
+--  ============================================================================
+--  End of unisBgpVpnObjects Definition
+--  ============================================================================
+
+--  ============================================================================
+--  Begin of unisBgpProcess Definition
+--  ============================================================================
+unisBgpInstanceObjects OBJECT IDENTIFIER ::= { unisBgpVpn 2 }
+
+unisBgpInstance OBJECT IDENTIFIER ::= { unisBgpInstanceObjects 1 }
+
+--  ==============================================================================
+--  unisBgpInstanceCommTable Definition
+--  =============================================================================
+unisBgpInstanceCommTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisBgpInstanceCommEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table describe BGP peer address family table,
+         it shows the address family information of BGP peers."
+    ::= { unisBgpInstance 1 }
+
+unisBgpInstanceCommEntry OBJECT-TYPE
+    SYNTAX UnisBgpInstanceCommEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry in this table shows the information address family
+         information of BGP peers."
+    INDEX {
+            unisBgpInstanceName
+          }
+    ::= { unisBgpInstanceCommTable 1 }
+
+UnisBgpInstanceCommEntry ::= SEQUENCE {
+    unisBgpInstanceName                   OCTET STRING,
+    unisBgpInstanceId                     Unsigned32,
+    unisBgpMaxDynPeerNum                  Unsigned32
+}
+
+unisBgpInstanceName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The parameter of BGP instance name."
+    ::= { unisBgpInstanceCommEntry 1 }
+
+unisBgpInstanceId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The parameter of BGP instance ID."
+    ::= { unisBgpInstanceCommEntry 2 }
+
+unisBgpMaxDynPeerNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Maximum number of BGP dynamic peers."
+    ::= { unisBgpInstanceCommEntry 3 }
+--  ============================================================================
+--  End of unisBgpProcessObjects Definition
+--  ============================================================================
+
+--  ============================================================================
+--  Begin of unisBgpVpnRpkiObjects Definition
+--  ============================================================================
+unisBgpVpnRpkiObjects OBJECT IDENTIFIER ::= { unisBgpVpn 3 }
+
+unisBgpVpnRpkiSessions OBJECT IDENTIFIER ::= { unisBgpVpnRpkiObjects 1 }
+
+unisBgpVpnRpkiTraps OBJECT IDENTIFIER ::= { unisBgpVpnRpkiObjects 2 }
+
+--  =============================================================================
+--  unisBgpVpnRpkiSessions Definition
+--  =============================================================================
+
+unisBgpVpnRpkiSessionVrfName OBJECT-TYPE
+    SYNTAX UnisBgpVpnId
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The index of the instance session."
+    ::= { unisBgpVpnRpkiSessions 1 }
+
+unisBgpVpnRpkiSessionType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The address family type for the remote session."
+    ::= { unisBgpVpnRpkiSessions 2 }
+
+unisBgpVpnRpkiSessionIPAddr OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The session IP address."
+    ::= { unisBgpVpnRpkiSessions 3 }
+
+unisBgpVpnRpkiSessionRoaLimitNum OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Restriction number of rpki session ROA."
+    ::= { unisBgpVpnRpkiSessions 4 }
+
+--  =============================================================================
+--  unisBgpVpnRpkiTrapNotifications Definition
+--  =============================================================================
+unisBgpVpnRpkiTrapNotifications OBJECT IDENTIFIER ::= { unisBgpVpnRpkiTraps 0 }
+
+unisBgpVpnRpkiSessionRoaExceed NOTIFICATION-TYPE
+    OBJECTS { unisBgpVpnRpkiSessionRoaLimitNum }
+    STATUS current
+    DESCRIPTION
+        "The RPKI SessionRoaExceed event will be generated when the number of rpki session ROA exceeds."
+    ::= { unisBgpVpnRpkiTrapNotifications 1 }
+
+unisBgpVpnRpkiSessionRoaExceedClear NOTIFICATION-TYPE
+    OBJECTS { unisBgpVpnRpkiSessionRoaLimitNum }
+    STATUS current
+    DESCRIPTION
+        "Generate rpki sessionroaedeclear event when the number of rpki session ROAs exceeds clear."
+    ::= { unisBgpVpnRpkiTrapNotifications 2 }
+
+unisBgpVpnTraps OBJECT IDENTIFIER ::= { unisBgpVpn 4 }
+
+unisBgpVpnTrapNotifications OBJECT IDENTIFIER ::= { unisBgpVpnTraps 0 }
+
+unisBgpPeerRouteNumThresholdExceed NOTIFICATION-TYPE
+    OBJECTS { unisBgpPeerConfigRouteLimitNum, unisBgpPeerConfigRouteLimitThreshold }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the number of routes received from the BGP peer exceeds the alarm threshold."
+    ::= { unisBgpVpnTrapNotifications 1 }
+
+unisBgpPeerRouteNumThresholdClear NOTIFICATION-TYPE
+    OBJECTS { unisBgpPeerConfigRouteLimitNum, unisBgpPeerConfigRouteLimitThreshold }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the number of routes received from the BGP peer decreases below the alarm threshold."
+    ::= { unisBgpVpnTrapNotifications 2 }
+
+unisBgpPeerRouteExceed NOTIFICATION-TYPE
+    OBJECTS { unisBgpPeerConfigRouteLimitNum, unisBgpPeerConfigRouteLimitThreshold }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when bgp peer session route number exceed."
+    ::= { unisBgpVpnTrapNotifications 3 }
+
+unisBgpPeerRouteExceedClear NOTIFICATION-TYPE
+    OBJECTS { unisBgpPeerConfigRouteLimitNum, unisBgpPeerConfigRouteLimitThreshold }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when bgp peer session route number exceed clear."
+    ::= { unisBgpVpnTrapNotifications 4 }
+
+unisBgpPeerEstablished NOTIFICATION-TYPE
+    OBJECTS { unisBgpPeerLastError, unisBgpPeerState }
+    STATUS current
+    DESCRIPTION
+        "When the BGP FSM enters the established state, the BGP established event is generated."
+    ::= { unisBgpVpnTrapNotifications 5 }
+
+unisBgpPeerBackwardTransition NOTIFICATION-TYPE
+    OBJECTS { unisBgpPeerLastError, unisBgpPeerState, unisBgpPeerUnAvaiReason}
+    STATUS current
+    DESCRIPTION
+        "The BGPBackwardTransition Event is generated
+        when the BGP FSM number moves from a higher
+        state to a lower state."
+    ::= { unisBgpVpnTrapNotifications 6 }
+
+unisBgpVrfRouteNumReachThreshold NOTIFICATION-TYPE
+    OBJECTS { unisBgpVpnRouteType, unisBgpVpnInstName, unisBgpVpnAddressFamily, unisBgpVpnCurrRouteNum, unisBgpVpnThresholdValue }
+    STATUS current
+    DESCRIPTION
+        "The VPN instance routes reached the alarm threshould."
+    ::= { unisBgpVpnTrapNotifications 7 }
+
+unisBgpVrfRouteNumReachThresholdClear NOTIFICATION-TYPE
+    OBJECTS { unisBgpVpnRouteType, unisBgpVpnInstName, unisBgpVpnAddressFamily, unisBgpVpnCurrRouteNum, unisBgpVpnThresholdValue }
+    STATUS current
+    DESCRIPTION
+        "The VPN instance routes fell below the clear alarm threshold."
+    ::= { unisBgpVpnTrapNotifications 8 }
+
+unisBgpPeerAFRouteThresholdExceed NOTIFICATION-TYPE
+    OBJECTS { unisBgpVpnAddressFamily, unisBgpPeerConfigRouteLimitNum, unisBgpPeerConfigRouteLimitThreshold, unisBgpInstanceName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when when the number of
+        routes received by the neighbor under the BGP address family
+        reaches an alarm threshold state."
+    ::= { unisBgpVpnTrapNotifications 9 }
+
+unisBgpPeerAFRouteThresholdClear NOTIFICATION-TYPE
+    OBJECTS { unisBgpVpnAddressFamily, unisBgpPeerConfigRouteLimitNum, unisBgpPeerConfigRouteLimitThreshold, unisBgpInstanceName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the number of
+        routes received by the neighbor below the BGP address
+        family drops below the alert threshold."
+    ::= { unisBgpVpnTrapNotifications 10 }
+
+unisBgpPeerAFRouteExceed NOTIFICATION-TYPE
+    OBJECTS { unisBgpVpnAddressFamily, unisBgpPeerConfigRouteLimitNum, unisBgpInstanceName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the number of
+        routes received by the neighbor under the BGP address
+        family reaches a maximum state."
+    ::= { unisBgpVpnTrapNotifications 11 }
+
+unisBgpPeerAFRouteExceedClear NOTIFICATION-TYPE
+    OBJECTS { unisBgpVpnAddressFamily, unisBgpPeerConfigRouteLimitNum, unisBgpInstanceName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the number of
+        routes received by the neighbors below the BGP address
+        family drops below a maximum."
+    ::= { unisBgpVpnTrapNotifications 12 }
+
+unisBgpPeerGRStatusChange NOTIFICATION-TYPE
+    OBJECTS { unisBgpPeerGRStatus }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the graceful restart status of the
+        BGP peer is changed."
+    ::= { unisBgpVpnTrapNotifications 13 }
+
+unisBgpDynPeerExceed NOTIFICATION-TYPE
+    OBJECTS { unisBgpMaxDynPeerNum }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the number of dynamic peers
+         has exceeded the upper limit."
+    ::= { unisBgpVpnTrapNotifications 14 }
+
+unisBgpDynPeerExceedClear NOTIFICATION-TYPE
+    OBJECTS { unisBgpMaxDynPeerNum }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the number of dynamic peers
+         has dropped below the upper limit."
+    ::= { unisBgpVpnTrapNotifications 15 }
+
+unisBgpPeerRouteFlap NOTIFICATION-TYPE
+    OBJECTS { unisBgpPeerRouteDistinguisher, unisBgpPeerRoutePrefix, unisBgpPeerRoutePrefixLen }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when routes learned from a peer or peer group flap."
+    ::= { unisBgpVpnTrapNotifications 16 }
+
+unisBgpRouteOriginatorIdConflict NOTIFICATION-TYPE
+    OBJECTS { unisBgpPeerSessionRouteOrigId }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the ORIGINATOR_ID attribute of routes
+         learned from peers conflicts with the local route ID."
+    ::= { unisBgpVpnTrapNotifications 17 }
+
+unisBgpRemoteRouterIdConflict NOTIFICATION-TYPE
+    OBJECTS { unisBgpPeerSessionRouterId }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when a peer's route ID
+         conflicts with the local route ID."
+    ::= { unisBgpVpnTrapNotifications 18 }
+--  End of UNIS-BGP-VPN-MIB
+END
+

@@ -1,0 +1,4644 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--   The file defines a MIB to provide wireless intrusion prevention service
+--   feature.
+-- Reference:
+-- Version: V1.1
+-- History:
+--   V1.0 created by sunanzhi
+--     Initial version 2015-03-20
+--        2015-12-08 updated by sunanzhi
+--     Modify the node name of UnisDot11WIPSVsdEntry,UnisDot11WIPSAp2VsdEntry,
+--     UnisDot11WIPSApRadioEntry,UnisDot11WIPSDctAPEntry,
+--     UnisDot11WIPSDctStaEntry
+--     Add new objects UnisDot11WIPSRuleEntry,UnisDot11WIPSAlySigRuleEntry,
+--     UnisDot11WIPSAlyClaRuleEntry,UnisDot11WIPSTrustMacEntry,
+--     UnisDot11WIPSBlockMacEntry,UnisDot11WIPSManulClaEntry,
+--     UnisDot11WIPSTrustOuiEntry,UnisDot11WIPSTrustSSidEntry,
+--     UnisDot11WIPSMalfDtcEntry,UnisDot11WIPSLgeDutEntry,
+--     UnisDot11WIPSRtLmtEntry,UnisDot11WIPSDtcAckEntry,
+--     UnisDot11WIPSDtcDevTimeEntry,UnisDot11WIPSApimperEntry,
+--     UnisDot11WIPSDctSoftApEntry,UnisDot11WIPSPowerSaveEntry,
+--     UnisDot11WIPSIgnListMacEntry,UnisDot11WIPSHoneyPotEntry,
+--     UnisDot11WIPSAPFldEntry,UnisDot11WIPSCtmManualsEntry,
+--     UnisDot11WIPSCtmSensorEntry,UnisDot11WIPSInvOuiStateEntry,
+--     UnisDot11WIPSAPClaAuthEntry,UnisDot11WIPSAPClaCltOnlEntry,
+--     UnisDot11WIPSAPClaDiscrEntry,UnisDot11WIPSAPClaRssiEntry,
+--     UnisDot11WIPSAPClaUpdurEntry,UnisDot11WIPSAPClaOuiEntry,
+--     UnisDot11WIPSAPClaSryEntry,UnisDot11WIPSAPClaSsidEntry,
+--     UnisDot11WIPSDtcSigEntry,UnisDot11WIPSPolicyEntry,
+--     UnisDot11WIPSSigFrameTypeEntry,UnisDot11WIPSCtmEntry,
+--     UnisDot11WIPSSigPatternEntry,UnisDot11WIPSSigSeqNumEntry,
+--     UnisDot11WIPSSigSsidEntry,UnisDot11WIPSSigSsidLengthEntry,
+--     UnisDot11WIPSFldDetectEntry,UnisDot11WIPSSignatureMacEntry,
+--     UnisDot11WIPSRadioCfgEntry,UnisDot11WIPSNatDetectEntry,
+--     UnisDot11WIPSApAssoCltEntry,UnisDot11WIPSApRpSenEntry,
+--     UnisDot11WIPSCtmRecEntry,UnisDot11WIPSDevEntry,UnisDot11WIPSCtmDevEntry,
+--     UnisDot11WIPSCltProbeEntry,UnisDot11WIPSPbeStaEntry,
+--     UnisDot11WIPSCltRptApEntry,UnisDot11WIPSNatDtcCltEntry,
+--     UnisDot11WIPSAckStaEntry
+--   V1.1 2016-02-17 updated by sunanzhi
+--     Modify the objects UnisDot11WIPSEncryptMethod,UnisDot11WIPSAuthMethod
+--     UnisDot11WIPSAPSecurityType,unisDot11WIPSDctAPSSID
+--        2016-03-28 updated by sunanzhi
+--     Delete the objects UnisDot11WIPSCltProbeEntry,UnisDot11WIPSPbeStaEntry
+--     UnisDot11WIPSRadioCfgEntry
+-- =============================================================================
+UNIS-DOT11-WIPS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    TimeTicks, Integer32, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    TruthValue, RowStatus, MacAddress, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    unisDot11
+        FROM UNIS-OID-MIB;
+
+unisDot11WIPS MODULE-IDENTITY
+    LAST-UPDATED "201603280951Z"        -- March 28, 2016 at 09:51 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB provides information about the Wireless Intrusion
+        Prevention System (WIPS) feature.
+
+        WIPS is designed to protect an area that is serviced by
+        a wireless network.
+        It aids in early detection of malicious outsider attacks
+        and intrusions via wireless networks, and takes countermeasures
+        to ensure the wireless environment security.
+        "
+    REVISION "201603280951Z"        -- March 28, 2016 at 09:51 GMT
+    DESCRIPTION
+        "Delete table for probe."
+    REVISION "201602161051Z"        -- February 16, 2016 at 10:51 GMT
+    DESCRIPTION
+        "Modify objects."
+    REVISION "201512081551Z"        -- December 08, 2015 at 15:51 GMT
+    DESCRIPTION
+        "Add new objects."
+    REVISION "201503311351Z"        -- March 31, 2015 at 13:51 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= {  unisDot11 15 }
+
+--
+-- Textual conventions
+--
+UnisDot11WIPSEnabledStatus ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The enable status values for objects.
+        Values include enabled and disbaled."
+    SYNTAX      INTEGER { enabled(1), disabled(2) }
+
+UnisDot11WIPSRtLmtType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the type of rate limit configuration."
+    SYNTAX INTEGER
+        {
+        ap(1),
+        client(4)
+        }
+
+UnisDot11WIPSDeviceType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the type of device."
+    SYNTAX INTEGER
+        {
+        ap(1),
+        client(2)
+        }
+
+UnisDot11WIPSPolicyTypeValue ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the type of policy."
+    SYNTAX INTEGER
+        {
+        classification(1),
+        countermeasure(2),
+        detect(3),
+        signature(4)
+        }
+
+UnisDot11WIPSClassifyType ::= TEXTUAL-CONVENTION
+   STATUS current
+   DESCRIPTION
+        "Represents the category of the device detected by WIPS."
+   SYNTAX INTEGER
+       {
+       none(1),
+       authorizedap(2),
+       misconfiguredap(3),
+       rogueap(4),
+       externalap(5),
+       adhoc(6),
+       meshap(7),
+       potentialauthorizedap(8),
+       potentialrogueap(9),
+       potentialexternalap(10),
+       uncategorizedap(11),
+       authorizedclient(12),
+       unauthorizedclient(13),
+       misassociaionclient(14),
+       uncategorizedclient(15)
+       }
+
+UnisDot11WIPSRadioType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents AP 802.11 radio type of 802.11a/b/g/n as per
+        the standard.
+        The following values are supported:
+        dot11a  - 802.11a
+        dot11b  - 802.11b
+        dot11g  - 802.11g
+        dot11n  - 802.11n
+        dot11gn  - 802.11gn
+        dot11an  - 802.11an
+        dot11ac  - 802.11ac
+        dot11gac  - 802.11gac"
+    SYNTAX INTEGER
+        {
+        dot11a(1),
+        dot11b(2),
+        dot11g(4),
+        dot11n(8),
+        dot11gn(16),
+        dot11an(32),
+        dot11ac(64),
+        dot11gac(128)
+        }
+
+UnisDot11WIPSDevStatus ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the status of devices detected by WIPS."
+    SYNTAX INTEGER
+        {
+        active(1),
+        inactive(2)
+        }
+
+UnisDot11WIPSAPType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the type of AP detected by WIPS."
+    SYNTAX INTEGER
+        {
+        normal(1),
+        adhoc(2),
+        mesh(3)
+        }
+
+
+UnisDot11WIPSDevClassifyWay ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the method that the device is categorized."
+    SYNTAX INTEGER
+        {
+        manual(1),
+        invalidOUI(2),
+        trustlist(3),
+        blocklist(4),
+        associated(5),
+        userdefined(6),
+        auto(7)
+        }
+
+UnisDot11WIPSAPClassifyType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the category of the AP detected by WIPS."
+    SYNTAX INTEGER
+        {
+        authorized(1),
+        misconfigured(2),
+        rogue(3),
+        external(4),
+        adhoc(5),
+        mesh(6),
+        potentialAuthorized(7),
+        potentialRogue(8),
+        potentialExternal(9),
+        uncategorized(10)
+        }
+
+UnisDot11WIPSStaClassifyType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the category of the client detected by WIPS."
+    SYNTAX INTEGER
+        {
+        authorized(1),
+        unauthorized(2),
+        misassociated(3),
+        uncategorized(4)
+        }
+
+UnisDot11WIPSChannel ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS current
+    DESCRIPTION
+        "Represents the channel number."
+    SYNTAX Integer32 (1..224)
+
+UnisDot11WIPSEncryptMethod ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS current
+    DESCRIPTION
+        "Represents the frame encryption cipher types(bitmap) for
+        frames on IEEE 802.11 radio interfaces.
+        The MIB defines TC by referring to the 802.11i protocol.
+        The following bits are supported:
+        first bit:    none,
+        second bit:   wep,
+        third bit:    wep40,
+        fourth bit:   tkip
+        fifth bit:    reserve
+        sixth bit:    ccmp
+        seventh bit:  wep104
+        eighth bit:   wep128"
+    SYNTAX Integer32 (1..65535)
+
+UnisDot11WIPSAuthMethod ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS current
+    DESCRIPTION
+        "Represents the key management mode(bitmap), compliant with 802.11i.
+        The following bits are supported:
+        first bit:   none         - No key management mode is specified,
+        second bit:  dot1x        - 802.1X authentication.
+        third bit:   psk          - Pre-shared key authentication,
+        fourth bit:  other        - Other authentication."
+    SYNTAX Integer32 (1..65535)
+
+UnisDot11WIPSAPSecurityType ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS current
+    DESCRIPTION
+        "Represents the AP security type(bitmap).
+        The following bits are supported:
+        first bit:   none,
+        second bit:  wpa2,
+        third bit:   wpa,
+        fourth bit:  wlanex
+        fifth bit:   wep"
+    SYNTAX Integer32 (1..255)
+
+UnisDot11WIPSMalformedType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the category of malformed packet."
+    SYNTAX INTEGER
+        {
+        duplicatedie(1),
+        fatajack(2),
+        illegalibssess(3),
+        invalidaddresscombination(4),
+        invalidassocreq(5),
+        invalidauth(6),
+        invaliddeauthcode(7),
+        invaliddisassoccode(8),
+        invalidhtie(9),
+        invalidielength(10),
+        invalidpktlength(11),
+        nullproberesp(13),
+        overfloweapolkey(14),
+        overflowssid(15),
+        redundantie(16)
+        }
+
+UnisDot11WIPSCtmType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the category of countermeasure method."
+    SYNTAX INTEGER
+        {
+        externalAp(1),
+        misassociationClient(2),
+        misconfiguredAp(3),
+        potentialAuthorizedAp(4),
+        potentialExternalAp(5),
+        potentialRogueAp(6),
+        rogueAp(7),
+        unauthorizedClient(8),
+        uncategorizedAp(9),
+        uncategorizedClient(10),
+        attack(11),
+        adhoc(12)
+        }
+
+UnisDot11WIPSRuleTypes ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the type of rule"
+    SYNTAX INTEGER
+        {
+        signature(4),
+        apclassfication(5)
+        }
+
+UnisDot11WIPSSigFrameTypes ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the type of signature frame configuration."
+    SYNTAX INTEGER
+        {
+        management(1),
+        control(2),
+        data(3)
+        }
+
+UnisDot11WIPSSigFrameSubTypes ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the type of signature manage frame configuration."
+    SYNTAX INTEGER
+        {
+        assocerq(1),
+        assocresp(2),
+        probereq(3),
+        beacon(4),
+        disasso(5),
+        auth(6),
+        deauth(7)
+        }
+
+UnisDot11WIPSSigSsidMatchTypes ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the match type of signature ssid configuration."
+    SYNTAX INTEGER
+        {
+        equal(1),
+        notequal(2),
+        include(3),
+        notinclude(4)
+        }
+
+UnisDot11WIPSSigMacMacType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the mac type of signature ssid configuration."
+    SYNTAX INTEGER
+        {
+        source(1),
+        destination(2),
+        bssid(3)
+        }
+
+UnisDot11WIPSManualAPType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the type of AP manual classification."
+    SYNTAX INTEGER
+        {
+       authap(1),
+       misconfiguredap(2),
+        rogueap(3),
+        externalap(4)
+        }
+
+UnisDot11WIPSDtcAckTypes ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the type of attack detect."
+    SYNTAX INTEGER
+        {
+        apspoof(1),
+        clientspoof(4),
+        weakiv(6),
+        windowsbridge(7),
+        fortymhz(8),
+        omerta(11),
+        disassoc(12),
+        deauth(13),
+        prohibitedchannel(14),
+        authunencryptedap(16),
+        authunencryptedclient(17),
+        hotspot(18),
+        greenmode(19),
+        tableoverflow(20),
+        mitm(22),
+        wirelessbridge(23),
+        apchannelchange(25)
+        }
+
+UnisDot11WIPSDtcDevTimeTypes ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the type of device time."
+    SYNTAX INTEGER
+        {
+        deviceap(1),
+        deviceclient(2)
+        }
+
+UnisDot11WIPSFldDctType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the type of flood detect."
+    SYNTAX INTEGER
+        {
+        associationrequest(1),
+        authentication(2),
+        beacon(3),
+        blockack(4),
+        cts(5),
+        deauthentication(6),
+        disassociation(7),
+        eapolstart(8),
+        nulldata(9),
+        proberequest(10),
+        reassociationrequest(11),
+        rts(12),
+        eapollogoff(13),
+        eapfailure(14),
+        eapsuccess(15)
+        }
+
+UnisDot11WIPSAPClaAuthMethods ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the type of AP classification method."
+    SYNTAX INTEGER
+        {
+        none(1),
+        dot1x(2),
+        psk(3),
+        other(5)
+        }
+
+
+UnisDot11WIPSAPClassifyCmpType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the compare type of AP classification method.
+        The following values are supported:
+        equal         - equal.
+        include       - include."
+    SYNTAX INTEGER
+        {
+        equal(1),
+        include(3)
+        }
+
+UnisDot11WIPSAPClasSsidCmpType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the compare type of AP classification ssid.
+        The following values are supported:
+        equal         - equal.
+        not equal     - not equal.
+        include       - include.
+        not include   - not include."
+    SYNTAX INTEGER
+        {
+        equal(1),
+        notequal(2),
+        include(3),
+        notinclude(4)
+        }
+
+
+UnisDot11WIPSAPClaSecurityType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the type of AP classification security.
+        clear   1
+        wpa2   2
+        wpa    3
+        wep    9"
+    SYNTAX INTEGER
+        {
+        clear(1),
+        wpa2(2),
+        wpa(3),
+        wep(9)
+        }
+
+UnisDot11WIPSAlyAPClaRuleType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the category of apply AP classification rule."
+    SYNTAX INTEGER
+        {
+        rogue(1),
+        external(2),
+        misconfigured(3),
+        authorized(4)
+        }
+
+UnisDot11WIPSOuiAddress ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "1x:"
+    STATUS       current
+    DESCRIPTION
+        "Represents an 802 OUI address represented in the
+        `canonical' order defined by IEEE 802.1a, i.e., as if it
+        were transmitted least significant bit first, even though
+        802.5 (in contrast to other 802.x protocols) requires MAC
+        addresses to be transmitted most significant bit first."
+    SYNTAX       OCTET STRING (SIZE (3))
+
+--
+-- Node definitions
+--
+unisDot11WIPSConfigGroup OBJECT IDENTIFIER ::= { unisDot11WIPS 1 }
+unisDot11WIPSDataGroup OBJECT IDENTIFIER ::= { unisDot11WIPS 2 }
+
+unisDot11WIPSVsdTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSVsdEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table provides information about virtual security domains (VSDs)."
+    ::= { unisDot11WIPSConfigGroup 1 }
+
+unisDot11WIPSVsdEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSVsdEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about one VSD."
+    INDEX { unisDot11WIPSVsdName }
+    ::= { unisDot11WIPSVsdTable 1 }
+
+UnisDot11WIPSVsdEntry ::= SEQUENCE {
+        unisDot11WIPSVsdName                      OCTET STRING,
+        unisDot11WIPSVsdRowStatus                 RowStatus,
+        unisDot11WIPSVsdDetectPolicy              OCTET STRING,
+        unisDot11WIPSVsdCtmPolicy                 OCTET STRING,
+        unisDot11WIPSVsdSignaturePolicy           OCTET STRING,
+        unisDot11WIPSVsdClasPolicy                OCTET STRING
+     }
+
+unisDot11WIPSVsdName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the name of the virtual security domain."
+    ::= { unisDot11WIPSVsdEntry 1 }
+
+unisDot11WIPSVsdRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSVsdEntry 2 }
+
+unisDot11WIPSVsdDetectPolicy OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..63))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Represents the name of the attack detect policy attached to the VSD,
+        zero-length for not config."
+    ::= { unisDot11WIPSVsdEntry 3 }
+
+unisDot11WIPSVsdCtmPolicy OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..63))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Represents the name of the countermeasure policy attached to the VSD,
+        zero-length for not config."
+    ::= { unisDot11WIPSVsdEntry 4 }
+
+unisDot11WIPSVsdSignaturePolicy OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..63))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Represents the name of the signature policy attached to the VSD,
+        zero-length for not config."
+    ::= { unisDot11WIPSVsdEntry 5 }
+
+unisDot11WIPSVsdClasPolicy OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..63))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Represents the name of the malformed packet detect policy attached
+        to the VSD,zero-length for not config."
+    ::= { unisDot11WIPSVsdEntry 6 }
+
+unisDot11WIPSAp2VsdTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSAp2VsdEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table defines sensors attached to VSDs."
+    ::= { unisDot11WIPSConfigGroup 2 }
+
+unisDot11WIPSAp2VsdEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAp2VsdEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about a sensor in a VSD."
+    INDEX { unisDot11WIPSAp2VsdApName }
+    ::= { unisDot11WIPSAp2VsdTable 1 }
+
+UnisDot11WIPSAp2VsdEntry ::= SEQUENCE {
+        unisDot11WIPSAp2VsdApName        OCTET STRING,
+        unisDot11WIPSAp2VsdRowStatus     RowStatus,
+        unisDot11WIPSAp2VsdVsdName       OCTET STRING
+     }
+
+unisDot11WIPSAp2VsdApName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..64))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the sensor name."
+    ::= { unisDot11WIPSAp2VsdEntry 1 }
+
+unisDot11WIPSAp2VsdRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSAp2VsdEntry 2 }
+
+unisDot11WIPSAp2VsdVsdName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Represents the name of a virtual security domain."
+    ::= { unisDot11WIPSAp2VsdEntry 3 }
+
+
+unisDot11WIPSApRadioTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSApRadioEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the enable status of WIPS on radios of sensors."
+    ::= { unisDot11WIPSConfigGroup 3 }
+
+unisDot11WIPSApRadioEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSApRadioEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status
+         of WIPS on one radio of a sensor."
+    INDEX { unisDot11WIPSApRadioApName, unisDot11WIPSApRadioRadioID }
+    ::= { unisDot11WIPSApRadioTable 1 }
+
+UnisDot11WIPSApRadioEntry ::= SEQUENCE {
+        unisDot11WIPSApRadioApName       OCTET STRING,
+        unisDot11WIPSApRadioRadioID      Integer32,
+        unisDot11WIPSApRadioStatus       UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSApRadioApName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..64))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the sensor name."
+    ::= { unisDot11WIPSApRadioEntry 1 }
+
+unisDot11WIPSApRadioRadioID OBJECT-TYPE
+    SYNTAX Integer32 (1..4)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents a radio identifier."
+    ::= { unisDot11WIPSApRadioEntry 2 }
+
+unisDot11WIPSApRadioStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of WIPS on the radio."
+    ::= { unisDot11WIPSApRadioEntry 3 }
+
+unisDot11WIPSRuleTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSRuleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table defines signature rule or ap-class rule."
+    ::= { unisDot11WIPSConfigGroup 4 }
+
+unisDot11WIPSRuleEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSRuleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about
+         signature rule or ap-class rule."
+    INDEX { unisDot11WIPSRuleType, unisDot11WIPSRuleId }
+    ::= { unisDot11WIPSRuleTable 1 }
+
+UnisDot11WIPSRuleEntry ::= SEQUENCE {
+        unisDot11WIPSRuleType                UnisDot11WIPSRuleTypes,
+        unisDot11WIPSRuleId                  Integer32,
+        unisDot11WIPSRuleRowStatus           RowStatus
+     }
+
+unisDot11WIPSRuleType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSRuleTypes
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the rule type."
+    ::= { unisDot11WIPSRuleEntry 1 }
+
+unisDot11WIPSRuleId OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the rule id."
+    ::= { unisDot11WIPSRuleEntry 2 }
+
+unisDot11WIPSRuleRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSRuleEntry 3 }
+
+unisDot11WIPSAlySigRuleTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSAlySigRuleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table provides information about applying signature rule."
+    ::= { unisDot11WIPSConfigGroup 5 }
+
+unisDot11WIPSAlySigRuleEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAlySigRuleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about applying signature rule."
+    INDEX { unisDot11WIPSAlySigPolicyName, unisDot11WIPSAlySigRuleID }
+    ::= { unisDot11WIPSAlySigRuleTable 1 }
+
+UnisDot11WIPSAlySigRuleEntry ::= SEQUENCE {
+        unisDot11WIPSAlySigPolicyName                OCTET STRING,
+        unisDot11WIPSAlySigRuleID                    Integer32,
+        unisDot11WIPSAlySigRowStatus                 RowStatus
+     }
+
+unisDot11WIPSAlySigPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the name of signature policy name."
+    ::= { unisDot11WIPSAlySigRuleEntry 1 }
+
+unisDot11WIPSAlySigRuleID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the rule id of signature."
+    ::= { unisDot11WIPSAlySigRuleEntry 2 }
+
+unisDot11WIPSAlySigRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSAlySigRuleEntry 3 }
+
+unisDot11WIPSAlyClaRuleTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSAlyClaRuleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table provides information about applying classification rule."
+    ::= { unisDot11WIPSConfigGroup 6 }
+
+unisDot11WIPSAlyClaRuleEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAlyClaRuleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about applying classification rule."
+    INDEX { unisDot11WIPSAlyClaPolicyName, unisDot11WIPSAlyClasRuleID }
+    ::= { unisDot11WIPSAlyClaRuleTable 1 }
+
+UnisDot11WIPSAlyClaRuleEntry ::= SEQUENCE {
+        unisDot11WIPSAlyClaPolicyName           OCTET STRING,
+        unisDot11WIPSAlyClasRuleID              Integer32,
+        unisDot11WIPSAlyClaRuleType             UnisDot11WIPSAlyAPClaRuleType,
+        unisDot11WIPSAlyClaRuleLevel            Integer32,
+        unisDot11WIPSAlyClaRowStatus            RowStatus
+     }
+
+unisDot11WIPSAlyClaPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the name of classification policy name."
+    ::= { unisDot11WIPSAlyClaRuleEntry 1 }
+
+unisDot11WIPSAlyClasRuleID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the rule id of classification."
+    ::= { unisDot11WIPSAlyClaRuleEntry 2 }
+
+unisDot11WIPSAlyClaRuleType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAlyAPClaRuleType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The type of applying classfication rule."
+    ::= { unisDot11WIPSAlyClaRuleEntry 3 }
+
+unisDot11WIPSAlyClaRuleLevel OBJECT-TYPE
+    SYNTAX Integer32 (1..100)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The level of applying classfication rule."
+    ::= { unisDot11WIPSAlyClaRuleEntry 4 }
+
+unisDot11WIPSAlyClaRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSAlyClaRuleEntry 5 }
+
+unisDot11WIPSTrustMacTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSTrustMacEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table defines adding a MacAdress to the trust-device-list(TDL)"
+    ::= { unisDot11WIPSConfigGroup 7 }
+
+unisDot11WIPSTrustMacEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSTrustMacEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about a Mac in a TDL."
+    INDEX { unisDot11WIPSTrustMacPolicyName, unisDot11WIPSTrustMacAddress }
+    ::= { unisDot11WIPSTrustMacTable 1 }
+
+UnisDot11WIPSTrustMacEntry ::= SEQUENCE {
+        unisDot11WIPSTrustMacPolicyName     OCTET STRING,
+        unisDot11WIPSTrustMacAddress        MacAddress,
+        unisDot11WIPSTrustMacRowStatus      RowStatus
+     }
+
+unisDot11WIPSTrustMacPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the classification policy name."
+    ::= { unisDot11WIPSTrustMacEntry 1 }
+
+unisDot11WIPSTrustMacAddress OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the MAC address."
+    ::= { unisDot11WIPSTrustMacEntry 2 }
+
+unisDot11WIPSTrustMacRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSTrustMacEntry 3 }
+
+unisDot11WIPSBlockMacTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSBlockMacEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table defines add MacAdress to the static-forbidden-list(SFL)"
+    ::= { unisDot11WIPSConfigGroup 8 }
+
+unisDot11WIPSBlockMacEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSBlockMacEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about a Mac in a SFL."
+    INDEX { unisDot11WIPSBlockMacPolicyName, unisDot11WIPSBlockMacAddress }
+    ::= { unisDot11WIPSBlockMacTable 1 }
+
+UnisDot11WIPSBlockMacEntry ::= SEQUENCE {
+        unisDot11WIPSBlockMacPolicyName       OCTET STRING,
+        unisDot11WIPSBlockMacAddress          MacAddress,
+        unisDot11WIPSBlockMacRowStatus        RowStatus
+     }
+
+unisDot11WIPSBlockMacPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the classification policy name."
+    ::= { unisDot11WIPSBlockMacEntry 1 }
+
+unisDot11WIPSBlockMacAddress OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the MAC address."
+    ::= { unisDot11WIPSBlockMacEntry 2 }
+
+unisDot11WIPSBlockMacRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSBlockMacEntry 3 }
+
+unisDot11WIPSManulClaTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSManulClaEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the manual classify information."
+    ::= { unisDot11WIPSConfigGroup 9 }
+
+unisDot11WIPSManulClaEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSManulClaEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the address specified manually in a policy."
+    INDEX { unisDot11WIPSManulClaPlyName, unisDot11WIPSManulClaMac }
+    ::= { unisDot11WIPSManulClaTable 1 }
+
+UnisDot11WIPSManulClaEntry ::= SEQUENCE {
+        unisDot11WIPSManulClaPlyName        OCTET STRING,
+        unisDot11WIPSManulClaMac            MacAddress,
+        unisDot11WIPSManulClassifyType      UnisDot11WIPSManualAPType,
+        unisDot11WIPSManuClaRowStatus       RowStatus
+     }
+
+unisDot11WIPSManulClaPlyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the policy name."
+    ::= { unisDot11WIPSManulClaEntry 1 }
+
+unisDot11WIPSManulClaMac OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the MAC address of AP."
+    ::= { unisDot11WIPSManulClaEntry 2 }
+
+unisDot11WIPSManulClassifyType OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSManualAPType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The classification type of AP."
+    ::= { unisDot11WIPSManulClaEntry 3 }
+
+unisDot11WIPSManuClaRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSManulClaEntry 4 }
+
+unisDot11WIPSTrustOuiTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSTrustOuiEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table provides information about trust oui."
+    ::= { unisDot11WIPSConfigGroup 10 }
+
+unisDot11WIPSTrustOuiEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSTrustOuiEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about trust oui."
+    INDEX { unisDot11WIPSTrustOuiPolicyName, unisDot11WIPSTrustOuiMac }
+    ::= { unisDot11WIPSTrustOuiTable 1 }
+
+UnisDot11WIPSTrustOuiEntry ::= SEQUENCE {
+        unisDot11WIPSTrustOuiPolicyName                OCTET STRING,
+        unisDot11WIPSTrustOuiMac                       UnisDot11WIPSOuiAddress,
+        unisDot11WIPSTrustOuiRowStatus                 RowStatus
+     }
+
+unisDot11WIPSTrustOuiPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the name of classification policy name."
+    ::= { unisDot11WIPSTrustOuiEntry 1 }
+
+unisDot11WIPSTrustOuiMac OBJECT-TYPE
+    SYNTAX UnisDot11WIPSOuiAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the address of trust oui."
+    ::= { unisDot11WIPSTrustOuiEntry 2 }
+
+unisDot11WIPSTrustOuiRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSTrustOuiEntry 3 }
+
+unisDot11WIPSTrustSSidTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSTrustSSidEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table defines add one SSID to the trust-device-list(TDL)"
+    ::= { unisDot11WIPSConfigGroup 11 }
+
+unisDot11WIPSTrustSSidEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSTrustSSidEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about a SSID in a TDL."
+    INDEX { unisDot11WIPSTrustSSidPlyName, unisDot11WIPSTrustSSidName }
+    ::= { unisDot11WIPSTrustSSidTable 1 }
+
+UnisDot11WIPSTrustSSidEntry ::= SEQUENCE {
+        unisDot11WIPSTrustSSidPlyName          OCTET STRING,
+        unisDot11WIPSTrustSSidName             OCTET STRING,
+        unisDot11WIPSTrustSSidRowStatus        RowStatus
+     }
+
+unisDot11WIPSTrustSSidPlyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the classification policy name."
+    ::= { unisDot11WIPSTrustSSidEntry 1 }
+
+unisDot11WIPSTrustSSidName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..32))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the SSID name."
+    ::= { unisDot11WIPSTrustSSidEntry 2 }
+
+unisDot11WIPSTrustSSidRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSTrustSSidEntry 3 }
+
+unisDot11WIPSMalfDtcTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSMalfDtcEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the malformed packet detect information."
+    ::= { unisDot11WIPSConfigGroup 12 }
+
+unisDot11WIPSMalfDtcEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSMalfDtcEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the malformed type in a detect policy."
+    INDEX { unisDot11WIPSMalfDtcPolicyName, unisDot11WIPSMalfDtcType }
+    ::= { unisDot11WIPSMalfDtcTable 1 }
+
+UnisDot11WIPSMalfDtcEntry ::= SEQUENCE {
+        unisDot11WIPSMalfDtcPolicyName       OCTET STRING,
+        unisDot11WIPSMalfDtcType             UnisDot11WIPSMalformedType,
+        unisDot11WIPSMalfDtcQuietTime        Integer32,
+        unisDot11WIPSMalfDtciStatus          UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSMalfDtcPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the policy name."
+    ::= { unisDot11WIPSMalfDtcEntry 1 }
+
+unisDot11WIPSMalfDtcType OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSMalformedType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The malformed type of detect."
+    ::= { unisDot11WIPSMalfDtcEntry 2 }
+
+unisDot11WIPSMalfDtcQuietTime OBJECT-TYPE
+    SYNTAX Integer32 (5..604800)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the quiet time."
+    ::= { unisDot11WIPSMalfDtcEntry 3 }
+
+unisDot11WIPSMalfDtciStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of malformed detect."
+    ::= { unisDot11WIPSMalfDtcEntry 4 }
+
+unisDot11WIPSLgeDutTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSLgeDutEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the infomation about
+         large duration malformed detect."
+    ::= { unisDot11WIPSConfigGroup 13 }
+
+unisDot11WIPSLgeDutEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSLgeDutEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the infomation about
+         large duration malformed detect."
+    INDEX { unisDot11WIPSLgeDutPolicyName }
+    ::= { unisDot11WIPSLgeDutTable 1 }
+
+UnisDot11WIPSLgeDutEntry ::= SEQUENCE {
+        unisDot11WIPSLgeDutPolicyName           OCTET STRING,
+        unisDot11WIPSLgeDutThreshold            Integer32,
+        unisDot11WIPSLgeDutQuietTime            Integer32,
+        unisDot11WIPSLgeDutStatus               UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSLgeDutPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the detect policy name."
+    ::= { unisDot11WIPSLgeDutEntry 1 }
+
+unisDot11WIPSLgeDutThreshold OBJECT-TYPE
+    SYNTAX Integer32 (1..32767)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents large duration malformed detect threshold."
+    ::= { unisDot11WIPSLgeDutEntry 2 }
+
+unisDot11WIPSLgeDutQuietTime OBJECT-TYPE
+    SYNTAX Integer32 (5..604800)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents large duration malformed detect quiet time ."
+    ::= { unisDot11WIPSLgeDutEntry 3 }
+
+unisDot11WIPSLgeDutStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of large duration malformed detect."
+    ::= { unisDot11WIPSLgeDutEntry 4 }
+
+unisDot11WIPSRtLmtTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSRtLmtEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table defines the control of AP learned the devices rate."
+    ::= { unisDot11WIPSConfigGroup 14 }
+
+unisDot11WIPSRtLmtEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSRtLmtEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about a control of AP learned rate ."
+    INDEX { unisDot11WIPSRtLmtPolicyName, unisDot11WIPSRtLmtRtLmtType }
+    ::= { unisDot11WIPSRtLmtTable 1 }
+
+UnisDot11WIPSRtLmtEntry ::= SEQUENCE {
+        unisDot11WIPSRtLmtPolicyName       OCTET STRING,
+        unisDot11WIPSRtLmtRtLmtType        UnisDot11WIPSRtLmtType,
+        unisDot11WIPSRtLmtInterval         Integer32,
+        unisDot11WIPSRtLmtThreshold        Integer32,
+        unisDot11WIPSRtLmtQuiet            Integer32,
+        unisDot11WIPSRtLmtStatus           UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSRtLmtPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the classification policy name."
+    ::= { unisDot11WIPSRtLmtEntry 1 }
+
+unisDot11WIPSRtLmtRtLmtType OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSRtLmtType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the device type."
+    ::= { unisDot11WIPSRtLmtEntry 2 }
+
+unisDot11WIPSRtLmtInterval OBJECT-TYPE
+    SYNTAX Integer32(1..3600)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The statistics cycle of AP learned device."
+    ::= { unisDot11WIPSRtLmtEntry 3 }
+
+unisDot11WIPSRtLmtThreshold OBJECT-TYPE
+    SYNTAX Integer32(1..4096)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The maximum devices number of AP learned."
+    ::= { unisDot11WIPSRtLmtEntry 4 }
+
+unisDot11WIPSRtLmtQuiet OBJECT-TYPE
+    SYNTAX Integer32(1200..3600)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents a quiet time after the warning log had been sent."
+    ::= { unisDot11WIPSRtLmtEntry 5 }
+
+unisDot11WIPSRtLmtStatus OBJECT-TYPE
+    SYNTAX UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of the control of AP learned the devices rate."
+    ::= { unisDot11WIPSRtLmtEntry 6 }
+
+unisDot11WIPSDtcAckTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSDtcAckEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the infomation about detect attack."
+    ::= { unisDot11WIPSConfigGroup 15 }
+
+unisDot11WIPSDtcAckEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDtcAckEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the infomation about detect attack."
+    INDEX { unisDot11WIPSDtcAckPolicyName, unisDot11WIPSDtcAckType }
+    ::= { unisDot11WIPSDtcAckTable 1 }
+
+UnisDot11WIPSDtcAckEntry ::= SEQUENCE {
+        unisDot11WIPSDtcAckPolicyName            OCTET STRING,
+        unisDot11WIPSDtcAckType                  UnisDot11WIPSDtcAckTypes,
+        unisDot11WIPSDtcAckQuietTime             Integer32,
+        unisDot11WIPSDtcAckInterval              Integer32,
+        unisDot11WIPSDtcAckThreshold             Integer32,
+        unisDot11WIPSDtcAckStatus                UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSDtcAckPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the detect policy name."
+    ::= { unisDot11WIPSDtcAckEntry 1 }
+
+unisDot11WIPSDtcAckType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDtcAckTypes
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the detect attack type."
+    ::= { unisDot11WIPSDtcAckEntry 2 }
+
+
+unisDot11WIPSDtcAckQuietTime OBJECT-TYPE
+    SYNTAX Integer32 (5..604800)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents detect attack quiet time ."
+    ::= { unisDot11WIPSDtcAckEntry 3 }
+
+unisDot11WIPSDtcAckInterval OBJECT-TYPE
+    SYNTAX Integer32 (1..3600)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents detect attack  interval."
+    ::= { unisDot11WIPSDtcAckEntry 4 }
+
+unisDot11WIPSDtcAckThreshold OBJECT-TYPE
+    SYNTAX Integer32 (1..100000)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents detect attack threshold."
+    ::= { unisDot11WIPSDtcAckEntry 5 }
+
+unisDot11WIPSDtcAckStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of detect attack."
+    ::= { unisDot11WIPSDtcAckEntry 6 }
+
+unisDot11WIPSDtcDevTimeTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSDtcDevTimeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the infomation about detect device time."
+    ::= { unisDot11WIPSConfigGroup 16 }
+
+unisDot11WIPSDtcDevTimeEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDtcDevTimeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the infomation about detect device time."
+    INDEX { unisDot11WIPSDtcDevTimePlyName, unisDot11WIPSDtcDevTimeType }
+    ::= { unisDot11WIPSDtcDevTimeTable 1 }
+
+UnisDot11WIPSDtcDevTimeEntry ::= SEQUENCE {
+        unisDot11WIPSDtcDevTimePlyName         OCTET STRING,
+        unisDot11WIPSDtcDevTimeType            UnisDot11WIPSDtcDevTimeTypes,
+        unisDot11WIPSDtcDevTimeInactive        Integer32,
+        unisDot11WIPSDtcDevTimeAging           Integer32,
+        unisDot11WIPSDtcDevTimeStatus          UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSDtcDevTimePlyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the detect policy name."
+    ::= { unisDot11WIPSDtcDevTimeEntry 1 }
+
+unisDot11WIPSDtcDevTimeType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDtcDevTimeTypes
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the detect device time type."
+    ::= { unisDot11WIPSDtcDevTimeEntry 2 }
+
+unisDot11WIPSDtcDevTimeInactive OBJECT-TYPE
+    SYNTAX Integer32 (60..1200)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents detect device time inactive time."
+    ::= { unisDot11WIPSDtcDevTimeEntry 3 }
+
+unisDot11WIPSDtcDevTimeAging OBJECT-TYPE
+    SYNTAX Integer32 (120..86400)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents detect device time aging time."
+    ::= { unisDot11WIPSDtcDevTimeEntry 4 }
+
+unisDot11WIPSDtcDevTimeStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of detect device time."
+    ::= { unisDot11WIPSDtcDevTimeEntry 5 }
+
+unisDot11WIPSApimperTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSApimperEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table provides information about AP impersonation."
+    ::= { unisDot11WIPSConfigGroup 17 }
+
+unisDot11WIPSApimperEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSApimperEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about one AP impersonation."
+    INDEX { unisDot11WIPSApimperPolicyName }
+    ::= { unisDot11WIPSApimperTable 1 }
+
+UnisDot11WIPSApimperEntry ::= SEQUENCE {
+        unisDot11WIPSApimperPolicyName      OCTET STRING,
+        unisDot11WIPSApimperQuiet           Integer32,
+        unisDot11WIPSApimperStatus          UnisDot11WIPSEnabledStatus
+      }
+
+unisDot11WIPSApimperPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the name of policy."
+    ::= { unisDot11WIPSApimperEntry 1 }
+
+unisDot11WIPSApimperQuiet OBJECT-TYPE
+    SYNTAX Integer32 (5..604800)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The quiet of this table entry."
+    ::= { unisDot11WIPSApimperEntry 2 }
+
+unisDot11WIPSApimperStatus OBJECT-TYPE
+    SYNTAX UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSApimperEntry 3 }
+
+unisDot11WIPSDctSoftApTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSDctSoftApEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the enable status of detect of soft AP."
+    ::= { unisDot11WIPSConfigGroup 18 }
+
+unisDot11WIPSDctSoftApEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDctSoftApEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status of detect a soft AP."
+    INDEX { unisDot11WIPSDctSoftApPlyName }
+    ::= { unisDot11WIPSDctSoftApTable 1 }
+
+UnisDot11WIPSDctSoftApEntry ::= SEQUENCE {
+        unisDot11WIPSDctSoftApPlyName      OCTET STRING,
+        unisDot11WIPSDctSoftApThold        Integer32,
+        unisDot11WIPSDctSoftApStatus       UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSDctSoftApPlyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the detect policy name."
+    ::= { unisDot11WIPSDctSoftApEntry 1 }
+
+unisDot11WIPSDctSoftApThold OBJECT-TYPE
+    SYNTAX Integer32 (5..600)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents a convert time."
+    ::= { unisDot11WIPSDctSoftApEntry 2 }
+
+unisDot11WIPSDctSoftApStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of detect a soft AP."
+    ::= { unisDot11WIPSDctSoftApEntry 3 }
+
+unisDot11WIPSPowerSaveTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSPowerSaveEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains the power-save detect information."
+    ::= { unisDot11WIPSConfigGroup 19 }
+
+unisDot11WIPSPowerSaveEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSPowerSaveEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about power-save detect."
+    INDEX { unisDot11WIPSPowerSavePlyName }
+    ::= { unisDot11WIPSPowerSaveTable 1 }
+
+UnisDot11WIPSPowerSaveEntry ::= SEQUENCE {
+        unisDot11WIPSPowerSavePlyName       OCTET STRING,
+        unisDot11WIPSPowerSaveInterval      Integer32,
+        unisDot11WIPSPowerSaveMinOffPkt     Integer32,
+        unisDot11WIPSPowerSaveOnOffPct      Integer32,
+        unisDot11WIPSPowerSaveQuiet         Integer32,
+        unisDot11WIPSPowerSaveStatus        UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSPowerSavePlyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the policy name."
+    ::= { unisDot11WIPSPowerSaveEntry 1 }
+
+unisDot11WIPSPowerSaveInterval OBJECT-TYPE
+    SYNTAX Integer32 (1..3600)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the interval of power-save detect."
+    ::= { unisDot11WIPSPowerSaveEntry 2 }
+
+unisDot11WIPSPowerSaveMinOffPkt OBJECT-TYPE
+    SYNTAX Integer32 (10..150)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the minoffpacket of power-save detect."
+    ::= { unisDot11WIPSPowerSaveEntry 3 }
+
+unisDot11WIPSPowerSaveOnOffPct OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the onoffpercent of power-save detect."
+    ::= { unisDot11WIPSPowerSaveEntry 4 }
+
+unisDot11WIPSPowerSaveQuiet OBJECT-TYPE
+    SYNTAX Integer32 (5..604800)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the quiettime of power-save detect."
+    ::= { unisDot11WIPSPowerSaveEntry 5 }
+
+unisDot11WIPSPowerSaveStatus OBJECT-TYPE
+    SYNTAX UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the enabled status of power-save detect."
+    ::= { unisDot11WIPSPowerSaveEntry 6 }
+
+unisDot11WIPSIgnListMacTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSIgnListMacEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table defines ignore list MAC."
+    ::= { unisDot11WIPSConfigGroup 20 }
+
+unisDot11WIPSIgnListMacEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSIgnListMacEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about ignore list MAC."
+    INDEX { unisDot11WIPSIgnListMacMacAddr }
+    ::= { unisDot11WIPSIgnListMacTable 1 }
+
+UnisDot11WIPSIgnListMacEntry ::= SEQUENCE {
+        unisDot11WIPSIgnListMacMacAddr        MacAddress,
+        unisDot11WIPSIgnListMacRowStus        RowStatus
+     }
+
+unisDot11WIPSIgnListMacMacAddr OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the MAC address."
+    ::= { unisDot11WIPSIgnListMacEntry 1 }
+
+unisDot11WIPSIgnListMacRowStus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSIgnListMacEntry 2 }
+
+unisDot11WIPSHoneyPotTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSHoneyPotEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table defines the detect of honey-pot."
+    ::= { unisDot11WIPSConfigGroup 21 }
+
+unisDot11WIPSHoneyPotEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSHoneyPotEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status of detect honey-pot."
+    INDEX { unisDot11WIPSHoneyPotPlyName }
+    ::= { unisDot11WIPSHoneyPotTable 1 }
+
+UnisDot11WIPSHoneyPotEntry ::= SEQUENCE {
+        unisDot11WIPSHoneyPotPlyName        OCTET STRING,
+        unisDot11WIPSHoneyPotSim            Integer32,
+        unisDot11WIPSHoneyPotQuiet          Integer32,
+        unisDot11WIPSHoneyPotStatus         UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSHoneyPotPlyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the detect policy name."
+    ::= { unisDot11WIPSHoneyPotEntry 1 }
+
+unisDot11WIPSHoneyPotSim OBJECT-TYPE
+    SYNTAX Integer32 (70..100)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the similarity-value of matching SSID."
+    ::= { unisDot11WIPSHoneyPotEntry 2 }
+
+unisDot11WIPSHoneyPotQuiet OBJECT-TYPE
+     SYNTAX Integer32 (5..604800)
+     MAX-ACCESS read-write
+     STATUS current
+     DESCRIPTION
+         "Represents a quiet time after the warning log had been sent."
+     ::= { unisDot11WIPSHoneyPotEntry 3 }
+
+unisDot11WIPSHoneyPotStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of detect honey-pot."
+    ::= { unisDot11WIPSHoneyPotEntry 4 }
+
+unisDot11WIPSAPFldTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSAPFldEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table defines the detect of AP-flood."
+    ::= { unisDot11WIPSConfigGroup 22 }
+
+unisDot11WIPSAPFldEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPFldEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status of detect AP-flood."
+    INDEX { unisDot11WIPSAPFldPolicyName }
+    ::= { unisDot11WIPSAPFldTable 1 }
+
+UnisDot11WIPSAPFldEntry ::= SEQUENCE {
+        unisDot11WIPSAPFldPolicyName        OCTET STRING,
+        unisDot11WIPSAPFldApnum             Integer32,
+        unisDot11WIPSAPFldExceed            Integer32,
+        unisDot11WIPSAPFldQuiet             Integer32,
+        unisDot11WIPSAPFldStatus            UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSAPFldPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the detect policy name."
+    ::= { unisDot11WIPSAPFldEntry 1 }
+
+unisDot11WIPSAPFldApnum OBJECT-TYPE
+    SYNTAX Integer32 (10..200)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents allowable AP devices number in a wireless network."
+    ::= { unisDot11WIPSAPFldEntry 2 }
+
+unisDot11WIPSAPFldExceed OBJECT-TYPE
+     SYNTAX Integer32 (10..200)
+     MAX-ACCESS read-write
+     STATUS current
+     DESCRIPTION
+         "Represents the allowable maximum AP devices number had exceed."
+     ::= { unisDot11WIPSAPFldEntry 3 }
+
+unisDot11WIPSAPFldQuiet OBJECT-TYPE
+     SYNTAX Integer32 (5..604800)
+     MAX-ACCESS read-write
+     STATUS current
+     DESCRIPTION
+         "Represents a quiet time after the warning log had been sent."
+     ::= { unisDot11WIPSAPFldEntry 4 }
+
+unisDot11WIPSAPFldStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of detect AP-flood."
+    ::= { unisDot11WIPSAPFldEntry 5 }
+
+unisDot11WIPSCtmManualsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSCtmManualsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains the manual countermeasure information."
+    ::= { unisDot11WIPSConfigGroup 23 }
+
+unisDot11WIPSCtmManualsEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSCtmManualsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about manual countermeasure."
+    INDEX { unisDot11WIPSCtmManualsPlyName, unisDot11WIPSCtmManualsMacAddr }
+    ::= { unisDot11WIPSCtmManualsTable 1 }
+
+UnisDot11WIPSCtmManualsEntry ::= SEQUENCE {
+        unisDot11WIPSCtmManualsPlyName    OCTET STRING,
+        unisDot11WIPSCtmManualsMacAddr    MacAddress,
+        unisDot11WIPSCtmManualsRowStus     RowStatus
+     }
+
+unisDot11WIPSCtmManualsPlyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the policy name."
+    ::= { unisDot11WIPSCtmManualsEntry 1 }
+
+unisDot11WIPSCtmManualsMacAddr OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the MAC address."
+    ::= { unisDot11WIPSCtmManualsEntry 2 }
+
+unisDot11WIPSCtmManualsRowStus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSCtmManualsEntry 3 }
+
+unisDot11WIPSCtmSensorTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSCtmSensorEntry
+
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the countermeasure all sensor information."
+    ::= { unisDot11WIPSConfigGroup 24 }
+
+unisDot11WIPSCtmSensorEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSCtmSensorEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about countermeasure all sensor."
+    INDEX { unisDot11WIPSCtmSensorPolicyName }
+    ::= { unisDot11WIPSCtmSensorTable 1 }
+
+UnisDot11WIPSCtmSensorEntry ::= SEQUENCE {
+        unisDot11WIPSCtmSensorPolicyName        OCTET STRING,
+        unisDot11WIPSCtmSensoriStatus           UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSCtmSensorPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the policy name."
+    ::= { unisDot11WIPSCtmSensorEntry 1 }
+
+unisDot11WIPSCtmSensoriStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSCtmSensorEntry 2 }
+
+
+unisDot11WIPSInvOuiStateTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSInvOuiStateEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the invalid OUI classification information."
+    ::= { unisDot11WIPSConfigGroup 25 }
+
+unisDot11WIPSInvOuiStateEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSInvOuiStateEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains about status of invalid OUI classification."
+    INDEX { unisDot11WIPSInvOuiStaPlyName }
+    ::= { unisDot11WIPSInvOuiStateTable 1 }
+
+UnisDot11WIPSInvOuiStateEntry ::= SEQUENCE {
+        unisDot11WIPSInvOuiStaPlyName       OCTET STRING,
+        unisDot11WIPSInvOuiStaiStatus       UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSInvOuiStaPlyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the policy name."
+    ::= { unisDot11WIPSInvOuiStateEntry 1 }
+
+unisDot11WIPSInvOuiStaiStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of invalid OUI classification."
+    ::= { unisDot11WIPSInvOuiStateEntry 2 }
+
+unisDot11WIPSAPClaAuthTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSAPClaAuthEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the enable status of
+         WIPS AP classification authentication."
+    ::= { unisDot11WIPSConfigGroup 26 }
+
+unisDot11WIPSAPClaAuthEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClaAuthEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status of
+         WIPS AP classification authentication."
+    INDEX { unisDot11WIPSAPClaAuthRuleID }
+    ::= { unisDot11WIPSAPClaAuthTable 1 }
+
+UnisDot11WIPSAPClaAuthEntry ::= SEQUENCE {
+        unisDot11WIPSAPClaAuthRuleID        Integer32,
+        unisDot11WIPSAPClaAuthMethod        UnisDot11WIPSAPClaAuthMethods,
+        unisDot11WIPSAPClaAuthType          UnisDot11WIPSAPClassifyCmpType,
+        unisDot11WIPSAPClaAuthStatus        UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSAPClaAuthRuleID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the rule ID."
+    ::= { unisDot11WIPSAPClaAuthEntry 1 }
+
+unisDot11WIPSAPClaAuthMethod OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClaAuthMethods
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification authentication method."
+    ::= { unisDot11WIPSAPClaAuthEntry 2 }
+
+unisDot11WIPSAPClaAuthType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClassifyCmpType
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification authentication compare type."
+    ::= { unisDot11WIPSAPClaAuthEntry 3 }
+
+unisDot11WIPSAPClaAuthStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of AP classification authentication."
+    ::= { unisDot11WIPSAPClaAuthEntry 4 }
+
+unisDot11WIPSAPClaCltOnlTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSAPClaCltOnlEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the enable status of
+         AP classification clinet online."
+    ::= { unisDot11WIPSConfigGroup 27 }
+
+unisDot11WIPSAPClaCltOnlEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClaCltOnlEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status of
+         AP classification clinet online."
+    INDEX { unisDot11WIPSAPClaCltOnlRuleID }
+    ::= { unisDot11WIPSAPClaCltOnlTable 1 }
+
+UnisDot11WIPSAPClaCltOnlEntry ::= SEQUENCE {
+        unisDot11WIPSAPClaCltOnlRuleID      Integer32,
+        unisDot11WIPSAPClaCltOnlV1          Integer32,
+        unisDot11WIPSAPClaCltOnlV2          Integer32,
+        unisDot11WIPSAPClaCltOnlSts         UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSAPClaCltOnlRuleID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the rule ID."
+    ::= { unisDot11WIPSAPClaCltOnlEntry 1 }
+
+unisDot11WIPSAPClaCltOnlV1 OBJECT-TYPE
+    SYNTAX Integer32 (0..128)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification clinet online value1."
+    ::= { unisDot11WIPSAPClaCltOnlEntry 2 }
+
+unisDot11WIPSAPClaCltOnlV2 OBJECT-TYPE
+    SYNTAX Integer32 (0..128)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification clinet online value2."
+    ::= { unisDot11WIPSAPClaCltOnlEntry 3 }
+
+unisDot11WIPSAPClaCltOnlSts OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of WIPS AP classification clinet online."
+    ::= { unisDot11WIPSAPClaCltOnlEntry 4 }
+
+unisDot11WIPSAPClaDiscrTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSAPClaDiscrEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the enable status of AP classification discover."
+    ::= { unisDot11WIPSConfigGroup 28 }
+
+unisDot11WIPSAPClaDiscrEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClaDiscrEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status of AP classification discover."
+    INDEX { unisDot11WIPSAPClaDiscrRuleID }
+    ::= { unisDot11WIPSAPClaDiscrTable 1 }
+
+UnisDot11WIPSAPClaDiscrEntry ::= SEQUENCE {
+        unisDot11WIPSAPClaDiscrRuleID       Integer32,
+        unisDot11WIPSAPClaDiscrV1           Integer32,
+        unisDot11WIPSAPClaDiscrV2           Integer32,
+        unisDot11WIPSAPClaDiscrSta          UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSAPClaDiscrRuleID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the rule ID."
+    ::= { unisDot11WIPSAPClaDiscrEntry 1 }
+
+unisDot11WIPSAPClaDiscrV1 OBJECT-TYPE
+    SYNTAX Integer32 (1..128)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification discover value1."
+    ::= { unisDot11WIPSAPClaDiscrEntry 2 }
+
+unisDot11WIPSAPClaDiscrV2 OBJECT-TYPE
+    SYNTAX Integer32 (1..128)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification discover value2."
+    ::= { unisDot11WIPSAPClaDiscrEntry 3 }
+
+unisDot11WIPSAPClaDiscrSta OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of AP classification discover."
+    ::= { unisDot11WIPSAPClaDiscrEntry 4 }
+
+--
+-- APClassifyRssi
+--
+unisDot11WIPSAPClaRssiTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSAPClaRssiEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the enable status of AP classification rssi."
+    ::= { unisDot11WIPSConfigGroup 29 }
+
+unisDot11WIPSAPClaRssiEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClaRssiEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status of AP classification rssi."
+    INDEX { unisDot11WIPSAPClaRssiRuleID }
+    ::= { unisDot11WIPSAPClaRssiTable 1 }
+
+UnisDot11WIPSAPClaRssiEntry ::= SEQUENCE {
+        unisDot11WIPSAPClaRssiRuleID        Integer32,
+        unisDot11WIPSAPClaRssiV1            Integer32,
+        unisDot11WIPSAPClaRssiV2            Integer32,
+        unisDot11WIPSAPClaRssiSta           UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSAPClaRssiRuleID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the rule ID."
+    ::= { unisDot11WIPSAPClaRssiEntry 1 }
+
+unisDot11WIPSAPClaRssiV1 OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification rssi value1."
+    ::= { unisDot11WIPSAPClaRssiEntry 2 }
+
+unisDot11WIPSAPClaRssiV2 OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification rssi value2."
+    ::= { unisDot11WIPSAPClaRssiEntry 3 }
+
+unisDot11WIPSAPClaRssiSta OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of AP classification rssi."
+    ::= { unisDot11WIPSAPClaRssiEntry 4 }
+
+unisDot11WIPSAPClaUpdurTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSAPClaUpdurEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the enable status of AP classification upduration."
+    ::= { unisDot11WIPSConfigGroup 30 }
+
+unisDot11WIPSAPClaUpdurEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClaUpdurEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status of AP classification upduration."
+    INDEX { unisDot11WIPSAPClaUpdurRuleID }
+    ::= { unisDot11WIPSAPClaUpdurTable 1 }
+
+UnisDot11WIPSAPClaUpdurEntry ::= SEQUENCE {
+        unisDot11WIPSAPClaUpdurRuleID       Integer32,
+        unisDot11WIPSAPClaUpdurV1           Integer32,
+        unisDot11WIPSAPClaUpdurV2           Integer32,
+        unisDot11WIPSAPClaUpdurSta          UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSAPClaUpdurRuleID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the rule ID."
+    ::= { unisDot11WIPSAPClaUpdurEntry 1 }
+
+unisDot11WIPSAPClaUpdurV1 OBJECT-TYPE
+    SYNTAX Integer32 (0..2592000)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification upduration value1."
+    ::= { unisDot11WIPSAPClaUpdurEntry 2 }
+
+unisDot11WIPSAPClaUpdurV2 OBJECT-TYPE
+    SYNTAX Integer32 (0..2592000)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification upduration value2."
+    ::= { unisDot11WIPSAPClaUpdurEntry 3 }
+
+unisDot11WIPSAPClaUpdurSta OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of AP classification upduration."
+    ::= { unisDot11WIPSAPClaUpdurEntry 4 }
+
+unisDot11WIPSAPClaOuiTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSAPClaOuiEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the enable status of AP classification oui."
+    ::= { unisDot11WIPSConfigGroup 31 }
+
+unisDot11WIPSAPClaOuiEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClaOuiEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status of AP classification oui."
+    INDEX { unisDot11WIPSAPClaOuiRuleID }
+    ::= { unisDot11WIPSAPClaOuiTable 1 }
+
+UnisDot11WIPSAPClaOuiEntry ::= SEQUENCE {
+        unisDot11WIPSAPClaOuiRuleID        Integer32,
+        unisDot11WIPSAPClaOuiMac           UnisDot11WIPSOuiAddress,
+        unisDot11WIPSAPClaOuiStatus        UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSAPClaOuiRuleID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the rule ID."
+    ::= { unisDot11WIPSAPClaOuiEntry 1 }
+
+unisDot11WIPSAPClaOuiMac OBJECT-TYPE
+    SYNTAX UnisDot11WIPSOuiAddress
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification oui."
+    ::= { unisDot11WIPSAPClaOuiEntry 2 }
+
+unisDot11WIPSAPClaOuiStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of AP classification oui."
+    ::= { unisDot11WIPSAPClaOuiEntry 3 }
+
+unisDot11WIPSAPClaSryTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSAPClaSryEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the enable status of AP classification security."
+    ::= { unisDot11WIPSConfigGroup 32 }
+
+unisDot11WIPSAPClaSryEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClaSryEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status of AP classification security."
+    INDEX { unisDot11WIPSAPClaSryRuleID }
+    ::= { unisDot11WIPSAPClaSryTable 1 }
+
+UnisDot11WIPSAPClaSryEntry ::= SEQUENCE {
+        unisDot11WIPSAPClaSryRuleID         Integer32,
+        unisDot11WIPSAPClaSryType           UnisDot11WIPSAPClaSecurityType,
+        unisDot11WIPSAPClaSryCmpType        UnisDot11WIPSAPClassifyCmpType,
+        unisDot11WIPSAPClaSrySta            UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSAPClaSryRuleID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the rule ID."
+    ::= { unisDot11WIPSAPClaSryEntry 1 }
+
+unisDot11WIPSAPClaSryType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClaSecurityType
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification security."
+    ::= { unisDot11WIPSAPClaSryEntry 2 }
+
+unisDot11WIPSAPClaSryCmpType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClassifyCmpType
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification security."
+    ::= { unisDot11WIPSAPClaSryEntry 3 }
+
+unisDot11WIPSAPClaSrySta OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of AP classification security."
+    ::= { unisDot11WIPSAPClaSryEntry 4 }
+
+unisDot11WIPSAPClaSsidTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSAPClaSsidEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the enable status of AP classification ssid."
+    ::= { unisDot11WIPSConfigGroup 33 }
+
+unisDot11WIPSAPClaSsidEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClaSsidEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status of AP classification ssid."
+    INDEX { unisDot11WIPSAPClaSsidRuleID }
+    ::= { unisDot11WIPSAPClaSsidTable 1 }
+
+UnisDot11WIPSAPClaSsidEntry ::= SEQUENCE {
+        unisDot11WIPSAPClaSsidRuleID         Integer32,
+        unisDot11WIPSAPClaSsidName           OCTET STRING,
+        unisDot11WIPSAPClaSsidcase           TruthValue,
+        unisDot11WIPSAPClaSsidCmpType        UnisDot11WIPSAPClasSsidCmpType,
+        unisDot11WIPSAPClaSsidStatus         UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSAPClaSsidRuleID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the rule ID."
+    ::= { unisDot11WIPSAPClaSsidEntry 1 }
+
+unisDot11WIPSAPClaSsidName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..32))
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification ssid name."
+    ::= { unisDot11WIPSAPClaSsidEntry 2 }
+
+unisDot11WIPSAPClaSsidcase OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification case-sensitive."
+    ::= { unisDot11WIPSAPClaSsidEntry 3 }
+
+unisDot11WIPSAPClaSsidCmpType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClasSsidCmpType
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the AP classification ssid compare type."
+    ::= { unisDot11WIPSAPClaSsidEntry 4 }
+
+unisDot11WIPSAPClaSsidStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of AP classification ssid."
+    ::= { unisDot11WIPSAPClaSsidEntry 5 }
+
+unisDot11WIPSDtcSigTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSDtcSigEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table provides information about detect signature."
+    ::= { unisDot11WIPSConfigGroup 34 }
+
+unisDot11WIPSDtcSigEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDtcSigEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about signature detect."
+    INDEX { unisDot11WIPSDtcSigPolicyName }
+    ::= { unisDot11WIPSDtcSigTable 1 }
+
+UnisDot11WIPSDtcSigEntry ::= SEQUENCE {
+        unisDot11WIPSDtcSigPolicyName               OCTET STRING,
+        unisDot11WIPSDtcSigInterval                 Integer32,
+        unisDot11WIPSDtcSigQuiet                    Integer32,
+        unisDot11WIPSDtcSigThreshold                Integer32,
+        unisDot11WIPSDtcSigStatus                   UnisDot11WIPSEnabledStatus
+      }
+
+unisDot11WIPSDtcSigPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the name of the policy."
+    ::= { unisDot11WIPSDtcSigEntry 1 }
+
+unisDot11WIPSDtcSigInterval OBJECT-TYPE
+    SYNTAX Integer32 (1..3600)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the interval of signature detect."
+    ::= { unisDot11WIPSDtcSigEntry 2 }
+
+unisDot11WIPSDtcSigQuiet OBJECT-TYPE
+    SYNTAX Integer32 (5..604800)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the quiet of signature detect."
+    ::= { unisDot11WIPSDtcSigEntry 3 }
+
+unisDot11WIPSDtcSigThreshold OBJECT-TYPE
+    SYNTAX Integer32 (1..100000)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the threshold of signature detect."
+    ::= { unisDot11WIPSDtcSigEntry 4 }
+
+unisDot11WIPSDtcSigStatus OBJECT-TYPE
+    SYNTAX UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSDtcSigEntry 5 }
+
+unisDot11WIPSPolicyTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSPolicyEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table provides information about policy."
+    ::= { unisDot11WIPSConfigGroup 35 }
+
+unisDot11WIPSPolicyEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSPolicyEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status of policy configuration."
+    INDEX { unisDot11WIPSPolicyType ,unisDot11WIPSPolicyName}
+    ::= { unisDot11WIPSPolicyTable 1 }
+
+UnisDot11WIPSPolicyEntry ::= SEQUENCE {
+        unisDot11WIPSPolicyType                 UnisDot11WIPSPolicyTypeValue,
+        unisDot11WIPSPolicyName                 OCTET STRING,
+        unisDot11WIPSPolicyRowStatus            RowStatus
+     }
+
+unisDot11WIPSPolicyType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSPolicyTypeValue
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the type of policy."
+    ::= { unisDot11WIPSPolicyEntry 1 }
+
+unisDot11WIPSPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the name of the policy."
+    ::= { unisDot11WIPSPolicyEntry 2 }
+
+unisDot11WIPSPolicyRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSPolicyEntry 3 }
+
+unisDot11WIPSSigFrameTypeTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSSigFrameTypeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the enable status of signature frame type."
+    ::= { unisDot11WIPSConfigGroup 36 }
+
+unisDot11WIPSSigFrameTypeEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSSigFrameTypeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the status of signature frame type."
+    INDEX { unisDot11WIPSSigFrameTypeRuleId }
+    ::= { unisDot11WIPSSigFrameTypeTable 1 }
+
+UnisDot11WIPSSigFrameTypeEntry ::= SEQUENCE {
+        unisDot11WIPSSigFrameTypeRuleId         Integer32,
+        unisDot11WIPSSigFrameType               UnisDot11WIPSSigFrameTypes,
+        unisDot11WIPSSigFrameSubType            UnisDot11WIPSSigFrameSubTypes,
+        unisDot11WIPSSigFrameTypeStatus         UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSSigFrameTypeRuleId OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the signature rule ID."
+    ::= { unisDot11WIPSSigFrameTypeEntry 1 }
+
+unisDot11WIPSSigFrameType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSSigFrameTypes
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the signature frame type."
+    ::= { unisDot11WIPSSigFrameTypeEntry 2 }
+
+unisDot11WIPSSigFrameSubType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSSigFrameSubTypes
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the signature frame subtype."
+    ::= { unisDot11WIPSSigFrameTypeEntry 3 }
+
+unisDot11WIPSSigFrameTypeStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of signature frame type."
+    ::= { unisDot11WIPSSigFrameTypeEntry 4 }
+
+unisDot11WIPSCtmTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSCtmEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the countermeasure commands."
+    ::= { unisDot11WIPSConfigGroup 37 }
+
+unisDot11WIPSCtmEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSCtmEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable command of countermeasure."
+    INDEX { unisDot11WIPSCtmPolicyName, unisDot11WIPSCtmClassifyType }
+    ::= { unisDot11WIPSCtmTable 1 }
+
+UnisDot11WIPSCtmEntry ::= SEQUENCE {
+        unisDot11WIPSCtmPolicyName       OCTET STRING,
+        unisDot11WIPSCtmClassifyType     UnisDot11WIPSCtmType,
+        unisDot11WIPSCtmStatus           UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSCtmPolicyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the countermeasure policy name."
+    ::= { unisDot11WIPSCtmEntry 1 }
+
+unisDot11WIPSCtmClassifyType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSCtmType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents a countermeasure command identifier."
+    ::= { unisDot11WIPSCtmEntry 2 }
+
+unisDot11WIPSCtmStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of one countermeasure command."
+    ::= { unisDot11WIPSCtmEntry 3 }
+
+unisDot11WIPSSigPatternTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSSigPatternEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table defines signature pattern."
+    ::= { unisDot11WIPSConfigGroup 38 }
+
+unisDot11WIPSSigPatternEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSSigPatternEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about signature pattern."
+    INDEX { unisDot11WIPSSigPatternRuleId, unisDot11WIPSSigPatternNum }
+    ::= { unisDot11WIPSSigPatternTable 1 }
+
+UnisDot11WIPSSigPatternEntry ::= SEQUENCE {
+        unisDot11WIPSSigPatternRuleId           Integer32,
+        unisDot11WIPSSigPatternNum              Integer32,
+        unisDot11WIPSSigPatternOffset           Integer32,
+        unisDot11WIPSSigPatternMask             OCTET STRING,
+        unisDot11WIPSSigPatternValue1           Integer32,
+        unisDot11WIPSSigPatternValue2           Integer32,
+        unisDot11WIPSSigPatternFromPld          TruthValue,
+        unisDot11WIPSSigPatternRowStatus        RowStatus
+     }
+
+unisDot11WIPSSigPatternRuleId OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the signature pattern rule id."
+    ::= { unisDot11WIPSSigPatternEntry 1 }
+
+unisDot11WIPSSigPatternNum OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the signature pattern pattern number."
+    ::= { unisDot11WIPSSigPatternEntry 2 }
+
+unisDot11WIPSSigPatternOffset OBJECT-TYPE
+    SYNTAX Integer32 (0..2346)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Represents the signature pattern offset."
+    ::= { unisDot11WIPSSigPatternEntry 3 }
+
+unisDot11WIPSSigPatternMask OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..4))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Represents the signature pattern mask."
+    ::= { unisDot11WIPSSigPatternEntry 4 }
+
+unisDot11WIPSSigPatternValue1 OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Represents the signature pattern value1."
+    ::= { unisDot11WIPSSigPatternEntry 5 }
+
+unisDot11WIPSSigPatternValue2 OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Represents the signature pattern value2."
+    ::= { unisDot11WIPSSigPatternEntry 6 }
+
+unisDot11WIPSSigPatternFromPld OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Represents the signature pattern frome payload."
+    ::= { unisDot11WIPSSigPatternEntry 7 }
+
+unisDot11WIPSSigPatternRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIPSSigPatternEntry 8 }
+
+unisDot11WIPSSigSeqNumTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSSigSeqNumEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the infomation about signature sequence number."
+    ::= { unisDot11WIPSConfigGroup 39 }
+
+unisDot11WIPSSigSeqNumEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSSigSeqNumEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the infomation about signature sequence number."
+    INDEX { unisDot11WIPSSigSeqNumRuleId }
+    ::= { unisDot11WIPSSigSeqNumTable 1 }
+
+UnisDot11WIPSSigSeqNumEntry ::= SEQUENCE {
+        unisDot11WIPSSigSeqNumRuleId          Integer32,
+        unisDot11WIPSSigSeqNumValue1          Integer32,
+        unisDot11WIPSSigSeqNumValue2          Integer32,
+        unisDot11WIPSSigSeqNumStatus          UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSSigSeqNumRuleId OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the signature rule ID."
+    ::= { unisDot11WIPSSigSeqNumEntry 1 }
+
+unisDot11WIPSSigSeqNumValue1 OBJECT-TYPE
+    SYNTAX Integer32 (0..4095)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents sequence number value1."
+    ::= { unisDot11WIPSSigSeqNumEntry 2 }
+
+unisDot11WIPSSigSeqNumValue2 OBJECT-TYPE
+    SYNTAX Integer32 (0..4095)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents sequence number value2 ."
+    ::= { unisDot11WIPSSigSeqNumEntry 3 }
+
+unisDot11WIPSSigSeqNumStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of signature sequence number."
+    ::= { unisDot11WIPSSigSeqNumEntry 4 }
+
+unisDot11WIPSSigSsidTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSSigSsidEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the infomation about signature SSID."
+    ::= { unisDot11WIPSConfigGroup 40 }
+
+unisDot11WIPSSigSsidEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSSigSsidEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the infomation about signature SSID."
+    INDEX { unisDot11WIPSSigSsidRuleId }
+    ::= { unisDot11WIPSSigSsidTable 1 }
+
+UnisDot11WIPSSigSsidEntry ::= SEQUENCE {
+        unisDot11WIPSSigSsidRuleId            Integer32,
+        unisDot11WIPSSigSsidSsid              OCTET STRING,
+        unisDot11WIPSSigSsidCase              TruthValue,
+        unisDot11WIPSSigSsidMatchType         UnisDot11WIPSSigSsidMatchTypes,
+        unisDot11WIPSSigSsidStatus            UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSSigSsidRuleId OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the signature rule ID."
+    ::= { unisDot11WIPSSigSsidEntry 1 }
+
+unisDot11WIPSSigSsidSsid OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..32))
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the name of signature SSID."
+    ::= { unisDot11WIPSSigSsidEntry 2 }
+
+unisDot11WIPSSigSsidCase OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the case sensitive of signature SSID."
+    ::= { unisDot11WIPSSigSsidEntry 3 }
+
+unisDot11WIPSSigSsidMatchType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSSigSsidMatchTypes
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the match type of signature SSID."
+    ::= { unisDot11WIPSSigSsidEntry 4 }
+
+unisDot11WIPSSigSsidStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of signature SSID."
+    ::= { unisDot11WIPSSigSsidEntry 5 }
+
+unisDot11WIPSSigSsidLengthTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSSigSsidLengthEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the infomation about signature SSID length."
+    ::= { unisDot11WIPSConfigGroup 41 }
+
+unisDot11WIPSSigSsidLengthEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSSigSsidLengthEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the infomation about signature SSID length."
+    INDEX { unisDot11WIPSSigSsidLengthRuleId }
+    ::= { unisDot11WIPSSigSsidLengthTable 1 }
+
+UnisDot11WIPSSigSsidLengthEntry ::= SEQUENCE {
+        unisDot11WIPSSigSsidLengthRuleId          Integer32,
+        unisDot11WIPSSigSsidLengthValue1          Integer32,
+        unisDot11WIPSSigSsidLengthValue2          Integer32,
+        unisDot11WIPSSigSsidLengthStatus          UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSSigSsidLengthRuleId OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the signature rule ID."
+    ::= { unisDot11WIPSSigSsidLengthEntry 1 }
+
+unisDot11WIPSSigSsidLengthValue1 OBJECT-TYPE
+    SYNTAX Integer32 (1..32)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents signature SSID length value1."
+    ::= { unisDot11WIPSSigSsidLengthEntry 2 }
+
+unisDot11WIPSSigSsidLengthValue2 OBJECT-TYPE
+    SYNTAX Integer32 (1..32)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents signature SSID length value2 ."
+    ::= { unisDot11WIPSSigSsidLengthEntry 3 }
+
+unisDot11WIPSSigSsidLengthStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of signature SSID length."
+    ::= { unisDot11WIPSSigSsidLengthEntry 4 }
+
+unisDot11WIPSFldDetectTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSFldDetectEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains the flood detect information."
+    ::= { unisDot11WIPSConfigGroup 42 }
+
+unisDot11WIPSFldDetectEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSFldDetectEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about one type of flood detect."
+    INDEX { unisDot11WIPSFldDetectPlyName, unisDot11WIPSFldDetectType }
+    ::= { unisDot11WIPSFldDetectTable 1 }
+
+UnisDot11WIPSFldDetectEntry ::= SEQUENCE {
+        unisDot11WIPSFldDetectPlyName       OCTET STRING,
+        unisDot11WIPSFldDetectType          UnisDot11WIPSFldDctType,
+        unisDot11WIPSFldDetectInter         Integer32,
+        unisDot11WIPSFldDetectThresh        Integer32,
+        unisDot11WIPSFldDetectQuiet         Integer32,
+        unisDot11WIPSFldDetectStatus        UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSFldDetectPlyName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the policy name of detect."
+    ::= { unisDot11WIPSFldDetectEntry 1 }
+
+unisDot11WIPSFldDetectType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSFldDctType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the type of flood detect."
+    ::= { unisDot11WIPSFldDetectEntry 2 }
+
+unisDot11WIPSFldDetectInter OBJECT-TYPE
+    SYNTAX Integer32 (1..3600)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the interval of flood detect."
+    ::= { unisDot11WIPSFldDetectEntry 3 }
+
+unisDot11WIPSFldDetectThresh OBJECT-TYPE
+    SYNTAX Integer32 (1..100000)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the threshold of flood detect."
+    ::= { unisDot11WIPSFldDetectEntry 4 }
+
+unisDot11WIPSFldDetectQuiet OBJECT-TYPE
+    SYNTAX Integer32 (5..604800)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the quiet time of flood detect."
+    ::= { unisDot11WIPSFldDetectEntry 5 }
+
+unisDot11WIPSFldDetectStatus OBJECT-TYPE
+    SYNTAX UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+         "The enable status of flood detect."
+    ::= { unisDot11WIPSFldDetectEntry 6 }
+
+unisDot11WIPSSignatureMacTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSSignatureMacEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the infomation about signature MAC address."
+    ::= { unisDot11WIPSConfigGroup 43 }
+
+unisDot11WIPSSignatureMacEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSSignatureMacEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the infomation about signature MAC address."
+    INDEX { unisDot11WIPSSignatureMacRuleId }
+    ::= { unisDot11WIPSSignatureMacTable 1 }
+
+UnisDot11WIPSSignatureMacEntry ::= SEQUENCE {
+        unisDot11WIPSSignatureMacRuleId           Integer32,
+        unisDot11WIPSSignatureMacMacTyp           UnisDot11WIPSSigMacMacType,
+        unisDot11WIPSSignatureMacMacAdd           MacAddress,
+        unisDot11WIPSSignatureMacStatus           UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSSignatureMacRuleId OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the signature rule ID."
+    ::= { unisDot11WIPSSignatureMacEntry 1 }
+
+unisDot11WIPSSignatureMacMacTyp OBJECT-TYPE
+    SYNTAX UnisDot11WIPSSigMacMacType
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the type of signature MAC address."
+    ::= { unisDot11WIPSSignatureMacEntry 2 }
+
+unisDot11WIPSSignatureMacMacAdd OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Represents the MAC address of signature MAC address."
+    ::= { unisDot11WIPSSignatureMacEntry 3 }
+
+unisDot11WIPSSignatureMacStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of signature MAC address."
+    ::= { unisDot11WIPSSignatureMacEntry 4 }
+
+unisDot11WIPSNatDetectTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSNatDetectEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains the enable status of WIPS NAT detect."
+    ::= { unisDot11WIPSConfigGroup 45 }
+
+unisDot11WIPSNatDetectEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSNatDetectEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the enable status of NAT detect."
+    INDEX { unisDot11WIPSNatDetectApName }
+    ::= { unisDot11WIPSNatDetectTable 1 }
+
+UnisDot11WIPSNatDetectEntry ::= SEQUENCE {
+        unisDot11WIPSNatDetectApName       OCTET STRING,
+        unisDot11WIPSNatDetectStatus       UnisDot11WIPSEnabledStatus
+     }
+
+unisDot11WIPSNatDetectApName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..64))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the name of AP."
+    ::= { unisDot11WIPSNatDetectEntry 1 }
+
+unisDot11WIPSNatDetectStatus OBJECT-TYPE
+    SYNTAX  UnisDot11WIPSEnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The enable status of NAT detect on AP."
+    ::= { unisDot11WIPSNatDetectEntry 2 }
+
+unisDot11WIPSDctAPTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSDctAPEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains BSS information for APs
+         detected by WIPS."
+    ::= { unisDot11WIPSDataGroup 1 }
+
+unisDot11WIPSDctAPEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDctAPEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains BSS information for one AP."
+    INDEX { unisDot11WIPSDctAPVSD, unisDot11WIPSDctAPMac }
+    ::= { unisDot11WIPSDctAPTable 1 }
+
+UnisDot11WIPSDctAPEntry ::= SEQUENCE {
+        unisDot11WIPSDctAPVSD               OCTET STRING,
+        unisDot11WIPSDctAPMac               MacAddress,
+        unisDot11WIPSDctAPClassifyWay       UnisDot11WIPSDevClassifyWay,
+        unisDot11WIPSDctAPClassifyType      UnisDot11WIPSAPClassifyType,
+        unisDot11WIPSDctAPSeverityLevel     Unsigned32,
+        unisDot11WIPSDctAPStatus            UnisDot11WIPSDevStatus,
+        unisDot11WIPSDctAPStatusDut         TimeTicks,
+        unisDot11WIPSDctAPVendor            OCTET STRING,
+        unisDot11WIPSDctAPSSID              OCTET STRING,
+        unisDot11WIPSDctAPSecurity          UnisDot11WIPSAPSecurityType,
+        unisDot11WIPSDctAPEncryptMethod     UnisDot11WIPSEncryptMethod,
+        unisDot11WIPSDctAPAuthMethod        UnisDot11WIPSAuthMethod,
+        unisDot11WIPSDctAPRadioType         UnisDot11WIPSRadioType,
+        unisDot11WIPSDctAPWorkChannel       UnisDot11WIPSChannel,
+        unisDot11WIPSDctAPIsCountered       TruthValue,
+        unisDot11WIPSDctAPAttachStaNum      Integer32,
+        unisDot11WIPSDctAPRptSensorNum      Integer32,
+        unisDot11WIPSDctAPIsBdcastSSID      TruthValue,
+        unisDot11WIPSDctAPType              UnisDot11WIPSAPType,
+        unisDot11WIPSDctAPIsQosSported      TruthValue,
+        unisDot11WIPSDctAPBeaconItv         Integer32,
+        unisDot11WIPSDctAPUpDuration        TimeTicks
+     }
+
+unisDot11WIPSDctAPVSD OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the virtual security domain in which the BSS was detected."
+    ::= { unisDot11WIPSDctAPEntry 1 }
+
+unisDot11WIPSDctAPMac OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the Basic Service Set."
+    ::= { unisDot11WIPSDctAPEntry 2 }
+
+unisDot11WIPSDctAPClassifyWay OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDevClassifyWay
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents by which way the AP is categorized."
+    ::= { unisDot11WIPSDctAPEntry 3 }
+
+unisDot11WIPSDctAPClassifyType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPClassifyType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the category of the AP."
+    ::= { unisDot11WIPSDctAPEntry 4 }
+
+unisDot11WIPSDctAPSeverityLevel OBJECT-TYPE
+    SYNTAX Unsigned32 (0..100)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the security level of the detected AP."
+    ::= { unisDot11WIPSDctAPEntry 5 }
+
+unisDot11WIPSDctAPStatus OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDevStatus
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the status of the AP detected by WIPS."
+    ::= { unisDot11WIPSDctAPEntry 6 }
+
+unisDot11WIPSDctAPStatusDut OBJECT-TYPE
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the duration of the AP status."
+    ::= { unisDot11WIPSDctAPEntry 7 }
+
+unisDot11WIPSDctAPVendor OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..127))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the vendor of the AP detected by WIPS."
+    ::= { unisDot11WIPSDctAPEntry 8 }
+
+unisDot11WIPSDctAPSSID OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..32))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the SSID that is broadcast by the AP."
+    ::= { unisDot11WIPSDctAPEntry 9 }
+
+unisDot11WIPSDctAPSecurity OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPSecurityType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the security suites of the detected AP."
+    ::= { unisDot11WIPSDctAPEntry 10 }
+
+unisDot11WIPSDctAPEncryptMethod OBJECT-TYPE
+    SYNTAX UnisDot11WIPSEncryptMethod
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the encryption method used by the detected AP."
+    ::= { unisDot11WIPSDctAPEntry 11 }
+
+unisDot11WIPSDctAPAuthMethod OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAuthMethod
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the authentication method used by the detected AP."
+    ::= { unisDot11WIPSDctAPEntry 12 }
+
+unisDot11WIPSDctAPRadioType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSRadioType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the radio type used by the detected AP."
+    ::= { unisDot11WIPSDctAPEntry 13 }
+
+unisDot11WIPSDctAPWorkChannel OBJECT-TYPE
+    SYNTAX UnisDot11WIPSChannel
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the radio channel on which the detected AP operates."
+    ::= { unisDot11WIPSDctAPEntry 14 }
+
+unisDot11WIPSDctAPIsCountered OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents whether WIPS has taken countermeasures on the detected AP."
+    ::= { unisDot11WIPSDctAPEntry 15 }
+
+unisDot11WIPSDctAPAttachStaNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of clients associated with the detected AP."
+    ::= { unisDot11WIPSDctAPEntry 16 }
+
+unisDot11WIPSDctAPRptSensorNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of sensors that have detected the AP."
+    ::= { unisDot11WIPSDctAPEntry 17 }
+
+unisDot11WIPSDctAPIsBdcastSSID OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents whether the detected AP is broadcasting the SSID."
+    ::= { unisDot11WIPSDctAPEntry 18 }
+
+unisDot11WIPSDctAPType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAPType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the type of the detected AP."
+    ::= { unisDot11WIPSDctAPEntry 19 }
+
+unisDot11WIPSDctAPIsQosSported OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the support of the detected AP for QoS."
+    ::= { unisDot11WIPSDctAPEntry 20 }
+
+unisDot11WIPSDctAPBeaconItv OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the beacon interval of the detected AP."
+    ::= { unisDot11WIPSDctAPEntry 21 }
+
+unisDot11WIPSDctAPUpDuration OBJECT-TYPE
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the amount of time that has elapsed since AP
+        started to work, which is calculated by using beacon/probe
+        response frame."
+    ::= { unisDot11WIPSDctAPEntry 22 }
+
+unisDot11WIPSDctStaTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSDctStaEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains information about stations detected by WIPS."
+    ::= { unisDot11WIPSDataGroup 2 }
+
+unisDot11WIPSDctStaEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDctStaEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about a station
+        detected by WIPS."
+    INDEX { unisDot11WIPSDctStaVSD, unisDot11WIPSDctStaMac }
+    ::= { unisDot11WIPSDctStaTable 1 }
+
+UnisDot11WIPSDctStaEntry ::= SEQUENCE {
+        unisDot11WIPSDctStaVSD               OCTET STRING,
+        unisDot11WIPSDctStaMac               MacAddress,
+        unisDot11WIPSDctStaAssocBSSID        MacAddress,
+        unisDot11WIPSDctStaClassifyWay       UnisDot11WIPSDevClassifyWay,
+        unisDot11WIPSDctStaClassifyType      UnisDot11WIPSStaClassifyType,
+        unisDot11WIPSDctStaSeverityLevel     Unsigned32,
+        unisDot11WIPSDctStaIsDissociate      TruthValue,
+        unisDot11WIPSDctStaStatus            UnisDot11WIPSDevStatus,
+        unisDot11WIPSDctStaStatusDurat       TimeTicks,
+        unisDot11WIPSDctStaVendor            OCTET STRING,
+        unisDot11WIPSDctStaRadioType         UnisDot11WIPSRadioType,
+        unisDot11WIPSDctStaRptSensorNum      Integer32,
+        unisDot11WIPSDctStaWorkChannel       UnisDot11WIPSChannel,
+        unisDot11WIPSDctStaIsCountered       TruthValue
+     }
+
+unisDot11WIPSDctStaVSD OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the virtual security domain in
+         which the station was detected."
+    ::= { unisDot11WIPSDctStaEntry 1 }
+
+unisDot11WIPSDctStaMac OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the MAC address of the station."
+    ::= { unisDot11WIPSDctStaEntry 2 }
+
+unisDot11WIPSDctStaAssocBSSID OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the BSSID with which the station is associated."
+    ::= { unisDot11WIPSDctStaEntry 3 }
+
+unisDot11WIPSDctStaClassifyWay OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDevClassifyWay
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the method that the client is categorized."
+    ::= { unisDot11WIPSDctStaEntry 4 }
+
+unisDot11WIPSDctStaClassifyType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSStaClassifyType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the category of the client."
+    ::= { unisDot11WIPSDctStaEntry 5 }
+
+unisDot11WIPSDctStaSeverityLevel OBJECT-TYPE
+    SYNTAX Unsigned32 (0..100)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the security level of the detected client."
+    ::= { unisDot11WIPSDctStaEntry 6 }
+
+unisDot11WIPSDctStaIsDissociate OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents whether the detected client is dissociated."
+    ::= { unisDot11WIPSDctStaEntry 7 }
+
+unisDot11WIPSDctStaStatus OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDevStatus
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the status of the station detected by WIPS."
+    ::= { unisDot11WIPSDctStaEntry 8 }
+
+unisDot11WIPSDctStaStatusDurat OBJECT-TYPE
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the duration of the client status."
+    ::= { unisDot11WIPSDctStaEntry 9 }
+
+unisDot11WIPSDctStaVendor OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..127))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the vendor of the station detected by WIPS."
+    ::= { unisDot11WIPSDctStaEntry 10 }
+
+unisDot11WIPSDctStaRadioType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSRadioType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the radio type used by the detected station."
+    ::= { unisDot11WIPSDctStaEntry 11 }
+
+unisDot11WIPSDctStaRptSensorNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of sensors that have detected the station."
+    ::= { unisDot11WIPSDctStaEntry 12 }
+
+unisDot11WIPSDctStaWorkChannel OBJECT-TYPE
+    SYNTAX UnisDot11WIPSChannel
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents on which radio channel that the WIPS sensor detected
+        the station."
+    ::= { unisDot11WIPSDctStaEntry 13 }
+
+unisDot11WIPSDctStaIsCountered OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents whether WIPS has taken countermeasures
+         on the detected client."
+    ::= { unisDot11WIPSDctStaEntry 14 }
+
+--
+-- ApAssociatecltTable data3
+--
+unisDot11WIPSApAssoCltTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSApAssoCltEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains information about associated client by WIPS."
+    ::= { unisDot11WIPSDataGroup 3 }
+
+unisDot11WIPSApAssoCltEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSApAssoCltEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about a associated client by WIPS."
+    INDEX { unisDot11WIPSApAssoCltVSDName,
+            unisDot11WIPSApAssoCltApMacAddr,
+            unisDot11WIPSApAssoCltClMacAddr }
+    ::= { unisDot11WIPSApAssoCltTable 1 }
+
+UnisDot11WIPSApAssoCltEntry ::= SEQUENCE {
+        unisDot11WIPSApAssoCltVSDName                    OCTET STRING,
+        unisDot11WIPSApAssoCltApMacAddr                  MacAddress,
+        unisDot11WIPSApAssoCltClMacAddr                  MacAddress,
+        unisDot11WIPSApAssoCltIsAsso                     TruthValue
+     }
+
+unisDot11WIPSApAssoCltVSDName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the virtual security domain in
+         which the client had Associated."
+    ::= { unisDot11WIPSApAssoCltEntry 1 }
+
+unisDot11WIPSApAssoCltApMacAddr OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the MAC address of the AP."
+    ::= { unisDot11WIPSApAssoCltEntry 2 }
+
+unisDot11WIPSApAssoCltClMacAddr OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the MAC address of the Client."
+    ::= { unisDot11WIPSApAssoCltEntry 3 }
+
+unisDot11WIPSApAssoCltIsAsso OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents whether WIPS had taken associated on the detected client."
+    ::= { unisDot11WIPSApAssoCltEntry 4 }
+
+unisDot11WIPSApRpSenTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSApRpSenEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains information about AP report sensors."
+    ::= { unisDot11WIPSDataGroup 4 }
+
+unisDot11WIPSApRpSenEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSApRpSenEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about one device in a VSD."
+    INDEX { unisDot11WIPSApRpSenVsdName,
+            unisDot11WIPSApRpSenMacAddr,
+            unisDot11WIPSApRpSenName }
+    ::= { unisDot11WIPSApRpSenTable 1 }
+
+UnisDot11WIPSApRpSenEntry ::= SEQUENCE {
+        unisDot11WIPSApRpSenVsdName             OCTET STRING,
+        unisDot11WIPSApRpSenMacAddr             MacAddress,
+        unisDot11WIPSApRpSenName                OCTET STRING,
+        unisDot11WIPSApRpSenRadioID             Integer32,
+        unisDot11WIPSApRpSenRssi                Integer32,
+        unisDot11WIPSApRpSenChannel             Integer32,
+        unisDot11WIPSApRpSenFirstRpTime         OCTET STRING,
+        unisDot11WIPSApRpSenLastRpTime          OCTET STRING
+     }
+
+unisDot11WIPSApRpSenVsdName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the name of the VSD."
+    ::= { unisDot11WIPSApRpSenEntry 1 }
+
+unisDot11WIPSApRpSenMacAddr OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the MAC address of the sensor."
+    ::= { unisDot11WIPSApRpSenEntry 2 }
+
+unisDot11WIPSApRpSenName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..64))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the name of the sensor."
+    ::= { unisDot11WIPSApRpSenEntry 3 }
+
+unisDot11WIPSApRpSenRadioID  OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the radio ID."
+    ::= { unisDot11WIPSApRpSenEntry 4 }
+
+unisDot11WIPSApRpSenRssi  OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the rssi of AP."
+    ::= { unisDot11WIPSApRpSenEntry 5 }
+
+unisDot11WIPSApRpSenChannel  OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the channel of AP."
+    ::= { unisDot11WIPSApRpSenEntry 6 }
+
+unisDot11WIPSApRpSenFirstRpTime  OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..256))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the first report time of AP."
+    ::= { unisDot11WIPSApRpSenEntry 7 }
+
+unisDot11WIPSApRpSenLastRpTime  OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..256))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the last report time of AP."
+    ::= { unisDot11WIPSApRpSenEntry 8 }
+
+unisDot11WIPSCtmRecTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSCtmRecEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table provides information about virtual security domains (VSDs)."
+    ::= { unisDot11WIPSDataGroup 5 }
+
+unisDot11WIPSCtmRecEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSCtmRecEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about one VSD."
+    INDEX { unisDot11WIPSCtmRecVsdName,
+            unisDot11WIPSCtmRecMacAddress,
+            unisDot11WIPSCtmRecCount }
+    ::= { unisDot11WIPSCtmRecTable 1 }
+
+UnisDot11WIPSCtmRecEntry ::= SEQUENCE {
+        unisDot11WIPSCtmRecVsdName                  OCTET STRING,
+        unisDot11WIPSCtmRecMacAddress               MacAddress,
+        unisDot11WIPSCtmRecCount                    Integer32,
+        unisDot11WIPSCtmRecSensorName               OCTET STRING,
+        unisDot11WIPSCtmRecDeviceType               UnisDot11WIPSDeviceType,
+        unisDot11WIPSCtmRecClassifyType             UnisDot11WIPSClassifyType,
+        unisDot11WIPSCtmRecRadioId                  Integer32,
+        unisDot11WIPSCtmRecCounterTime              OCTET STRING
+    }
+
+unisDot11WIPSCtmRecVsdName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the name of the virtual security domain."
+    ::= { unisDot11WIPSCtmRecEntry 1 }
+
+unisDot11WIPSCtmRecMacAddress OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the MAC address."
+    ::= { unisDot11WIPSCtmRecEntry 2 }
+
+unisDot11WIPSCtmRecCount OBJECT-TYPE
+    SYNTAX Integer32 (1..1024)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the count of countermeasure record."
+    ::= { unisDot11WIPSCtmRecEntry 3 }
+
+unisDot11WIPSCtmRecSensorName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..64))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the name of countermeasure sensor."
+    ::= { unisDot11WIPSCtmRecEntry 4 }
+
+unisDot11WIPSCtmRecDeviceType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDeviceType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the type of device."
+    ::= { unisDot11WIPSCtmRecEntry 5 }
+
+unisDot11WIPSCtmRecClassifyType OBJECT-TYPE
+    SYNTAX UnisDot11WIPSClassifyType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the type of device classification."
+    ::= { unisDot11WIPSCtmRecEntry 6 }
+
+unisDot11WIPSCtmRecRadioId OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the radio ID of countermeasure sensor."
+    ::= { unisDot11WIPSCtmRecEntry 7 }
+
+unisDot11WIPSCtmRecCounterTime OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..256))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the time of countermeasure."
+    ::= { unisDot11WIPSCtmRecEntry 8 }
+
+unisDot11WIPSDevTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSDevEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains variedly devices type information."
+    ::= { unisDot11WIPSDataGroup 7 }
+
+unisDot11WIPSDevEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSDevEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains one type of devices information."
+    INDEX { unisDot11WIPSDevVSDName }
+    ::= { unisDot11WIPSDevTable 1 }
+
+UnisDot11WIPSDevEntry ::= SEQUENCE {
+        unisDot11WIPSDevVSDName                 OCTET STRING,
+        unisDot11WIPSDevTotalApNum              Integer32,
+        unisDot11WIPSDevTotalClinetNum          Integer32,
+        unisDot11WIPSDevAuthApNum               Integer32,
+        unisDot11WIPSDevMisConfigApNum          Integer32,
+        unisDot11WIPSDevRogueApNum              Integer32,
+        unisDot11WIPSDevExternalApNum           Integer32,
+        unisDot11WIPSDevAdhocNum                Integer32,
+        unisDot11WIPSDevMeshApNum               Integer32,
+        unisDot11WIPSDevpotenAuthApNum          Integer32,
+        unisDot11WIPSDevpotenRogueApNum         Integer32,
+        unisDot11WIPSDevPotenExtApNum           Integer32,
+        unisDot11WIPSDevUncateApNum             Integer32,
+        unisDot11WIPSDevAuthClinetNum           Integer32,
+        unisDot11WIPSDevUnauthClinetNum         Integer32,
+        unisDot11WIPSDevMisAssocltNum           Integer32,
+        unisDot11WIPSDevUncatecltNum            Integer32
+     }
+
+unisDot11WIPSDevVSDName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the virtual security domain in one type device."
+    ::= { unisDot11WIPSDevEntry 1 }
+
+unisDot11WIPSDevTotalApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the total number of detected AP."
+    ::= { unisDot11WIPSDevEntry 2 }
+
+unisDot11WIPSDevTotalClinetNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the total number of detected client."
+    ::= { unisDot11WIPSDevEntry 3 }
+
+unisDot11WIPSDevAuthApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected authenticated AP."
+    ::= { unisDot11WIPSDevEntry 4 }
+
+unisDot11WIPSDevMisConfigApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected misconfiguration AP."
+    ::= { unisDot11WIPSDevEntry 5 }
+
+unisDot11WIPSDevRogueApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected rouge AP."
+    ::= { unisDot11WIPSDevEntry 6 }
+
+unisDot11WIPSDevExternalApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected external AP."
+    ::= { unisDot11WIPSDevEntry 7 }
+
+unisDot11WIPSDevAdhocNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected ad-hoc AP."
+    ::= { unisDot11WIPSDevEntry 8 }
+
+unisDot11WIPSDevMeshApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected mesh-AP."
+    ::= { unisDot11WIPSDevEntry 9 }
+
+unisDot11WIPSDevpotenAuthApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected potential authenticated AP."
+    ::= { unisDot11WIPSDevEntry 10 }
+
+unisDot11WIPSDevpotenRogueApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected potential rogue AP."
+    ::= { unisDot11WIPSDevEntry 11 }
+
+unisDot11WIPSDevPotenExtApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected potential external AP."
+    ::= { unisDot11WIPSDevEntry 12 }
+
+unisDot11WIPSDevUncateApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected uncategorized AP."
+    ::= { unisDot11WIPSDevEntry 13 }
+
+unisDot11WIPSDevAuthClinetNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected authenticated clinet."
+    ::= { unisDot11WIPSDevEntry 14 }
+
+unisDot11WIPSDevUnauthClinetNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected unauthenticated client."
+    ::= { unisDot11WIPSDevEntry 15 }
+
+unisDot11WIPSDevMisAssocltNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected misassociated client."
+    ::= { unisDot11WIPSDevEntry 16 }
+
+unisDot11WIPSDevUncatecltNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of detected uncategorized client."
+    ::= { unisDot11WIPSDevEntry 17 }
+
+
+unisDot11WIPSCtmDevTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSCtmDevEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains information about countermeasure device in a VSD."
+    ::= { unisDot11WIPSDataGroup 8 }
+
+unisDot11WIPSCtmDevEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSCtmDevEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains countermeasure information about device in a VSD."
+    INDEX { unisDot11WIPSCtmDevVsdName }
+    ::= { unisDot11WIPSCtmDevTable 1 }
+
+UnisDot11WIPSCtmDevEntry ::= SEQUENCE {
+        unisDot11WIPSCtmDevVsdName                  OCTET STRING,
+        unisDot11WIPSCtmDevTotalApNum               Integer32,
+        unisDot11WIPSCtmDevTotalStaNum              Integer32,
+        unisDot11WIPSCtmDevMisCfgApNum              Integer32,
+        unisDot11WIPSCtmDevRogueApNum               Integer32,
+        unisDot11WIPSCtmDevExternalApNum            Integer32,
+        unisDot11WIPSCtmDevpotAuthApNum             Integer32,
+        unisDot11WIPSCtmDevpotRguApNum              Integer32,
+        unisDot11WIPSCtmDevpotenExtApNum            Integer32,
+        unisDot11WIPSCtmDevUncateApNum              Integer32,
+        unisDot11WIPSCtmDevUnauthStaNum             Integer32,
+        unisDot11WIPSCtmDevMisAssCltNum             Integer32,
+        unisDot11WIPSCtmDevUncatecltNum             Integer32,
+        unisDot11WIPSCtmDevAttackerNum              Integer32,
+        unisDot11WIPSCtmDevManuNum                  Integer32,
+        unisDot11WIPSCtmDevStaCauseByAP             Integer32
+     }
+
+unisDot11WIPSCtmDevVsdName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the vsd name."
+    ::= { unisDot11WIPSCtmDevEntry 1 }
+
+unisDot11WIPSCtmDevTotalApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the total number of coutermeasured AP."
+    ::= { unisDot11WIPSCtmDevEntry 2 }
+
+unisDot11WIPSCtmDevTotalStaNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the total number of coutermeasured client."
+    ::= { unisDot11WIPSCtmDevEntry 3 }
+
+unisDot11WIPSCtmDevMisCfgApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of coutermeasured misconfiguration AP."
+    ::= { unisDot11WIPSCtmDevEntry 4 }
+
+unisDot11WIPSCtmDevRogueApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of coutermeasured rouge AP."
+    ::= { unisDot11WIPSCtmDevEntry 5 }
+
+unisDot11WIPSCtmDevExternalApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of coutermeasured external AP."
+    ::= { unisDot11WIPSCtmDevEntry 6 }
+
+unisDot11WIPSCtmDevpotAuthApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of coutermeasured potential authenticated AP."
+    ::= { unisDot11WIPSCtmDevEntry 7 }
+
+unisDot11WIPSCtmDevpotRguApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of coutermeasured potential rogue AP."
+    ::= { unisDot11WIPSCtmDevEntry 8 }
+
+unisDot11WIPSCtmDevpotenExtApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of coutermeasured potential external AP."
+    ::= { unisDot11WIPSCtmDevEntry 9 }
+
+unisDot11WIPSCtmDevUncateApNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of coutermeasured uncategorized AP."
+    ::= { unisDot11WIPSCtmDevEntry 10 }
+
+unisDot11WIPSCtmDevUnauthStaNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of coutermeasured unauthenticated client."
+    ::= { unisDot11WIPSCtmDevEntry 11 }
+
+unisDot11WIPSCtmDevMisAssCltNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of coutermeasured misassociated client."
+    ::= { unisDot11WIPSCtmDevEntry 12 }
+
+unisDot11WIPSCtmDevUncatecltNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of coutermeasured uncategorized client."
+    ::= { unisDot11WIPSCtmDevEntry 13 }
+
+unisDot11WIPSCtmDevAttackerNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of coutermeasured attackers."
+    ::= { unisDot11WIPSCtmDevEntry 14 }
+
+unisDot11WIPSCtmDevManuNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of manual coutermeasure."
+    ::= { unisDot11WIPSCtmDevEntry 15 }
+
+unisDot11WIPSCtmDevStaCauseByAP OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of station caused by coutermeasured AP."
+    ::= { unisDot11WIPSCtmDevEntry 16 }
+
+unisDot11WIPSCltRptApTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSCltRptApEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains information about stations Report by Sensor."
+    ::= { unisDot11WIPSDataGroup 11 }
+
+unisDot11WIPSCltRptApEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSCltRptApEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about a probe station."
+    INDEX { unisDot11WIPSCltRptApVSDName,
+            unisDot11WIPSCltRptApDevMac,
+            unisDot11WIPSCltRptApSensorName }
+    ::= { unisDot11WIPSCltRptApTable 1 }
+
+UnisDot11WIPSCltRptApEntry ::= SEQUENCE {
+        unisDot11WIPSCltRptApVSDName        OCTET STRING,
+        unisDot11WIPSCltRptApDevMac         MacAddress,
+        unisDot11WIPSCltRptApSensorName     OCTET STRING,
+        unisDot11WIPSCltReportApRadioId     Integer32,
+        unisDot11WIPSCltRptApRSSI           Integer32,
+        unisDot11WIPSCltRptApWorkChannel    UnisDot11WIPSChannel,
+        unisDot11WIPSCltRptApFirstTime      OCTET STRING,
+        unisDot11WIPSCltRptApLastTime       OCTET STRING,
+        unisDot11WIPSCltRptApAssocMac       MacAddress
+     }
+
+unisDot11WIPSCltRptApVSDName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the virtual security domain in
+         which the client was detected."
+    ::= { unisDot11WIPSCltRptApEntry 1 }
+
+unisDot11WIPSCltRptApDevMac OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the device MAC address of the client."
+    ::= { unisDot11WIPSCltRptApEntry 2 }
+
+unisDot11WIPSCltRptApSensorName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..64))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the sensor name in which the client was detected."
+    ::= { unisDot11WIPSCltRptApEntry 3 }
+
+unisDot11WIPSCltReportApRadioId OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the radio id that have detected the client."
+    ::= { unisDot11WIPSCltRptApEntry 4 }
+
+unisDot11WIPSCltRptApRSSI OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the RSSI of the client."
+    ::= { unisDot11WIPSCltRptApEntry 5 }
+
+unisDot11WIPSCltRptApWorkChannel OBJECT-TYPE
+    SYNTAX UnisDot11WIPSChannel
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents on which radio channel that
+         the WIPS sensor detected the client."
+    ::= { unisDot11WIPSCltRptApEntry 6 }
+
+unisDot11WIPSCltRptApFirstTime OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..256))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the First Report Time of the client."
+    ::= { unisDot11WIPSCltRptApEntry 7 }
+
+unisDot11WIPSCltRptApLastTime OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..256))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the Last Report Time of the client."
+    ::= { unisDot11WIPSCltRptApEntry 8 }
+
+unisDot11WIPSCltRptApAssocMac OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the association MAC address of the client."
+    ::= { unisDot11WIPSCltRptApEntry 9 }
+
+unisDot11WIPSNatDtcCltTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSNatDtcCltEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains information about NAT client detected by WIPS."
+    ::= { unisDot11WIPSDataGroup 12 }
+
+unisDot11WIPSNatDtcCltEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSNatDtcCltEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about a NAT detect client."
+    INDEX { unisDot11WIPSNatDtcCltMac }
+    ::= { unisDot11WIPSNatDtcCltTable 1 }
+
+UnisDot11WIPSNatDtcCltEntry ::= SEQUENCE {
+        unisDot11WIPSNatDtcCltMac           MacAddress,
+        unisDot11WIPSNatDtcCltFirstTime     OCTET STRING,
+        unisDot11WIPSNatDtcCltLastTime      OCTET STRING,
+        unisDot11WIPSNatDtcCltDuraTime      Integer32
+     }
+
+unisDot11WIPSNatDtcCltMac OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the MAC address of the NAT detect client."
+    ::= { unisDot11WIPSNatDtcCltEntry 1 }
+
+unisDot11WIPSNatDtcCltFirstTime OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..256))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the first report time of the NAT detect client."
+    ::= { unisDot11WIPSNatDtcCltEntry 2 }
+
+unisDot11WIPSNatDtcCltLastTime OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..256))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the last report time of the NAT detect client."
+    ::= { unisDot11WIPSNatDtcCltEntry 3 }
+
+unisDot11WIPSNatDtcCltDuraTime OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the duration of the NAT detect client."
+    ::= { unisDot11WIPSNatDtcCltEntry 4 }
+
+unisDot11WIPSAckStaTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisDot11WIPSAckStaEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains information about attack statistics."
+    ::= { unisDot11WIPSDataGroup 13 }
+
+unisDot11WIPSAckStaEntry OBJECT-TYPE
+    SYNTAX UnisDot11WIPSAckStaEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about
+         a attack statistics on the sensor."
+    INDEX { unisDot11WIPSAckStaSensorName }
+    ::= { unisDot11WIPSAckStaTable 1 }
+
+UnisDot11WIPSAckStaEntry ::= SEQUENCE {
+        unisDot11WIPSAckStaSensorName                   OCTET STRING,
+        unisDot11WIPSAckStaAssReqFld                    Integer32,
+        unisDot11WIPSAckStaAuthFld                      Integer32,
+        unisDot11WIPSAckStaBeaconFld                    Integer32,
+        unisDot11WIPSAckStaBlkAckFld                    Integer32,
+        unisDot11WIPSAckStaCtsFld                       Integer32,
+        unisDot11WIPSAckStaDeauthFld                    Integer32,
+        unisDot11WIPSAckStaDisassFld                    Integer32,
+        unisDot11WIPSAckStaEpolSatFld                   Integer32,
+        unisDot11WIPSAckStaNullDataFld                  Integer32,
+        unisDot11WIPSAckStaProReqFld                    Integer32,
+        unisDot11WIPSAckStaReassFld                     Integer32,
+        unisDot11WIPSAckStaRtsFld                       Integer32,
+        unisDot11WIPSAckStaEapLgoffFld                  Integer32,
+        unisDot11WIPSAckStaEapFailFld                   Integer32,
+        unisDot11WIPSAckStaEapSucFld                    Integer32,
+        unisDot11WIPSAckStaDupIeMalf                    Integer32,
+        unisDot11WIPSAckStaFataJackMalf                 Integer32,
+        unisDot11WIPSAckStaEssMalf                      Integer32,
+        unisDot11WIPSAckStaInvComMalf                   Integer32,
+        unisDot11WIPSAckStaInvAssReqMalf                Integer32,
+        unisDot11WIPSAckStaInvAuthMalf                  Integer32,
+        unisDot11WIPSAckStaInvDeauthMalf                Integer32,
+        unisDot11WIPSAckStaInvDisMalf                   Integer32,
+        unisDot11WIPSAckStaInvHtIeMalf                  Integer32,
+        unisDot11WIPSAckStaInvIeLenMalf                 Integer32,
+        unisDot11WIPSAckStaInvPktLthMalf                Integer32,
+        unisDot11WIPSAckStaLgeDutMalf                   Integer32,
+        unisDot11WIPSAckStaNProRespMalf                 Integer32,
+        unisDot11WIPSAckStaOverflEapMalf                Integer32,
+        unisDot11WIPSAckStaOverfSsidMalf                Integer32,
+        unisDot11WIPSAckStaRedundIeMalf                 Integer32,
+        unisDot11WIPSAckStaApSpoofAp                    Integer32,
+        unisDot11WIPSAckStaApSpoofclt                   Integer32,
+        unisDot11WIPSAckStaApSpoofAdhoc                 Integer32,
+        unisDot11WIPSAckStaAdhocSpoofAp                 Integer32,
+        unisDot11WIPSAckStacltSpoofAp                   Integer32,
+        unisDot11WIPSAckStaWeakIv                       Integer32,
+        unisDot11WIPSAckStaApRate                       Integer32,
+        unisDot11WIPSAckStacltRate                      Integer32,
+        unisDot11WIPSAckStaSignatureRule                Integer32,
+        unisDot11WIPSAckSta40Mhz                        Integer32,
+        unisDot11WIPSAckStaPowerSave                    Integer32,
+        unisDot11WIPSAckStaWinBdg                       Integer32,
+        unisDot11WIPSAckStaOmerta                       Integer32,
+        unisDot11WIPSAckStaSoftAp                       Integer32,
+        unisDot11WIPSAckStaBroadDis                     Integer32,
+        unisDot11WIPSAckStaBroadDeauth                  Integer32,
+        unisDot11WIPSAckStaApImp                        Integer32,
+        unisDot11WIPSAckStaHtGreenField                 Integer32,
+        unisDot11WIPSAckStaWireBdg                      Integer32,
+        unisDot11WIPSAckStaApFld                        Integer32,
+        unisDot11WIPSAckStaAssociaOverf                 Integer32
+    }
+
+unisDot11WIPSAckStaSensorName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..64))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the sensor name."
+    ::= { unisDot11WIPSAckStaEntry 1 }
+
+unisDot11WIPSAckStaAssReqFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of association request packet flood."
+    ::= { unisDot11WIPSAckStaEntry 2 }
+
+unisDot11WIPSAckStaAuthFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of authentication packet flood."
+    ::= { unisDot11WIPSAckStaEntry 3 }
+
+unisDot11WIPSAckStaBeaconFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of beacon packet flood."
+    ::= { unisDot11WIPSAckStaEntry 4 }
+
+unisDot11WIPSAckStaBlkAckFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of block ack packet flood."
+    ::= { unisDot11WIPSAckStaEntry 5 }
+
+unisDot11WIPSAckStaCtsFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of cts packet flood."
+    ::= { unisDot11WIPSAckStaEntry 6 }
+
+unisDot11WIPSAckStaDeauthFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of deauthentication packet flood."
+    ::= { unisDot11WIPSAckStaEntry 7 }
+
+unisDot11WIPSAckStaDisassFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of disassociation packet flood."
+    ::= { unisDot11WIPSAckStaEntry 8 }
+
+unisDot11WIPSAckStaEpolSatFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of eapol-start packet flood."
+    ::= { unisDot11WIPSAckStaEntry 9 }
+
+unisDot11WIPSAckStaNullDataFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of null-data packet flood."
+    ::= { unisDot11WIPSAckStaEntry 10 }
+unisDot11WIPSAckStaProReqFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of probe request packet flood."
+    ::= { unisDot11WIPSAckStaEntry 11 }
+
+unisDot11WIPSAckStaReassFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of
+         reassociation request packet flood."
+    ::= { unisDot11WIPSAckStaEntry 12 }
+
+unisDot11WIPSAckStaRtsFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of rts packet flood."
+    ::= { unisDot11WIPSAckStaEntry 13 }
+
+unisDot11WIPSAckStaEapLgoffFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of eapol-logoff packet flood."
+    ::= { unisDot11WIPSAckStaEntry 14 }
+
+unisDot11WIPSAckStaEapFailFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of eap-failure packet flood."
+    ::= { unisDot11WIPSAckStaEntry 15 }
+
+unisDot11WIPSAckStaEapSucFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of eap-success packet flood."
+    ::= { unisDot11WIPSAckStaEntry 16 }
+
+unisDot11WIPSAckStaDupIeMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of duplicated IE malform."
+    ::= { unisDot11WIPSAckStaEntry 17 }
+
+unisDot11WIPSAckStaFataJackMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of fata jack malform."
+    ::= { unisDot11WIPSAckStaEntry 18 }
+
+unisDot11WIPSAckStaEssMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of illegal IBSS ESS malform."
+    ::= { unisDot11WIPSAckStaEntry 19 }
+
+unisDot11WIPSAckStaInvComMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of
+         invalid address combination malform."
+    ::= { unisDot11WIPSAckStaEntry 20 }
+
+unisDot11WIPSAckStaInvAssReqMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of
+         invalid authentication request malform."
+    ::= { unisDot11WIPSAckStaEntry 21 }
+
+unisDot11WIPSAckStaInvAuthMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of invalid authentication malform."
+    ::= { unisDot11WIPSAckStaEntry 22 }
+
+unisDot11WIPSAckStaInvDeauthMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of
+         invalid deauthentication code malform."
+    ::= { unisDot11WIPSAckStaEntry 23 }
+
+unisDot11WIPSAckStaInvDisMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of invalid disassocited code malform."
+    ::= { unisDot11WIPSAckStaEntry 24 }
+
+unisDot11WIPSAckStaInvHtIeMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of invalid HT IE malform."
+    ::= { unisDot11WIPSAckStaEntry 25 }
+
+unisDot11WIPSAckStaInvIeLenMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of invalid IE length malform."
+    ::= { unisDot11WIPSAckStaEntry 26 }
+
+unisDot11WIPSAckStaInvPktLthMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of invalid packet length malform."
+    ::= { unisDot11WIPSAckStaEntry 27 }
+
+unisDot11WIPSAckStaLgeDutMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of large duration malform."
+    ::= { unisDot11WIPSAckStaEntry 28 }
+
+unisDot11WIPSAckStaNProRespMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of null probe response malform."
+    ::= { unisDot11WIPSAckStaEntry 29 }
+
+unisDot11WIPSAckStaOverflEapMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of overflow eapol key malform."
+    ::= { unisDot11WIPSAckStaEntry 30 }
+
+unisDot11WIPSAckStaOverfSsidMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of overflow SSID malform."
+    ::= { unisDot11WIPSAckStaEntry 31 }
+
+unisDot11WIPSAckStaRedundIeMalf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of redundant IE malform."
+    ::= { unisDot11WIPSAckStaEntry 32 }
+
+unisDot11WIPSAckStaApSpoofAp OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of AP spoof AP."
+    ::= { unisDot11WIPSAckStaEntry 33 }
+
+unisDot11WIPSAckStaApSpoofclt OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of AP spoof client."
+    ::= { unisDot11WIPSAckStaEntry 34 }
+
+unisDot11WIPSAckStaApSpoofAdhoc OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of AP spoof adhoc."
+    ::= { unisDot11WIPSAckStaEntry 35 }
+
+unisDot11WIPSAckStaAdhocSpoofAp OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of adhoc spoof AP."
+    ::= { unisDot11WIPSAckStaEntry 36 }
+
+unisDot11WIPSAckStacltSpoofAp OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of client spoof AP."
+    ::= { unisDot11WIPSAckStaEntry 37 }
+
+unisDot11WIPSAckStaWeakIv OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of weak-iv."
+    ::= { unisDot11WIPSAckStaEntry 38 }
+
+unisDot11WIPSAckStaApRate OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of AP rate."
+    ::= { unisDot11WIPSAckStaEntry 39 }
+
+unisDot11WIPSAckStacltRate OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of client rate."
+    ::= { unisDot11WIPSAckStaEntry 40 }
+
+unisDot11WIPSAckStaSignatureRule OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of signature detect."
+    ::= { unisDot11WIPSAckStaEntry 41 }
+
+unisDot11WIPSAckSta40Mhz OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of 40MHZ detect."
+    ::= { unisDot11WIPSAckStaEntry 42 }
+
+unisDot11WIPSAckStaPowerSave OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of power save detect."
+    ::= { unisDot11WIPSAckStaEntry 43 }
+
+unisDot11WIPSAckStaWinBdg OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of window bridge detect."
+    ::= { unisDot11WIPSAckStaEntry 44 }
+
+unisDot11WIPSAckStaOmerta OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of omerta detect."
+    ::= { unisDot11WIPSAckStaEntry 45 }
+
+unisDot11WIPSAckStaSoftAp OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of soft AP detect."
+    ::= { unisDot11WIPSAckStaEntry 46 }
+
+unisDot11WIPSAckStaBroadDis OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of broadcast diassociated detect."
+    ::= { unisDot11WIPSAckStaEntry 47 }
+
+unisDot11WIPSAckStaBroadDeauth OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of broadcast deauthentication detect."
+    ::= { unisDot11WIPSAckStaEntry 48 }
+
+unisDot11WIPSAckStaApImp OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of AP impersonate."
+    ::= { unisDot11WIPSAckStaEntry 49 }
+
+unisDot11WIPSAckStaHtGreenField OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of HT green field."
+    ::= { unisDot11WIPSAckStaEntry 50 }
+
+unisDot11WIPSAckStaWireBdg OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of wireless bridge."
+    ::= { unisDot11WIPSAckStaEntry 51 }
+
+unisDot11WIPSAckStaApFld OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of AP flood."
+    ::= { unisDot11WIPSAckStaEntry 52 }
+
+unisDot11WIPSAckStaAssociaOverf OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the statistics number of associated overflow."
+    ::= { unisDot11WIPSAckStaEntry 53 }
+
+END

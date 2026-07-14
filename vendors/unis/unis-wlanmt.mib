@@ -1,0 +1,135 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--   The file defines a MIB to provide wlan access controler maitenace feature.
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 created by haoshitong 10530
+--     Initial version 2014-09-28
+-- =============================================================================
+UNIS-WLANMT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, Counter64
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisWlanMt MODULE-IDENTITY
+    LAST-UPDATED "201409281747Z"        -- September 28, 2014 at 14:50 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB provides information about WlanMt(Wlan Maintenance) feature.
+
+        WlanMt is designed to be employed in an area that is serviced
+        by an existing wireless network.
+        It reflect the running situation on VCpu whitch used to forward packets.
+        These information include: VCpu-Usage(Past 5 secons), Total Rx\Tx\Drop
+        packets per VCpu.
+        "
+    REVISION "201409281747Z"        -- September 28, 2014 at 14:50 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= {  unisCommon 157 }
+
+--
+-- Node definitions
+--
+
+unisWlanMtVCpuInfoGroup OBJECT IDENTIFIER ::= { unisWlanMt 1 }
+
+unisWlanMtVCpuInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisWlanMtVCpuInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table represents the list of possible VCpu information."
+    ::= { unisWlanMtVCpuInfoGroup 1 }
+
+unisWlanMtVCpuInfoEntry OBJECT-TYPE
+    SYNTAX UnisWlanMtVCpuInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains possible information of each VCpu."
+    INDEX { unisWlanMtVcpuID }
+    ::= { unisWlanMtVCpuInfoTable 1 }
+
+UnisWlanMtVCpuInfoEntry ::=
+    SEQUENCE {
+        unisWlanMtVcpuID
+            Unsigned32,
+        unisWlanMtVcpuUsage
+            Unsigned32,
+        unisWlanMtVcpuRx
+            Counter64,
+        unisWlanMtVcpuTx
+            Counter64,
+        unisWlanMtVcpuDrop
+            Counter64
+    }
+
+unisWlanMtVcpuID OBJECT-TYPE
+    SYNTAX Unsigned32 (0..255)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Represents the Id of the VCpu."
+    ::= { unisWlanMtVCpuInfoEntry 1 }
+
+unisWlanMtVcpuUsage OBJECT-TYPE
+    SYNTAX Unsigned32 (0..100)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the usage of the VCpu."
+    ::= { unisWlanMtVCpuInfoEntry 2 }
+
+unisWlanMtVcpuRx OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of packets whitch vcpu has recieved."
+    ::= { unisWlanMtVCpuInfoEntry 3 }
+
+unisWlanMtVcpuTx OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of packets whitch vcpu has transmitted."
+    ::= { unisWlanMtVCpuInfoEntry 4 }
+
+unisWlanMtVcpuDrop OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the number of packets whitch vcpu has Dropped."
+    ::= { unisWlanMtVCpuInfoEntry 5 }
+
+unisWlanMtFrameToCpu OBJECT IDENTIFIER ::= { unisWlanMt 2 }
+
+unisWlanMtToCpuTxFrameCnt OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total packets send to cpu successfully."
+    ::= { unisWlanMtFrameToCpu 1 }
+
+unisWlanMtToCpuDropFrameCnt OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total packets send to cpu failed."
+    ::= { unisWlanMtFrameToCpu 2 }
+
+END

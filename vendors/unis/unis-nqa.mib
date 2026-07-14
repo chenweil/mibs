@@ -1,0 +1,3194 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:  Extended MIB File(extended from DISMAN-PING-MIB RFC2925)
+-- Reference:
+-- Version: V2.9
+-- History:
+-- V1.0  Lv zhenfeng, 2003.08, Initial Version
+-- V1.1 2004-10-12 updated by gaolong
+--      Import OBJECT-IDENTITY, Integer32, Counter32, Gauge32.
+-- V1.2 Add new column objects
+--      unisNqaResultsMaxDelaySD
+--      unisNqaResultsMaxDelayDS
+--      unisNqaResultsLostPacketRatio
+--      under unisNqaResultsTable table by zhaoyujin, 20041101
+--  Add new column objects
+--      unisNqaJitterStatsAvePositivesSD
+--      unisNqaJitterStatsAveNegativesSD
+--      unisNqaJitterStatsAvePositivesDS
+--      unisNqaJitterStatsAveNegativesDS
+--      unisNqaJitterStatsPktLossUnknown
+--  under unisNqaJitterStatsTable table by zhaoyujin, 20041101
+--      revise words errors
+-- V1.3 2004-12-25 updated by zhaoyujin and weixinzhe
+--      Objects description updated
+-- V1.4 2005-12-22 Modified by qiuchunxia and liqian
+--      add unisNqaCtlHistoryKeptTime
+--      add unisNqaCtlHistoryEnable
+--      add unisNqaStatisticsResultsTable
+--      add unisNqaGroupStatsJitterTable
+--      add unisNqaStatisticsCtlTable
+--      add unisNqaStatsMaxGroupNumber
+--      remove definition of InetAddress, and import from INET-ADDRESS-MIB
+-- V1.5 2006-03-03 Modified by jinyi and wangqingfeng
+--      modified the description of unisNqaStatResRttSequenceErrors
+--      modified the description of unisNqaResultsRttSequenceErrors
+--      modified UNITS of some objects by jinyi
+--      add unisNqaCtlICPIFAdvFactor, unisNqaCtlCodecType in unisNqaCtlTable
+--      add unisNqaResultsPacketLateArrival in unisNqaResultsTable
+--      add unisNqaJitterStatsOperOfICPIF and unisNqaJitterStatsOperOfMOS
+--      in unisNqaJitterStatsTable
+--      add unisNqaStatResPacketLateArrival in unisNqaStatisticsResultsTable
+--      add unisNqaStatJitterMaxOfICPIF, unisNqaStatJitterMinOfICPIF
+--      unisNqaStatJitterMaxOfMOS and unisNqaStatJitterMinOfMOS
+--      in unisNqaGroupStatsJitterTable
+--      rename subidentifier 5 of unisNqaStatisticsCtlEntry to
+--      unisNqaCtlLifeTime by wangqingfeng
+--      rename subidentifier 11 of unisNqaStatisticsResultsEntry to
+--      unisNqaStatResInterval by wangqingfeng
+-- V1.6 2006-05-12
+--      rewrite this MIB with prefix "unisNqa".
+-- V2.0 2006-08-14 Modified by zhangjun
+--      change the name of root from "unisDismanPing" to "unisNqa"
+--      modify some mistakes
+-- V2.1 2006-08-22 Modified by qiuchunxia, dupengfei and shenjuanjuan
+--      add unisNqaReactionTable and add unisNqaNotifications
+-- V2.2 2007-03-08 Modified by zhouwenming
+--      add unisNqaResultsRttSum, unisNqaResultsNumOfDelaySD, unisNqaResultsMinDelaySD,
+--       unisNqaResultsSumDelaySD, unisNqaResultsSum2DelaySD, unisNqaResultsNumOfDelayDS,
+--       unisNqaResultsMinDelayDS, unisNqaResultsSumDelayDS, unisNqaResultsSum2DelayDS
+--       in unisNqaResultsTable
+--      add unisNqaStatResRttSum, unisNqaStatResNumOfDelaySD, unisNqaStatResMinDelaySD,
+--       unisNqaStatResSumDelaySD, unisNqaStatResSum2DelaySD, unisNqaStatResNumOfDelayDS,
+--       unisNqaStatResMinDelayDS, unisNqaStatResSumDelayDS, unisNqaStatResSum2DelayDS,
+--       unisNqaStatResMaxDelaySD, unisNqaStatResMaxDelayDS
+--       in unisNqaStatisticsResultsTable
+--      add jitterOwdSD, jitterOwdDS to unisNqaReactCheckedElement
+--       in unisNqaReactionTable.
+--      add unisNqaReactCheckedNum, unisNqaReactThresholdNum in unisNqaReactionTable
+--      add unisNqaStatisticsReactionTable
+-- V2.3 2007-04-25 Modified by zhouxingyue and zhouhaifeng
+--      add icmpTimestamp in unisNqaCtlCodecType
+--      remove size limit and DEFVAL in definition of unisNqaCtlStatisticsInterval.
+--      modify type of below from  Unsigned32 to Gauge32:
+--       unisNqaStatResMinRtt, unisNqaStatResMaxRtt,unisNqaStatResAverageRtt,
+--       unisNqaStatResInterval, unisNqaStatResLostPacketRatio, unisNqaStatResMinDelaySD,
+--       unisNqaStatResMaxDelaySD,unisNqaStatResMinDelayDS, unisNqaStatResMaxDelayDS.
+--      modify type of below from  Unsigned32 to Counter32:
+--       unisNqaStatResProbeResponses, unisNqaStatResSentProbes, unisNqaStatResRttSumOfSquares,
+--       unisNqaStatResRttNumDisconnects, unisNqaStatResRttTimeouts, unisNqaStatResRttBusies,
+--       unisNqaStatResRttNoConnections, unisNqaStatResRttDrops, unisNqaStatResRttSequenceErrors,
+--       unisNqaStatResRttErrors, unisNqaStatResPacketLateArrival, unisNqaStatResRttSum,
+--       unisNqaStatResNumOfDelaySD, unisNqaStatResSumDelaySD, unisNqaStatResSum2DelaySD,
+--       unisNqaStatResNumOfDelayDS, unisNqaStatResSumDelayDS, unisNqaStatResSum2DelayDS,
+--       unisNqaStatReactCheckedNum, unisNqaStatReactThresholdNum.
+--      modify type of below from  Gauge32 to Counter32:
+--       unisNqaStatJitterNumOfPosSD, unisNqaStatJitterSumOfPosSD, unisNqaStatJitterSumOfSquarePosSD,
+--       unisNqaStatJitterNumOfNegSD, unisNqaStatJitterSumOfNegSD, unisNqaStatJitterSumOfSquareNegSD,
+--       unisNqaStatJitterNumOfPosDS, unisNqaStatJitterSumOfPosDS, unisNqaStatJitterSumOfSquarePosDS,
+--       unisNqaStatJitterNumOfNegDS, unisNqaStatJitterSumOfNegDS, unisNqaStatJitterSumOfSquareNegDS,
+--       unisNqaStatJitterPacketLossSD, unisNqaStatJitterPacketLossDS, unisNqaStatJitterPktLossUnknown.
+-- V2.4 2012-04-20 Modified by sunbiliang and wanghaidong
+--      add raw in unisNqaCtlHttpOperationType
+--      modifiy the range of unisNqaCtlHttpOperationString
+-- V2.5 2013-12-17 Modified by wangbo
+--      modify the descriptions of unisNqaCtlICPIFAdvFactor, unisNqaStatJitterNumOfNegSD,
+--       unisNqaStatJitterNumOfPosSD, unisNqaStatJitterNumOfPosDS, unisNqaStatJitterNumOfNegDS,
+--       unisNqaReactCurrentStatus
+-- V2.6 2017-07-03 Modified by zhanbaobin
+--      add unisNqaJitterStatsAveSD, unisNqaJitterStatsAveDS to unisNqaJitterStatsEntry,
+--      add unisNqaStatJitterAveSD, unisNqaStatJitterAveDS to unisNqaGroupStatsJitterEntry.
+--      add unisNqaTcpServerExtendTable
+--      add unisNqaUdpServerExtendEntry
+-- V2.7 2018-06-15 Modified by wangshen
+--      modify the range of unisNqaTcpServerExtDSField
+--      modify the range of unisNqaUdpServerExtDSField
+--      2018-11-01 Modified by zhanbaobin
+--      add unisNqaTwampLight
+--      add unisNqaJitterOverThreshold
+--      2018-12-20 Modified by wangshen
+--      modify the default value of unisNqaAgentEnable
+-- V2.8 2019-02-15 Modified by zhanbaobin
+--      add unisNqaArp
+--      2019-06-04 Modified by liuyi
+--      add unisNqaJitterStatsLostPacketPermillage to unisNqaJitterStatsEntry.
+--      add unisNqaStatResLostPacketPermillage to unisNqaStatisticsResultsEntry.
+-- V2.9 2020-03-25 Modified by zhanbaobin
+--      add unisNqaProbeTimeAboveThreshold to unisNqaNotifications.
+--      add unisNqaProbeTimeBelowThreshold to unisNqaNotifications.
+--      add unisNqaProbeFailAboveThreshold to unisNqaNotifications.
+--      add unisNqaProbeFailBelowThreshold to unisNqaNotifications.
+-- =================================================================
+UNIS-NQA-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS
+            MODULE-IDENTITY, OBJECT-TYPE, Unsigned32,
+            OBJECT-IDENTITY, NOTIFICATION-TYPE, Integer32, Counter32, Gauge32
+                FROM SNMPv2-SMI
+            DateAndTime, DisplayString, RowStatus, TEXTUAL-CONVENTION
+                FROM SNMPv2-TC
+            InetAddressType, InetAddress
+                FROM INET-ADDRESS-MIB
+            unisRhw
+                FROM UNIS-OID-MIB
+            pingCtlEntry, pingCtlOwnerIndex, pingCtlTestName, pingCtlType,
+            pingCtlTargetAddress, pingCtlTargetAddressType, pingCtlDescr
+                FROM DISMAN-PING-MIB
+            SnmpAdminString
+                FROM SNMP-FRAMEWORK-MIB;          -- RFC2571
+
+    unisNqa MODULE-IDENTITY
+        LAST-UPDATED "202003250000Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+            DESCRIPTION
+                "The private MIB file includes the test information of the
+                device. It is supplementary for rfc2925.txt."
+            REVISION "202003250000Z"
+            DESCRIPTION
+                "Add unisNqaProbeTimeAboveThreshold to unisNqaNotifications.
+                 Add unisNqaProbeTimeBelowThreshold to unisNqaNotifications.
+                 Add unisNqaProbeFailAboveThreshold to unisNqaNotifications.
+                 Add unisNqaProbeFailBelowThreshold to unisNqaNotifications."
+        ::= { unisRhw 3 }
+
+ -- Textual Conventions
+VpnInstanceType ::= TEXTUAL-CONVENTION
+     STATUS      current
+     DESCRIPTION
+         "A value that represents a type of VPN instance.
+          public(1)   Public network.
+          vpn(2)      Private network."
+     SYNTAX      INTEGER {
+                     public(1),
+                     vpn(2)
+                 }
+
+    unisNqaObjects OBJECT IDENTIFIER ::= { unisNqa 1 }
+
+ -- The registration node (point) for remote NQA(Network Quality Analysis) test
+ -- implementation types
+
+unisNqaImplementationTypeDomains  OBJECT IDENTIFIER ::= { unisNqa 2 }
+
+unisNqaUdpEcho OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "Indicates that an implementation is using the UDP based echo server.
+        Notes: The unisNqaCtlTargetPort and unisNqaCtlSourcePort need to be set,
+        while in the pingUdpEcho Node, unisNqaCtlTargetPort must be set to the
+        default value."
+    ::= { unisNqaImplementationTypeDomains 1 }
+
+unisNqaTcpconnect OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "Indicates that an implementation is attempting to
+        connect to a TCP port in order to calculate a round
+        trip time.
+        Notes: The unisNqaCtlTargetPort and unisNqaCtlSourcePort need to be set,
+        while in the pingTcpConnectionAttempt Node, unisNqaCtlTargetPort must
+        be set to the default value."
+    ::= { unisNqaImplementationTypeDomains 2 }
+
+unisNqajitter OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "Indicates that an implementation is using udp for packet transfers.
+        'jitter' will cause the NQA(Network Quality Analysis) application
+        to perform delay variance analysis."
+    ::= { unisNqaImplementationTypeDomains 3 }
+
+unisNqaHttp OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "Indicates that an implementation is using udp for name resolution,
+        tcp connect and tcp data transfer mechanisms for HTTP data download
+        from a particular HTTP Server.
+        It causes the NQA application to perform a download of the object
+        specified in the URL."
+    ::= { unisNqaImplementationTypeDomains 4 }
+
+
+unisNqadlsw OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "Indicates that an implementation is using tcp for sending keepalives.
+        'dlsw' will cause the NQA application to perform a keepalive operation
+        to measure the response time of a DLSw peer."
+    ::= { unisNqaImplementationTypeDomains 5 }
+
+unisNqadhcp OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "Indicates that an implementation is using udp for sending dhcp
+        requests. 'dhcp' will cause the NQA application
+        to perform an IP Address lease request/teardown operation."
+    ::= { unisNqaImplementationTypeDomains 6 }
+
+unisNqaftp OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "Indicates that an implementation is using tcp packet for ftp connect
+         and data transfer."
+    ::= { unisNqaImplementationTypeDomains 7 }
+
+unisNqaTwampLight OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "Indicates that a measurement for two-way network quality through UDP
+         packets. The type only supports sending traps."
+    ::= { unisNqaImplementationTypeDomains 8 }
+
+unisNqaArp OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "Indicates that an implementation is using the Address
+         Resolution Protocol (ARP) test facility.
+         The type only supports IPv4 network."
+    ::= { unisNqaImplementationTypeDomains 9 }
+
+-- MIB contains 3 groups
+
+unisNqaMIBVersion OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Version string of this MIB.
+        The format will be: 'Version.Release.Patch: Description'
+        An instance likes: '1.0.0: Initial NQA MIB'
+        "
+    ::= { unisNqaObjects 1 }
+
+unisNqaCtlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisNqaCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines the NQA Control Extend Table for providing, via SNMP,
+        the capability of performing network analysis operations at a
+        remote host."
+   ::= { unisNqaObjects 2 }
+
+unisNqaCtlEntry OBJECT-TYPE
+    SYNTAX      UnisNqaCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines an entry in the unisNqaCtlTable. The operation of this
+        table is same as that of pingResultsTable."
+    AUGMENTS    { pingCtlEntry }
+    ::= { unisNqaCtlTable 1 }
+
+UnisNqaCtlEntry ::=
+    SEQUENCE {
+    unisNqaCtlTargetPort               Integer32,
+    unisNqaCtlSourcePort               Integer32,
+    unisNqaCtlTTL                      Integer32,
+    unisNqaCtlJitterAdminInterval      Integer32,
+    unisNqaCtlJitterAdminNumPackets    Integer32,
+    unisNqaCtlHttpOperationType        INTEGER,
+    unisNqaCtlHttpOperationString      DisplayString,
+    unisNqaCtlFtpOperationType         INTEGER,
+    unisNqaCtlFtpUsername              DisplayString,
+    unisNqaCtlFtpPassword              DisplayString,
+    unisNqaCtlFtpOperationString       DisplayString,
+    unisNqaCtlVPNInstance              DisplayString,
+    unisNqaCtlHistoryKeptTime          Integer32,
+    unisNqaCtlHistoryEnable            INTEGER,
+    unisNqaCtlICPIFAdvFactor           Integer32,
+    unisNqaCtlCodecType                INTEGER
+    }
+
+unisNqaCtlTargetPort          OBJECT-TYPE
+    SYNTAX      Integer32 (0..65536)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The destination port that may be used by udpEcho,
+        tcpConnect and jitter probes."
+    DEFVAL      { 0 }
+    ::= { unisNqaCtlEntry 1 }
+
+unisNqaCtlSourcePort          OBJECT-TYPE
+    SYNTAX      Integer32 (0..65536)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The source port that may be used by all tests except
+        for dns and dlsw.
+        If no source port is specified, system will create
+        a random port as source port."
+    DEFVAL      { 0 }
+    ::= { unisNqaCtlEntry 2 }
+
+unisNqaCtlTTL OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specifies the value to store in the TTL Field in the IP packet used to
+        encapsulate the NQA probe."
+    DEFVAL      { 20 }
+    ::= { unisNqaCtlEntry 3 }
+
+unisNqaCtlJitterAdminInterval OBJECT-TYPE
+    SYNTAX      Integer32 (0..60000)
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Time value in milliseconds that is an interval between two continuous
+        probes in jitter test.
+
+        This object is only used by jitter test."
+    DEFVAL      { 20 }
+    ::= { unisNqaCtlEntry 4 }
+
+unisNqaCtlJitterAdminNumPackets OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Packet number that specifies how many packets will be sent in
+        one jitter test.
+
+        This object is only used by jitter test."
+    DEFVAL      { 10 }
+    ::= { unisNqaCtlEntry 5 }
+
+unisNqaCtlHttpOperationType OBJECT-TYPE
+    SYNTAX      INTEGER{
+                get(1),
+                post(2),
+                raw(3)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Http operation type: get, post or raw."
+    DEFVAL      { get }
+    ::= { unisNqaCtlEntry 6 }
+
+unisNqaCtlHttpOperationString OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..1023))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Http operation string. For example, if the http operation type is get,
+        the string will be url, home page and http version."
+    DEFVAL      { "" }
+    ::= { unisNqaCtlEntry 7 }
+
+unisNqaCtlFtpOperationType OBJECT-TYPE
+    SYNTAX      INTEGER{
+                get(1),
+                put(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Ftp operation type."
+    DEFVAL      { get }
+    ::= {unisNqaCtlEntry 8 }
+
+unisNqaCtlFtpUsername OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..32))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Ftp username."
+    DEFVAL      { "" }
+    ::= { unisNqaCtlEntry 9 }
+
+unisNqaCtlFtpPassword OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..32))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Ftp password."
+    DEFVAL      { "" }
+    ::= { unisNqaCtlEntry 10 }
+
+unisNqaCtlFtpOperationString OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..255))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Ftp operation string. If the ftp operation type is get,
+        the string must be the file name which will be gotten from ftp server."
+    DEFVAL      { "" }
+    ::= { unisNqaCtlEntry 11 }
+
+unisNqaCtlVPNInstance OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..255))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "VPN name by which system finds route in the specified VPN
+        to send NQA probe packets."
+    DEFVAL      { "" }
+    ::= { unisNqaCtlEntry 12 }
+
+unisNqaCtlHistoryKeptTime OBJECT-TYPE
+    SYNTAX     Integer32(1..1440)
+    UNITS      "minutes"
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "To indicate how long the history records will be saved
+        in the pingProbeHistoryTable table after the test stopped."
+    DEFVAL     { 120 }
+    ::= { unisNqaCtlEntry 13 }
+
+unisNqaCtlHistoryEnable OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enabled(1),  --history will be recorded
+            disabled(2)  --history will not be recorded
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "To indicate whether the history should be recorded in the
+        PingProbeHistoryTable or not.
+            enabled(1)   --history will be recorded
+            disabled(2)  --history will not be recorded."
+    DEFVAL      { disabled }
+    ::= {unisNqaCtlEntry 14 }
+
+unisNqaCtlICPIFAdvFactor OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The advantage factor depends on the type of access and how the service
+        is to be used. This object will be used while calculating the ICPIF
+        (Calculated Planning Impairment Factor) values.  This is applicable
+        only for the jitter probe.
+
+        Suggestion values:
+
+        |-----------------------------------|-------|
+        |          Service                  |factor |
+        |-----------------------------------|-------|
+        |conventional wire-line             |  0    |
+        |-----------------------------------|-------|
+        |mobility within Building           |  5    |
+        |-----------------------------------|-------|
+        |mobility within geographical area  |  10   |
+        |-----------------------------------|-------|
+        |access to hard-to-reach location   |  20   |
+        |-----------------------------------|-------|
+        "
+    DEFVAL  {0}
+    ::= { unisNqaCtlEntry 15 }
+
+unisNqaCtlCodecType OBJECT-TYPE
+    SYNTAX     INTEGER
+        {
+            notDefined(1),     -- no codec type is defined or codec is unknown
+            g711Alaw(2),       -- uses G.711 A-Law
+            g711Ulaw(3),       -- uses G.711 muHmm-Law
+            g729A(4),          -- uses G.729A
+            icmpTimestamp(5)   -- uses icmp timestamp packet type
+        }
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "To indicate the codec type to be used with jitter probe. This is
+        applicable only for the jitter probe."
+    DEFVAL     { notDefined }
+    ::= { unisNqaCtlEntry 16 }
+
+-- NQA Test Results Table
+
+unisNqaResultsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisNqaResultsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines the NQA Results Extend Table for providing
+        the capability of performing NQA operations at a remote
+        host. The results of these operations are stored in the
+        unisNqaResultsTable. The operation of this table is same
+        as that of pingResultsTable."
+   ::= { unisNqaObjects 3 }
+
+unisNqaResultsEntry OBJECT-TYPE
+    SYNTAX      UnisNqaResultsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The operation of this table is same as that of pingResultsTable."
+    INDEX {
+             pingCtlOwnerIndex,
+             pingCtlTestName
+          }
+    ::= { unisNqaResultsTable 1 }
+
+UnisNqaResultsEntry ::=
+    SEQUENCE {
+        unisNqaResultsRttNumDisconnects   Unsigned32,
+        unisNqaResultsRttTimeouts         Unsigned32,
+        unisNqaResultsRttBusies           Unsigned32,
+        unisNqaResultsRttNoConnections    Unsigned32,
+        unisNqaResultsRttDrops            Unsigned32,
+        unisNqaResultsRttSequenceErrors   Unsigned32,
+        unisNqaResultsRttStatsErrors      Unsigned32,
+        unisNqaResultsMaxDelaySD          Unsigned32,
+        unisNqaResultsMaxDelayDS          Unsigned32,
+        unisNqaResultsLostPacketRatio     Unsigned32,
+        unisNqaResultsPacketLateArrival   Unsigned32,
+        unisNqaResultsRttSum              Unsigned32,
+        unisNqaResultsNumOfDelaySD        Unsigned32,
+        unisNqaResultsMinDelaySD          Unsigned32,
+        unisNqaResultsSumDelaySD          Unsigned32,
+        unisNqaResultsSum2DelaySD         Unsigned32,
+        unisNqaResultsNumOfDelayDS        Unsigned32,
+        unisNqaResultsMinDelayDS          Unsigned32,
+        unisNqaResultsSumDelayDS          Unsigned32,
+        unisNqaResultsSum2DelayDS         Unsigned32
+    }
+
+unisNqaResultsRttNumDisconnects OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times that a NQA probe failed because
+        the destination became disconnected.
+
+        For connectionless protocol pingCtlTypes, this number should be
+        zero."
+    ::= { unisNqaResultsEntry 1 }
+
+
+unisNqaResultsRttTimeouts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times that a NQA probe failed because the
+        probe timed out."
+    ::= { unisNqaResultsEntry 2 }
+
+
+unisNqaResultsRttBusies OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times that a NQA probe failed because all
+         NQA tasks have been running.
+
+        If a new probe fails to start, the value of this object
+        is incremented. The next test will not start until the
+        next Frequency."
+   ::= { unisNqaResultsEntry 3 }
+
+
+unisNqaResultsRttNoConnections OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times that a NQA probe failed because the probe
+        destination is unavailable.
+
+        For connectionless protocol pingCtlTypes, this number should be
+        zero."
+    ::= { unisNqaResultsEntry 4 }
+
+
+unisNqaResultsRttDrops OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times that a NQA operation failed to initiated
+        for unavailibility of necessary internal resources."
+    ::= { unisNqaResultsEntry 5 }
+
+
+unisNqaResultsRttSequenceErrors OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets arrived out of sequence."
+   ::= { unisNqaResultsEntry 6 }
+
+unisNqaResultsRttStatsErrors OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of some other errors."
+    ::= { unisNqaResultsEntry 7 }
+
+unisNqaResultsMaxDelaySD OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximal delay from source device to destination device.
+         Currently this value is only used for jitter test, and this
+         value must be 0 in other type test. In jitter test, if
+         destination system time is not valid, the SD delay may be set 0."
+    ::= { unisNqaResultsEntry 8 }
+
+unisNqaResultsMaxDelayDS OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximal delay from destination device to source device.
+         Currently this value is only used for jitter test, and this
+         value is 0 in other type test. In jitter test, if destination
+         system time is not valid, the DS delay may be set 0."
+    ::= { unisNqaResultsEntry 9 }
+
+unisNqaResultsLostPacketRatio OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object reflects the drop rate of NQA test.
+         For example, this value is 30 that means source device only
+         had received 70% packets of total sent packets."
+    ::= { unisNqaResultsEntry 10 }
+
+unisNqaResultsPacketLateArrival OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object indicates the number of the packets that
+        arrived after the timeout."
+    ::= { unisNqaResultsEntry 11 }
+
+unisNqaResultsRttSum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The sum of round trip time."
+    ::= { unisNqaResultsEntry 12 }
+
+unisNqaResultsNumOfDelaySD OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of delay from source to destination that are
+        successfully measured."
+    ::= { unisNqaResultsEntry 13 }
+
+unisNqaResultsMinDelaySD OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The minimum of all one way times from source to destination."
+    ::= { unisNqaResultsEntry 14 }
+
+unisNqaResultsSumDelaySD OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The sum of one way times from source to destination."
+    ::= { unisNqaResultsEntry 15 }
+
+unisNqaResultsSum2DelaySD OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The sum of squares of one way times from source to  destination."
+    ::= { unisNqaResultsEntry 16 }
+
+unisNqaResultsNumOfDelayDS OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of delay from destination to source that are
+        successfully measured."
+    ::= { unisNqaResultsEntry 17 }
+
+unisNqaResultsMinDelayDS OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The minimum of all one way times from destination to source."
+    ::= { unisNqaResultsEntry 18 }
+
+unisNqaResultsSumDelayDS OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The sum of one way times from destination to source."
+    ::= { unisNqaResultsEntry 19 }
+
+unisNqaResultsSum2DelayDS OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The sum of squares of one way times from destination to source."
+    ::= { unisNqaResultsEntry 20 }
+
+-- =================================================================
+--    Jitter Statistics Table
+-- =================================================================
+
+
+unisNqaJitterStatsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisNqaJitterStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Statistics table for latest jitter activity."
+    ::= { unisNqaObjects 4 }
+
+unisNqaJitterStatsEntry OBJECT-TYPE
+    SYNTAX      UnisNqaJitterStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry contains the statistics for the latest jitter activity.
+        This entry is created only if the pingCtlType is unisNqajitter."
+    INDEX {
+            pingCtlOwnerIndex,
+            pingCtlTestName
+          }
+    ::= { unisNqaJitterStatsTable 1 }
+
+UnisNqaJitterStatsEntry  ::= SEQUENCE
+{
+    unisNqaJitterStatsNumOfRTT                Counter32,
+    unisNqaJitterStatsMinOfPositivesSD        Gauge32,
+    unisNqaJitterStatsMaxOfPositivesSD        Gauge32,
+    unisNqaJitterStatsNumOfPositivesSD        Gauge32,
+    unisNqaJitterStatsSumOfPositivesSD        Gauge32,
+    unisNqaJitterStatsSum2PositivesSD         Gauge32,
+    unisNqaJitterStatsMinOfNegativesSD        Gauge32,
+    unisNqaJitterStatsMaxOfNegativesSD        Gauge32,
+    unisNqaJitterStatsNumOfNegativesSD        Gauge32,
+    unisNqaJitterStatsSumOfNegativesSD        Gauge32,
+    unisNqaJitterStatsSum2NegativesSD         Gauge32,
+    unisNqaJitterStatsMinOfPositivesDS        Gauge32,
+    unisNqaJitterStatsMaxOfPositivesDS        Gauge32,
+    unisNqaJitterStatsNumOfPositivesDS        Gauge32,
+    unisNqaJitterStatsSumOfPositivesDS        Gauge32,
+    unisNqaJitterStatsSum2PositivesDS         Gauge32,
+    unisNqaJitterStatsMinOfNegativesDS        Gauge32,
+    unisNqaJitterStatsMaxOfNegativesDS        Gauge32,
+    unisNqaJitterStatsNumOfNegativesDS        Gauge32,
+    unisNqaJitterStatsSumOfNegativesDS        Gauge32,
+    unisNqaJitterStatsSum2NegativesDS         Gauge32,
+    unisNqaJitterStatsPacketLossSD            Gauge32,
+    unisNqaJitterStatsPacketLossDS            Gauge32,
+    unisNqaJitterStatsAvePositivesSD          Gauge32,
+    unisNqaJitterStatsAveNegativesSD          Gauge32,
+    unisNqaJitterStatsAvePositivesDS          Gauge32,
+    unisNqaJitterStatsAveNegativesDS          Gauge32,
+    unisNqaJitterStatsPktLossUnknown          Gauge32,
+    unisNqaJitterStatsOperOfICPIF             Gauge32,
+    unisNqaJitterStatsOperOfMOS               Gauge32,
+    unisNqaJitterStatsAveSD                   Gauge32,
+    unisNqaJitterStatsAveDS                   Gauge32,
+    unisNqaJitterStatsLostPacketPermillage    Gauge32
+}
+
+unisNqaJitterStatsNumOfRTT OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of received destination device responses with which
+        jitter test can reach round-trip time."
+    ::= { unisNqaJitterStatsEntry 1 }
+
+
+unisNqaJitterStatsMinOfPositivesSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the minimal positive jitter value from
+        source to destination in the jitter test."
+    ::= { unisNqaJitterStatsEntry 2 }
+
+unisNqaJitterStatsMaxOfPositivesSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the maximal positive jitter value from
+        source to destination in the jitter test."
+   ::= { unisNqaJitterStatsEntry 3 }
+
+unisNqaJitterStatsNumOfPositivesSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number that records positive jitter times from source to
+        destination in the jitter test.
+        The total number of the value of all positive jitters in packets
+        sent from source to destination."
+    ::= { unisNqaJitterStatsEntry 4 }
+
+unisNqaJitterStatsSumOfPositivesSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of positive jitter values from
+        source to destination in the jitter test."
+    ::= { unisNqaJitterStatsEntry 5 }
+
+unisNqaJitterStatsSum2PositivesSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of square of positive jitter
+        values from source to destination in the jitter test."
+    ::= { unisNqaJitterStatsEntry 6 }
+
+unisNqaJitterStatsMinOfNegativesSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the minimal absolute values of
+        negative jitter value from source to destination in the jitter test."
+    ::= { unisNqaJitterStatsEntry 7 }
+
+unisNqaJitterStatsMaxOfNegativesSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the maximal absolute values of negative
+        jitter value from source to destination in the jitter test."
+    ::= { unisNqaJitterStatsEntry 8 }
+
+unisNqaJitterStatsNumOfNegativesSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number that records negative jitter times from source to
+        destination in the jitter test.
+        The total number of all negative jitter values in packets
+        sent from source to destination."
+    ::= { unisNqaJitterStatsEntry 9 }
+
+unisNqaJitterStatsSumOfNegativesSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of negative jitter values from
+        source to destination in the jitter test.
+        The total number of the value of all negative jitters in packets
+        sent from source to destination."
+    ::= { unisNqaJitterStatsEntry 10 }
+
+unisNqaJitterStatsSum2NegativesSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of square of negative jitter
+        values from source to destination in the jitter test."
+    ::= { unisNqaJitterStatsEntry 11 }
+
+unisNqaJitterStatsMinOfPositivesDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the minimal positive jitter value from
+        destination to source in the jitter test."
+    ::= { unisNqaJitterStatsEntry 12 }
+
+unisNqaJitterStatsMaxOfPositivesDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the maximal positive jitter value from
+        destination to source in the jitter test."
+    ::= { unisNqaJitterStatsEntry 13 }
+
+unisNqaJitterStatsNumOfPositivesDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number that records positive jitter times from destination to
+        source in the jitter test."
+    ::= { unisNqaJitterStatsEntry 14 }
+
+unisNqaJitterStatsSumOfPositivesDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of positive jitter values from
+        destination to source in the jitter test."
+    ::= { unisNqaJitterStatsEntry 15 }
+
+unisNqaJitterStatsSum2PositivesDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of square of positive jitter
+        values from destination to source in the jitter test."
+    ::= { unisNqaJitterStatsEntry 16 }
+
+unisNqaJitterStatsMinOfNegativesDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the minimal absolute values of negative
+        jitter value from destination to source in the jitter test."
+    ::= { unisNqaJitterStatsEntry 17 }
+
+unisNqaJitterStatsMaxOfNegativesDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the maximal absolute values of negative
+        jitter value from destination to source in the jitter test."
+    ::= { unisNqaJitterStatsEntry 18 }
+
+unisNqaJitterStatsNumOfNegativesDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number that records negative jitter times from destination to source
+        in the jitter test."
+    ::= { unisNqaJitterStatsEntry 19 }
+
+unisNqaJitterStatsSumOfNegativesDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of negative jitter values from
+        destination to source in the jitter test."
+    ::= { unisNqaJitterStatsEntry 20 }
+
+unisNqaJitterStatsSum2NegativesDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of square of negative jitter
+        values from destination to source in the jitter test."
+    ::= { unisNqaJitterStatsEntry 21 }
+
+unisNqaJitterStatsPacketLossSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The lost packets number sent from source to destination."
+    ::= { unisNqaJitterStatsEntry 22 }
+
+unisNqaJitterStatsPacketLossDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The lost packets number sent from destination to source."
+    ::= { unisNqaJitterStatsEntry 23 }
+
+unisNqaJitterStatsAvePositivesSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the average positive jitter value
+        from source to destination."
+    ::= { unisNqaJitterStatsEntry 24 }
+
+unisNqaJitterStatsAveNegativesSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the average negative jitter value
+        from source to destination."
+    ::= { unisNqaJitterStatsEntry 25 }
+
+unisNqaJitterStatsAvePositivesDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the average positive jitter value
+        from destination to source."
+    ::= { unisNqaJitterStatsEntry 26 }
+
+unisNqaJitterStatsAveNegativesDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the average negative jitter value
+        from destination to source."
+    ::= { unisNqaJitterStatsEntry 27 }
+
+unisNqaJitterStatsPktLossUnknown OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets which is lost with unknown reason."
+    ::= { unisNqaJitterStatsEntry 28 }
+
+unisNqaJitterStatsOperOfICPIF OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The ICPIF (Calculated Planning Impairment Factor) value for the latest
+        jitter test."
+    ::= { unisNqaJitterStatsEntry 29 }
+
+unisNqaJitterStatsOperOfMOS OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The MOS (Mean Opinion Score) value for the latest jitter test."
+    ::= { unisNqaJitterStatsEntry 30 }
+
+unisNqaJitterStatsAveSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the average jitter value
+        from source to destination."
+    ::= { unisNqaJitterStatsEntry 31 }
+
+unisNqaJitterStatsAveDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the average jitter value
+        from destination to source."
+    ::= { unisNqaJitterStatsEntry 32 }
+
+unisNqaJitterStatsLostPacketPermillage OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object reflects the drop rate of NQA
+        test packet.
+        For example, if the value is 100, that means source device
+        only had received 900 packets per thousand."
+    ::= { unisNqaJitterStatsEntry 33 }
+
+unisNqaAgentEnable OBJECT-TYPE
+    SYNTAX      INTEGER{
+                enable(1),
+                disable(2)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable NQA agent function."
+    DEFVAL { enable }
+    ::= { unisNqaObjects 5 }
+
+-- =================================================================
+--   Tcp server configuration information Statistics Table
+-- =================================================================
+
+
+unisNqaTcpServerTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisNqaTcpServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table which contains the status of NQA tcp server
+        configuration information."
+    ::= { unisNqaObjects 6 }
+
+unisNqaTcpServerEntry OBJECT-TYPE
+    SYNTAX      UnisNqaTcpServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table which contains the status of NQA tcp server
+        configuration information.
+
+        This entry includes not only the tcp server ip address
+        but also the tcp server port."
+    INDEX {
+            unisNqaTcpServerIpAddress,
+            unisNqaTcpServerPort
+          }
+    ::= { unisNqaTcpServerTable 1 }
+
+UnisNqaTcpServerEntry  ::= SEQUENCE
+{
+    unisNqaTcpServerIpAddress                InetAddress,
+    unisNqaTcpServerPort                     Integer32,
+    unisNqaTcpServerRowStatus                RowStatus
+}
+
+unisNqaTcpServerIpAddress          OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Tcp server's ip address."
+    ::= { unisNqaTcpServerEntry 1 }
+
+unisNqaTcpServerPort          OBJECT-TYPE
+    SYNTAX      Integer32 (0..65536)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Tcp server's port number."
+    ::= { unisNqaTcpServerEntry 2 }
+
+unisNqaTcpServerRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "unisNqaTcpServerIpAddress and unisNqaTcpServerPort
+        must be set during a creation operation."
+    REFERENCE
+        "RFC 2579"
+    ::= { unisNqaTcpServerEntry 3 }
+
+unisNqaUdpServerTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisNqaUdpServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Status of NQA udp server configuration information."
+    ::= { unisNqaObjects 7 }
+
+unisNqaUdpServerEntry OBJECT-TYPE
+    SYNTAX      UnisNqaUdpServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This entry includes not only the udp server ip address
+        but also the udp server udp port."
+    INDEX {
+            unisNqaUdpServerIpAddress,
+            unisNqaUdpServerPort
+          }
+    ::= { unisNqaUdpServerTable 1 }
+
+UnisNqaUdpServerEntry  ::= SEQUENCE
+{
+    unisNqaUdpServerIpAddress                InetAddress,
+    unisNqaUdpServerPort                     Integer32,
+    unisNqaUdpServerRowStatus                RowStatus
+}
+
+unisNqaUdpServerIpAddress          OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Udp server's ip address."
+    ::= { unisNqaUdpServerEntry 1 }
+
+unisNqaUdpServerPort          OBJECT-TYPE
+    SYNTAX      Integer32 (0..65536)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Udp server's port number."
+    ::= { unisNqaUdpServerEntry 2 }
+
+unisNqaUdpServerRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "unisNqaUdpServerIpAddress and unisNqaUdpServerPort
+        must be set during a creation operation."
+    REFERENCE
+        "RFC 2579"
+    ::= { unisNqaUdpServerEntry 3 }
+
+unisNqaServerEnable OBJECT-TYPE
+    SYNTAX      INTEGER{
+                enable(1),
+                disable(2)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable NQA server function."
+    DEFVAL { disable }
+    ::= { unisNqaObjects 8 }
+
+unisNqaStatsMaxGroupNumber OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The maximum number saved per group. The maximum value of
+        unisNqaCtlStatisticsGroupNumber can not exceed the value of
+        this object."
+    ::= { unisNqaObjects 9 }
+
+
+unisNqaStatisticsCtlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisNqaStatisticsCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines the NQA statistics control table for providing, via SNMP,
+        the capability of performing NQA operations at a remote host.
+        The results of these operations are stored in the
+        unisNqaStatisticsResultsTable and the unisNqaGroupStatsJitterTable."
+    ::= { unisNqaObjects 10 }
+
+unisNqaStatisticsCtlEntry OBJECT-TYPE
+    SYNTAX      UnisNqaStatisticsCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines an entry in the unisNqaStatisticsCtlTable.
+        The unisNqaStatisticsCtlTable has the same index as the
+        pingCtlTable in order for a unisNqaStatisticsCtlTable to
+        correspond to the pingCtlEntry."
+    AUGMENTS    { pingCtlEntry }
+    ::= { unisNqaStatisticsCtlTable 1 }
+
+UnisNqaStatisticsCtlEntry ::=
+    SEQUENCE
+        {
+            unisNqaCtlStatisticsInterval       Unsigned32,
+            unisNqaCtlStatisticsGroupNumber    Unsigned32,
+            unisNqaCtlStatisticsKeptTime       Unsigned32,
+            unisNqaCtlBeginTime                DateAndTime,
+            unisNqaCtlLifeTime                 Unsigned32
+        }
+
+unisNqaCtlStatisticsInterval OBJECT-TYPE
+    SYNTAX     Unsigned32
+    UNITS      "minutes"
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "Statistic information will be calculated after the time that is
+        the value of unisNqaCtlStatisticsInterval."
+    ::= { unisNqaStatisticsCtlEntry 1 }
+
+unisNqaCtlStatisticsGroupNumber OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "The value of this object indicates the number of group saved.
+        The length of this object is from 1 to unisNqaStatsMaxGroupNumber."
+    DEFVAL     { 2 }
+    ::= { unisNqaStatisticsCtlEntry 2 }
+
+unisNqaCtlStatisticsKeptTime OBJECT-TYPE
+    SYNTAX     Unsigned32(1..1440)
+    UNITS      "minutes"
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "To indicate how long the statistic information will be saved after
+        the test stops."
+    DEFVAL     { 120 }
+    ::= { unisNqaStatisticsCtlEntry 3 }
+
+unisNqaCtlBeginTime OBJECT-TYPE
+    SYNTAX     DateAndTime
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "Time at which the type-specified test will start."
+    ::= { unisNqaStatisticsCtlEntry 4 }
+
+unisNqaCtlLifeTime OBJECT-TYPE
+    SYNTAX     Unsigned32
+    UNITS      "seconds"
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "To indicate how long the type-specified test will last."
+    DEFVAL     { 0 }
+    ::= { unisNqaStatisticsCtlEntry 5 }
+
+unisNqaStatisticsResultsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisNqaStatisticsResultsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines the NQA statistics results table for providing
+        the capability of performing NQA operations at a remote
+        host. The statistics results of these operations in a statistic cycle
+        are stored in the unisNqaStatisticsResultsTable. The statistic cycle is
+        the value of unisNqaCtlStatisticsInterval.
+        The first two index identify the pingCtlEntry that the probe statistics
+        result (UnisNqaStatisticsResultsEntry) belongs to."
+
+    ::= { unisNqaObjects 11 }
+
+
+unisNqaStatisticsResultsEntry OBJECT-TYPE
+    SYNTAX       UnisNqaStatisticsResultsEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Defines an entry in the unisNqaStatisticsResultsTable. The
+        unisNqaStatisticsResultsTable has the same index as the
+        pingCtlTable in order for a unisNqaStatisticsResultsEntry to
+        correspond to the pingCtlEntry that caused it to be created."
+    INDEX
+        {
+            pingCtlOwnerIndex,
+            pingCtlTestName,
+            unisNqaStatResIndex
+        }
+    ::= { unisNqaStatisticsResultsTable 1 }
+
+UnisNqaStatisticsResultsEntry ::=
+    SEQUENCE
+        {
+            unisNqaStatResIndex                  Unsigned32,
+            unisNqaStatResIpTargetAddressType    InetAddressType,
+            unisNqaStatResIpTargetAddress        InetAddress,
+            unisNqaStatResMinRtt                 Gauge32,
+            unisNqaStatResMaxRtt                 Gauge32,
+            unisNqaStatResAverageRtt             Gauge32,
+            unisNqaStatResProbeResponses         Counter32,
+            unisNqaStatResSentProbes             Counter32,
+            unisNqaStatResRttSumOfSquares        Counter32,
+            unisNqaStatResStartTime              DateAndTime,
+            unisNqaStatResInterval               Gauge32,
+            unisNqaStatResRttNumDisconnects      Counter32,
+            unisNqaStatResRttTimeouts            Counter32,
+            unisNqaStatResRttBusies              Counter32,
+            unisNqaStatResRttNoConnections       Counter32,
+            unisNqaStatResRttDrops               Counter32,
+            unisNqaStatResRttSequenceErrors      Counter32,
+            unisNqaStatResRttErrors              Counter32,
+            unisNqaStatResLostPacketRatio        Gauge32,
+            unisNqaStatResPacketLateArrival      Counter32,
+            unisNqaStatResRttSum                 Counter32,
+            unisNqaStatResNumOfDelaySD           Counter32,
+            unisNqaStatResMinDelaySD             Gauge32,
+            unisNqaStatResMaxDelaySD             Gauge32,
+            unisNqaStatResSumDelaySD             Counter32,
+            unisNqaStatResSum2DelaySD            Counter32,
+            unisNqaStatResNumOfDelayDS           Counter32,
+            unisNqaStatResMinDelayDS             Gauge32,
+            unisNqaStatResMaxDelayDS             Gauge32,
+            unisNqaStatResSumDelayDS             Counter32,
+            unisNqaStatResSum2DelayDS            Counter32,
+            unisNqaStatResLostPacketPermillage   Gauge32
+        }
+
+unisNqaStatResIndex OBJECT-TYPE
+    SYNTAX      Unsigned32(1..'ffffffff'h)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in this table is created when the statistics
+        result of a NQA probe is determined.
+
+        An implementation MUST start assigning
+        unisNqaStatResIndex values at 1 and wrap after
+        exceeding the maximum possible value as defined by
+        the limit of this object ('ffffffff'h)."
+    ::= { unisNqaStatisticsResultsEntry 1 }
+
+unisNqaStatResIpTargetAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the type of address stored
+        in the corresponding unisNqaStatResIpTargetAddress
+        object."
+    DEFVAL { unknown }
+    ::= { unisNqaStatisticsResultsEntry 2 }
+
+unisNqaStatResIpTargetAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object represent the host address to be used at a remote host for
+        performing a network analysis operation."
+    DEFVAL { ''H }
+    ::= { unisNqaStatisticsResultsEntry 3 }
+
+unisNqaStatResMinRtt  OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The minimum NQA probe round-trip-time (RTT) received. The value
+        of 0 for this object implies that no RTT has been received."
+    ::= { unisNqaStatisticsResultsEntry 4 }
+
+unisNqaStatResMaxRtt OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum NQA probe round-trip-time (RTT) received. The value
+        of 0 for this object implies that no RTT has been received."
+    ::= { unisNqaStatisticsResultsEntry 5 }
+
+unisNqaStatResAverageRtt OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The average NQA probe round-trip-time (RTT)."
+    ::= { unisNqaStatisticsResultsEntry 6 }
+
+unisNqaStatResProbeResponses OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of responses received. The value of this object
+        MUST be reported as 0 when no probe responses have been
+        received."
+    ::= { unisNqaStatisticsResultsEntry 7 }
+
+unisNqaStatResSentProbes OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "probes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object reflects the number of probes sent.
+        The value of this object MUST be reported as 0 when no probes
+        have been sent."
+    ::= { unisNqaStatisticsResultsEntry 8 }
+
+unisNqaStatResRttSumOfSquares OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object contains the sum of the squares for all NQA
+        responses received. The value of this object MUST
+        be reported as 0 when no NQA responses have been
+        received."
+    ::= { unisNqaStatisticsResultsEntry 9 }
+
+unisNqaStatResStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object contains the start time of the statistic."
+    ::= { unisNqaStatisticsResultsEntry 10 }
+
+unisNqaStatResInterval OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object contains the interval between two times of statistic."
+    ::= { unisNqaStatisticsResultsEntry 11 }
+
+unisNqaStatResRttNumDisconnects OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times that a NQA probe failed because the destination
+        became disconnected.
+        For connectionless protocol pingCtlTypes, this number should be
+        zero."
+    ::= { unisNqaStatisticsResultsEntry 12 }
+
+unisNqaStatResRttTimeouts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The number of times that a probe failed because the probe timed out."
+    ::= { unisNqaStatisticsResultsEntry 13 }
+
+unisNqaStatResRttBusies OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times that a NQA probe failed because
+        errors related to sockets."
+    ::= { unisNqaStatisticsResultsEntry 14 }
+
+unisNqaStatResRttNoConnections OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times that a NQA probe failed because the
+        probe destination is unavailable.
+        For connectionless protocol pingCtlTypes, this number should be
+        zero."
+    ::= { unisNqaStatisticsResultsEntry 15 }
+
+unisNqaStatResRttDrops OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times that a NQA operation failed to initiate
+        for unavailibility of necessary internal resources."
+    ::= { unisNqaStatisticsResultsEntry 16 }
+
+unisNqaStatResRttSequenceErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets arrived out of sequence."
+    ::= { unisNqaStatisticsResultsEntry 17 }
+
+unisNqaStatResRttErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of other errors."
+    ::= { unisNqaStatisticsResultsEntry 18 }
+
+unisNqaStatResLostPacketRatio OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object reflects the drop rate of NQA
+        test packet.
+        For example, if the value is 30, that means source device
+        only had received 70 percent packets of total sent packets."
+    ::= { unisNqaStatisticsResultsEntry 19 }
+
+unisNqaStatResPacketLateArrival OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object reflects the number of the packets that
+        arrived after the timeout."
+    ::= { unisNqaStatisticsResultsEntry 20 }
+
+unisNqaStatResRttSum OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object contains the sum for all NQA responses received
+         during the test lifetime.  The value of this object MUST be
+         reported as 0 when no NQA responses have been received."
+    ::= { unisNqaStatisticsResultsEntry 21 }
+
+unisNqaStatResNumOfDelaySD OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of one way times from source to destination that are
+        successfully measured."
+    ::= { unisNqaStatisticsResultsEntry 22 }
+
+unisNqaStatResMinDelaySD OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The minimum one way times from source to destination."
+    ::= { unisNqaStatisticsResultsEntry 23 }
+
+unisNqaStatResMaxDelaySD OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum one way times from source to destination."
+    ::= { unisNqaStatisticsResultsEntry 24 }
+
+unisNqaStatResSumDelaySD OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The sum of one way times from source to destination."
+    ::= { unisNqaStatisticsResultsEntry 25 }
+
+unisNqaStatResSum2DelaySD OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The sum of squares of one way times from source to destination."
+    ::= { unisNqaStatisticsResultsEntry 26 }
+
+unisNqaStatResNumOfDelayDS OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of one way times from destination to source that are
+        successfully measured."
+    ::= { unisNqaStatisticsResultsEntry 27 }
+
+unisNqaStatResMinDelayDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The minimum one way times from destination to source."
+    ::= { unisNqaStatisticsResultsEntry 28 }
+
+unisNqaStatResMaxDelayDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum one way times from destination to source."
+    ::= { unisNqaStatisticsResultsEntry 29 }
+
+unisNqaStatResSumDelayDS OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The sum of one way times from destination to source."
+    ::= { unisNqaStatisticsResultsEntry 30 }
+
+unisNqaStatResSum2DelayDS OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The sum of squares of one way times from destination to source."
+    ::= { unisNqaStatisticsResultsEntry 31 }
+
+unisNqaStatResLostPacketPermillage OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object reflects the drop rate of NQA
+        test packet.
+        For example, if the value is 100, that means source device
+        only had received 900 packets per thousand."
+    ::= { unisNqaStatisticsResultsEntry 32 }
+
+
+
+-- =================================================================
+--    unisNqaGroupStatsJitterTable
+-- =================================================================
+
+unisNqaGroupStatsJitterTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisNqaGroupStatsJitterEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Test Group Statistic table for jitter activity in a statistic cycle.
+        The statistic cycle is the value of unisNqaCtlStatisticsInterval.
+        The first two index identify the pingCtlEntry that a probe statistics
+        result (UnisNqaStatisticsResultsEntry) belongs to."
+    ::= { unisNqaObjects 12 }
+
+unisNqaGroupStatsJitterEntry OBJECT-TYPE
+    SYNTAX      UnisNqaGroupStatsJitterEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry contains the group statistic information for jitter activity.
+        This entry is created only if the pingCtlType is unisNqajitter."
+    INDEX
+        {
+            pingCtlOwnerIndex,
+            pingCtlTestName,
+            unisNqaStatJitterIndex
+        }
+    ::= { unisNqaGroupStatsJitterTable 1 }
+
+UnisNqaGroupStatsJitterEntry ::=
+    SEQUENCE
+        {
+            unisNqaStatJitterIndex               Unsigned32,
+            unisNqaStatJitterMinOfPosSD          Gauge32,
+            unisNqaStatJitterMaxOfPosSD          Gauge32,
+            unisNqaStatJitterNumOfPosSD          Counter32,
+            unisNqaStatJitterSumOfPosSD          Counter32,
+            unisNqaStatJitterSumOfSquarePosSD    Counter32,
+            unisNqaStatJitterMinOfNegSD          Gauge32,
+            unisNqaStatJitterMaxOfNegSD          Gauge32,
+            unisNqaStatJitterNumOfNegSD          Counter32,
+            unisNqaStatJitterSumOfNegSD          Counter32,
+            unisNqaStatJitterSumOfSquareNegSD    Counter32,
+            unisNqaStatJitterMinOfPosDS          Gauge32,
+            unisNqaStatJitterMaxOfPosDS          Gauge32,
+            unisNqaStatJitterNumOfPosDS          Counter32,
+            unisNqaStatJitterSumOfPosDS          Counter32,
+            unisNqaStatJitterSumOfSquarePosDS    Counter32,
+            unisNqaStatJitterMinOfNegDS          Gauge32,
+            unisNqaStatJitterMaxOfNegDS          Gauge32,
+            unisNqaStatJitterNumOfNegDS          Counter32,
+            unisNqaStatJitterSumOfNegDS          Counter32,
+            unisNqaStatJitterSumOfSquareNegDS    Counter32,
+            unisNqaStatJitterPacketLossSD        Counter32,
+            unisNqaStatJitterPacketLossDS        Counter32,
+            unisNqaStatJitterAvePosSD            Gauge32,
+            unisNqaStatJitterAveNegSD            Gauge32,
+            unisNqaStatJitterAvePosDS            Gauge32,
+            unisNqaStatJitterAveNegDS            Gauge32,
+            unisNqaStatJitterPktLossUnknown      Counter32,
+            unisNqaStatJitterMaxOfICPIF          Gauge32,
+            unisNqaStatJitterMinOfICPIF          Gauge32,
+            unisNqaStatJitterMaxOfMOS            Gauge32,
+            unisNqaStatJitterMinOfMOS            Gauge32,
+            unisNqaStatJitterAveSD               Gauge32,
+            unisNqaStatJitterAveDS               Gauge32
+        }
+
+unisNqaStatJitterIndex OBJECT-TYPE
+    SYNTAX      Unsigned32(1..'ffffffff'h)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in this table is created when the statistic
+        result of a NQA probe in a statistic cycle is determined.
+
+        An implementation MUST start assigning unisNqaStatJitterIndex
+        values at 1 and wrap after exceeding the maximum possible
+        value as defined by the limit of this object ('ffffffff'h)."
+    ::= { unisNqaGroupStatsJitterEntry 1 }
+
+unisNqaStatJitterMinOfPosSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the minimal positive jitter value
+        from source to destination in jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 2 }
+
+unisNqaStatJitterMaxOfPosSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the maximal positive jitter value
+        from source to destination in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 3 }
+
+unisNqaStatJitterNumOfPosSD OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of positive jitters from source to destination in the
+        jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 4 }
+
+unisNqaStatJitterSumOfPosSD OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of positive jitter values
+        from source to destination in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 5 }
+
+unisNqaStatJitterSumOfSquarePosSD OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of square of positive jitter
+        values from source to destination in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 6 }
+
+unisNqaStatJitterMinOfNegSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the minimal absolute values of
+        negative jitter value from source to destination in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 7 }
+
+unisNqaStatJitterMaxOfNegSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the maximal absolute values of negative
+        jitter value from source to destination in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 8 }
+
+unisNqaStatJitterNumOfNegSD OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of negative jitters from source to destination in the
+        jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 9 }
+
+unisNqaStatJitterSumOfNegSD OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of negative jitter values
+        from source to destination in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 10 }
+
+unisNqaStatJitterSumOfSquareNegSD OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of square of negative jitter
+        values from source to destination in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 11 }
+
+unisNqaStatJitterMinOfPosDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the minimal positive jitter value
+        from destination to source in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 12 }
+
+unisNqaStatJitterMaxOfPosDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the maximal positive jitter value
+        from destination to source in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 13 }
+
+unisNqaStatJitterNumOfPosDS OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of positive jitters from destination to source in the
+        jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 14 }
+
+unisNqaStatJitterSumOfPosDS OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of positive jitter values
+        from destination to source in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 15 }
+
+unisNqaStatJitterSumOfSquarePosDS OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of square of positive jitter
+        values destination to source in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 16 }
+
+unisNqaStatJitterMinOfNegDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the minimal absolute values of negative
+        jitter value from destination to source in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 17 }
+
+unisNqaStatJitterMaxOfNegDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the maximal absolute values of negative
+        jitter value from destination to source in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 18 }
+
+unisNqaStatJitterNumOfNegDS OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of negative jitters from destination to source in the
+        jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 19 }
+
+unisNqaStatJitterSumOfNegDS OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of negative jitter values
+        from destination to source in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 20 }
+
+unisNqaStatJitterSumOfSquareNegDS OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the sum of square of negative jitter
+        values from destination to source in the jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 21 }
+
+unisNqaStatJitterPacketLossSD OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The lost packets number sent from source to destination."
+    ::= { unisNqaGroupStatsJitterEntry 22 }
+
+unisNqaStatJitterPacketLossDS OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The lost packets number sent from destination to source."
+    ::= { unisNqaGroupStatsJitterEntry 23 }
+
+unisNqaStatJitterAvePosSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the average positive jitter value
+        from source to destination."
+    ::= { unisNqaGroupStatsJitterEntry 24 }
+
+unisNqaStatJitterAveNegSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the average negative jitter value
+        from source to destination."
+    ::= { unisNqaGroupStatsJitterEntry 25 }
+
+unisNqaStatJitterAvePosDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the average positive jitter value
+        from destination to source."
+    ::= { unisNqaGroupStatsJitterEntry 26 }
+
+unisNqaStatJitterAveNegDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the average negative jitter value
+        from destination to source."
+    ::= { unisNqaGroupStatsJitterEntry 27 }
+
+unisNqaStatJitterPktLossUnknown OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets which is lost with unknown reason."
+    ::= { unisNqaGroupStatsJitterEntry 28 }
+
+unisNqaStatJitterMaxOfICPIF OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum of all ICPIF values in a statistic cycle for jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 29 }
+
+unisNqaStatJitterMinOfICPIF OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The minimum of all ICPIF values in a statistic cycle for jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 30 }
+
+unisNqaStatJitterMaxOfMOS OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum of all MOS values in a statistic cycle for jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 31 }
+
+unisNqaStatJitterMinOfMOS OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The minimum of all MOS values in a statistic cycle for jitter test."
+    ::= { unisNqaGroupStatsJitterEntry 32 }
+
+unisNqaStatJitterAveSD OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the average jitter value
+        from source to destination."
+    ::= { unisNqaGroupStatsJitterEntry 33 }
+
+unisNqaStatJitterAveDS OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of time that records the average jitter value
+        from destination to source."
+    ::= { unisNqaGroupStatsJitterEntry 34 }
+
+-- Reaction Table
+unisNqaReactionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisNqaReactionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of NQA test monitoring notification and
+        reaction configuration definitions.
+
+        An entry is removed from this table when its
+        corresponding pingCtlEntry is deleted.
+
+         When PingCtlType of the test is unisNqaTwampLight,
+         it does not support the table."
+  ::= { unisNqaObjects 13 }
+
+unisNqaReactionEntry OBJECT-TYPE
+    SYNTAX      UnisNqaReactionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines an entry in the unisNqaReactionTable. The first two index
+        elements identify the pingCtlEntry that a unisNqaReactItemIndex
+        belongs to. The third index element selects a single reaction."
+    INDEX
+        {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex
+        }
+    ::= { unisNqaReactionTable 1 }
+
+UnisNqaReactionEntry ::=
+    SEQUENCE
+        {
+            unisNqaReactOwnerIndex                   SnmpAdminString,
+            unisNqaReactTestName                     SnmpAdminString,
+            unisNqaReactItemIndex                    Unsigned32,
+            unisNqaReactCheckedElement               INTEGER,
+            unisNqaReactThresholdUpperLimit          Unsigned32,
+            unisNqaReactThresholdLowerLimit          Unsigned32,
+            unisNqaReactThresholdType                INTEGER,
+            unisNqaReactThresholdConsecNum           Unsigned32,
+            unisNqaReactThresholdAccumNum            Unsigned32,
+            unisNqaReactActionType                   INTEGER,
+            unisNqaReactCurrentStatus                INTEGER,
+            unisNqaReactRowStatus                    RowStatus,
+            unisNqaReactCheckedNum                   Unsigned32,
+            unisNqaReactThresholdNum                 Unsigned32
+        }
+
+unisNqaReactOwnerIndex OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..32))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The first index of unisNqaReactionTable, it is the same as
+        pingCtlOwnerIndex in pingCtlTable. unisNqaReactOwnerIndex and
+        unisNqaReactTestName identify an existed test."
+    ::= { unisNqaReactionEntry 1 }
+
+unisNqaReactTestName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..32))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The second index of unisNqaReactionTable, it is the same as
+        pingCtlTestName in pingCtlTable. unisNqaReactOwnerIndex and
+        unisNqaReactTestName identify an existed test."
+    ::= { unisNqaReactionEntry 2 }
+
+unisNqaReactItemIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..10)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The third index of unisNqaReactionTable, it definitely
+        identifies one of the reaction configurations for a test."
+    ::= { unisNqaReactionEntry 3 }
+
+unisNqaReactCheckedElement OBJECT-TYPE
+    SYNTAX      INTEGER {
+                          probetime(1),
+                          probefailure(2),
+                          jitterrtt(3),
+                          jitterpacketloss(4),
+                          jittersd(5),
+                          jitterds(6),
+                          icpif(7),
+                          mos(8),
+                          jitterOwdSD(9),
+                          jitterOwdDS(10)
+                        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "A list of reaction condition type.
+        'probetime' and 'probefailure' are valid when pingCtlType of
+        the test is not unisNqajitter.
+
+        'jitterOwdSD': one way time from source to destination in
+                       jitter test.
+        'jitterOwdDS': one way time from destination to source in
+                       jitter test.
+
+        'jitterrtt', 'jitterpacketloss', 'jittersd', 'jitterds',
+        'jitterOwdSD' and 'jitterOwdDS' are valid when pingCtlType
+        of the test is unisNqajitter.
+
+        'icpif' and 'mos' are valid when pingCtlType of the test is
+        unisNqajitter and unisNqaCtlCodecType is 'g711Alaw' or 'g711Ulaw'
+        or 'g729A'."
+     ::= { unisNqaReactionEntry 4 }
+
+unisNqaReactThresholdUpperLimit OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines an administrative upper-threshold value for
+        unisNqaReactCheckedElement.
+
+        The value of this object is zero if unisNqaReactCheckedElement is
+        specified as 'jitterpacketloss' and 'probefailure'."
+    DEFVAL { 0 }
+    ::= { unisNqaReactionEntry 5 }
+
+unisNqaReactThresholdLowerLimit OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines an administrative lower-threshold value for
+        unisNqaReactCheckedElement.
+
+        The value of unisNqaReactThresholdLowerLimit should be equal or less
+        than the value of unisNqaReactThresholdUpperLimit.
+
+        The value of this object is zero if unisNqaReactCheckedElement is
+        specified as 'jitterpacketloss' and 'probefailure'."
+    DEFVAL { 0 }
+    ::= { unisNqaReactionEntry 6 }
+
+unisNqaReactThresholdType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                           invalid(0),
+                           average(1),
+                           consecutive(2),
+                           accumulative(3)
+                       }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines the reaction threshold types.
+
+        invalid(0):     Invalid value.
+
+        average(1):     If reaction threshold type is average and the average
+                        value of watched operation exceeds threshold limit,
+                        an action specified in unisNqaReactActionType is
+                        generated when unisNqaReactCurrentStatus changes.
+
+        consecutive(2): If reaction threshold type is consecutive and
+                        the times of watched operation consecutively exceeds
+                        the limit specified by unisNqaReactThresholdConsecNum,
+                        an action specified in unisNqaReactActionType is
+                        generated when unisNqaReactCurrentStatus changes.
+
+        accumulative(3): If reaction threshold type is accumulative and
+                        the times of watched operation accumulatively exceeds
+                        the limit specified by unisNqaReactThresholdAccumNum,
+                        an action specified in unisNqaReactActionType is
+                        generated when unisNqaReactCurrentStatus changes.
+
+        If reaction threshold type is not configured, the value of this
+        object is 'invalid'."
+    ::= { unisNqaReactionEntry 7 }
+
+unisNqaReactThresholdConsecNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines a consecutive threshold limit.
+
+        The value is zero when unisNqaReactThresholdType
+        is not 'consecutive'."
+    DEFVAL { 0 }
+    ::= { unisNqaReactionEntry 8 }
+
+unisNqaReactThresholdAccumNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines an accumulative threshold limit.
+
+        The value is zero when the unisNqaReactThresholdType
+        is not 'accumulative'."
+    DEFVAL { 0 }
+    ::= { unisNqaReactionEntry 9 }
+
+unisNqaReactActionType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                           none(0),
+                           trapOnly(1),
+                           triggerOnly(2),
+                           trapAndTrigger(3)
+                        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specifies the type of reaction to generate if the specified
+        violation type occurs for the monitored element:
+
+        none               - No reaction is generated
+        trapOnly           - A trap is generated
+        triggerOnly        - All trigger actions defined for this
+                             entry are generated
+        trapAndTrigger     - Both a trap and all trigger actions
+                             are generated "
+    DEFVAL { none }
+    ::= { unisNqaReactionEntry 10 }
+
+unisNqaReactCurrentStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                            invalid(1),
+                            overThreshold(2),
+                            belowThreshold(3),
+                            overUpperThreshold(4),
+                            belowLowerThreshold(5)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Specifies the current status of this reaction entry:
+
+        invalid  - The status of the reaction entry is unknown.
+
+        overThreshold       - The status of the reaction entry is overThreshold
+                              when the monitored result exceeds the threshold
+                              value for the unisNqaReactThresholdType.
+
+        belowThreshold      - The status of the reaction entry is belowThreshold
+                              when the monitored result is under the threshold
+                              value for the unisNqaReactThresholdType.
+
+        overUpperThreshold  - The status of the reaction entry is overThreshold
+                              when the monitored result is exceeds the
+                              upper-threshold value for the
+                              unisNqaReactThresholdType.
+
+        belowLowerThreshold - The status of the reaction entry is belowThreshold
+                              when the monitored result is under the
+                              lower-threshold value for
+                              unisNqaReactThresholdType."
+
+    ::= { unisNqaReactionEntry 11 }
+
+unisNqaReactRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object allows entries to be created and deleted
+        in the unisNqaReactionTable.
+
+        Creation of an entry in this table results in a new set of reaction
+        configurations which take effect immediately.
+
+        Deletion of an entry in this table results in corresponding reaction
+        configurations are being deleted and stop taking effect."
+    REFERENCE
+        "See definition of RowStatus in RFC 2579, 'Textual
+        Conventions for SMIv2.'"
+    ::= { unisNqaReactionEntry 12 }
+
+unisNqaReactCheckedNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of checked element samples that are monitored."
+    DEFVAL { 0 }
+    ::= { unisNqaReactionEntry 13 }
+
+unisNqaReactThresholdNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of checked element samples that are over threshold."
+    DEFVAL { 0 }
+    ::= { unisNqaReactionEntry 14 }
+
+-- Statistics Reaction Table
+unisNqaStatisticsReactionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisNqaStatisticsReactionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of NQA test monitoring notification and
+        reaction configuration definitions.
+
+        An entry is removed from this table when its
+        corresponding pingCtlEntry is deleted."
+  ::= { unisNqaObjects 14 }
+
+unisNqaStatisticsReactionEntry OBJECT-TYPE
+    SYNTAX      UnisNqaStatisticsReactionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines an entry in the unisNqaStatisticsReactionTable. The
+        first two index elements identify the pingCtlEntry that a
+        unisNqaReactItemIndex belongs to. The third index element
+        identifies an entry in the unisNqaStatisticsResultsTable.
+        The forth index element selects a single reaction."
+    INDEX
+        {
+            unisNqaStatReactOwnerIndex,
+            unisNqaStatReactTestName,
+            unisNqaStatReactIndex,
+            unisNqaStatReactItemIndex
+        }
+    ::= { unisNqaStatisticsReactionTable 1 }
+
+UnisNqaStatisticsReactionEntry ::=
+    SEQUENCE
+        {
+            unisNqaStatReactOwnerIndex               SnmpAdminString,
+            unisNqaStatReactTestName                 SnmpAdminString,
+            unisNqaStatReactIndex                    Unsigned32,
+            unisNqaStatReactItemIndex                Unsigned32,
+            unisNqaStatReactCheckedNum               Counter32,
+            unisNqaStatReactThresholdNum             Counter32
+        }
+
+unisNqaStatReactOwnerIndex OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The first index of unisNqaStatisticsReactionTable, it is the same
+        as pingCtlOwnerIndex in pingCtlTable."
+    ::= { unisNqaStatisticsReactionEntry 1 }
+
+unisNqaStatReactTestName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The second index of unisNqaStatisticsReactionTable, it is the same
+        as pingCtlTestName in pingCtlTable."
+    ::= { unisNqaStatisticsReactionEntry 2 }
+
+unisNqaStatReactIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The third index of unisNqaStatisticsReactionTable. An entry in
+        this table is created when the statistics result of a NQA probe
+        is determined.
+
+        An implementation MUST start assigning unisNqaStatResIndex values
+        at 1 and wrap after exceeding the maximum possible value as
+        defined by the limit of this object ('ffffffff'h)."
+    DEFVAL { 0 }
+    ::= { unisNqaStatisticsReactionEntry 3 }
+
+unisNqaStatReactItemIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The forth index of unisNqaStatisticsReactionTable, it definitely
+        identifies one of the reaction configurations for a test"
+    DEFVAL { 0 }
+    ::= { unisNqaStatisticsReactionEntry 4 }
+
+unisNqaStatReactCheckedNum OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of checked element samples that are monitored."
+    DEFVAL { 0 }
+    ::= { unisNqaStatisticsReactionEntry 5 }
+
+unisNqaStatReactThresholdNum OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of checked element samples that are over threshold."
+    DEFVAL { 0 }
+    ::= { unisNqaStatisticsReactionEntry 6 }
+
+-- =================================================================
+--   NQA server configuration extended information
+-- =================================================================
+
+unisNqaTcpServerExtendTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisNqaTcpServerExtendEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table which contains the status of extended NQA TCP server
+        configuration information."
+    ::= { unisNqaObjects 15 }
+
+unisNqaTcpServerExtendEntry OBJECT-TYPE
+    SYNTAX      UnisNqaTcpServerExtendEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table which contains the status of extended NQA TCP server
+        configuration information.
+        This entry includes the TCP server IP address, port,
+        VPN name and DSField."
+    INDEX {
+            unisNqaTcpServerExtIpAddress,
+            unisNqaTcpServerExtPort,
+            unisNqaTcpServerExtVPNType,
+            unisNqaTcpServerExtVPNInstance
+          }
+    ::= { unisNqaTcpServerExtendTable 1 }
+
+UnisNqaTcpServerExtendEntry  ::= SEQUENCE
+{
+    unisNqaTcpServerExtIpAddress                InetAddress,
+    unisNqaTcpServerExtPort                     Integer32,
+    unisNqaTcpServerExtVPNType                  VpnInstanceType,
+    unisNqaTcpServerExtVPNInstance              OCTET STRING,
+    unisNqaTcpServerExtDSField                  Unsigned32,
+    unisNqaTcpServerExtRowStatus                RowStatus
+}
+
+unisNqaTcpServerExtIpAddress          OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "TCP server's IP address."
+    ::= { unisNqaTcpServerExtendEntry 1 }
+
+unisNqaTcpServerExtPort          OBJECT-TYPE
+    SYNTAX      Integer32 (0..65536)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "TCP server's port number."
+    ::= { unisNqaTcpServerExtendEntry 2 }
+
+unisNqaTcpServerExtVPNType OBJECT-TYPE
+    SYNTAX      VpnInstanceType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "TCP server's VPN instance type."
+    ::= { unisNqaTcpServerExtendEntry 3 }
+
+unisNqaTcpServerExtVPNInstance OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..31))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "TCP server's VPN name.If the NQA server listens on the public network,
+        the value of unisNqaTcpServerExtVPNType must be public(1) and the value
+        of this object can be set to any non-printable character string.If the
+        NQA server listens on the private network, the value of unisNqaTcpServerExtVPNType
+        must be vpn(2) and the value of this object can be set to any non-printable
+        character string."
+    ::= { unisNqaTcpServerExtendEntry 4 }
+
+unisNqaTcpServerExtDSField OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..256)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specifies the value to store in the Differentiated
+        Services (DS) Field in the IP packet used to
+        encapsulate the probe.  The DS Field is defined
+        as the Type of Service (TOS) octet in a IPv4 header
+        or as the Traffic Class octet in a IPv6 header.
+
+        The value of this object must be a decimal integer
+        in the range of 0 to 255.  Not all values are legal or
+        meaningful.  A value of 0 means that the function
+        represented by this option is not supported.  The value
+        of 256 indicates that TOS is not configured, and this
+        value is not supported by IP implementations.  DS Field
+        usage is often not supported by IP implementations and
+        not all values are supported.  Refer to RFC 2474 for
+        guidance on usage of this field."
+    REFERENCE
+        "Refer to RFC 2474 for the definition of the
+        Differentiated Services Field and to RFC 1812
+        Section 5.3.2 for Type of Service (TOS)."
+    ::= { unisNqaTcpServerExtendEntry 5 }
+
+unisNqaTcpServerExtRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "unisNqaTcpServerIpAddress, unisNqaTcpServerPort, unisNqaTcpServerExtVPNType
+        and unisNqaTcpServerVPNInstance must be set during a creation operation."
+    REFERENCE
+        "RFC 2579"
+    ::= { unisNqaTcpServerExtendEntry 6 }
+
+unisNqaUdpServerExtendTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisNqaUdpServerExtendEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Status of extended NQA UDP server configuration information."
+    ::= { unisNqaObjects 16 }
+
+unisNqaUdpServerExtendEntry OBJECT-TYPE
+    SYNTAX      UnisNqaUdpServerExtendEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table which contains the status of extended NQA UDP server
+        configuration information.
+        This entry includes the UDP server IP address, port,
+        VPN name and DSField."
+    INDEX {
+            unisNqaUdpServerExtIpAddress,
+            unisNqaUdpServerExtPort,
+            unisNqaUdpServerExtVPNType,
+            unisNqaUdpServerExtVPNInstance
+          }
+    ::= { unisNqaUdpServerExtendTable 1 }
+
+UnisNqaUdpServerExtendEntry  ::= SEQUENCE
+{
+    unisNqaUdpServerExtIpAddress                InetAddress,
+    unisNqaUdpServerExtPort                     Integer32,
+    unisNqaUdpServerExtVPNType                  VpnInstanceType,
+    unisNqaUdpServerExtVPNInstance              OCTET STRING,
+    unisNqaUdpServerExtDSField                  Unsigned32,
+    unisNqaUdpServerExtRowStatus                RowStatus
+}
+
+unisNqaUdpServerExtIpAddress          OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "UDP server's IP address."
+    ::= { unisNqaUdpServerExtendEntry 1 }
+
+unisNqaUdpServerExtPort          OBJECT-TYPE
+    SYNTAX      Integer32 (0..65536)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "UDP server's port number."
+    ::= { unisNqaUdpServerExtendEntry 2 }
+
+unisNqaUdpServerExtVPNType OBJECT-TYPE
+    SYNTAX      VpnInstanceType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "UDP server's VPN instance type."
+    ::= { unisNqaUdpServerExtendEntry 3 }
+
+unisNqaUdpServerExtVPNInstance OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..31))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "UDP server's VPN name.If the NQA server listens on the public network,
+        the value of unisNqaUdpServerExtVPNType must be public(1) and the value
+        of this object can be set to any non-printable character string.If the
+        NQA server listens on the private network, the value of unisNqaUdpServerExtVPNType
+        must be vpn(2) and the value of this object can be set to any non-printable
+        character string."
+    ::= { unisNqaUdpServerExtendEntry 4 }
+
+unisNqaUdpServerExtDSField OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..256)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specifies the value to store in the Differentiated
+        Services (DS) Field in the IP packet used to
+        encapsulate the probe.  The DS Field is defined
+        as the Type of Service (TOS) octet in a IPv4 header
+        or as the Traffic Class octet in a IPv6 header.
+
+        The value of this object must be a decimal integer
+        in the range of 0 to 255.  Not all values are legal or
+        meaningful.  A value of 0 means that the function
+        represented by this option is not supported.  The value
+        of 256 indicates that TOS is not configured, and this
+        value is not supported by IP implementations.  DS Field
+        usage is often not supported by IP implementations and
+        not all values are supported.  Refer to RFC 2474 for
+        guidance on usage of this field."
+    REFERENCE
+        "Refer to RFC 2474 for the definition of the
+        Differentiated Services Field and to RFC 1812
+        Section 5.3.2 for Type of Service (TOS)."
+    ::= { unisNqaUdpServerExtendEntry 5 }
+
+unisNqaUdpServerExtRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "unisNqaUdpServerIpAddress, unisNqaUdpServerPort, unisNqaUdpServerExtVPNType
+        and unisNqaUdpServerVPNInstance must be set during a creation operation."
+    REFERENCE
+        "RFC 2579"
+    ::= { unisNqaUdpServerExtendEntry 6 }
+
+-- Notification Definition section
+unisNqaNotifications  OBJECT IDENTIFIER ::= { unisNqa 3 }
+unisNqaProbeTimeOverThreshold NOTIFICATION-TYPE
+    OBJECTS {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex,
+            pingCtlTargetAddressType,
+            pingCtlTargetAddress,
+            pingCtlType,
+            pingCtlDescr,
+            unisNqaReactThresholdType,
+            unisNqaReactCurrentStatus
+        }
+    STATUS  current
+    DESCRIPTION
+        "It is generated when the value of unisNqaReactCurrentStatus
+        changes.
+        The change may occur when the watched condition is over threshold
+        or below threshold.
+
+        The over threshold situations is specified as below.
+          1. Probe time(equals to RTT for some type of tests) is not in
+             the range unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit.
+          2. The probe time is accumulatively not in the range
+             unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit for a number of times
+             specified in unisNqaReactThresholdAccumNum.
+          3. The probe time is consecutively in the range
+             unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit for a number of times
+             specified in unisNqaReactThresholdConsecNum.
+
+        This notification is valid only when unisNqaReactActionType
+        is 'trapOnly' or 'trapAndTrigger' and pingCtlType of the test
+        is not unisNqajitter."
+    ::= { unisNqaNotifications 1 }
+
+unisNqaJitterRTTOverThreshold NOTIFICATION-TYPE
+    OBJECTS {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex,
+            pingCtlTargetAddressType,
+            pingCtlTargetAddress,
+            pingCtlType,
+            pingCtlDescr,
+            unisNqaReactThresholdType,
+            unisNqaReactCurrentStatus
+        }
+    STATUS  current
+    DESCRIPTION
+        "It is generated when the value of unisNqaReactCurrentStatus
+        changes.
+        The change may occur when the watched condition is over threshold
+        or below threshold.
+
+        The over threshold situations is specified as below.
+          1. The average NQA round-trip-time (RTT) of jitter packets
+             is not in the range unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit.
+          2. The RTT of jitter packets is accumulatively not in the range
+             unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit for a number of times specified
+             in unisNqaReactThresholdAccumNum in one test.
+
+        This notification is valid only when unisNqaReactActionType
+        is 'trapOnly' or 'trapAndTrigger' and pingCtlType of the test
+        is unisNqajitter or unisNqaTwampLight."
+    ::= { unisNqaNotifications 2 }
+
+unisNqaProbeFailure NOTIFICATION-TYPE
+    OBJECTS {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex,
+            pingCtlTargetAddressType,
+            pingCtlTargetAddress,
+            pingCtlType,
+            pingCtlDescr,
+            unisNqaReactThresholdType,
+            unisNqaReactCurrentStatus
+        }
+    STATUS  current
+    DESCRIPTION
+        "It is generated when the value of unisNqaReactCurrentStatus
+        changes.
+        The change may occur when the watched condition is over threshold
+        or below threshold.
+
+        The over threshold situations is specified as below.
+          1. When the probe test accumulatively failed for a
+             number of times specified in unisNqaReactThresholdAccumNum in one
+             test while the value of unisNqaReactThresholdType is 'accumulative'.
+          2. When the probe test consecutively failed for
+             a number of times specified in unisNqaReactThresholdConsecNum in one
+             test while the value of unisNqaReactThresholdType is 'consecutive'.
+
+        This notification is valid only when unisNqaReactActionType
+        is 'trapOnly' or 'trapAndTrigger' and pingCtlType of the test
+        is not unisNqajitter."
+    ::= { unisNqaNotifications 3 }
+
+unisNqaJitterPacketLoss NOTIFICATION-TYPE
+    OBJECTS {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex,
+            pingCtlTargetAddressType,
+            pingCtlTargetAddress,
+            pingCtlType,
+            pingCtlDescr,
+            unisNqaReactThresholdType,
+            unisNqaReactCurrentStatus
+        }
+    STATUS  current
+    DESCRIPTION
+        "It is generated when the value of unisNqaReactCurrentStatus
+        changes.
+        The change may occur when the watched condition is over threshold
+        or below threshold.
+
+        The over threshold situations is specified as below.
+          1. When the jitter packets accumulatively lost for a
+             number of times specified in unisNqaReactThresholdAccumNum in one
+             test while the value of unisNqaReactThresholdType is 'accumulative'.
+
+        This notification is valid only when unisNqaReactActionType
+        is 'trapOnly' or 'trapAndTrigger' and pingCtlType of the test
+        is unisNqajitter or unisNqaTwampLight."
+    ::= { unisNqaNotifications 4 }
+
+unisNqaJitterSDOverThreshold NOTIFICATION-TYPE
+    OBJECTS {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex,
+            pingCtlTargetAddressType,
+            pingCtlTargetAddress,
+            pingCtlType,
+            pingCtlDescr,
+            unisNqaReactThresholdType,
+            unisNqaReactCurrentStatus
+        }
+    STATUS  current
+    DESCRIPTION
+        "The SD means the jitter values from source to destination.
+
+        It is generated when the value of unisNqaReactCurrentStatus
+        changes.
+        The change may occur when the watched condition is over threshold
+        or below threshold.
+
+        The over threshold situations is specified as below.
+          1. The average of SD in one jitter test is not in the range
+             unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit and the
+             unisNqaReactThresholdType is specified as 'average' type.
+          2. The average of SD in one jitter test is accumulatively
+             not in the range unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit for a number of times specified
+             in unisNqaReactThresholdAccumNum and the
+             unisNqaReactThresholdType is specified as 'accumulative' type.
+
+        This notification is valid only when unisNqaReactActionType
+        is 'trapOnly' or 'trapAndTrigger' and pingCtlType of the test
+        is unisNqajitter."
+    ::= { unisNqaNotifications 5 }
+
+unisNqaJitterDSOverThreshold NOTIFICATION-TYPE
+    OBJECTS {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex,
+            pingCtlTargetAddressType,
+            pingCtlTargetAddress,
+            pingCtlType,
+            pingCtlDescr,
+            unisNqaReactThresholdType,
+            unisNqaReactCurrentStatus
+        }
+    STATUS  current
+    DESCRIPTION
+        "The DS means the jitter values from destination to source.
+
+        It is generated when the value of unisNqaReactCurrentStatus
+        changes.
+        The change may occur when the watched condition is over threshold
+        or below threshold.
+
+        The over threshold situations is specified as below.
+          1. The average of DS in one jitter test is not in the range
+             unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit and the
+             unisNqaReactThresholdType is specified as 'average' type.
+          2. The average of DS in one jitter test is accumulatively not
+             in the range unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit for a number of times specified
+             in unisNqaReactThresholdAccumNum and the
+             unisNqaReactThresholdType is specified as 'accumulative' type.
+
+        This notification is valid only when unisNqaReactActionType
+        is 'trapOnly' or 'trapAndTrigger' and pingCtlType of the test
+        is unisNqajitter."
+    ::= { unisNqaNotifications 6 }
+
+unisNqaICPIFOverThreshold NOTIFICATION-TYPE
+    OBJECTS {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex,
+            pingCtlTargetAddressType,
+            pingCtlTargetAddress,
+            pingCtlType,
+            pingCtlDescr,
+            unisNqaReactCurrentStatus
+        }
+    STATUS  current
+    DESCRIPTION
+        "It is generated when the value of unisNqaReactCurrentStatus
+        changes.
+        The change may occur when the watched condition is over threshold
+        or below threshold.
+
+        The over threshold situations is specified as below.
+          1. When the ICPIF value in one jitter test is not in
+             the range unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit.
+
+        This notification is valid only when unisNqaReactActionType
+        is 'trapOnly' or 'trapAndTrigger', pingCtlType of the test
+        is unisNqajitter and unisNqaCtlCodecType is 'g711Alaw' or 'g711Ulaw'
+        or 'g729A'."
+    ::= { unisNqaNotifications 7 }
+
+unisNqaMOSOverThreshold NOTIFICATION-TYPE
+    OBJECTS {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex,
+            pingCtlTargetAddressType,
+            pingCtlTargetAddress,
+            pingCtlType,
+            pingCtlDescr,
+            unisNqaReactCurrentStatus
+        }
+    STATUS  current
+    DESCRIPTION
+        "It is generated when the value of unisNqaReactCurrentStatus
+        changes.
+        The change may occur when the watched condition is over threshold
+        or below threshold.
+
+        The over threshold situations is specified as below.
+          1. When the MOS value in one jitter test is not in
+             the range unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit.
+
+        This notification is valid only when unisNqaReactActionType
+        is 'trapOnly' or 'trapAndTrigger', pingCtlType of the test
+        is unisNqajitter and unisNqaCtlCodecType is 'g711Alaw' or 'g711Ulaw'
+        or 'g729A'."
+    ::= { unisNqaNotifications 8 }
+
+unisNqaJitterOverThreshold NOTIFICATION-TYPE
+    OBJECTS {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex,
+            pingCtlTargetAddressType,
+            pingCtlTargetAddress,
+            pingCtlType,
+            pingCtlDescr,
+            unisNqaReactThresholdType,
+            unisNqaReactCurrentStatus
+        }
+    STATUS  current
+    DESCRIPTION
+        "It is generated when the value of unisNqaReactCurrentStatus
+        changes.
+        The change may occur when the watched condition is above threshold
+        or below threshold.
+
+          1. The average jitter value is not in the range of
+             unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit and the
+             unisNqaReactThresholdType is specified as 'average' type.
+          2. The total number of times that the average jitter value is not
+             in the range of unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit reaches or exceeds
+             the value specified in unisNqaReactThresholdAccumNum and the
+             unisNqaReactThresholdType is specified as 'accumulative' type.
+
+        This notification is valid only when unisNqaReactActionType
+        is 'trapOnly' or 'trapAndTrigger' and pingCtlType of the test
+        is unisNqajitter or unisNqaTwampLight."
+    ::= { unisNqaNotifications 9 }
+
+unisNqaProbeTimeAboveThreshold NOTIFICATION-TYPE
+    OBJECTS {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex,
+            pingCtlTargetAddressType,
+            pingCtlTargetAddress,
+            pingCtlType,
+            pingCtlDescr,
+            unisNqaReactThresholdType
+        }
+    STATUS  current
+    DESCRIPTION
+        "It is generated when the value of unisNqaReactCurrentStatus
+        changes to 'overThreshold', 'invalid' or 'overUpperThreshold'.
+        The change may occur when the monitored condition exceeds the
+        threshold (or upper threshold) or When NQA operation is stopped.
+
+        The above threshold situations are specified as below.
+          1. Probe time is not in the range unisNqaReactThresholdLowerLimit
+             through unisNqaReactThresholdUpperLimit.
+          2. The probe time is accumulatively not in the range
+             unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit for a number of times
+             specified in unisNqaReactThresholdAccumNum.
+          3. The probe time is consecutively not in the range
+             unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit for a number of times
+             specified in unisNqaReactThresholdConsecNum.
+          4. When NQA operation is stopped.
+
+        This notification is valid only when unisNqaReactActionType
+        is 'trapOnly' or 'trapAndTrigger' and pingCtlType of the test
+        is not unisNqajitter."
+    ::= { unisNqaNotifications 10 }
+
+unisNqaProbeTimeBelowThreshold NOTIFICATION-TYPE
+    OBJECTS {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex,
+            pingCtlTargetAddressType,
+            pingCtlTargetAddress,
+            pingCtlType,
+            pingCtlDescr,
+            unisNqaReactThresholdType
+        }
+    STATUS  current
+    DESCRIPTION
+        "It is generated when the value of unisNqaReactCurrentStatus
+        changes to 'belowThreshold' or 'belowLowerThreshold' from a
+        threshold-crossing state.
+
+        The below threshold situations are specified as below.
+          1. Probe time is in the range unisNqaReactThresholdLowerLimit
+             through unisNqaReactThresholdUpperLimit.
+          2. The probe time is accumulatively in the range
+             unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit for a number of times
+             specified in unisNqaReactThresholdAccumNum.
+          3. The probe time is consecutively in the range
+             unisNqaReactThresholdLowerLimit through
+             unisNqaReactThresholdUpperLimit for a number of times
+             specified in unisNqaReactThresholdConsecNum.
+
+        This notification is valid only when unisNqaReactActionType
+        is 'trapOnly' or 'trapAndTrigger' and pingCtlType of the test
+        is not unisNqajitter."
+    ::= { unisNqaNotifications 11 }
+
+unisNqaProbeFailAboveThreshold NOTIFICATION-TYPE
+    OBJECTS {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex,
+            pingCtlTargetAddressType,
+            pingCtlTargetAddress,
+            pingCtlType,
+            pingCtlDescr,
+            unisNqaReactThresholdType
+        }
+    STATUS  current
+    DESCRIPTION
+        "It is generated when the value of unisNqaReactCurrentStatus
+        changes to 'overThreshold', 'invalid' or 'overUpperThreshold'.
+        The change may occur when the monitored condition exceeds the
+        threshold (or upper threshold) or When NQA operation is stopped.
+
+        The threshold-crossing situations are specified as below.
+          1. When the number of accumulative failed probes reaches the specified
+             value in unisNqaReactThresholdAccumNum in one test while the value
+             of unisNqaReactThresholdType is 'accumulative'.
+          2. When the number of consecutive failed probes reaches the specified
+             value in unisNqaReactThresholdConsecNum in one test while the value
+             of unisNqaReactThresholdType is 'consecutive'.
+          3. When NQA operation is stopped.
+
+        This notification is valid only when unisNqaReactActionType
+        is 'trapOnly' or 'trapAndTrigger' and pingCtlType of the test
+        is not unisNqajitter."
+    ::= { unisNqaNotifications 12 }
+
+unisNqaProbeFailBelowThreshold NOTIFICATION-TYPE
+    OBJECTS {
+            unisNqaReactOwnerIndex,
+            unisNqaReactTestName,
+            unisNqaReactItemIndex,
+            pingCtlTargetAddressType,
+            pingCtlTargetAddress,
+            pingCtlType,
+            pingCtlDescr,
+            unisNqaReactThresholdType
+        }
+    STATUS  current
+    DESCRIPTION
+        "It is generated when the value of unisNqaReactCurrentStatus
+        changes to 'belowThreshold' or 'belowLowerThreshold' from a
+        threshold-crossing state.
+
+        The below threshold situations are specified as below.
+          1. When the number of accumulative successful probes reaches the specified
+             value in unisNqaReactThresholdAccumNum in one test while the value
+             of unisNqaReactThresholdType is 'accumulative'.
+          2. When the number of consecutive successful probes reaches the specified
+             value in unisNqaReactThresholdConsecNum in one test while the value
+             of unisNqaReactThresholdType is 'consecutive'.
+
+        This notification is valid only when unisNqaReactActionType
+        is 'trapOnly' or 'trapAndTrigger' and pingCtlType of the test
+        is not unisNqajitter."
+    ::= { unisNqaNotifications 13 }
+
+END

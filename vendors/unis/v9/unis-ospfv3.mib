@@ -1,0 +1,143 @@
+-- =================================================================
+-- Copyright (c) 2024 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: OSPFv3 (Open Shortest Path First version 3) MIB
+-- Reference:
+-- Version: V1.2
+-- History:
+-- V1.0 2022-07-05 Created pengqing
+--                 Initial version.
+-- V1.1 2022-12-08 updated by pengqing
+--      Add unisOspfv3NbrAddr, unisOspfv3IntraAreaRtrIdConflict.
+-- V1.2 2023-12-01 updated by zhangyao
+--      Add unisOspfv3InterAreaRtrIdConflict, unisOspfv3IfNetworkTypeMismatch.
+-- =================================================================
+UNIS-OSPFV3-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    IpAddress, Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM SNMPv2-TC
+    unisCommon
+        FROM UNIS-OID-MIB
+    InetAddressIPv6
+        FROM INET-ADDRESS-MIB;
+
+unisOspfv3 MODULE-IDENTITY
+    LAST-UPDATED "202312011002Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Add unisOspfv3InterAreaRtrIdConflict, unisOspfv3IfNetworkTypeMismatch."
+    REVISION "202312011002Z"
+    DESCRIPTION
+        "This MIB file provides information about OSPFv3."
+    REVISION "202212081002Z"
+    DESCRIPTION
+        "Add unisOspfv3NbrAddr, unisOspfv3IntraAreaRtrIdConflict."
+    REVISION "202207051002Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 239 }
+
+unisOspfv3Notifications        OBJECT IDENTIFIER ::= { unisOspfv3 0 }
+unisOspfv3NotificationObjects  OBJECT IDENTIFIER ::= { unisOspfv3 2 }
+
+unisOspfv3ProcessIdForNotify OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The process ID field indicates the OSPFv3 process number."
+    ::= { unisOspfv3NotificationObjects 1 }
+
+unisOspfv3AreaIdForNotify OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "A 32-bit integer uniquely identifying an area.
+        Area ID 0.0.0.0 is used for the OSPFv3 backbone."
+    ::= { unisOspfv3NotificationObjects 2 }
+
+unisOspfv3IfName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The interface name."
+    ::= { unisOspfv3NotificationObjects 3 }
+
+unisOspfv3RouterID OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The Router ID of OSPFv3 protocol."
+    ::= { unisOspfv3NotificationObjects 4 }
+
+unisOspfv3NbrAddr OBJECT-TYPE
+    SYNTAX InetAddressIPv6
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The IP address of neighbor."
+    ::= { unisOspfv3NotificationObjects 5 }
+
+unisOspfv3LastAuthKeyExpiry NOTIFICATION-TYPE
+    OBJECTS {
+        unisOspfv3ProcessIdForNotify,
+        unisOspfv3AreaIdForNotify,
+        unisOspfv3IfName,
+        unisOspfv3RouterID
+    }
+    STATUS current
+    DESCRIPTION
+        "The last authentication key has expired or no active send key in keychain."
+    ::= { unisOspfv3Notifications 1 }
+
+unisOspfv3IntraAreaRtrIdConflict NOTIFICATION-TYPE
+    OBJECTS {
+        unisOspfv3ProcessIdForNotify,
+        unisOspfv3AreaIdForNotify,
+        unisOspfv3IfName,
+        unisOspfv3RouterID,
+        unisOspfv3NbrAddr
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when Router ID conflict."
+    ::= { unisOspfv3Notifications 2 }
+
+unisOspfv3InterAreaRtrIdConflict NOTIFICATION-TYPE
+    OBJECTS {
+        unisOspfv3ProcessIdForNotify,
+        unisOspfv3IfName,
+        unisOspfv3RouterID,
+        unisOspfv3NbrAddr
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when a router ID conflict is detected with an
+         indirectly connected device."
+    ::= { unisOspfv3Notifications 3 }
+
+unisOspfv3IfNetworkTypeMismatch NOTIFICATION-TYPE
+    OBJECTS {
+        unisOspfv3ProcessIdForNotify,
+        unisOspfv3AreaIdForNotify,
+        unisOspfv3IfName,
+        unisOspfv3RouterID,
+        unisOspfv3NbrAddr
+    }
+    STATUS current
+    DESCRIPTION
+        "A notification sent when the network type of the local interface is
+         P2P or P2MP while the network type of the remote interface is
+         broadcast or NBMA."
+    ::= { unisOspfv3Notifications 4 }
+
+END

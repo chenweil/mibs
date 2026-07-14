@@ -1,0 +1,71 @@
+-- =================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Cluster MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--  V1.0 Created by meishenhe
+--      Initial version 2023-07-04
+-- =================================================================
+UNIS-CLUSTER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Integer32
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisCluster MODULE-IDENTITY
+    LAST-UPDATED "202307040000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for cluster status notification."
+    REVISION    "202307040000Z"
+    DESCRIPTION    "The initial version."
+    ::= { unisCommon 264 }
+
+-- ==================================================================
+--
+-- CLUSTER trap object
+--
+-- ==================================================================
+unisClusterObjects OBJECT IDENTIFIER ::= { unisCluster 1 }
+
+unisClusterConnObjects OBJECT IDENTIFIER ::= { unisClusterObjects 1 }
+
+unisClusterMemberID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Member ID of a device in a cluster."
+    ::= { unisClusterConnObjects 1 }
+
+unisClusterTrap OBJECT IDENTIFIER ::= { unisCluster 2 }
+
+unisClusterConnTrapPrefix OBJECT IDENTIFIER ::= { unisClusterTrap 0 }
+
+unisClusterRecombine NOTIFICATION-TYPE
+    OBJECTS {
+            unisClusterMemberID
+        }
+    STATUS  current
+    DESCRIPTION
+        "The unisClusterRecombine notification indicates a cluster merge event."
+::= { unisClusterConnTrapPrefix 1 }
+
+unisClusterSplitOut NOTIFICATION-TYPE
+    OBJECTS {
+            unisClusterMemberID
+        }
+    STATUS  current
+    DESCRIPTION
+        "The unisClusterSplitOut notification indicates a cluster split event."
+::= { unisClusterConnTrapPrefix 2 }
+
+END

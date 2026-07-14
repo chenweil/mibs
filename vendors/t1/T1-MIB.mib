@@ -1,0 +1,60 @@
+T1-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        internet
+            FROM RFC1155-SMI;
+	DisplayString ::=
+              OCTET STRING
+            
+private      OBJECT IDENTIFIER ::= { internet 4 }
+
+enterprises  OBJECT IDENTIFIER ::= { private 1 }
+
+T1	      OBJECT IDENTIFIER ::= { enterprises 15227 }
+
+products       OBJECT IDENTIFIER ::= { T1 1 }
+
+T1FW      OBJECT IDENTIFIER ::= { products 3 }
+
+fw      OBJECT IDENTIFIER ::= { T1FW 1 }
+
+system      OBJECT IDENTIFIER ::= { fw 1 }
+
+cpuUsage OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..255))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "the usage of the equipment cpu."
+    ::= { system 1 }
+    
+    
+memUsage OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..255))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "the usage of the equipment memory."
+    ::= { system 2 }
+    
+    
+sessionNum OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "the number of connect the equipment have."
+    ::= { system 3 }
+    
+    
+productID OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..255))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "the equiment's ID number."
+    ::= { system 4 }
+    
+
+   
+END

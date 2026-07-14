@@ -1,0 +1,77 @@
+-- =============================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Multiprotocol Label Switching
+--              Label Switched Path Verification MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2022-07-13 Initial version Created by Zhujieyi
+-- =============================================================================
+UNIS-MPLSLSPV-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB
+    ;
+
+-- =============================================================================
+-- module identity part
+-- =============================================================================
+unisMplsLspv MODULE-IDENTITY
+    LAST-UPDATED
+        "202207130853Z"   -- July 13, 2022 at 08:53 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Multiprotocol Label Switching Label Switched Path Verification MIB"
+    REVISION
+        "202207130853Z"   -- July 13, 2022 at 08:54 GMT
+    DESCRIPTION
+        "Initial version of this MIB."
+    ::= { unisCommon 241 }
+
+-- =============================================================================
+-- Top level components of this MIB module.
+-- =============================================================================
+unisMplsLspvNotifications OBJECT IDENTIFIER  ::= { unisMplsLspv 0 }
+
+unisMplsLspvObjects       OBJECT IDENTIFIER  ::= { unisMplsLspv 1 }
+
+unisMplsLspvScalarGroup   OBJECT IDENTIFIER  ::= { unisMplsLspvObjects 1 }
+
+unisMplsLspvBaseInfo    OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..127))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The base information of MPLS LSPV."
+    ::= { unisMplsLspvScalarGroup 1 }
+
+-- =============================================================================
+-- Notifications
+-- =============================================================================
+unisMplsLspvPingProbe  NOTIFICATION-TYPE
+    OBJECTS {  unisMplsLspvBaseInfo  }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when the device received
+       LSPV Ping message in no response mode."
+    ::= { unisMplsLspvNotifications 1 }
+
+unisMplsLspvTracertProbe   NOTIFICATION-TYPE
+    OBJECTS {  unisMplsLspvBaseInfo  }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when the device received
+       LSPV Tracert message in no response mode."
+    ::= { unisMplsLspvNotifications 2 }
+
+-- =============================================================================
+-- End of notifications.
+-- =============================================================================
+
+END

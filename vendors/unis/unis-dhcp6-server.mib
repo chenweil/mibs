@@ -1,0 +1,239 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:  The Dynamic Host Configuration Protocol for IPv6 (DHCPv6)
+-- provides a framework to assign IPv6 prefixes, IPv6 addresses,
+-- and other configuration parameters to hosts.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2014-10-30 Initial version Created by c09672
+-- =================================================================
+UNIS-DHCP6-SERVER-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, Integer32, TimeTicks
+        FROM SNMPv2-SMI
+    RowStatus
+        FROM SNMPv2-TC
+    InetAddressIPv6
+        FROM INET-ADDRESS-MIB;
+
+unisDHCP6Server MODULE-IDENTITY
+    LAST-UPDATED "201410300000Z"            -- Oct 30th, 2014 at 00:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for DHCPv6 server."
+    REVISION    "201410300000Z"
+    DESCRIPTION
+        "Initial version"
+    ::= { unisCommon 159 }
+
+--
+-- Define the DHCPv6 Server Tables.
+--
+    unisDHCP6ServerTables OBJECT IDENTIFIER ::= { unisDHCP6Server 1 }
+
+-- =================================================================
+-- 1st Table of unisDHCP6ServerTables: unisDHCP6PoolTable
+-- =================================================================
+unisDHCPS6PoolTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDHCPS6PoolEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for creating DHCPv6 address pools."
+    ::= { unisDHCP6ServerTables 1 }
+
+unisDHCPS6PoolEntry OBJECT-TYPE
+    SYNTAX      UnisDHCPS6PoolEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing objects for creating or
+        deleting a DHCPv6 address pool."
+    INDEX { unisDHCPS6PoolName }
+    ::= { unisDHCPS6PoolTable 1 }
+
+UnisDHCPS6PoolEntry ::=
+    SEQUENCE
+        {
+            unisDHCPS6PoolName      OCTET STRING,
+            unisDHCPS6PoolRowStatus RowStatus
+        }
+
+unisDHCPS6PoolName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..10))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "DHCPv6 address pool name.  The name must be integer."
+    ::= { unisDHCPS6PoolEntry 1 }
+
+unisDHCPS6PoolRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus.  Three actions are used: active,
+        createAndGo, destroy."
+    ::= { unisDHCPS6PoolEntry 2 }
+
+-- =================================================================
+-- 2nd Table of unisDHCP6ServerTables: unisDHCPS6PoolConfigTable
+-- =================================================================
+unisDHCPS6PoolConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDHCPS6PoolConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for configuring parameters for DHCPv6 address pools."
+    ::= { unisDHCP6ServerTables 2 }
+
+unisDHCPS6PoolConfigEntry OBJECT-TYPE
+    SYNTAX      UnisDHCPS6PoolConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing the objects for the parameter
+        configurations of DHCPv6 address pools."
+    INDEX { unisDHCPS6PoolName }
+    ::= { unisDHCPS6PoolConfigTable 1 }
+
+UnisDHCPS6PoolConfigEntry ::=
+    SEQUENCE
+        {
+            unisDHCPS6PoolPrimaryDNSIP InetAddressIPv6,
+            unisDHCPS6PoolSecondDNSIP  InetAddressIPv6
+        }
+
+unisDHCPS6PoolPrimaryDNSIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The Primary DNS server IPv6 address to be assigned to the
+        client.  To delete a configured Primary DNS server IP, please
+        set unisDHCP6ServerPoolPrimaryDNSIP to '0x00 0x00 0x00 0x00
+        0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00'."
+    ::= { unisDHCPS6PoolConfigEntry 1 }
+
+unisDHCPS6PoolSecondDNSIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The Secondary DNS server IPv6 address to be assigned to the
+        client.  To delete a configured Secondary DNS server IP, please
+        set unisDHCP6ServerPoolSecondDNSIP to '0x00 0x00 0x00 0x00 0x00
+        0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00'."
+    ::= { unisDHCPS6PoolConfigEntry 2 }
+
+-- =================================================================
+-- 3rd Table of unisDHCP6ServerTables: unisDHCPS6PoolNetworkTable
+-- =================================================================
+unisDHCPS6PoolNetworkTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDHCPS6PoolNetworkEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing the network configurations of DHCPv6
+        address pools."
+    ::= { unisDHCP6ServerTables 3 }
+
+unisDHCPS6PoolNetworkEntry OBJECT-TYPE
+    SYNTAX      UnisDHCPS6PoolNetworkEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing the objects for configuring
+        the network ip or host ip etc. to pools for
+        DHCPv6 server.  UnisDHCPS6PoolStartAddr and unisDHCPS6PoolStopAddr
+        must be set with unisDHCPS6PoolNetPrefixLen, and must be on the
+        same network."
+    INDEX { unisDHCPS6PoolName }
+    ::= { unisDHCPS6PoolNetworkTable 1 }
+
+UnisDHCPS6PoolNetworkEntry ::=
+    SEQUENCE
+        {
+            unisDHCPS6PoolStartAddr      InetAddressIPv6,
+            unisDHCPS6PoolStopAddr       InetAddressIPv6,
+            unisDHCPS6PoolNetPrefixLen   Integer32,
+            unisDHCPS6PoolLeaseTime      TimeTicks
+        }
+
+unisDHCPS6PoolStartAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Start IP of a DHCPv6 address pool.
+        To delete a configured start IP, please set
+        unisDHCP6ServerPoolStartAddr to '0x00 0x00 0x00 0x00 0x00
+        0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00'."
+    ::= { unisDHCPS6PoolNetworkEntry 1 }
+
+unisDHCPS6PoolStopAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "End IP of a DHCPv6 address pool."
+    ::= { unisDHCPS6PoolNetworkEntry 2 }
+
+unisDHCPS6PoolNetPrefixLen OBJECT-TYPE
+    SYNTAX      Integer32(1..128)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "A prefix length of DHCPv6 address pool."
+    ::= { unisDHCPS6PoolNetworkEntry 3 }
+
+unisDHCPS6PoolLeaseTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Number of time ticks of the lease."
+    ::= { unisDHCPS6PoolNetworkEntry 4 }
+
+-- =================================================================
+-- 4th Table of unisDHCP6ServerTables: unisDHCPS6PoolStatTable
+-- =================================================================
+unisDHCPS6PoolStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDHCPS6PoolStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The statistics of each DHCPv6 address pool."
+    ::= { unisDHCP6ServerTables 4 }
+
+unisDHCPS6PoolStatEntry OBJECT-TYPE
+    SYNTAX      UnisDHCPS6PoolStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing the statistics of each DHCPv6 address pool."
+    INDEX { unisDHCPS6PoolName }
+    ::= { unisDHCPS6PoolStatTable 1 }
+
+UnisDHCPS6PoolStatEntry ::=
+    SEQUENCE
+        {
+            unisDHCPS6PoolIPPoolUsage     Integer32
+        }
+
+unisDHCPS6PoolIPPoolUsage OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Utilization rate of IPv6 addresses in each DHCPv6 address pool, in percentage."
+    ::= { unisDHCPS6PoolStatEntry 1 }
+
+END

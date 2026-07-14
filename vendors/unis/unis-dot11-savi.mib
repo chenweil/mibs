@@ -1,0 +1,294 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--   The file defines a MIB to provide SAVI information such
+--   as SAVI statistic and notification events.
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 created by  qiuchunxia
+--     Initial version 2020-07-15
+-- =============================================================================
+UNIS-DOT11-SAVI-MIB DEFINITIONS ::=BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Counter64, Unsigned32
+        FROM SNMPv2-SMI
+    MacAddress, TruthValue
+        FROM SNMPv2-TC
+    InetVersion, InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB
+    unisDot11, UnisDot11ObjectIDType, UnisDot11RadioScopeType
+        FROM UNIS-DOT11-REF-MIB;
+
+unisDot11SAVI MODULE-IDENTITY
+    LAST-UPDATED "202007151800Z" --July 15, 2020 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB Module for managing SAVI objects in WLAN scenario."
+
+    REVISION "202007151800Z"        -- July 15, 2020 at 18:00 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisDot11 20 }
+
+unisDot11SAVIObjects OBJECT IDENTIFIER ::= { unisDot11SAVI 1 }
+
+-- Service parameters
+
+unisDot11SAVIServiceTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11SAVIServiceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "The table containing SAVI running parameters
+                of each Service."
+    ::= { unisDot11SAVIObjects 1 }
+
+unisDot11SAVIServiceEntry OBJECT-TYPE
+    SYNTAX      UnisDot11SAVIServiceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "An entry containing SAVI running parameters
+                 of a Service."
+    INDEX
+        {
+            unisDot11SAVIServiceIPVersion,
+            unisDot11SAVIServiceServiceName
+        }
+    ::= { unisDot11SAVIServiceTable 1 }
+
+UnisDot11SAVIServiceEntry ::=
+    SEQUENCE {
+        unisDot11SAVIServiceIPVersion          InetVersion,
+        unisDot11SAVIServiceServiceName        OCTET STRING,
+        unisDot11SAVIServiceValidStatus        TruthValue
+    }
+
+unisDot11SAVIServiceIPVersion      OBJECT-TYPE
+    SYNTAX      InetVersion
+    MAX-ACCESS  not-accessible
+     STATUS     current
+     DESCRIPTION
+                "The IP version."
+    ::= { unisDot11SAVIServiceEntry 1 }
+
+unisDot11SAVIServiceServiceName  OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..255))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "The service name."
+    ::= { unisDot11SAVIServiceEntry 2 }
+
+unisDot11SAVIServiceValidStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+                "The validation status of the interface.
+                Setting this attribute to true,
+                the interface will check source address."
+    ::= { unisDot11SAVIServiceEntry 3 }
+
+-- Savi Filtering Table
+
+unisDot11SAVIFilteringTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11SAVIFilteringEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "The filtering table is used to filter packets."
+    ::= { unisDot11SAVIObjects 2 }
+
+unisDot11SAVIFilteringEntry OBJECT-TYPE
+    SYNTAX      UnisDot11SAVIFilteringEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "An entry containing the filtering parameters.
+                Entries are keyed on the anchor."
+    INDEX
+        {
+            unisDot11SAVIFilteringIpType,
+            unisDot11SAVIFilteringServName,
+            unisDot11SAVIFilteringIpAddress
+        }
+    ::= { unisDot11SAVIFilteringTable 1 }
+
+UnisDot11SAVIFilteringEntry ::=
+    SEQUENCE {
+        unisDot11SAVIFilteringIpType          InetAddressType,
+        unisDot11SAVIFilteringServName        OCTET STRING,
+        unisDot11SAVIFilteringIpAddress      InetAddress,
+        unisDot11SAVIFilteringMacAddr        MacAddress
+    }
+
+unisDot11SAVIFilteringIpType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "IP address type of the source IP."
+    ::= { unisDot11SAVIFilteringEntry 1 }
+
+unisDot11SAVIFilteringServName  OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..255))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "The service name."
+    ::= { unisDot11SAVIFilteringEntry 2 }
+
+unisDot11SAVIFilteringIpAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "The source IP address."
+    ::= { unisDot11SAVIFilteringEntry 3 }
+
+unisDot11SAVIFilteringMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+                "The source MAC address."
+    ::= { unisDot11SAVIFilteringEntry 4 }
+
+-- count of fail packet of each Service
+
+unisDot11SAVICountTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11SAVICountEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "The table containing count of packets dropped
+                because of validation failure."
+    ::= { unisDot11SAVIObjects 3 }
+
+unisDot11SAVICountEntry OBJECT-TYPE
+    SYNTAX      UnisDot11SAVICountEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "An entry containing count of packets dropped
+                because of validation failure for each Service."
+    INDEX
+        {
+            unisDot11SAVICountIPVersion,
+            unisDot11SAVICountServiceString
+        }
+    ::= { unisDot11SAVICountTable 1 }
+
+UnisDot11SAVICountEntry ::=
+    SEQUENCE {
+        unisDot11SAVICountIPVersion          InetVersion,
+        unisDot11SAVICountServiceString      OCTET STRING,
+        unisDot11SAVICountFilterPkts         Counter64
+    }
+
+unisDot11SAVICountIPVersion      OBJECT-TYPE
+    SYNTAX      InetVersion
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "The IP version."
+    ::= { unisDot11SAVICountEntry 1 }
+
+unisDot11SAVICountServiceString  OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..255))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "The service name."
+    ::= { unisDot11SAVICountEntry 2 }
+
+unisDot11SAVICountFilterPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+                "The count of dropped packets."
+    ::= { unisDot11SAVICountEntry 3 }
+
+-- statistic of packet of each ap
+
+unisDot11SAVIStatisTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11SAVIStatisEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "The table containing the SAVI statistics."
+    ::= { unisDot11SAVIObjects 4 }
+
+unisDot11SAVIStatisEntry OBJECT-TYPE
+    SYNTAX      UnisDot11SAVIStatisEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "An entry containing the SAVI statistics for each AP."
+    INDEX
+        {
+            unisDot11SAVIStatisAPID,
+            unisDot11SAVIStatisRadioID
+        }
+    ::= { unisDot11SAVIStatisTable 1 }
+
+UnisDot11SAVIStatisEntry ::=
+    SEQUENCE {
+        unisDot11SAVIStatisAPID          UnisDot11ObjectIDType,
+        unisDot11SAVIStatisRadioID       UnisDot11RadioScopeType,
+        unisDot11SAVIStatisCount         Counter64,
+        unisDot11SAVIStatisBytes         Counter64,
+        unisDot11SAVIBindingCount        Counter64
+    }
+
+unisDot11SAVIStatisAPID      OBJECT-TYPE
+    SYNTAX      UnisDot11ObjectIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "To uniquely identify an AP  "
+    ::= { unisDot11SAVIStatisEntry 1 }
+
+unisDot11SAVIStatisRadioID  OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "Represents each radio."
+::= { unisDot11SAVIStatisEntry 2 }
+
+unisDot11SAVIStatisCount OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+                "The count of Packets dropped because of
+                validation failure."
+    ::= { unisDot11SAVIStatisEntry 3 }
+
+unisDot11SAVIStatisBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+                "The bytes of packets dropped because of
+                validation failure."
+    ::= { unisDot11SAVIStatisEntry 4 }
+
+unisDot11SAVIBindingCount OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+                "The count of binding entries."
+    ::= { unisDot11SAVIStatisEntry 5 }
+
+END

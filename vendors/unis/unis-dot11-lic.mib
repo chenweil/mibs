@@ -1,0 +1,353 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--   The file defines a MIB to provide WLAN license feature.
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 created by luoguixing
+--     Initial version 2012-04-25
+-- =============================================================================
+UNIS-DOT11-LIC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32
+    FROM SNMPv2-SMI
+        TruthValue
+    FROM SNMPv2-TC
+        unisDot11
+    FROM UNIS-DOT11-REF-MIB;
+
+unisDot11LIC MODULE-IDENTITY
+    LAST-UPDATED "201204251800Z"        -- Apr 25, 2012 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB provides information for WLAN license configuration in AC.
+
+        GLOSSARY
+
+        IEEE 802.11
+        Standard to encourage interoperability among
+        wireless networking equipment.
+
+        Access point (AP)
+        Transmitter/receiver (transceiver) device
+        that commonly connects and transports data
+        between a wireless network and a wired network.
+
+        Access control (AC)
+        To control and manage multi-APs, it will bridge
+        wireless and wired network.
+
+        Fit AP
+        Applied in the enterprise environment, it will work
+        under the control and management from AC.
+
+        Control And Provisioning of Wireless Access Points Protocol
+        The short name of protocol is CAPWAP. AC will control
+        and manage AP by CAPWAP tunnel protocol defined by IETF.
+        Also, a data tunnel will be set up between AC and AP.
+
+        Basic Service Set
+        The IEEE 802.11 BSS of an AP comprises of the
+        stations directly associating with the AP. It will
+        be identified by BSSID."
+
+    REVISION "201204251800Z"        -- Apr 25, 2012 at 18:00 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisDot11 14 }
+
+-- *****************************************************************************
+-- *  Major sections
+-- *****************************************************************************
+
+--  License Configuration Group
+--  DEFINED AS "The group to provide the license configuration information for AC"
+
+unisDot11LICConfigGroup OBJECT IDENTIFIER     ::= { unisDot11LIC 1 }
+
+--  License ap number Group
+--  DEFINED AS "The group to provide the ap number information for AC."
+unisDot11LICApNumGroup OBJECT IDENTIFIER  ::= { unisDot11LIC 2 }
+--  AP Number Group has the following children:
+--  unisDot11LICApNumAttrTable          ::= { unisDot11LICApNumGroup 1 }
+--  unisDot11LICApNumLicTable            ::= { unisDot11LICApNumGroup 2 }
+
+--  License wlan feature Group
+--  DEFINED AS "The group to provide the wlan feature information for AC."
+unisDot11LICFeatureGroup OBJECT IDENTIFIER    ::= { unisDot11LIC 3 }
+--  License wlan feature Group has the following children:
+--  unisDot11LICFeatureAttrTable          ::= { unisDot11LICFeatureGroup 1 }
+--  unisDot11LICFeatureLicTable            ::= { unisDot11LICFeatureGroup 2 }
+
+-- *****************************************************************************
+-- *  unisDot11LICConfigGroup Definition
+-- *****************************************************************************
+unisDot11LICSerialNumber OBJECT-TYPE
+    SYNTAX    OCTET STRING (SIZE(0..255))
+    MAX-ACCESS    read-only
+    STATUS    current
+    DESCRIPTION
+        "The device serial number."
+    ::= { unisDot11LICConfigGroup 1 }
+
+unisDot11LicApNumGroupSupport OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents support unisDot11LicApNumGroup
+        'ture': device spport unisDot11LicApNumGroup.
+        'false': device not spport unisDot11LicApNumGroupp."
+    DEFVAL       { false }
+    ::= { unisDot11LICConfigGroup 2 }
+
+-- *****************************************************************************
+-- *  End of unisDot11LICConfigGroup Definition
+-- *****************************************************************************
+
+
+-- *****************************************************************************
+-- *  unisDot11LICApNumTable Definition
+-- *****************************************************************************
+
+unisDot11LICApNumAttrTable OBJECT IDENTIFIER     ::= { unisDot11LICApNumGroup 1 }
+
+unisDot11LICDefautAPNumPermit OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of AP connection permitted
+        for one AC without license."
+    ::= { unisDot11LICApNumAttrTable 1 }
+
+unisDot11LICCurrentAPNumPermit OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of AP connection permitted
+        for one AC, include default number and the licenses
+        that installed."
+    ::= { unisDot11LICApNumAttrTable 2 }
+
+unisDot11LICMaxAPNumPermit OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum number of AP to support connection permitted
+        for one AC, include default number and full licenses."
+    ::= { unisDot11LICApNumAttrTable 3 }
+
+
+unisDot11LICApNumLicTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11LICApNumLicEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains license information of ap number."
+    ::= { unisDot11LICApNumGroup 2 }
+
+unisDot11LICApNumLicEntry OBJECT-TYPE
+    SYNTAX      UnisDot11LICApNumLicEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains association information of each station."
+   INDEX
+        { unisDot11LICLicenseKeyIndex }
+    ::= { unisDot11LICApNumLicTable 1 }
+
+UnisDot11LICApNumLicEntry ::= SEQUENCE
+    {
+        unisDot11LICLicenseKeyIndex   Integer32,
+        unisDot11LICLicenseKey        OCTET STRING,
+        unisDot11LICActivationKey     OCTET STRING,
+        unisDot11LICApNum          Integer32
+    }
+
+unisDot11LICLicenseKeyIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Licensed key index value."
+    ::= { unisDot11LICApNumLicEntry 1 }
+
+unisDot11LICLicenseKey OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Specifies a certain license key."
+    ::= { unisDot11LICApNumLicEntry 2 }
+
+unisDot11LICActivationKey OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Specifies a certain activation key."
+    ::= { unisDot11LICApNumLicEntry 3 }
+
+unisDot11LICApNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents support connect ap number of the license."
+    ::= { unisDot11LICApNumLicEntry 4 }
+
+-- *****************************************************************************
+-- *  End of unisDot11LICApNumTable Definition
+-- *****************************************************************************
+
+
+-- *****************************************************************************
+-- *  unisDot11LICFeatureTable Definition
+-- *****************************************************************************
+unisDot11LICFeatureAttrTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11LICFeatureAttrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains attribute information of wlan feature."
+    ::= { unisDot11LICFeatureGroup 1 }
+
+unisDot11LICFeatureAttrEntry OBJECT-TYPE
+    SYNTAX      UnisDot11LICFeatureAttrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains feature attribute information of licensetypename."
+   INDEX
+        {
+            unisDot11LICAttrIndex
+        }
+    ::= { unisDot11LICFeatureAttrTable 1 }
+
+UnisDot11LICFeatureAttrEntry ::= SEQUENCE
+    {
+        unisDot11LICAttrIndex     Integer32,
+        unisDot11LICAttrTypeName  OCTET STRING,
+        unisDot11LICAttrDefVal    Integer32,
+        unisDot11LICAttrMaxVal    Integer32
+    }
+
+unisDot11LICAttrIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Attribute index value."
+    ::= { unisDot11LICFeatureAttrEntry 1 }
+
+unisDot11LICAttrTypeName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents attribute type name"
+    ::= { unisDot11LICFeatureAttrEntry 2 }
+
+unisDot11LICAttrDefVal OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the default value of the license type."
+    ::= { unisDot11LICFeatureAttrEntry 3 }
+
+unisDot11LICAttrMaxVal OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum value of the license type."
+    ::= { unisDot11LICFeatureAttrEntry 4 }
+
+unisDot11LICFeatureLicTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11LICFeatureLicEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains license information of wlan feature."
+    ::= { unisDot11LICFeatureGroup 2 }
+
+unisDot11LICFeatureLicEntry OBJECT-TYPE
+    SYNTAX      UnisDot11LICFeatureLicEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains wlan feature information of license."
+   INDEX
+        {
+            unisDot11LICKeyIndex
+        }
+    ::= { unisDot11LICFeatureLicTable 1 }
+
+UnisDot11LICFeatureLicEntry ::= SEQUENCE
+    {
+        unisDot11LICKeyIndex   Integer32,
+        unisDot11LICTypeName   OCTET STRING,
+        unisDot11LICKey        OCTET STRING,
+        unisDot11LICTimeLimit  Integer32,
+        unisDot11LICValue      Integer32
+    }
+
+unisDot11LICKeyIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Licensed key index value."
+    ::= { unisDot11LICFeatureLicEntry 1 }
+
+unisDot11LICTypeName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the type name of the license entry."
+    ::= { unisDot11LICFeatureLicEntry 2 }
+
+unisDot11LICKey OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Specifies a certain license key."
+    ::= { unisDot11LICFeatureLicEntry 3 }
+
+unisDot11LICTimeLimit OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents available time left of the license entry."
+    ::= { unisDot11LICFeatureLicEntry 4 }
+
+unisDot11LICValue OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the value of the license entry.
+        If unisDot11LICFeatureTypeName is 'AP',
+        this meaning of ap number, and so no."
+    ::= { unisDot11LICFeatureLicEntry 5 }
+
+-- *****************************************************************************
+-- *  End of unisDot11LICFeatureTable Definition
+-- *****************************************************************************
+
+END

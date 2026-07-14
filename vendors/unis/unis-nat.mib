@@ -1,0 +1,1918 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description:  This MIB file is used for configuration of NAT.
+--                include :1.NAT pool
+--                         2.NAT out bound
+--                         3.NAT inside server
+--                         4.NAT aging-time
+--                         5.NAT blacklist
+--                         6.NAT statistics information
+--                         7.NAT DNS
+-- Reference:
+-- Version: V1.7
+-- History:
+-- V1.0 2004/09/17 created by xiaoshuchao
+-- V1.1 2005/06/01 Modified by liguanmin
+--      Modify the value range of the node unisNATOutboundPoolIdx
+-- V1.2 2007/05/22 Modified by tangjiafeng
+--      Modify the value range of the node unisNATSessionPeerPort
+-- V1.3 2014/07/11 Modified by hupengfei
+--      Add the unisNATTotalNATSessionCount, unisNATEimTableCount,
+--      unisNATInboundNoPATTableCount, unisNATOutboundNoPATTableCount,
+--      unisNATMaxDynamicPortblock, unisNATMaxStaticPortblock,
+--      unisNATActiveDynamicPortblock, unisNATActiveStaticPortblock
+-- V1.4 2016/12/25 Modified by wangxiaohua
+--      Add the unisNATSessionCreateRate
+-- V1.5 2017/04/07 Modified by wangfuchao
+--      Add the unisNATAddrGrpStatTable
+-- V1.6 2019/10/10 Modified by quanxin
+--      Add the unisNATCurBandwidthRatio
+--      Add the unisNATBandwidthTraps
+-- V1.7 2019/12/01 Modified by z15066
+--      Add the unisInstAddrGrpUsgTable
+--      Add the unisInstAddrGrpMemberUsgTable
+--      Add the unisInstAddrGrpUsageTraps
+-- ============================================================================
+UNIS-NAT-MIB DEFINITIONS ::= BEGIN
+
+                IMPORTS
+                        unisCommon
+                                FROM UNIS-OID-MIB
+                        ifIndex
+                                FROM IF-MIB
+                        TimeTicks, IpAddress, Integer32, Counter32, Counter64, Unsigned32, OBJECT-TYPE,
+                        MODULE-IDENTITY, NOTIFICATION-TYPE
+                                FROM SNMPv2-SMI
+                        RowStatus, DisplayString
+                                FROM SNMPv2-TC;
+
+
+                unisNat MODULE-IDENTITY
+                        LAST-UPDATED "201912011446Z"             -- December 1, 2019 at 14:46 GMT
+                        ORGANIZATION
+                            "Unisyue Technologies Co., Ltd."
+                        CONTACT-INFO
+                            ""
+                        DESCRIPTION
+                                "This MIB contains objects to manage configuration of NAT.
+                                There are no constraints on this MIB."
+
+                        REVISION "201912011446Z"                -- December 1, 2019 at 14:46 GMT
+                        DESCRIPTION
+                                "Add the unisInstAddrGrpUsgTable,
+                                unisInstAddrGrpMemberUsgTable,
+                                unisInstAddrGrpUsageTraps."
+
+                        REVISION "201910101752Z"                -- October 10, 2019 at 17:52 GMT
+                        DESCRIPTION
+                                "Add the unisNATCurBandwidthRatio,
+                                 unisNATBandwidthTraps."
+                        REVISION "201704071503Z"                -- April 7, 2017 at 15:03 GMT
+                        DESCRIPTION
+                                "Add the unisNATAddrGrpStatTable."
+
+                        REVISION "201612251105Z"                -- December 25, 2016 at 11:05 GMT
+                        DESCRIPTION
+                                "Add the unisNATSessionCreateRate."
+
+                        REVISION "201407111115Z"                -- July 11, 2014 at 11:15 GMT
+                        DESCRIPTION
+                                "Add the unisNATTotalNATSessionCount,
+                                 unisNATEimTableCount,
+                                 unisNATInboundNoPATTableCount,
+                                 unisNATOutboundNoPATTableCount,
+                                 unisNATMaxDynamicPortblock,
+                                 unisNATMaxStaticPortblock,
+                                 unisNATActiveDynamicPortblock,
+                                 unisNATActiveStaticPortblock."
+
+                        REVISION "200501201518Z"                -- January 20, 2005 at 15:18 GMT
+                        DESCRIPTION
+                                "The initial revision of this MIB module."
+                        ::= { unisCommon 18 }
+
+
+
+
+--
+-- Node definitions
+--
+
+-- Global Variants
+                unisNATGlobalVars OBJECT IDENTIFIER ::= { unisNat 1 }
+
+
+--                     **************Global Variants***************
+-- NAT Clear Session
+                unisNATClearSession OBJECT IDENTIFIER ::= { unisNATGlobalVars 1 }
+
+
+                unisNATClearSessionSlotNo OBJECT-TYPE
+                        SYNTAX Integer32 (1..14 | 255)
+                        MAX-ACCESS read-write
+                        STATUS current
+                        DESCRIPTION
+                                "The number of NAT board in which administrator wants to
+                                clear data of the session. In router, the value is 255
+                                because no NAT board in it. This node only supports 'set' operation.
+                                The return value of 'get' operation is meaningless."
+                        ::= { unisNATClearSession 1 }
+
+
+-- NAT blacklist UserConnectLimitPara
+                unisNATBLConnectLimitPara OBJECT IDENTIFIER ::= { unisNATGlobalVars 2 }
+
+
+                unisNATBLConnectHighValue OBJECT-TYPE
+                        SYNTAX Integer32 (20..20000)
+                        MAX-ACCESS read-write
+                        STATUS current
+                        DESCRIPTION
+                                "The maximal connection amount.  If the connection amount exceeds the
+                                value, the IP address will be added into blacklist.  The IP address
+                                will not be removed from blacklist until the connection amount is
+                                less than the minimal connection amount."
+                        DEFVAL { 500 }
+                        ::= { unisNATBLConnectLimitPara 1 }
+
+
+                unisNATBLConnectLowValue OBJECT-TYPE
+                        SYNTAX Integer32 (20..20000)
+                        MAX-ACCESS read-write
+                        STATUS current
+                        DESCRIPTION
+                                "The minimal connection amount."
+                        DEFVAL { 200 }
+                        ::= { unisNATBLConnectLimitPara 2 }
+
+
+                unisNATBLConnectHighRate OBJECT-TYPE
+                        SYNTAX Integer32 (20..21474836)
+                        MAX-ACCESS read-write
+                        STATUS current
+                        DESCRIPTION
+                                "The maximal connection rate(in second).  If the connection rate exceed the
+                                value, the IP address will be added into blacklist.  The IP address
+                                will not be removed from blacklist until the connection rate is
+                                less than the minimal connection rate."
+                        DEFVAL { 250 }
+                        ::= { unisNATBLConnectLimitPara 3 }
+
+
+                unisNATBLConnectLowRate OBJECT-TYPE
+                        SYNTAX Integer32 (20..21474836)
+                        MAX-ACCESS read-write
+                        STATUS current
+                        DESCRIPTION
+                                "The minimal connection rate(in second)."
+                        DEFVAL { 100 }
+                        ::= { unisNATBLConnectLimitPara 4 }
+
+
+                unisNATBLSpecialConnectHighRate OBJECT-TYPE
+                        SYNTAX Integer32 (20..21474836)
+                        MAX-ACCESS read-write
+                        STATUS current
+                        DESCRIPTION
+                                "The maximal special connection rate(in second).  When administrator
+                                wants to control the speed of connection, he can selects the connection
+                                speed rate or special connection rate."
+                        DEFVAL { 250 }
+                        ::= { unisNATBLConnectLimitPara 5 }
+
+
+                unisNATBLSpecialConnectLowRate OBJECT-TYPE
+                        SYNTAX Integer32 (20..21474836)
+                        MAX-ACCESS read-write
+                        STATUS current
+                        DESCRIPTION
+                                "The minimal special connection rate(in second)."
+                        DEFVAL { 100 }
+                        ::= { unisNATBLConnectLimitPara 6 }
+
+
+-- NAT blacklist property control Enable
+                unisNATBLCtrlEnable OBJECT IDENTIFIER ::= { unisNATGlobalVars 3 }
+
+
+                unisNATBLConnectSumEnable OBJECT-TYPE
+                        SYNTAX INTEGER
+                                {
+                                enable(1),
+                                disable(2)
+                                }
+                        MAX-ACCESS read-write
+                        STATUS current
+                        DESCRIPTION
+                                "Enable or disable the connection amount control."
+                        DEFVAL { disable }
+                        ::= { unisNATBLCtrlEnable 1 }
+
+
+                unisNATBLConnectRateEnable OBJECT-TYPE
+                        SYNTAX INTEGER
+                                {
+                                enable(1),
+                                disable(2)
+                                }
+                        MAX-ACCESS read-write
+                        STATUS current
+                        DESCRIPTION
+                                "Enable or disable the connection rate control."
+                        DEFVAL { disable }
+                        ::= { unisNATBLCtrlEnable 2 }
+
+
+-- NAT NP aging-time
+                unisNATNPTimer OBJECT IDENTIFIER ::= { unisNATGlobalVars 4 }
+
+
+                unisNATNPAgingTime OBJECT-TYPE
+                        SYNTAX INTEGER
+                                {
+                                fast(1),
+                                slow(2)
+                                }
+                        MAX-ACCESS read-write
+                        STATUS current
+                        DESCRIPTION
+                                "There are two kinds of aging time in NP.  One is fast and the other is
+                                slow.  Administrator can select one or other.  The default is fast."
+                        DEFVAL { fast }
+                        ::= { unisNATNPTimer 1 }
+
+
+                unisNATMibObjects OBJECT IDENTIFIER ::= { unisNat 2 }
+
+
+--                      **************MibObjects***************
+-- NAT address pool table
+                unisNATPoolInfoTable OBJECT-TYPE
+                        SYNTAX SEQUENCE OF UnisNATPoolInfoEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "NAT address pool table : The address in the pool is
+                                the IP address in the global network. The pool can span
+                                255 IP addresses.All address pools configured by administrator
+                                are recorded in this table."
+                        ::= { unisNATMibObjects 1 }
+
+
+                unisNATPoolInfoEntry OBJECT-TYPE
+                        SYNTAX UnisNATPoolInfoEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The entry of NAT address pool table."
+                        INDEX { unisNATPoolIdx }
+                        ::= { unisNATPoolInfoTable 1 }
+
+
+                UnisNATPoolInfoEntry ::=
+                        SEQUENCE {
+                                unisNATPoolIdx
+                                        Integer32,
+                                unisNATPoolStartIpAddr
+                                        IpAddress,
+                                unisNATPoolEndIpAddr
+                                        IpAddress,
+                                unisNATPoolSlotNo
+                                        Integer32,
+                                unisNATPoolRefCounter
+                                        Integer32,
+                                unisNATPoolRowStatus
+                                        RowStatus
+                         }
+
+                unisNATPoolIdx OBJECT-TYPE
+                        SYNTAX Integer32 (1..320)
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "Index of the address pool: The index uniquely indicates
+                                the address pool in the system, and its range is from 1 to 320. "
+                        ::= { unisNATPoolInfoEntry 1 }
+
+
+                unisNATPoolStartIpAddr OBJECT-TYPE
+                        SYNTAX IpAddress
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "The start IP address of address pool:
+                                It must be less than or equal to the end IP address."
+                        ::= { unisNATPoolInfoEntry 2 }
+
+
+                unisNATPoolEndIpAddr OBJECT-TYPE
+                        SYNTAX IpAddress
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "The end IP address of address pool:
+                                It must be more than or equal to the start IP address."
+                        ::= { unisNATPoolInfoEntry 3 }
+
+
+                unisNATPoolSlotNo OBJECT-TYPE
+                        SYNTAX Integer32 (1..14 | 255)
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "The number of NAT board to which the address pool is bound.
+                                The address translation is processed by this NAT board .
+                                The relation between address pool and slotNo is n:1.
+                                When the address pool is not bound to the NAT board,the value is 255. "
+                        ::= { unisNATPoolInfoEntry 4 }
+
+
+                unisNATPoolRefCounter OBJECT-TYPE
+                        SYNTAX Integer32
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "The counter of reference.  An address pool can be associated with
+                                more than one ACL and the counter of reference is recorded in this
+                                field.  When the address pool is not associated with ACL, the value is 0."
+                        ::= { unisNATPoolInfoEntry 5 }
+
+
+                unisNATPoolRowStatus OBJECT-TYPE
+                        SYNTAX RowStatus
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "Only support 'destroy' and 'createAndGo'.
+                                If unisNATPoolIdx, unisNATPoolStartIpAddr and
+                                unisNATPoolEndIpAddr were provided correctly,
+                                its value is changed 'active'."
+                        ::= { unisNATPoolInfoEntry 6 }
+
+
+--     NAT Out bound Table
+                unisNATOutboundTable OBJECT-TYPE
+                        SYNTAX SEQUENCE OF UnisNATOutboundEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "NAT out bound table: through associating ACL number,
+                                address pool with NAT board, administrator can designate
+                                which inside IP address can be translated to global IP
+                                address in the pool and the translation is processed by
+                                which NAT board."
+                        ::= { unisNATMibObjects 2 }
+
+
+                unisNATOutboundEntry OBJECT-TYPE
+                        SYNTAX UnisNATOutboundEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The entry of NAT out bound table."
+                        INDEX { ifIndex, unisNATOutboundAclNo }
+                        ::= { unisNATOutboundTable 1 }
+
+
+                UnisNATOutboundEntry ::=
+                        SEQUENCE {
+                                unisNATOutboundAclNo
+                                        Integer32,
+                                unisNATOutboundPoolIdx
+                                        Integer32,
+                                unisNATOutboundIsNoPat
+                                        INTEGER,
+                                unisNATOutboundSlotNo
+                                        Integer32,
+                                unisNATOutboundRowStatus
+                                        RowStatus
+                         }
+
+                unisNATOutboundAclNo OBJECT-TYPE
+                        SYNTAX Integer32 (2000..3999)
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The number of ACL(Access Control List).  When the packet accords with
+                                the rule in the ACL, its source IP address will be translated to IP
+                                address in Address pool."
+                        ::= { unisNATOutboundEntry 1 }
+
+
+                unisNATOutboundPoolIdx OBJECT-TYPE
+                        SYNTAX Integer32 (0..320 | 2147483647)
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "The index of address pool in unisNATPoolInfoTable.
+                                when administrator doesn't use the address pool and
+                                use the IP address of the interface as the address of
+                                global network, the value is 2147483647."
+                        ::= { unisNATOutboundEntry 2 }
+
+
+                unisNATOutboundIsNoPat OBJECT-TYPE
+                        SYNTAX INTEGER
+                                {
+                                true(1),
+                                false(2)
+                                }
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "Whether to use no pat manner.  The translation of no pat
+                                is that the translation doesn't use the port information of packet."
+                        DEFVAL { false }
+                        ::= { unisNATOutboundEntry 3 }
+
+
+                unisNATOutboundSlotNo OBJECT-TYPE
+                        SYNTAX Integer32 (1..14 | 255)
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "The number of NAT board.  In router, the value is 255 because no NAT board in it."
+                        ::= { unisNATOutboundEntry 4 }
+
+
+                unisNATOutboundRowStatus OBJECT-TYPE
+                        SYNTAX RowStatus
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "Only support 'destroy' and 'createAndGo'.
+                                If unisNATOutboundAclNo or unisNATOutboundAclNo
+                                and unisNATOutboundPoolIdx were provided correctly,
+                                its value is changed 'active'."
+                        ::= { unisNATOutboundEntry 5 }
+
+
+--     NAT inside Server Table
+                unisNATServerTable OBJECT-TYPE
+                        SYNTAX SEQUENCE OF UnisNATServerEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "NAT inside Server Table.  Administrator can configure server in the
+                                private network which can provide service for people in the public network.
+                                The translation map is :
+                                (InsideIP     , InsidePort--> GlobalIP, GlobalPort    )
+                                (InsideIP + 1 , InsidePort--> GlobalIP, GlobalPort + 1)
+                                (InsideIP + 2 , InsidePort--> GlobalIP, GlobalPort + 2)
+                                ...
+                                ...
+                                ...
+                                (InsideIP+n(=InsideIP2),InsidePort--> GlobalIP,GlobalPort+n(=GlobalPort2))
+                                "
+                        ::= { unisNATMibObjects 3 }
+
+
+                unisNATServerEntry OBJECT-TYPE
+                        SYNTAX UnisNATServerEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The entry of NAT inside server table."
+                        INDEX { ifIndex, unisNATServerProType, unisNATServerGlobalIP, unisNATServerStartGlobalPort, unisNATServerVpnIndex
+                                 }
+                        ::= { unisNATServerTable 1 }
+
+
+                UnisNATServerEntry ::=
+                        SEQUENCE {
+                                unisNATServerProType
+                                        Integer32,
+                                unisNATServerGlobalIP
+                                        IpAddress,
+                                unisNATServerStartGlobalPort
+                                        Integer32,
+                                unisNATServerEndGlobalPort
+                                        Integer32,
+                                unisNATServerStartInsideIP
+                                        IpAddress,
+                                unisNATServerEndInsideIP
+                                        IpAddress,
+                                unisNATServerInsidePort
+                                        Integer32,
+                                unisNATServerSlotNo
+                                        Integer32,
+                                unisNATServerVpnIndex
+                                        Integer32,
+                                unisNATServerAclNumber
+                                        Integer32,
+                                unisNATServerRowStatus
+                                        RowStatus
+                         }
+
+                unisNATServerProType OBJECT-TYPE
+                        SYNTAX Integer32 (1..255)
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The type of protocol: icmp(1), tcp(6), udp(17) and others."
+                        ::= { unisNATServerEntry 1 }
+
+
+                unisNATServerGlobalIP OBJECT-TYPE
+                        SYNTAX IpAddress
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The global IP address of Inside Server."
+                        ::= { unisNATServerEntry 2 }
+
+
+                unisNATServerStartGlobalPort OBJECT-TYPE
+                        SYNTAX Integer32 (0..65535)
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The start global port of Inside Server.
+                                When the port need not be configured, the value is 0."
+                        ::= { unisNATServerEntry 3 }
+
+
+                unisNATServerEndGlobalPort OBJECT-TYPE
+                        SYNTAX Integer32 (0..65535)
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "The end global port of Inside Server.  When administrator doesn't
+                                configure a series of inside server, the value is 0.
+                                If the value is not zero, the value of (GlobalPort2-GlobalPort)
+                                must be equal to (InsideIP2 - InsideIP)."
+                        ::= { unisNATServerEntry 4 }
+
+
+                unisNATServerStartInsideIP OBJECT-TYPE
+                        SYNTAX IpAddress
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "The start private IP address of Inside Server."
+                        ::= { unisNATServerEntry 5 }
+
+
+                unisNATServerEndInsideIP OBJECT-TYPE
+                        SYNTAX IpAddress
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "The end private IP address of Inside Server.  When administrator doesn't
+                                configure a series of inside server, the value is 0.0.0.0."
+                        ::= { unisNATServerEntry 6 }
+
+
+                unisNATServerInsidePort OBJECT-TYPE
+                        SYNTAX Integer32 (0..65535)
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "The private port of Inside Server."
+                        ::= { unisNATServerEntry 7 }
+
+
+                unisNATServerSlotNo OBJECT-TYPE
+                        SYNTAX Integer32 (1..14 | 255)
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "The number of NAT board.  In router, the value is 255 because no NAT board in it."
+                        ::= { unisNATServerEntry 8 }
+
+
+                unisNATServerVpnIndex OBJECT-TYPE
+                        SYNTAX Integer32 (0..65535)
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The VPN index of server."
+                        ::= { unisNATServerEntry 10 }
+
+
+                unisNATServerAclNumber OBJECT-TYPE
+                        SYNTAX Integer32 (1..10000)
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "Number of basic or advanced ACL."
+                        ::= { unisNATServerEntry 11 }
+
+
+                unisNATServerRowStatus OBJECT-TYPE
+                        SYNTAX RowStatus
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "Only support 'destroy' and 'createAndGo'.
+                                If unisNATServerProType, unisNATServerGlobalIP, unisNATServerGlobalPort
+                                and unisNATServerInsideIP were provided correctly,
+                                its value is changed 'active'."
+                        ::= { unisNATServerEntry 12 }
+
+
+--     NAT Time out Table
+                unisNATTimeOutTable OBJECT-TYPE
+                        SYNTAX SEQUENCE OF UnisNATTimeOutEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "NAT Time out Table. When a connection is established,
+                                if there are not any actives in this connection between
+                                the time, it will be disconnected."
+                        ::= { unisNATMibObjects 4 }
+
+
+                unisNATTimeOutEntry OBJECT-TYPE
+                        SYNTAX UnisNATTimeOutEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The entry of NAT Time out Table."
+                        INDEX { unisNATTimeOutProtocol }
+                        ::= { unisNATTimeOutTable 1 }
+
+
+                UnisNATTimeOutEntry ::=
+                        SEQUENCE {
+                                unisNATTimeOutProtocol
+                                        INTEGER,
+                                unisNATTimeOutTimeValue
+                                        Integer32
+                         }
+
+                unisNATTimeOutProtocol OBJECT-TYPE
+                        SYNTAX INTEGER
+                                {
+                                tcp(1),
+                                udp(2),
+                                icmp(3),
+                                pptp(4),
+                                dns(5),
+                                tcpFin(6),
+                                tcpSyn(7),
+                                ftpCtrl(8),
+                                ftpData(9)
+                                }
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The type of protocol."
+                        ::= { unisNATTimeOutEntry 1 }
+
+
+                unisNATTimeOutTimeValue OBJECT-TYPE
+                        SYNTAX Integer32 (10..86400)
+                        MAX-ACCESS read-write
+                        STATUS current
+                        DESCRIPTION
+                                "The time of time out."
+                        ::= { unisNATTimeOutEntry 2 }
+
+
+--     NAT blacklist Enable(start/stop) Table
+                unisNATBLEnableTable OBJECT-TYPE
+                        SYNTAX SEQUENCE OF UnisNATBLEnableEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "NAT blacklist function Enable Table.  In this table, administrator can decide
+                                whether to start the function of blacklist in the NAT board.
+                                When the function of blacklist can't be set for a NAT board,
+                                the number of NAT board is 256."
+                        ::= { unisNATMibObjects 5 }
+
+
+                unisNATBLEnableEntry OBJECT-TYPE
+                        SYNTAX UnisNATBLEnableEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The entry of NAT blacklist Enable Table."
+                        INDEX { unisNATBLEnableSlotNo }
+                        ::= { unisNATBLEnableTable 1 }
+
+
+                UnisNATBLEnableEntry ::=
+                        SEQUENCE {
+                                unisNATBLEnableSlotNo
+                                        Integer32,
+                                unisNATBLEnable
+                                        INTEGER
+                         }
+
+                unisNATBLEnableSlotNo OBJECT-TYPE
+                        SYNTAX Integer32 (1..14 | 255)
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The number of NAT board.
+                                When the function of blacklist can't be set for a NAT board,
+                                the value is 255."
+                        ::= { unisNATBLEnableEntry 1 }
+
+
+                unisNATBLEnable OBJECT-TYPE
+                        SYNTAX INTEGER
+                                {
+                                enable(1),
+                                disable(2)
+                                }
+                        MAX-ACCESS read-write
+                        STATUS current
+                        DESCRIPTION
+                                "Start or stop of function of blacklist."
+                        DEFVAL { disable }
+                        ::= { unisNATBLEnableEntry 2 }
+
+
+--     NAT special IP ConnectLimitPara Table
+                unisNATBLIPConnectLimitParaTable OBJECT-TYPE
+                        SYNTAX SEQUENCE OF UnisNATBLIPConnectLimitParaEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The table of connection control of special IP address.  In this table, administrator can decide to
+                                adopt which manner to control the connection which IP address is the
+                                special IP address."
+                        ::= { unisNATMibObjects 6 }
+
+
+                unisNATBLIPConnectLimitParaEntry OBJECT-TYPE
+                        SYNTAX UnisNATBLIPConnectLimitParaEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The entry of the table of connection control of special IP address."
+                        INDEX { unisNATBLIPConnectLimitParaIP }
+                        ::= { unisNATBLIPConnectLimitParaTable 1 }
+
+
+                UnisNATBLIPConnectLimitParaEntry ::=
+                        SEQUENCE {
+                                unisNATBLIPConnectLimitParaIP
+                                        IpAddress,
+                                unisNATBLIPConnectHighValue
+                                        Integer32,
+                                unisNATBLIPConnectLowValue
+                                        Integer32,
+                                unisNATBLIPUseSpecialConnectRate
+                                        INTEGER,
+                                unisNATBLIPConnectLimitRowStatus
+                                        RowStatus
+                         }
+
+                unisNATBLIPConnectLimitParaIP OBJECT-TYPE
+                        SYNTAX IpAddress
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The special IP address.  The IP is private IP address."
+                        ::= { unisNATBLIPConnectLimitParaEntry 1 }
+
+
+                unisNATBLIPConnectHighValue OBJECT-TYPE
+                        SYNTAX Integer32 (20..20000)
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "The maximal connection amount.  It must be more than the minimal connection amount."
+                        DEFVAL { 500 }
+                        ::= { unisNATBLIPConnectLimitParaEntry 2 }
+
+
+                unisNATBLIPConnectLowValue OBJECT-TYPE
+                        SYNTAX Integer32 (20..20000)
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "The minimal connection amount.  It must be less than the maximal connection amount."
+                        DEFVAL { 200 }
+                        ::= { unisNATBLIPConnectLimitParaEntry 3 }
+
+
+                unisNATBLIPUseSpecialConnectRate OBJECT-TYPE
+                        SYNTAX INTEGER
+                                {
+                                true(1),
+                                false(2)
+                                }
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "Whether to use the special connection rate control."
+                        DEFVAL { false }
+                        ::= { unisNATBLIPConnectLimitParaEntry 4 }
+
+
+                unisNATBLIPConnectLimitRowStatus OBJECT-TYPE
+                        SYNTAX RowStatus
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "Only support 'destroy' and 'createAndGo'.
+                                 If unisNATBLIPConnectHighValue, unisNATBLIPConnectLowValue
+                                 and unisNATBLIPUseSpecialConnectRate were provided correctly,
+                                 its value is changed 'active'."
+                        ::= { unisNATBLIPConnectLimitParaEntry 5 }
+
+
+--     NAT blacklist Manager Table
+                unisNATBLManagerTable OBJECT-TYPE
+                        SYNTAX SEQUENCE OF UnisNATBLManagerEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The management table of blacklist.
+                                The table doesn't support 'getnext' operation."
+                        ::= { unisNATMibObjects 7 }
+
+
+                unisNATBLManagerEntry OBJECT-TYPE
+                        SYNTAX UnisNATBLManagerEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The entry of management table of blacklist."
+                        INDEX { unisNATBLIpAdress, unisNATBLSlotNo }
+                        ::= { unisNATBLManagerTable 1 }
+
+
+                UnisNATBLManagerEntry ::=
+                        SEQUENCE {
+                                unisNATBLIpAdress
+                                        IpAddress,
+                                unisNATBLSlotNo
+                                        Integer32,
+                                unisNATBLConSum
+                                        Integer32,
+                                unisNATBLConSpd
+                                        INTEGER
+                         }
+
+                unisNATBLIpAdress OBJECT-TYPE
+                        SYNTAX IpAddress
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The IP address of entry of blacklist."
+                        ::= { unisNATBLManagerEntry 1 }
+
+
+                unisNATBLSlotNo OBJECT-TYPE
+                        SYNTAX Integer32 (1..14)
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The number of NAT board."
+                        ::= { unisNATBLManagerEntry 2 }
+
+
+                unisNATBLConSum OBJECT-TYPE
+                        SYNTAX Integer32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "The connection amount."
+                        ::= { unisNATBLManagerEntry 3 }
+
+
+                unisNATBLConSpd OBJECT-TYPE
+                        SYNTAX INTEGER
+                                {
+                                red(1),
+                                yellow(2),
+                                green(3)
+                                }
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "The state of connection rate:
+                                red(1)   : the connection rate is above the upper limit.
+                                yellow(2): the connection rate is between the upper and lower limit.
+                                green(3) : the connection rate is below the lower limit."
+                        ::= { unisNATBLManagerEntry 4 }
+
+
+--     NAT Statistics Info
+                unisNATStatTable OBJECT-TYPE
+                        SYNTAX SEQUENCE OF UnisNATStatEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The statistics information table of NAT module."
+                        ::= { unisNATMibObjects 8 }
+
+
+                unisNATStatEntry OBJECT-TYPE
+                        SYNTAX UnisNATStatEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The entry of statistics information table of NAT module."
+                        INDEX { unisNATStatNATBoardNo }
+                        ::= { unisNATStatTable 1 }
+
+
+                UnisNATStatEntry ::=
+                        SEQUENCE {
+                                unisNATStatNATBoardNo
+                                        Integer32,
+                                unisNATStatActiveTblCount
+                                        Counter32,
+                                unisNATStatActiveTblCountInNP
+                                        Counter32,
+                                unisNATStatActiveNatTblCount
+                                        Counter32,
+                                unisNATStatActiveSvrTblCount
+                                        Counter32,
+                                unisNATStatActivePoolTblCount
+                                        Counter32,
+                                unisNATStatNumOfUsedPort
+                                        Counter32,
+                                unisNATStatNumOfGoodPkt
+                                        Counter32,
+                                unisNATStatNumOfBadPkt
+                                        Counter32,
+                                unisNATStaticSessionCount
+                                        Integer32,
+                                unisNATFragmentSessionCount
+                                        Integer32,
+                                unisNATSequenceSessionCount
+                                        Integer32,
+                                unisNATLogCount
+                                        Integer32
+                         }
+
+                unisNATStatNATBoardNo OBJECT-TYPE
+                        SYNTAX Integer32 (1..14 | 255)
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The number of NAT board.  In router, the value is 255 because no NAT board in it."
+                        ::= { unisNATStatEntry 1 }
+
+
+                unisNATStatActiveTblCount OBJECT-TYPE
+                        SYNTAX Counter32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "Active PAT session count In software."
+                        ::= { unisNATStatEntry 2 }
+
+
+                unisNATStatActiveTblCountInNP OBJECT-TYPE
+                        SYNTAX Counter32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "Active PAT session count In NP."
+                        ::= { unisNATStatEntry 3 }
+
+
+                unisNATStatActiveNatTblCount OBJECT-TYPE
+                        SYNTAX Counter32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "Active NO-PAT session count."
+                        ::= { unisNATStatEntry 4 }
+
+
+                unisNATStatActiveSvrTblCount OBJECT-TYPE
+                        SYNTAX Counter32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "Active SERVER session count."
+                        ::= { unisNATStatEntry 5 }
+
+
+                unisNATStatActivePoolTblCount OBJECT-TYPE
+                        SYNTAX Counter32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "Active address pool session count."
+                        ::= { unisNATStatEntry 6 }
+
+
+                unisNATStatNumOfUsedPort OBJECT-TYPE
+                        SYNTAX Counter32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "The number of used port in NP."
+                        ::= { unisNATStatEntry 7 }
+
+
+                unisNATStatNumOfGoodPkt OBJECT-TYPE
+                        SYNTAX Counter32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "The number of good packet in NP."
+                        ::= { unisNATStatEntry 8 }
+
+
+                unisNATStatNumOfBadPkt OBJECT-TYPE
+                        SYNTAX Counter32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "The number of bad packet in NP."
+                        ::= { unisNATStatEntry 9 }
+
+
+                unisNATStaticSessionCount OBJECT-TYPE
+                        SYNTAX Integer32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "Active STATIC session count."
+                        ::= { unisNATStatEntry 10 }
+
+
+                unisNATFragmentSessionCount OBJECT-TYPE
+                        SYNTAX Integer32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "Active fragment packet session count."
+                        ::= { unisNATStatEntry 11 }
+
+
+                unisNATSequenceSessionCount OBJECT-TYPE
+                        SYNTAX Integer32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "Active session table count hash by private IP."
+                        ::= { unisNATStatEntry 12 }
+
+
+                unisNATLogCount OBJECT-TYPE
+                        SYNTAX Integer32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "Buffered Nat LOG table count."
+                        ::= { unisNATStatEntry 13 }
+
+
+--     nat session
+                unisNATSessionTable OBJECT-TYPE
+                        SYNTAX SEQUENCE OF UnisNATSessionEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The nat session information table.  There is the address translation information in the table.
+                                The sketch map of connection is
+                                pc1(private Net)------------------>NAT Device ------------------>Server(public Net)
+                                InsideIP, InsidePort---->translating to GlobalIP, GlobalPort------>PeerIP, PeerPort.
+                                "
+                        ::= { unisNATMibObjects 9 }
+
+
+                unisNATSessionEntry OBJECT-TYPE
+                        SYNTAX UnisNATSessionEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The entry of session information table."
+                        INDEX { unisNATSessionHashNumber, unisNATSessionProtocol, unisNATSessionInsideIP, unisNATSessionInsidePort, unisNATSessionPeerIP,
+                                unisNATSessionPeerPort, unisNATSessionVpnIndex }
+                        ::= { unisNATSessionTable 1 }
+
+
+                UnisNATSessionEntry ::=
+                        SEQUENCE {
+                                unisNATSessionHashNumber
+                                        Integer32,
+                                unisNATSessionProtocol
+                                        Integer32,
+                                unisNATSessionGlobalIP
+                                        IpAddress,
+                                unisNATSessionGlobalPort
+                                        Integer32,
+                                unisNATSessionInsideIP
+                                        IpAddress,
+                                unisNATSessionInsidePort
+                                        Integer32,
+                                unisNATSessionPeerIP
+                                        IpAddress,
+                                unisNATSessionPeerPort
+                                        Integer32,
+                                unisNATSessionVpnIndex
+                                        Integer32,
+                                unisNATSessionTTL
+                                        Integer32,
+                                unisNATSessionStatus
+                                        Integer32,
+                                unisNATSessionLeftTime
+                                        TimeTicks
+                         }
+
+                unisNATSessionHashNumber OBJECT-TYPE
+                        SYNTAX Integer32 (1..300000)
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The row number of the hash table."
+                        ::= { unisNATSessionEntry 1 }
+
+
+                unisNATSessionProtocol OBJECT-TYPE
+                        SYNTAX Integer32 (1..255)
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The protocol type of session."
+                        ::= { unisNATSessionEntry 2 }
+
+
+                unisNATSessionGlobalIP OBJECT-TYPE
+                        SYNTAX IpAddress
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "The global IP of session. "
+                        ::= { unisNATSessionEntry 3 }
+
+
+                unisNATSessionGlobalPort OBJECT-TYPE
+                        SYNTAX Integer32 (0..65535)
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "The global port of session."
+                        ::= { unisNATSessionEntry 4 }
+
+
+                unisNATSessionInsideIP OBJECT-TYPE
+                        SYNTAX IpAddress
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The Inside IP of session."
+                        ::= { unisNATSessionEntry 5 }
+
+
+                unisNATSessionInsidePort OBJECT-TYPE
+                        SYNTAX Integer32 (0..65535)
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The Inside port of session."
+                        ::= { unisNATSessionEntry 6 }
+
+
+                unisNATSessionPeerIP OBJECT-TYPE
+                        SYNTAX IpAddress
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The peer IP of session."
+                        ::= { unisNATSessionEntry 7 }
+
+
+                unisNATSessionPeerPort OBJECT-TYPE
+                        SYNTAX Integer32 (0..65535)
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The peer port of session."
+                        ::= { unisNATSessionEntry 8 }
+
+
+                unisNATSessionVpnIndex OBJECT-TYPE
+                        SYNTAX Integer32 (0..255)
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The VPN index of session."
+                        ::= { unisNATSessionEntry 9 }
+
+
+                unisNATSessionTTL OBJECT-TYPE
+                        SYNTAX Integer32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "The TTL of session."
+                        ::= { unisNATSessionEntry 10 }
+
+
+                unisNATSessionStatus OBJECT-TYPE
+                        SYNTAX Integer32
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "The status of session."
+                        ::= { unisNATSessionEntry 11 }
+
+
+                unisNATSessionLeftTime OBJECT-TYPE
+                        SYNTAX TimeTicks
+                        MAX-ACCESS read-only
+                        STATUS current
+                        DESCRIPTION
+                                "The Left time of session."
+                        ::= { unisNATSessionEntry 12 }
+
+
+                unisNATStaticConfTable OBJECT-TYPE
+                        SYNTAX SEQUENCE OF UnisNATStaticConfEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "Static Nat configuration table."
+                        ::= { unisNATMibObjects 10 }
+
+
+                unisNATStaticConfEntry OBJECT-TYPE
+                        SYNTAX UnisNATStaticConfEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "Configure static Nat."
+                        INDEX { unisNATStaticInsideIp }
+                        ::= { unisNATStaticConfTable 1 }
+
+
+                UnisNATStaticConfEntry ::=
+                        SEQUENCE {
+                                unisNATStaticInsideIp
+                                        IpAddress,
+                                unisNATStaticGlobalIp
+                                        IpAddress,
+                                unisNATStaticRowStatus
+                                        RowStatus
+                         }
+
+                unisNATStaticInsideIp OBJECT-TYPE
+                        SYNTAX IpAddress
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "Inside ip address."
+                        ::= { unisNATStaticConfEntry 1 }
+
+
+                unisNATStaticGlobalIp OBJECT-TYPE
+                        SYNTAX IpAddress
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "Global Ip address."
+                        ::= { unisNATStaticConfEntry 2 }
+
+
+                unisNATStaticRowStatus OBJECT-TYPE
+                        SYNTAX RowStatus
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "Only support 'destroy' and 'createAndGo'.
+                                If unisNATStaticInsideIp and unisNATStaticGlobalIp were provided correctly,
+                                its value is changed 'active'."
+                        ::= { unisNATStaticConfEntry 3 }
+
+
+                unisNATStaticEnableTable OBJECT-TYPE
+                        SYNTAX SEQUENCE OF UnisNATStaticEnableEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "Active the static Nat on interface."
+                        ::= { unisNATMibObjects 11 }
+
+
+                unisNATStaticEnableEntry OBJECT-TYPE
+                        SYNTAX UnisNATStaticEnableEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "Active the static Nat on interface."
+                        INDEX { ifIndex }
+                        ::= { unisNATStaticEnableTable 1 }
+
+
+                UnisNATStaticEnableEntry ::=
+                        SEQUENCE {
+                                unisNATStaticEnable
+                                        INTEGER
+                         }
+
+                unisNATStaticEnable OBJECT-TYPE
+                        SYNTAX INTEGER
+                                {
+                                disable(0),
+                                enable(1)
+                                }
+                        MAX-ACCESS read-write
+                        STATUS current
+                        DESCRIPTION
+                                "Enable/disable the static Nat on the interface(unisNatStaticEnableIfIndex).
+                                disable  (0)
+                                enable   (1)
+                                                            "
+                        ::= { unisNATStaticEnableEntry 2 }
+
+
+                unisNATDnsMapTable OBJECT-TYPE
+                        SYNTAX SEQUENCE OF UnisNATDnsMapEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "This table is used to set mapping of DNS."
+                        ::= { unisNATMibObjects 12 }
+
+
+                unisNATDnsMapEntry OBJECT-TYPE
+                        SYNTAX UnisNATDnsMapEntry
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "The entry of unisNATDnsMapTable."
+                        INDEX { unisNATDnsMapDomainName }
+                        ::= { unisNATDnsMapTable 1 }
+
+
+                UnisNATDnsMapEntry ::=
+                        SEQUENCE {
+                                unisNATDnsMapDomainName
+                                        DisplayString,
+                                unisNATDnsMapGlobalIp
+                                        IpAddress,
+                                unisNATDnsMapGlobalPort
+                                        Integer32,
+                                unisNATDnsMapProtocolType
+                                        INTEGER,
+                                unisNATDnsMapLastUseTime
+                                        TimeTicks,
+                                unisNATDnsMapRowStatus
+                                        RowStatus
+                         }
+
+                unisNATDnsMapDomainName OBJECT-TYPE
+                        SYNTAX DisplayString
+                        MAX-ACCESS not-accessible
+                        STATUS current
+                        DESCRIPTION
+                                "Domain name."
+                        ::= { unisNATDnsMapEntry 1 }
+
+
+                unisNATDnsMapGlobalIp OBJECT-TYPE
+                        SYNTAX IpAddress
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "Global IP address."
+                        ::= { unisNATDnsMapEntry 2 }
+
+
+                unisNATDnsMapGlobalPort OBJECT-TYPE
+                        SYNTAX Integer32 (1..65535)
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                " Global port number."
+                        ::= { unisNATDnsMapEntry 3 }
+
+
+                unisNATDnsMapProtocolType OBJECT-TYPE
+                        SYNTAX INTEGER
+                                {
+                                any(0),
+                                typeTCP(1),
+                                typeUDP(2)
+                                }
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "TCP   Transmission Control Protocol.
+                                UDP   User Datagram Protocol."
+                        ::= { unisNATDnsMapEntry 4 }
+
+
+                unisNATDnsMapLastUseTime OBJECT-TYPE
+                        SYNTAX TimeTicks
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "Its value is the time that the device uses
+                                from startup to last use 'Dns Map'record.
+                                If the value is 0,the device never use this
+                                record."
+                        ::= { unisNATDnsMapEntry 5 }
+
+
+                unisNATDnsMapRowStatus OBJECT-TYPE
+                        SYNTAX RowStatus
+                        MAX-ACCESS read-create
+                        STATUS current
+                        DESCRIPTION
+                                "Only support 'destroy' and 'createAndGo'.
+                                If unisNATDnsMapDomainName, unisNATDnsMapGlobalIp
+                                and unisNATDnsMapGlobalPortor unisNATDnsMapDomainName,
+                                unisNATDnsMapGlobalIp, unisNATDnsMapGlobalPort and
+                                unisNATDnsMapProtocolType were provided correctly,
+                                its value is changed 'active'."
+                        ::= { unisNATDnsMapEntry 6 }
+
+--     new NAT statistics
+                unisNATStatVer2Table OBJECT-TYPE
+                        SYNTAX  SEQUENCE OF UnisNATStatVer2TableEntry
+                        MAX-ACCESS  not-accessible
+                        STATUS  current
+                        DESCRIPTION
+                        "The new statistics of NAT."
+                    ::= { unisNATMibObjects 13 }
+
+                unisNATStatVer2TableEntry OBJECT-TYPE
+                    SYNTAX  UnisNATStatVer2TableEntry
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                    "An entry (conceptual row) representing NAT
+                     statistics information."
+                    INDEX { unisNATStatChassis, unisNATStatSlot, unisNATStatCPUID }
+                ::= { unisNATStatVer2Table 1 }
+
+                UnisNATStatVer2TableEntry ::= SEQUENCE {
+                    unisNATStatChassis                       Unsigned32,
+                    unisNATStatSlot                          Unsigned32,
+                    unisNATStatCPUID                         Unsigned32,
+                    unisNATTotalNATSessionCount              Unsigned32,
+                    unisNATEimTableCount                     Unsigned32,
+                    unisNATInboundNoPATTableCount            Unsigned32,
+                    unisNATOutboundNoPATTableCount           Unsigned32,
+                    unisNATMaxDynamicPortblock               Unsigned32,
+                    unisNATMaxStaticPortblock                Unsigned32,
+                    unisNATActiveDynamicPortblock            Unsigned32,
+                    unisNATActiveStaticPortblock             Unsigned32,
+                    unisNATSessionCreateRate                 Unsigned32,
+                    unisNATCurBandwidthRatio                 Unsigned32
+                    }
+
+                unisNATStatChassis   OBJECT-TYPE
+                    SYNTAX Unsigned32(0..65534)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                    "An IRF member device ID."
+                ::= { unisNATStatVer2TableEntry  1 }
+
+                unisNATStatSlot    OBJECT-TYPE
+                    SYNTAX Unsigned32(0..65534)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                    "The slot where the card resides."
+                ::= { unisNATStatVer2TableEntry  2 }
+
+                unisNATStatCPUID   OBJECT-TYPE
+                    SYNTAX Unsigned32(0..7)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                    "CPU ID."
+                ::= { unisNATStatVer2TableEntry  3 }
+
+                unisNATTotalNATSessionCount   OBJECT-TYPE
+                    SYNTAX Unsigned32
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                    "The number of current NAT sessions."
+                ::= { unisNATStatVer2TableEntry  4 }
+
+                unisNATEimTableCount   OBJECT-TYPE
+                    SYNTAX Unsigned32
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                    "The number of current EIM tables."
+                ::= { unisNATStatVer2TableEntry  5 }
+
+                unisNATInboundNoPATTableCount   OBJECT-TYPE
+                    SYNTAX Unsigned32
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                    "The number of current NO-PAT tables built on NAT inbound
+                     translation."
+                ::= { unisNATStatVer2TableEntry  6 }
+
+                unisNATOutboundNoPATTableCount   OBJECT-TYPE
+                    SYNTAX Unsigned32
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                    "The number of current NO-PAT tables built on NAT outbound
+                     translation."
+                ::= { unisNATStatVer2TableEntry  7 }
+
+                unisNATMaxDynamicPortblock   OBJECT-TYPE
+                    SYNTAX Unsigned32
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                    "The number of current NAT444 dynamic port blocks."
+                ::= { unisNATStatVer2TableEntry  8 }
+
+                unisNATMaxStaticPortblock   OBJECT-TYPE
+                    SYNTAX Unsigned32
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                    "The number of current NAT444 static port blocks."
+                ::= { unisNATStatVer2TableEntry  9 }
+
+                unisNATActiveDynamicPortblock   OBJECT-TYPE
+                    SYNTAX Unsigned32
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                    "The number of current active NAT444 dynamic port blocks."
+                ::= { unisNATStatVer2TableEntry  10 }
+
+                unisNATActiveStaticPortblock   OBJECT-TYPE
+                    SYNTAX Unsigned32
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                    "The number of current active NAT444 static port blocks."
+                ::= { unisNATStatVer2TableEntry  11 }
+
+                unisNATSessionCreateRate       OBJECT-TYPE
+                    SYNTAX Unsigned32
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                    "The rate of nat session create."
+                ::= { unisNATStatVer2TableEntry  12 }
+
+unisNATCurBandwidthRatio     OBJECT-TYPE
+                    SYNTAX Unsigned32(0..100)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                    "The value of the current CGN card bandwidth usage."
+                ::= { unisNATStatVer2TableEntry  13 }
+
+-- Nodes of NAT Address Group Statistics
+
+        unisNATAddrGrpStatTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisNATAddrGrpStatTableEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The statistics of NAT address groups."
+            ::= { unisNATMibObjects 14 }
+
+        unisNATAddrGrpStatTableEntry OBJECT-TYPE
+            SYNTAX UnisNATAddrGrpStatTableEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "An entry (conceptual row) representing NAT
+                     address group statistics."
+            INDEX
+            {
+                unisNATAddrGrpStatChassis,
+                unisNATAddrGrpStatSlot,
+                unisNATAddrGrpStatCPUID,
+                unisNATAddrGrpStatAddrGrpNum
+            }
+            ::= { unisNATAddrGrpStatTable 1 }
+
+        UnisNATAddrGrpStatTableEntry ::=
+        SEQUENCE
+        {
+            unisNATAddrGrpStatChassis
+                Unsigned32,
+            unisNATAddrGrpStatSlot
+                Unsigned32,
+            unisNATAddrGrpStatCPUID
+                Unsigned32,
+            unisNATAddrGrpStatAddrGrpNum
+                Unsigned32,
+            unisNATAddrGrpStatFailAllocPort
+                Unsigned32,
+            unisNATAddrGrpStatAddrGrpSessCnt
+                Counter64
+        }
+
+        unisNATAddrGrpStatChassis OBJECT-TYPE
+            SYNTAX Unsigned32(0..65534)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "An IRF member device ID."
+            ::= { unisNATAddrGrpStatTableEntry 1 }
+
+        unisNATAddrGrpStatSlot OBJECT-TYPE
+            SYNTAX Unsigned32(0..65534)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The slot where the card resides."
+            ::= { unisNATAddrGrpStatTableEntry 2 }
+
+        unisNATAddrGrpStatCPUID OBJECT-TYPE
+            SYNTAX Unsigned32(0..7)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "CPU ID."
+            ::= { unisNATAddrGrpStatTableEntry 3 }
+
+        unisNATAddrGrpStatAddrGrpNum OBJECT-TYPE
+            SYNTAX Unsigned32(0..65535)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The NAT address group number."
+            ::= { unisNATAddrGrpStatTableEntry 4 }
+
+        unisNATAddrGrpStatFailAllocPort OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The count of NAT port allocation failures."
+            ::= { unisNATAddrGrpStatTableEntry 5 }
+
+        unisNATAddrGrpStatAddrGrpSessCnt OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The session count of current NAT address group."
+            ::= { unisNATAddrGrpStatTableEntry 6 }
+-- Describe objects for CGN bandwidth usage trap
+unisNATBandwidthTraps OBJECT IDENTIFIER ::= { unisNATMibObjects 15 }
+unisNATBandwidthPrefix OBJECT IDENTIFIER ::= { unisNATBandwidthTraps 0 }
+unisNATBandwidthTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNATBandwidthRatio,
+            unisNATChassis,
+            unisNATSlot,
+            unisNATCpu
+        }
+    STATUS      current
+    DESCRIPTION
+    "Send trap when the bandwidth usage of a CGN card has reached the unisNATBandwidthRatio."
+    ::= { unisNATBandwidthPrefix 1 }
+unisNATBandwidthRecoveryTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNATChassis,
+            unisNATSlot,
+            unisNATCpu
+         }
+    STATUS      current
+    DESCRIPTION
+    "Send trap when the CGN card bandwidth usage has dropped below the threshold."
+    ::= { unisNATBandwidthPrefix 2 }
+unisNATBandwidthTrapObjects OBJECT IDENTIFIER ::= { unisNATBandwidthTraps 1 }
+unisNATBandwidthRatio OBJECT-TYPE
+SYNTAX      Unsigned32
+UNITS       "percent"
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "The usage of CGN card bandwidth."
+    ::= { unisNATBandwidthTrapObjects 1 }
+unisNATChassis OBJECT-TYPE
+    SYNTAX      Unsigned32(0..65534)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "An IRF member device ID."
+    ::= { unisNATBandwidthTrapObjects 2 }
+unisNATSlot OBJECT-TYPE
+    SYNTAX      Unsigned32(0..65534)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "The slot where the card resides."
+    ::= { unisNATBandwidthTrapObjects 3 }
+unisNATCpu OBJECT-TYPE
+    SYNTAX      Unsigned32(0..7)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "CPU ID."
+    ::= { unisNATBandwidthTrapObjects 4 }
+
+-- Describe objects for NAT Instance Address Group Resource Usage
+unisInstAddrGrpUsgTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF UnisInstAddrGrpUsgEntry
+   MAX-ACCESS not-accessible
+   STATUS current
+   DESCRIPTION "The usage of NAT instance address group resources(port-block usage)."
+::= { unisNATMibObjects 16 }
+
+unisInstAddrGrpUsgEntry OBJECT-TYPE
+   SYNTAX UnisInstAddrGrpUsgEntry
+   MAX-ACCESS not-accessible
+   STATUS current
+   DESCRIPTION
+   "The resource usage info of an address group."
+   INDEX {
+           unisInstAddrUsgInstName,
+           unisInstAddrUsgGrpIndex
+         }
+::= { unisInstAddrGrpUsgTable 1 }
+
+UnisInstAddrGrpUsgEntry ::= SEQUENCE
+{
+   unisInstAddrUsgInstName    OCTET STRING,
+   unisInstAddrUsgGrpIndex    Unsigned32,
+   unisInstAddrUsgInstIndex   Unsigned32,
+   unisInstAddrUsgGrpUsage    Unsigned32
+}
+
+unisInstAddrUsgInstName OBJECT-TYPE
+   SYNTAX OCTET STRING(SIZE (1..32))
+   MAX-ACCESS not-accessible
+   STATUS current
+   DESCRIPTION
+   "NAT instance name."
+::= { unisInstAddrGrpUsgEntry 1 }
+
+unisInstAddrUsgGrpIndex OBJECT-TYPE
+   SYNTAX Unsigned32(1..65536)
+   MAX-ACCESS not-accessible
+   STATUS current
+   DESCRIPTION
+   "NAT address group ID."
+::= { unisInstAddrGrpUsgEntry 2 }
+
+unisInstAddrUsgInstIndex OBJECT-TYPE
+   SYNTAX Unsigned32(1..127)
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+   "NAT instance index."
+::= { unisInstAddrGrpUsgEntry 3 }
+
+unisInstAddrUsgGrpUsage OBJECT-TYPE
+   SYNTAX Unsigned32(0..100)
+   UNITS "percent"
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+   "The usage of address group resources."
+::= { unisInstAddrGrpUsgEntry 4 }
+
+-- Describe objects for NAT Instance Address Group Member Resource Usage
+unisInstAddrGrpMemberUsgTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF UnisInstAddrGrpMemberUsgEntry
+   MAX-ACCESS not-accessible
+   STATUS current
+   DESCRIPTION "The usage of CGN address group member resources(port-block usage)."
+::= { unisNATMibObjects 17 }
+
+unisInstAddrGrpMemberUsgEntry OBJECT-TYPE
+   SYNTAX UnisInstAddrGrpMemberUsgEntry
+   MAX-ACCESS not-accessible
+   STATUS current
+   DESCRIPTION
+   "The resource usage info of an address group member."
+   INDEX {
+           unisInstAddrMemUsgInstName,
+           unisInstAddrMemUsgGrpIndex,
+           unisInstAddrMemUsgGrpStartIP
+         }
+::= { unisInstAddrGrpMemberUsgTable 1 }
+
+UnisInstAddrGrpMemberUsgEntry ::= SEQUENCE
+{
+   unisInstAddrMemUsgInstName     OCTET STRING,
+   unisInstAddrMemUsgGrpIndex     Unsigned32,
+   unisInstAddrMemUsgGrpStartIP   IpAddress,
+   unisInstAddrMemUsgGrpEndIP     IpAddress,
+   unisInstAddrMemUsgInstIndex    Unsigned32,
+   unisInstAddrMemUsgGrpUsage     Unsigned32
+}
+
+unisInstAddrMemUsgInstName OBJECT-TYPE
+   SYNTAX OCTET STRING(SIZE (1..32))
+   MAX-ACCESS not-accessible
+   STATUS current
+   DESCRIPTION
+   "NAT instance name."
+::= { unisInstAddrGrpMemberUsgEntry 1 }
+
+unisInstAddrMemUsgGrpIndex OBJECT-TYPE
+   SYNTAX Unsigned32(1..65536)
+   MAX-ACCESS not-accessible
+   STATUS current
+   DESCRIPTION
+   "NAT address group ID."
+::= { unisInstAddrGrpMemberUsgEntry 2 }
+
+unisInstAddrMemUsgGrpStartIP OBJECT-TYPE
+   SYNTAX IpAddress
+   MAX-ACCESS not-accessible
+   STATUS current
+   DESCRIPTION
+   "NAT address group member start IP address."
+::= { unisInstAddrGrpMemberUsgEntry 3 }
+
+unisInstAddrMemUsgGrpEndIP OBJECT-TYPE
+   SYNTAX IpAddress
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+   "NAT address group member end IP address."
+::= { unisInstAddrGrpMemberUsgEntry 4 }
+
+unisInstAddrMemUsgInstIndex OBJECT-TYPE
+   SYNTAX Unsigned32(1..127)
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+   "NAT instance index."
+::= { unisInstAddrGrpMemberUsgEntry 5 }
+
+unisInstAddrMemUsgGrpUsage OBJECT-TYPE
+   SYNTAX Unsigned32(0..100)
+   UNITS "percent"
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+   "The usage of address group member resources."
+::= { unisInstAddrGrpMemberUsgEntry 6 }
+
+-- Describe objects for NAT Instance Address Group Usage Trap
+unisInstAddrGrpUsageTraps OBJECT IDENTIFIER ::= { unisNATMibObjects 18 }
+
+unisInstAddrGrpUsagePrefix OBJECT IDENTIFIER ::= { unisInstAddrGrpUsageTraps 0 }
+unisInstAddrGrpUsageTrap NOTIFICATION-TYPE
+OBJECTS
+{
+   unisInstAddrTrapInstName,
+   unisInstAddrTrapGrpIndex,
+   unisInstAddrTrapInstIndex,
+   unisInstAddrTrapUsgThreshold
+}
+STATUS current
+DESCRIPTION
+"Send trap when unisInstAddrUsgGrpUsage reached the threshold."
+::= { unisInstAddrGrpUsagePrefix 1 }
+
+unisInstAddrGrpUsageRecovTrap NOTIFICATION-TYPE
+OBJECTS
+{
+   unisInstAddrTrapInstName,
+   unisInstAddrTrapGrpIndex,
+   unisInstAddrTrapInstIndex
+}
+STATUS current
+DESCRIPTION
+"Send trap when dropped below the threshold."
+::= { unisInstAddrGrpUsagePrefix 2 }
+
+unisInstAddrGrpUsageTrapInfo OBJECT IDENTIFIER ::= { unisInstAddrGrpUsageTraps 1 }
+unisInstAddrTrapInstName OBJECT-TYPE
+   SYNTAX DisplayString(SIZE (1..32))
+   MAX-ACCESS accessible-for-notify
+   STATUS current
+   DESCRIPTION
+   "NAT instance name."
+::= { unisInstAddrGrpUsageTrapInfo 1 }
+
+unisInstAddrTrapGrpIndex OBJECT-TYPE
+   SYNTAX Unsigned32(1..65536)
+   MAX-ACCESS accessible-for-notify
+   STATUS current
+   DESCRIPTION
+   "NAT address group ID."
+::= { unisInstAddrGrpUsageTrapInfo 2 }
+
+unisInstAddrTrapInstIndex OBJECT-TYPE
+   SYNTAX Unsigned32(1..127)
+   MAX-ACCESS accessible-for-notify
+   STATUS current
+   DESCRIPTION
+   "NAT instance index."
+::= { unisInstAddrGrpUsageTrapInfo 3 }
+
+unisInstAddrTrapUsgThreshold OBJECT-TYPE
+   SYNTAX Unsigned32(0..100)
+   UNITS "percent"
+   MAX-ACCESS accessible-for-notify
+   STATUS current
+   DESCRIPTION
+   "NAT address group usage reached the threshold."
+::= { unisInstAddrGrpUsageTrapInfo 4 }
+
+END

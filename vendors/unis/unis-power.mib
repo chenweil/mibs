@@ -1,0 +1,168 @@
+-- ==================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This file describes the unis MIB implementation of
+--              redundancy power and fan
+-- Reference: 
+-- Version: V2.0
+-- History: 
+-- V2.0 2004-10-12 updated by gaolong
+--      Add MODULE-IDENTITY clause.
+--      Re-write with SMIv2 syntax.
+--      Re-write IMPORTS clause.
+-- ==================================================================
+
+UNIS-REDUNDANCY-POWER-MIB DEFINITIONS ::= BEGIN
+-- From file: "redundancy_power.mib"
+
+IMPORTS  
+    NOTIFICATION-TYPE, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI  
+    unismlsr
+        FROM UNIS-OID-MIB;
+
+    unisredundancyPower MODULE-IDENTITY
+        LAST-UPDATED "200112200000Z"	
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION 
+                " "
+        ::= { unismlsr 4 }
+
+unisredundancyFan    OBJECT IDENTIFIER ::= { unismlsr 5 }
+
+unisredundancyPowerTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisRedundancyPowerEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table describles the attributes of every power unit.
+        "
+    ::= { unisredundancyPower 1 }
+
+unisredundancyPowerEntry OBJECT-TYPE
+    SYNTAX UnisRedundancyPowerEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the attributes 
+        associated with a single power unit entity."
+    INDEX { unisredundancyPowerID }
+    ::= { unisredundancyPowerTable 1 }
+
+UnisRedundancyPowerEntry ::= SEQUENCE {
+    unisredundancyPowerID 	        INTEGER,
+    unisredundancyPowerStatus 	INTEGER,
+    unisredundancyPowerPreviousStatus 	INTEGER
+     }
+
+unisredundancyPowerID OBJECT-TYPE
+    SYNTAX INTEGER 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The identify of power uinit.
+        This is also the index of this table."
+    ::= { unisredundancyPowerEntry 1 }
+
+unisredundancyPowerStatus OBJECT-TYPE
+    SYNTAX INTEGER{
+                   space(1),
+                   normal(2),
+                   fail(3)
+                  } 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The status of every redundancy power unit.
+        if power unit doesn't exists, take the value 'space';
+        if power unit is present and normal, take the value 'narmal'
+        if power unit is present but fail, take the value 'fail'"
+    ::= { unisredundancyPowerEntry 2 }
+
+unisredundancyPowerPreviousStatus OBJECT-TYPE
+    SYNTAX INTEGER{
+                   space(1),
+                   normal(2),
+                   fail(3)
+                  } 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The last status of every redundancy power unit "
+    ::= { unisredundancyPowerEntry 3 }
+
+
+
+unisredundancyFanTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisRedundancyFanEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table describles the attributes of every power unit.
+        "
+    ::= { unisredundancyFan 1 }
+
+unisredundancyFanEntry OBJECT-TYPE
+    SYNTAX UnisRedundancyFanEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the attributes 
+        associated with a single power unit entity."
+    INDEX { unisredundancyFanID }
+    ::= { unisredundancyFanTable 1 }
+
+UnisRedundancyFanEntry ::= SEQUENCE {
+    unisredundancyFanID 	        INTEGER,
+    unisredundancyFanStatus 	INTEGER
+     }
+
+unisredundancyFanID OBJECT-TYPE
+    SYNTAX INTEGER 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The identify of power uinit.
+        This is also the index of this table."
+    ::= { unisredundancyFanEntry 1 }
+
+unisredundancyFanStatus OBJECT-TYPE
+    SYNTAX INTEGER{
+                   normal(1),
+                   fail(2)                   
+                  } 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The status of every redundancy power unit.
+        if power unit doesn't exists, take the value 'space';
+        if power unit is present and normal, take the value 'narmal'
+        if power unit is present but fail, take the value 'fail'"
+    ::= { unisredundancyFanEntry 2 }
+
+
+unispowerTraps OBJECT IDENTIFIER ::= { unisredundancyPower 2 }
+
+unispowerStatusChangedTrap NOTIFICATION-TYPE
+     OBJECTS { unisredundancyPowerID,unisredundancyPowerStatus,unisredundancyPowerPreviousStatus}
+     STATUS  current
+     DESCRIPTION
+	"This trap is generated when the satus of a power unit is changed."
+    ::= { unispowerTraps 1 }
+
+
+unisfanTraps OBJECT IDENTIFIER ::= { unisredundancyFan 2 }
+
+unisfanStatusChangedTrap NOTIFICATION-TYPE
+     OBJECTS { unisredundancyFanID,unisredundancyFanStatus}
+     STATUS  current
+     DESCRIPTION
+	"This trap is generated when the satus of a power unit is changed."
+    ::= { unisfanTraps 1 }
+
+
+END
+

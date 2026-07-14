@@ -1,0 +1,150 @@
+-- =================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Segment Routing over DHCPv4 CLIENT MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2022-07-25 The initial version, created by W26721
+--      Add unisDhcp4ClientConflictIP
+--      Add unisDhcp4ClientIpConflictAlm
+--      Add unisDhcp4ClientIpConflictAlmRsm
+--      Add unisDhcp4ClientApplyIpFailAlm
+--      Add unisDhcp4ClientApplyIpFailAlmRsm
+--      Add unisDhcp4ClientApplyIpConflictAlm
+-- =================================================================
+UNIS-DHCP4-CLIENT-MIB DEFINITIONS ::= BEGIN
+
+-- =============================================================================
+-- Imported variables and types
+-- =============================================================================
+IMPORTS
+    MacAddress
+        FROM SNMPv2-TC
+    OBJECT-TYPE, MODULE-IDENTITY,NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    ifIndex, ifName
+        FROM IF-MIB
+    InetAddressIPv4
+        FROM INET-ADDRESS-MIB
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+-- =============================================================================
+-- Module identity
+-- =============================================================================
+unisDhcp4Client MODULE-IDENTITY
+    LAST-UPDATED "202207250000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file provides information about Segment Routing over DHCPv4 client."
+    REVISION "202207250000Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 242 }
+
+-- =============================================================================
+-- scalar objects definition.
+-- =============================================================================
+unisDhcp4ClientScalarObjects OBJECT IDENTIFIER ::= { unisDhcp4Client 1 }
+
+unisDhcp4ClientTrapEntry OBJECT IDENTIFIER ::= { unisDhcp4ClientScalarObjects 1 }
+
+unisDhcp4ClientConflictIP OBJECT-TYPE
+    SYNTAX       InetAddressIPv4
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+        "The dhcp client conflict IP."
+    ::= { unisDhcp4ClientTrapEntry 1 }
+
+unisDhcp4ClientReacquiredIP OBJECT-TYPE
+    SYNTAX       InetAddressIPv4
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+        "The dhcp client reacquired IP."
+    ::= { unisDhcp4ClientTrapEntry 2 }
+
+unisDhcp4ClientUserInfoMacAddr OBJECT-TYPE
+    SYNTAX       MacAddress
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "DHCP client's MAC address."
+    ::= { unisDhcp4ClientTrapEntry 3 }
+
+-- ==========================================================================
+-- Table definition
+-- ==========================================================================
+    unisDhcp4ClientTables OBJECT IDENTIFIER ::= {  unisDhcp4Client 2  }
+
+-- ==========================================================================
+-- Trap definition
+-- ==========================================================================
+unisDhcp4ClientTraps OBJECT IDENTIFIER ::= {  unisDhcp4Client 3  }
+
+unisDhcp4ClientTrapNotify OBJECT IDENTIFIER ::= { unisDhcp4ClientTraps 0 }
+
+unisDhcp4ClientIpConflictAlm NOTIFICATION-TYPE
+    OBJECTS
+    {
+        ifName,
+        unisDhcp4ClientConflictIP
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the IP obtained by
+        the client conflicts with other interface subnets."
+    ::= { unisDhcp4ClientTrapNotify 1 }
+
+unisDhcp4ClientIpConflictAlmRsm  NOTIFICATION-TYPE
+    OBJECTS
+    {
+        ifName,
+        unisDhcp4ClientReacquiredIP
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the DHCP client recover
+        form unisDhcp4ClientIpConflictAlm."
+    ::= { unisDhcp4ClientTrapNotify 2 }
+
+unisDhcp4ClientApplyIpFailAlm  NOTIFICATION-TYPE
+    OBJECTS
+    {
+        ifName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the failed to apply for address."
+    ::= { unisDhcp4ClientTrapNotify 3 }
+
+unisDhcp4ClientApplyIpFailAlmRsm  NOTIFICATION-TYPE
+    OBJECTS
+    {
+        ifName,
+        unisDhcp4ClientReacquiredIP
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when User applied for address successfully."
+    ::= { unisDhcp4ClientTrapNotify 4 }
+
+unisDhcp4ClientApplyIpConflictAlm  NOTIFICATION-TYPE
+    OBJECTS
+    {
+        ifName,
+        unisDhcp4ClientConflictIP,
+        unisDhcp4ClientUserInfoMacAddr
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the usage of DHCP receives
+        a conflicting ARP packet after obtaining the IP address."
+    ::= { unisDhcp4ClientTrapNotify 5 }
+
+END

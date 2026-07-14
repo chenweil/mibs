@@ -1,0 +1,603 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This MIB is to provide the definition of the RBAC
+--              (Role Based Access Control) system.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2014-08-08 Initial version, created by Xu Yang
+-- =================================================================
+
+UNIS-RBAC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Unsigned32, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    TruthValue, RowStatus, StorageType, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC;
+
+unisRbac MODULE-IDENTITY
+    LAST-UPDATED "201408081547Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB is to provide the definition of the RBAC
+        (Role Based Access Control) system."
+    REVISION "201408081547Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 158 }
+
+-- Top-level structure of MIB
+unisRbacNotifications  OBJECT IDENTIFIER ::= { unisRbac 0 }
+unisRbacObjects  OBJECT IDENTIFIER ::= { unisRbac 1 }
+
+unisRbacInfo  OBJECT IDENTIFIER
+    ::= { unisRbacObjects 1 }
+
+unisRbacConfig  OBJECT IDENTIFIER
+    ::= { unisRbacObjects 2 }
+
+
+-- definition of textual conventions
+
+UnisResourceType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "A User can be restricted from accessing resources by RBAC resource
+        access policies.  There are four types of resource access policies as
+        below:
+        vlan(0)
+                Bit value of 0 indicates that the user has access
+                to no VLANs.
+                Bit value of 1 indicates that the user has access
+                to all VLANs.
+                A user can be selectively assigned access to VLANs
+                by configuring entries in the 'unisRbacPolicyTable'.
+        interface(1)
+                Bit value of 0 indicates that the user has access
+                to no interfaces.
+                Bit value of 1 indicates that the user has access
+                to all interfaces.
+                A user can be selectively assigned access to interfaces
+                by configuring entries in the 'unisRbacPolicyTable'.
+        vrf(2)
+                Bit value of 0 indicates that the user has access
+                to no VRFs.
+                Bit value of 1 indicates that the user has access
+                to all VRFs.
+                A user can be selectively assigned access to VRFs
+                by configuring entries in the 'unisRbacPolicyTable'.
+        seczone(3)
+                Bit value of 0 indicates that the user has access
+                to no security zones.
+                Bit value of 1 indicates that the user has access
+                to all security zones.
+                A user can be selectively assigned access to security zones
+                by configuring entries in the 'unisRbacPolicyTable'."
+    SYNTAX BITS
+        {
+            vlan(0),
+            interface(1),
+            vrf(2),
+            seczone(3)
+        }
+
+UnisRuleType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "There are two types of rules.  List as below:
+        system: pre-defined by system and isn't editable.
+        user: defined by user and is editable.
+        "
+    SYNTAX INTEGER
+        {
+            system(1),
+            user(2)
+        }
+
+UnisRuleOperation ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "Privileges of a rule.
+        exec  - execute operation
+        read  - Read operation
+        write - Write operation
+        Note that if an operation is not supported by an entity,
+        the operation does not apply to the entity."
+    SYNTAX BITS
+        {
+            exec(0),
+            read(1),
+            write(2)
+        }
+
+UnisRuleAction ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "This indicates the action of a rule that defines the access privileges.
+        permit  - permit the privileges
+        deny    - deny the privileges
+        "
+    SYNTAX INTEGER
+        {
+            permit(1),
+            deny(2)
+        }
+
+UnisEntityType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "This indicates the type of the entity in a rule."
+    SYNTAX INTEGER
+        {
+            unknown(1),
+            command(2),
+            feature(3),
+            featuregroup(4),
+            webmenu(5),
+            xmlelement(6),
+            oid(7)
+        }
+
+
+--
+-- nodes defined
+--
+
+unisRbacRoleDefaultEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This object controls if an authenticated user can access the system
+        when he or she isn't authorized any user roles.
+        The default value is false."
+    DEFVAL { false }
+    ::= { unisRbacConfig 1 }
+
+unisRbacRoleDefaultRoleName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "If unisRbacRoleDefaultEnable is true, this object specifies
+        the user role applied to the user when he or she accesses
+        the system without any authorized user roles.
+        If this object is not configured, the default user role
+        applied is listed as below:
+        network-operator - When login to the default MDC or default Context.
+        mdc-operator     - When login to the non-default MDC.
+        context-operator - When login to a non-default Context.
+        "
+    ::= { unisRbacConfig 2 }
+
+--
+-- definition of unisRbacRoleTable
+--
+
+unisRbacRoleTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisRbacRoleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the basic configuration information
+        about all user roles."
+    ::= { unisRbacConfig 3 }
+
+unisRbacRoleEntry OBJECT-TYPE
+    SYNTAX UnisRbacRoleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry in the unisRbacRoleTable.
+        One entry per role defined on the device."
+    INDEX { unisRbacRoleName }
+    ::= { unisRbacRoleTable 1 }
+
+UnisRbacRoleEntry ::=
+    SEQUENCE {
+        unisRbacRoleName            OCTET STRING,
+        unisRbacRoleDescription     OCTET STRING,
+        unisRbacRoleResourceAccess  UnisResourceType,
+        unisRbacRoleStorageType     StorageType,
+        unisRbacRoleRowStatus       RowStatus
+    }
+
+unisRbacRoleName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..63))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The name of a role."
+    ::= { unisRbacRoleEntry 1 }
+
+unisRbacRoleDescription OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..128))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Description of the role."
+    ::= { unisRbacRoleEntry 2 }
+
+unisRbacRoleResourceAccess OBJECT-TYPE
+    SYNTAX UnisResourceType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Defines the default access to the resources to which access can be
+        controlled.  For example a role which has access to all VLANs,
+        all Interfaces, no VRF and no security zone will be 0011."
+    ::= { unisRbacRoleEntry 3 }
+
+unisRbacRoleStorageType OBJECT-TYPE
+    SYNTAX          StorageType
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Storage type of this row."
+    ::= { unisRbacRoleEntry 4 }
+
+unisRbacRoleRowStatus OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "Status of this row."
+    ::= { unisRbacRoleEntry 5 }
+
+--
+-- definition of unisRbacRuleTable
+--
+
+unisRbacRuleTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisRbacRuleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the configuration information about rules
+        in all user roles."
+    ::= { unisRbacConfig 4 }
+
+
+unisRbacRuleEntry OBJECT-TYPE
+    SYNTAX UnisRbacRuleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry in the unisRbacRuleTable.
+        One entry indicates one rule in a role."
+    INDEX {
+        unisRbacRoleName,
+        unisRbacRuleType,
+        unisRbacRuleNumber
+    }
+    ::= { unisRbacRuleTable 1 }
+
+UnisRbacRuleEntry ::=
+    SEQUENCE {
+        unisRbacRuleType            UnisRuleType,
+        unisRbacRuleNumber          Unsigned32,
+        unisRbacRuleAction          UnisRuleAction,
+        unisRbacRuleOperation       UnisRuleOperation,
+        unisRbacRuleEntityType      UnisEntityType,
+        unisRbacRuleEntity          OCTET STRING,
+        unisRbacRuleRowStatus       RowStatus
+    }
+
+
+unisRbacRuleType OBJECT-TYPE
+    SYNTAX UnisRuleType
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The type of a rule."
+    ::= { unisRbacRuleEntry 1 }
+
+unisRbacRuleNumber OBJECT-TYPE
+    SYNTAX Unsigned32 (1..256)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of rules in one role.  There are two kinds of rules in a role.
+        One is system defined, the other is user defined.  The total numbers
+        of user defined rules is 1024.
+        In one role, the user defined rules will be applied first and then
+        the system defined rules.
+        For the rules of same type, the following guidelines will be applied:
+        Non-OID: If two rules of the same entity type conflict,
+        the rule with the higher index takes effect.
+        OID: If the MIB node specified in a rule is a child node of
+        the MIB nodes specified in other rules, only this rule takes effect.
+        If the same OID is specified in multiple rules, the rule with
+        the higher index takes effect."
+    ::= { unisRbacRuleEntry 2 }
+
+unisRbacRuleAction OBJECT-TYPE
+    SYNTAX UnisRuleAction
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The action of a rule."
+    ::= { unisRbacRuleEntry 3 }
+
+unisRbacRuleOperation OBJECT-TYPE
+    SYNTAX UnisRuleOperation
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Privileges of a rule."
+    ::= { unisRbacRuleEntry 4 }
+
+unisRbacRuleEntityType OBJECT-TYPE
+    SYNTAX UnisEntityType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "This indicates the type of the entity in a rule.
+        There are seven types of entity as below:
+        unknown: invalid.
+        command: a command or a set of commands that match a regular expression.
+        feature: a feature which contains a set of commands.
+        featuregroup: a group of features.
+        webmenu: web menus.
+        xmlelement: XML elements.
+        oid: the specified MIB node and its child nodes."
+    ::= { unisRbacRuleEntry 5 }
+
+unisRbacRuleEntity OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..255))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "This indicates the entity that the privileges of rule apply to.
+        It is may be a regular expression of commands, feature name,
+        feature group name, web menu, xml element or oid.
+        If the type of entity is feature or webmenu or xmlelement and the
+        entity is a zero length string, then this rules applies to all
+        the features or web menus or xml elements."
+    ::= { unisRbacRuleEntry 6 }
+
+unisRbacRuleRowStatus OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "Status of this rule."
+    ::= { unisRbacRuleEntry 7 }
+
+--
+-- definition of unisRbacPolicyTable
+--
+
+unisRbacPolicyTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisRbacPolicyEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the configuration information about resource
+        access policies in all user roles.  A role may be restricted
+        from accessing various resources of a device.  This table
+        lists the resources that a role can access."
+    ::= { unisRbacConfig 5 }
+
+
+unisRbacPolicyEntry OBJECT-TYPE
+    SYNTAX UnisRbacPolicyEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry in the unisRbacPolicyTable.
+        One entry indicates an accessible resource.
+        If a role named 'R' can access VLAN1 to VLAN10,
+        then there will be 10 entries in this table.
+        There are two objects to specify the resource
+        in this table.
+        If the value of 'unisRbacPolicyType' is 'vlan' or
+        'interface', the column 'unisRbacPolicyValue' is a
+        four octets value which means vlan ID or IfIndex.
+        If the value of 'unisRbacPolicyType' is 'vrf' or 'seczone',
+        the column 'unisRbacPolicyValue' is a string indicating
+        the name of the VRF or security zone."
+    INDEX {
+        unisRbacRoleName,
+        unisRbacPolicyType,
+        unisRbacPolicyValue
+    }
+    ::= { unisRbacPolicyTable 1 }
+
+UnisRbacPolicyEntry ::=
+    SEQUENCE {
+        unisRbacPolicyType            INTEGER,
+        unisRbacPolicyValue           OCTET STRING,
+        unisRbacPolicyRowStatus       RowStatus
+    }
+
+unisRbacPolicyType OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            vlan(1),
+            interface(2),
+            vrf(3),
+            seczone(4)
+        }
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "This object indicates the type of the resource
+        access policy of this entry."
+    ::= { unisRbacPolicyEntry 1 }
+
+unisRbacPolicyValue OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(1..64))
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "This object identifies the resource this role can access.
+        If the value of 'unisRbacPolicyType' is 'vlan' or
+        'interface', the column 'unisRbacPolicyValue' is a
+        four-octet-value which means vlan ID or IfIndex.
+        If the value of 'unisRbacPolicyType' is 'vrf' or 'seczone',
+        the column 'unisRbacPolicyValue' is a string indicating
+        the name of the VRF or security zone."
+    ::= { unisRbacPolicyEntry 2 }
+
+unisRbacPolicyRowStatus OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "Status of this row."
+    ::= { unisRbacPolicyEntry 3 }
+
+--
+-- definition of unisRbacFeatureGroupTable
+--
+
+unisRbacFeatureGroupTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisRbacFeatureGroupEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the configuration information about
+        feature groups on a device."
+    ::= { unisRbacConfig 6 }
+
+
+unisRbacFeatureGroupEntry OBJECT-TYPE
+    SYNTAX UnisRbacFeatureGroupEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry in the unisRbacFeatureGroupTable.
+        One entry indicates a feature in particular group."
+    INDEX {
+        unisRbacFeatureGroupName
+    }
+    ::= { unisRbacFeatureGroupTable 1 }
+
+UnisRbacFeatureGroupEntry ::=
+    SEQUENCE {
+        unisRbacFeatureGroupName            OCTET STRING,
+        unisRbacFeatureGroupRowStatus       RowStatus
+    }
+
+unisRbacFeatureGroupName OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(1..31))
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "This object indicates the name of a feature group."
+    ::= { unisRbacFeatureGroupEntry 1 }
+
+unisRbacFeatureGroupRowStatus OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "Status of this row."
+    ::= { unisRbacFeatureGroupEntry 2 }
+
+--
+-- definition of unisRbacFeaturesInGroupTable
+--
+
+unisRbacFeatureInGroupTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisRbacFeatureInGroupEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the configuration information about
+        features in feature groups on a device."
+    ::= { unisRbacConfig 7 }
+
+
+unisRbacFeatureInGroupEntry OBJECT-TYPE
+    SYNTAX UnisRbacFeatureInGroupEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry in the unisRbacFeaturesInGroupTable.
+        One entry indicates a feature in a particular group.
+        If a newly created feature group doesn't contain any
+        feature, there's no entry appearing in this table."
+    INDEX {
+        unisRbacFeatureGroupName,
+        unisRbacFeatureNameInGroup
+    }
+    ::= { unisRbacFeatureInGroupTable 1 }
+
+UnisRbacFeatureInGroupEntry ::=
+    SEQUENCE {
+        unisRbacFeatureNameInGroup            OCTET STRING,
+        unisRbacFeatureInGroupRowStatus       RowStatus
+    }
+
+unisRbacFeatureNameInGroup OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(1..15))
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "This object indicates the name of a feature in the feature group."
+    ::= { unisRbacFeatureInGroupEntry 1 }
+
+unisRbacFeatureInGroupRowStatus OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "Status of this row."
+    ::= { unisRbacFeatureInGroupEntry 2 }
+
+--
+-- definition of unisRbacFeatureTable
+--
+
+unisRbacFeatureTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisRbacFeatureEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the information about features on a device."
+    ::= { unisRbacInfo 1 }
+
+unisRbacFeatureEntry OBJECT-TYPE
+    SYNTAX UnisRbacFeatureEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry in the unisRbacFeatureTable.
+        One entry indicates information about a feature on a device."
+    INDEX {
+        unisRbacFeatureName
+    }
+    ::= { unisRbacFeatureTable 1 }
+
+UnisRbacFeatureEntry ::=
+    SEQUENCE {
+        unisRbacFeatureName            OCTET STRING,
+        unisRbacFeatureDescription     OCTET STRING
+    }
+
+unisRbacFeatureName OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(1..15))
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "This object indicates the name of a feature."
+    ::= { unisRbacFeatureEntry 1 }
+
+unisRbacFeatureDescription OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(1..63))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "This object indicates the introduction of the feature."
+    ::= { unisRbacFeatureEntry 2 }
+
+END

@@ -1,0 +1,267 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The EVPN(Ethernet VPN) MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2017-10-21 Initial version Created by Jian Chen
+-- =============================================================================
+UNIS-EVPN-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+        TruthValue, DisplayString
+    FROM SNMPv2-TC
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Unsigned32
+    FROM SNMPv2-SMI
+        InetAddressType,
+        InetAddress
+    FROM INET-ADDRESS-MIB
+        unisCommon
+    FROM UNIS-OID-MIB
+        InterfaceIndex
+    FROM IF-MIB;
+
+
+-- =============================================================================
+-- module identity part
+-- =============================================================================
+unisEvpn MODULE-IDENTITY
+    LAST-UPDATED
+        "201710210900Z"        -- Oct 21, 2017 at 09:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The EVPN MIB."
+    REVISION
+        "201710210900Z"   -- Oct 21, 2017 at 09:00 GMT
+    DESCRIPTION
+        "Initial version."
+    ::= { unisCommon 173 }
+
+-- =============================================================================
+-- object definition begin
+-- =============================================================================
+
+unisEvpnObjects      OBJECT IDENTIFIER ::= { unisEvpn 1 }
+
+-- =============================================================================
+-- unisEvpnESTable Definition
+-- =============================================================================
+unisEvpnESTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEvpnESEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for EVPN ES parameters."
+    ::= { unisEvpnObjects 1 }
+
+unisEvpnESEntry  OBJECT-TYPE
+    SYNTAX      UnisEvpnESEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry represents the parameters of a EVPN ES."
+    INDEX
+    {
+        unisEvpnESESI
+    }
+    ::= { unisEvpnESTable 1 }
+
+UnisEvpnESEntry ::=
+    SEQUENCE
+    {
+        unisEvpnESESI               OCTET STRING,
+        unisEvpnESIfIndex           InterfaceIndex,
+        unisEvpnESIfName            DisplayString,
+        unisEvpnESMode              Unsigned32
+    }
+
+unisEvpnESESI   OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..10))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The Ethernet Segment Identifier."
+    ::= { unisEvpnESEntry 1 }
+
+unisEvpnESIfIndex    OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "ES interface index."
+    ::= { unisEvpnESEntry 2 }
+
+unisEvpnESIfName    OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of ES interface."
+    ::= { unisEvpnESEntry 3 }
+
+unisEvpnESMode    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Redundancy mode of ES."
+    ::= { unisEvpnESEntry 4 }
+
+-- =============================================================================
+-- End of unisEvpnESTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisEvpnESMemberTable Definition
+-- =============================================================================
+unisEvpnESMemberTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEvpnESMemberEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for EVPN ES member information."
+    ::= { unisEvpnObjects 2 }
+
+unisEvpnESMemberEntry  OBJECT-TYPE
+    SYNTAX      UnisEvpnESMemberEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contain the parameters of an ES member."
+    INDEX
+    {
+        unisEvpnESESI,
+        unisEvpnESMemberIPType,
+        unisEvpnESMemberIP
+    }
+    ::= { unisEvpnESMemberTable 1 }
+
+UnisEvpnESMemberEntry ::=
+    SEQUENCE
+    {
+        unisEvpnESMemberIPType        InetAddressType,
+        unisEvpnESMemberIP            InetAddress,
+        unisEvpnESMemberIsSelf        TruthValue
+    }
+
+unisEvpnESMemberIPType     OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "ES member IP address type."
+    ::= { unisEvpnESMemberEntry 1 }
+
+unisEvpnESMemberIP   OBJECT-TYPE
+    SYNTAX       InetAddress
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "ES member IP address."
+    ::= { unisEvpnESMemberEntry 2 }
+
+unisEvpnESMemberIsSelf  OBJECT-TYPE
+    SYNTAX       TruthValue
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Whether the member is local."
+    ::= { unisEvpnESMemberEntry 3 }
+
+-- =============================================================================
+-- End of unisEvpnESMemberTable Definition
+-- =============================================================================
+
+-- =============================================================================
+-- unisEvpnESDFTable Definition
+-- =============================================================================
+unisEvpnESDFTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisEvpnESDFEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for the ES DF information."
+    ::= { unisEvpnObjects 3 }
+
+unisEvpnESDFEntry  OBJECT-TYPE
+    SYNTAX      UnisEvpnESDFEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry represents an (ES, VLAN) group."
+    INDEX
+    {
+        unisEvpnESESI,
+        unisEvpnESDFVLANID
+    }
+    ::= { unisEvpnESDFTable 1 }
+
+UnisEvpnESDFEntry ::=
+    SEQUENCE
+    {
+        unisEvpnESDFVLANID            Unsigned32,
+        unisEvpnESDFAcIfIndex         InterfaceIndex,
+        unisEvpnESDFACEvcSrvInstId    Unsigned32,
+        unisEvpnESDFMode              Unsigned32,
+        unisEvpnESDFRouterIPType      InetAddressType,
+        unisEvpnESDFRouterIP          InetAddress
+    }
+
+unisEvpnESDFVLANID     OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "VLAN assigned to an ES."
+    ::= { unisEvpnESDFEntry 1 }
+
+unisEvpnESDFAcIfIndex    OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Index of an interface that hosts an Ethernet service instance for an ES."
+    ::= { unisEvpnESDFEntry 2 }
+
+unisEvpnESDFACEvcSrvInstId    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Ethernet service instance ID."
+    ::= { unisEvpnESDFEntry 3 }
+
+unisEvpnESDFMode    OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "ES redundancy mode."
+    ::= { unisEvpnESDFEntry 4 }
+
+unisEvpnESDFRouterIPType    OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The designated forwarder IP address type."
+    ::= { unisEvpnESDFEntry 5 }
+
+unisEvpnESDFRouterIP    OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The designated forwarder IP address."
+    ::= { unisEvpnESDFEntry 6 }
+
+-- =============================================================================
+-- End of unisEvpnESDFTable Definition
+-- =============================================================================
+
+END

@@ -1,0 +1,2138 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Description Of Portal
+-- Reference:
+-- Version: V1.7
+-- History:
+--   V1.0 2008-12-30, Created by d04528
+--   V1.1 2009-4-30, Modified by h02978
+--        Added node unisPortalServerPort
+--        Added table unisPortalIfInfoTable, including the following nodes:
+--            unisPortalAuthReqNumber
+--            unisPortalAuthSuccNumber
+--            unisPortalAuthFailNumber
+--        Added trap node unisPortalServerGet
+--   V1.2 2010-5-31, Modified by y07111
+--        Added table unisPortalIfServerTable, including the following nodes:
+--            unisPortalIfServerIndex
+--            unisPortalIfServerUrl
+--            unisPortalIfServerRowStatus
+--        Added unisPortalNasId
+--   V1.3 2010-11-8, Modified by y07111
+--        Added table unisPortalStatistic,including the following nodes:
+--        unisPortalStatAuthReq
+--        unisPortalStatAckLogout
+--        unisPortalStatNotifyLogout
+--        unisPortalStatChallengeTimeout
+--        unisPortalStatChallengeBusy
+--        unisPortalStatChallengeFail
+--        unisPortalStatAuthTimeout
+--        unisPortalStatAuthFail
+--        unisPortalStatPwdError
+--        unisPortalStatAuthBusy
+--        unisPortalStatAuthDisordered
+--        unisPortalStatAuthUnknownError
+--   V1.4 2011-08-18, Added by liqian 04379
+--        Added table unisPortalIfVlanNasIDTable, including the following nodes:
+--        unisPortalIfVlanNasIDIfIndex
+--        unisPortalIfVlanNasIDVlanID
+--        unisPortalIfVlanNasIDNasID
+--        Added table unisPortalSSIDFreeRuleTable, including the following nodes:
+--        unisPortalSSIDFreeRuleIndex
+--        unisPortalSSIDFreeRuleSrcSSID
+--        unisPortalSSIDFreeRuleRowStatus
+--        Added table unisPortalMacTriggerSrvTable, including the following nodes:
+--        unisPortalMacTriggerSrvIndex
+--        unisPortalMacTriggerSrvIPAddrType
+--        unisPortalMacTriggerSrvIP
+--        unisPortalMacTriggerSrvPort
+--        unisPortalMacTriggerSrvRowStatus
+--        Added table unisPortalMacTriggerOnIfTable, including the following nodes:
+--        unisPortalMacTriggerOnIfIfIndex
+--        unisPortalMacTriggerOnIfDetctFlowPeriod
+--        unisPortalMacTriggerOnIfThresholdFlow
+--        unisPortalMacTriggerOnIfRowStatus
+--        Added table unisPortalPktStatistic ,including the following nodes:
+--        unisPortalPktStaReqAuthNum
+--        unisPortalPktStaAckAuthSuccess
+--        unisPortalPktStaAckAuthReject
+--        unisPortalPktStaAckAuthEstablish
+--        unisPortalPktStaAckAuthBusy
+--        unisPortalPktStaAckAuthAuthFail
+--        unisPortalPktStaReqChallengeNum
+--        unisPortalPktStaAckChallengeSuccess
+--        unisPortalPktStaAckChallengeReject
+--        unisPortalPktStaAckChallengeEstablish
+--        unisPortalPktStaAckChallengeBusy
+--        unisPortalPktStaAckChallengeAuthFail
+--        2011-11-8, Added by q04356
+--        Added table unisPortalTrapVarObjects, including the following nodes:
+--        unisPortalFirstTrapTime
+--        Added table unisPortalFreeRuleTable, including the following nodes:
+--        unisPortalFreeRuleIndex
+--        unisPortalFreeRuleSrcIfIndex
+--        unisPortalFreeRuleSrcVlanID
+--        unisPortalFreeRuleSrcMac
+--        unisPortalFreeRuleAddrType
+--        unisPortalFreeRuleSrcAddr
+--        unisPortalFreeRuleSrcPrefix
+--        unisPortalFreeRuleDstAddr
+--        unisPortalFreeRuleDstPrefix
+--        unisPortalFreeRuleProtocol
+--        unisPortalFreeRuleSrcPort
+--        unisPortalFreeRuleDstPort
+--        unisPortalFreeRuleRowStatus
+--        Added table unisPortalForbiddenRuleTable, including the following nodes:
+--        unisPortalForbiddenRuleIndex
+--        unisPortalForbiddenRuleSrcIfIndex
+--        unisPortalForbiddenRuleSrcVlanID
+--        unisPortalForbiddenRuleSrcMac
+--        unisPortalForbiddenRuleAddrType
+--        unisPortalForbiddenRuleSrcAddr
+--        unisPortalForbiddenRuleSrcPrefix
+--        unisPortalForbiddenRuleDstAddr
+--        unisPortalForbiddenRuleDstPrefix
+--        unisPortalForbiddenRuleProtocol
+--        unisPortalForbiddenRuleSrcPort
+--        unisPortalForbiddenRuleDstPort
+--        unisPortalForbiddenRuleRowStatus
+--        Added node in table unisPortalStatistic
+--        unisPortalStatAuthResp
+--        unisPortalStatChallengeReq
+--        unisPortalStatChallengeResp
+--   V1.5 2012-11-21, Added by l09300
+--        Added node in table unisPortalSSIDFreeRuleTable
+--        unisPortalSSIDFreeRuleSrcSpot
+--   V1.6 2013-08-29, Added by q04356
+--        Added nodes in table unisPortalStatistic
+--        unisPortalStatHttpReq
+--        unisPortalStatHttpResp
+--        Added node in table unisPortalTrapVarObjects
+--        unisPortalServerIP
+--        Added objects unisPortalServerPort and unisPortalServerIP in
+--        trap nodes unisPortalServerGet and unisPortalServerLost
+--   V1.7 2015-10-08, Added by zkf4839
+--        Added nodes in table unisPortalStatistic
+--        unisPortalStatHttpsReq
+--        unisPortalStatHttpsResp
+--        Added nodes in table unisPortalExtConfig, including the following nodes:
+--        unisPortalExtMaxUserNumber
+--        unisPortalExtCurrentUserNumber
+--        unisPortalExtStatus
+--        Added table unisPortalExtSrvTable, including the following nodes:
+--        unisPortalExtSrvName
+--        unisPortalExtSrvIPAddrType
+--        unisPortalExtSrvIP
+--        unisPortalExtSrvPort
+--        unisPortalExtSrvRowStatus
+--        Added table unisPortalExtWebSrvTable, including the following nodes:
+--        unisPortalExtWebSrvName
+--        unisPortalExtWebSrvUrl
+--        unisPortalExtWebSrvRowStatus
+--        Added table unisPortalExtMTSrvTable, including the following nodes:
+--        unisPortalExtMTSrvName
+--        unisPortalExtMTSrvIPAddrType
+--        unisPortalExtMTSrvIP
+--        unisPortalExtMTSrvPort
+--        unisPortalExtMTDetctFlowPeriod
+--        unisPortalExtMTThresholdFlow
+--        unisPortalExtMTSrvRowStatus
+--        Added table unisPortalExtIfConfigTable, including the following nodes:
+--        unisPortalExtIfIndex
+--        unisPortalExtIfWebSrvName
+--        unisPortalExtIfDomainName
+--        unisPortalExtIfAuthMethod
+--        unisPortalExtIfMTSrvName
+--        unisPortalExtIfMaxUser
+--        Added table unisPortalExtIfIpv6ConfigTable, including the following nodes:
+--        unisPortalExtIfIpv6Index
+--        unisPortalExtIfIpv6WebSrvName
+--        unisPortalExtIfIpv6DomainName
+--        unisPortalExtIfIpv6AuthMethod
+--        unisPortalExtIfIpv6MaxUser
+--        Added table unisPortalDot11SrvTable, including the following nodes:
+--        unisPortalDot11SrvTemName
+--        unisPortalDot11WebSrvName
+--        unisPortalDot11DomainName
+--        unisPortalDot11AuthMethod
+--        unisPortalDot11MTSrvName
+--        unisPortalDot11MaxUser
+--        Added table unisPortalDot11Ipv6SrvTable, including the following nodes:
+--        unisPortalDot11Ipv6SrvTemName
+--        unisPortalDot11Ipv6WebSrvName
+--        unisPortalDot11Ipv6DomainName
+--        unisPortalDot11Ipv6AuthMethod
+--        unisPortalDot11Ipv6MaxUser
+--        2016-07-14, Added by xkf6915
+--        Added nodes in table unisPortalForbiddenRuleTable
+--        unisPortalForbiddenRuleSsidName
+-- =================================================================
+UNIS-PORTAL-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, NOTIFICATION-TYPE, MODULE-IDENTITY, Integer32, Counter64, Unsigned32,
+    TimeTicks
+        FROM SNMPv2-SMI
+    RowStatus, MacAddress, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    ifIndex, InterfaceIndex
+        FROM IF-MIB
+    InetAddressPrefixLength, InetAddressType, InetAddress, InetAddressIPv4
+        FROM INET-ADDRESS-MIB;
+
+unisPortal MODULE-IDENTITY
+    LAST-UPDATED "201607141020Z"        -- Jul 14, 2016 at 10:20 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for managing portal."
+    REVISION "201607141020Z"        -- Jul 14, 2016 at 10:20 GMT
+    DESCRIPTION
+        "Modified to add new node in table unisPortalForbiddenRuleTable."
+    REVISION "201510081020Z"        -- Oct 8, 2015 at 10:20 GMT
+    DESCRIPTION
+        "Modified to add new table."
+    ::= { unisCommon 99 }
+
+UnisPortalAuthMethod ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+    "Specify the portal authentication method."
+    SYNTAX      INTEGER
+    {
+        invalid(1),
+        direct(2),
+        layer3(3),
+        redhcp(4)
+    }
+
+unisPortalConfig OBJECT IDENTIFIER ::= { unisPortal 1 }
+
+--
+-- PORTAL MAX USER NUMBER
+--
+
+unisPortalMaxUserNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Specify the maximum number of online users,
+        the value to be set should meet the following two conditions:
+        1. Less than or equal to unisPortalUserNumberUpperLimit.
+        2. Greater than or equal to one.
+
+        The default value is equal to unisPortalUserNumberUpperLimit."
+    ::= { unisPortalConfig 1 }
+
+--
+-- PORTAL CURRENT USER NUMBER
+--
+
+unisPortalCurrentUserNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current number of users connecting to the portal."
+    ::= { unisPortalConfig 2 }
+
+--
+-- PORTAL STATUS
+--
+
+unisPortalStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+         enabled(1),
+         disabled(2)
+    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It indicates the portal status.
+         enabled:
+            Portal is enabled on one or more interfaces.
+         disabled:
+            Portal is not enabled on any interface."
+    ::= { unisPortalConfig 3 }
+
+--
+-- PORTAL USER NUMBER_UPPER_LIMIT
+--
+
+unisPortalUserNumberUpperLimit OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The upper limit of unisPortalMaxUserNumber."
+    ::= { unisPortalConfig 4 }
+
+--
+-- PORTAL NAS-ID Config
+--
+unisPortalNasId OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The nas id of this device."
+    ::= { unisPortalConfig 5 }
+
+--
+-- PORTAL TABLES
+--
+
+unisPortalTables OBJECT IDENTIFIER ::= { unisPortal 2 }
+
+
+--
+-- PORTAL server table
+--
+unisPortalServerTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table defines the name and URL of portal server.
+        It can not be created and destroyed by MIB."
+    ::= { unisPortalTables 1 }
+
+unisPortalServerEntry OBJECT-TYPE
+    SYNTAX      UnisPortalServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for each name and URL of portal server.
+        It is indexed using the object unisPortalServerName."
+    INDEX
+        {
+            unisPortalServerName
+        }
+    ::= { unisPortalServerTable 1 }
+
+
+UnisPortalServerEntry ::= SEQUENCE
+    {
+        unisPortalServerName               OCTET STRING,
+        unisPortalServerUrl                OCTET STRING,
+        unisPortalServerPort               Integer32
+    }
+
+unisPortalServerName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..32))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "It is the index of the table of unisPortalServerTable, it shows
+        the name of the portal server."
+    ::= { unisPortalServerEntry 1 }
+
+unisPortalServerUrl OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..127))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "It shows the uniform resource locator to the portal server.
+        Users which have not logon to portal will be redirected to the
+        portal server according to unisPortalServerUrl.
+
+        The value is consisted of protocol, IP address and relative path.
+        For example: HTTP://10.1.1.1/portal
+
+        It is not configurable when the portal server has been enabled."
+    ::= { unisPortalServerEntry 2 }
+
+unisPortalServerPort OBJECT-TYPE
+    SYNTAX      Integer32 (1..65534)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "It shows the UDP port of the portal server.
+
+        The port will be used when client sends packets to portal server.
+        Default value is 50100.
+
+        It is not configurable when the portal server has been enabled."
+    ::= { unisPortalServerEntry 3 }
+
+--
+-- PORTAL If Info Table
+--
+unisPortalIfInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalIfInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes the portal information on some interface."
+    ::= { unisPortalTables 2 }
+
+unisPortalIfInfoEntry OBJECT-TYPE
+    SYNTAX      UnisPortalIfInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for a interface on which
+        portal has been enabled.
+        It is indexed using the object ifIndex."
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisPortalIfInfoTable 1 }
+
+
+UnisPortalIfInfoEntry ::= SEQUENCE
+    {
+        unisPortalAuthReqNumber            Integer32,
+        unisPortalAuthSuccNumber           Integer32,
+        unisPortalAuthFailNumber           Integer32
+    }
+
+unisPortalAuthReqNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of authentication request messages
+        which are sent by portal module to AAA module."
+    ::= { unisPortalIfInfoEntry 1 }
+
+
+unisPortalAuthSuccNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of authentication success response messages
+        which are sent by AAA module to portal module."
+    ::= { unisPortalIfInfoEntry 2 }
+
+unisPortalAuthFailNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of authentication failure response messages
+        which are sent by AAA module to portal module."
+    ::= { unisPortalIfInfoEntry 3 }
+
+--
+-- PORTAL If Config Table
+--
+unisPortalIfServerTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalIfServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes the portal information on some interface."
+    ::= { unisPortalTables 3 }
+
+unisPortalIfServerEntry OBJECT-TYPE
+    SYNTAX      UnisPortalIfServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for a interface on which
+        portal has been enabled.
+        It is indexed using the object ifIndex."
+    INDEX
+        {
+            unisPortalIfServerIndex
+        }
+    ::= { unisPortalIfServerTable 1 }
+
+UnisPortalIfServerEntry ::= SEQUENCE
+    {
+        unisPortalIfServerIndex                   Integer32,
+        unisPortalIfServerUrl                     OCTET STRING,
+        unisPortalIfServerRowStatus               RowStatus
+    }
+
+unisPortalIfServerIndex  OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the index of the table of unisIfPtServerTable, it shows
+        the index of the portal server."
+    ::={ unisPortalIfServerEntry 1 }
+
+unisPortalIfServerUrl OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "It shows the uniform resource locator to the portal server.
+        Users which have not logon to portal will be redirected to the
+        portal server according to unisPortalServerIfUrl.
+        The value is consisted of protocol, IP address and relative path.
+        For example: HTTP://10.1.1.1/portal
+        It is not configurable when the portal server has been enabled."
+    ::= { unisPortalIfServerEntry 2 }
+
+unisPortalIfServerRowStatus OBJECT-TYPE
+    SYNTAX   RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is responsible for managing the creation, deletion and
+        modification of rows, which support active status and CreateAndGo,
+        Destroy operation.  To create a new row, portal server must be specified.
+        To destroy an existent row, the portal server MUST NOT be referred by
+        interface."
+    ::= { unisPortalIfServerEntry 3 }
+
+-- PORTAL Vlan Not binding NAS ID Table
+unisPortalIfVlanNasIDTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalIfVlanNasIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes the interface on which portal has been enabled,
+        the Vlan that the interface belongs to and the NAS ID to which the Vlan
+        is bound."
+    ::= { unisPortalTables 4 }
+
+unisPortalIfVlanNasIDEntry OBJECT-TYPE
+    SYNTAX      UnisPortalIfVlanNasIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for a interface on which portal has been
+        enabled, the Vlan that the interface belongs to and the NAS ID to which
+        the Vlan is bound.
+        It is indexed using the object ifIndex and Vlan that the interface
+        belongs to."
+    INDEX
+        {
+            unisPortalIfVlanNasIDIfIndex,
+            unisPortalIfVlanNasIDVlanID
+        }
+    ::= { unisPortalIfVlanNasIDTable 1 }
+
+UnisPortalIfVlanNasIDEntry ::= SEQUENCE
+    {
+        unisPortalIfVlanNasIDIfIndex         InterfaceIndex,
+        unisPortalIfVlanNasIDVlanID          Integer32,
+        unisPortalIfVlanNasIDNasID           OCTET STRING
+    }
+
+unisPortalIfVlanNasIDIfIndex  OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the index of the table of unisPortalIfVlanNasIDTable, it shows
+        the interface on which portal has been enabled."
+    ::={ unisPortalIfVlanNasIDEntry 1 }
+
+unisPortalIfVlanNasIDVlanID OBJECT-TYPE
+    SYNTAX      Integer32 (1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the index of the table of unisPortalIfVlanNasIDTable, it shows
+        the Vlan that the interface belongs to."
+    ::= { unisPortalIfVlanNasIDEntry 2 }
+
+unisPortalIfVlanNasIDNasID OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..64))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It is the NAS ID to which the Vlan is bound to."
+    ::= { unisPortalIfVlanNasIDEntry 3 }
+
+--
+-- PORTAL SSID Free-rule Config Table
+--
+
+unisPortalSSIDFreeRuleTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalSSIDFreeRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes SSID portal-free rule(s) allows specified users
+        to access specified external websites without portal authentication."
+    ::= { unisPortalTables 5 }
+
+unisPortalSSIDFreeRuleEntry OBJECT-TYPE
+    SYNTAX      UnisPortalSSIDFreeRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for SSID portal-free rule.
+        It is indexed using the object Index."
+    INDEX
+        {
+            unisPortalSSIDFreeRuleIndex
+        }
+    ::= { unisPortalSSIDFreeRuleTable 1 }
+
+UnisPortalSSIDFreeRuleEntry ::= SEQUENCE
+    {
+        unisPortalSSIDFreeRuleIndex                   Integer32,
+        unisPortalSSIDFreeRuleSrcSSID                 OCTET STRING,
+        unisPortalSSIDFreeRuleRowStatus               RowStatus,
+        unisPortalSSIDFreeRuleSrcSpot                 OCTET STRING
+    }
+
+unisPortalSSIDFreeRuleIndex  OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the index of the table of unisPortalSSIDFreeRuleTable, it shows
+        the index of the SSID portal-free rule."
+    ::={ unisPortalSSIDFreeRuleEntry 1 }
+
+unisPortalSSIDFreeRuleSrcSSID  OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(1..128))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The SSID match against the packet's source SSID."
+    ::={ unisPortalSSIDFreeRuleEntry 2 }
+
+unisPortalSSIDFreeRuleRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is responsible for managing the creation, deletion and
+        modification of rows, which support active status and CreateAndGo,
+        Destroy operation."
+    ::= { unisPortalSSIDFreeRuleEntry 3 }
+
+unisPortalSSIDFreeRuleSrcSpot  OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..63))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The spot match against the packet's source spot."
+    ::={ unisPortalSSIDFreeRuleEntry 4 }
+
+--
+-- PORTAL MAC Trigger Server
+--
+
+unisPortalMacTriggerSrvTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalMacTriggerSrvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes the configration of MAC Trigger Portal server."
+    ::= { unisPortalTables 6 }
+
+unisPortalMacTriggerSrvEntry OBJECT-TYPE
+    SYNTAX      UnisPortalMacTriggerSrvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in the table for MAC Trigger Portal server.
+        It is indexed using the object Index."
+    INDEX
+        {
+            unisPortalMacTriggerSrvIndex
+        }
+    ::= { unisPortalMacTriggerSrvTable 1 }
+
+UnisPortalMacTriggerSrvEntry ::= SEQUENCE
+    {
+        unisPortalMacTriggerSrvIndex              Integer32,
+        unisPortalMacTriggerSrvIPAddrType         InetAddressType,
+        unisPortalMacTriggerSrvIP                 InetAddress,
+        unisPortalMacTriggerSrvPort               Integer32,
+        unisPortalMacTriggerSrvRowStatus          RowStatus
+    }
+
+unisPortalMacTriggerSrvIndex  OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the index of the table of unisPortalMacTriggerSrvTable, it shows
+        the index of the MAC Trigger Portal server."
+    ::={ unisPortalMacTriggerSrvEntry 1 }
+
+unisPortalMacTriggerSrvIPAddrType  OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of MAC Trigger Portal server IP address.  While
+       other types of addresses are defined in the InetAddressType
+       textual convention, and DNS names, a classifier can only look at
+       packets on the wire."
+    ::={ unisPortalMacTriggerSrvEntry 2 }
+
+unisPortalMacTriggerSrvIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "It shows the IP address of MAC Trigger Portal server."
+    ::= { unisPortalMacTriggerSrvEntry 3 }
+
+unisPortalMacTriggerSrvPort OBJECT-TYPE
+    SYNTAX      Integer32 (1..65534)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "It shows the UDP port of MAC Trigger Portal server.
+        The port will be used when client sends packets to MAC Trigger Portal server.
+        Default value is 50100."
+    ::= { unisPortalMacTriggerSrvEntry 4 }
+
+unisPortalMacTriggerSrvRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is responsible for managing the creation, deletion and
+        modification of rows, which support active status and CreateAndGo,
+        Destroy operation."
+    ::= { unisPortalMacTriggerSrvEntry 5 }
+
+--
+-- PORTAL Eanble MAC Trigger on interface
+--
+
+unisPortalMacTriggerOnIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalMacTriggerOnIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes the configration of Portal MAC Trigger on
+        interface."
+    ::= { unisPortalTables 7 }
+
+unisPortalMacTriggerOnIfEntry OBJECT-TYPE
+    SYNTAX      UnisPortalMacTriggerOnIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in the table for Portal MAC Trigger configuration on
+        interface.  It is indexed using the object Index."
+    INDEX
+        {
+            unisPortalMacTriggerOnIfIfIndex
+        }
+    ::= { unisPortalMacTriggerOnIfTable 1 }
+
+UnisPortalMacTriggerOnIfEntry ::= SEQUENCE
+    {
+        unisPortalMacTriggerOnIfIfIndex               InterfaceIndex,
+        unisPortalMacTriggerOnIfDetctFlowPeriod       Integer32,
+        unisPortalMacTriggerOnIfThresholdFlow         Unsigned32,
+        unisPortalMacTriggerOnIfRowStatus             RowStatus
+    }
+
+unisPortalMacTriggerOnIfIfIndex  OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the interface index and the index of
+        unisPortalMacTriggerOnIfTable."
+    ::={ unisPortalMacTriggerOnIfEntry 1 }
+
+unisPortalMacTriggerOnIfDetctFlowPeriod  OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "It shows the user flow detection interval (in seconds) when
+        MAC Trigger and Portal are enabled.
+        Default value is 300."
+    DEFVAL { 300 }
+    ::={ unisPortalMacTriggerOnIfEntry 2 }
+
+unisPortalMacTriggerOnIfThresholdFlow  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "bytes"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "It shows the user traffic threshold (in bytes) that triggers authentication
+        when MAC Trigger and Portal are enabled.
+        Default value is 0."
+    DEFVAL { 0 }
+    ::={ unisPortalMacTriggerOnIfEntry 3 }
+
+unisPortalMacTriggerOnIfRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is responsible for managing the creation, deletion and
+        modification of rows, which support active status and CreateAndGo,
+        Destroy operation."
+    ::= { unisPortalMacTriggerOnIfEntry 4 }
+
+--
+-- PORTAL Free-rule Config Table
+--
+
+unisPortalFreeRuleTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalFreeRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes portal-free rule(s) allows specified users to
+         access specified external websites without portal authentication."
+    ::= { unisPortalTables 8 }
+
+unisPortalFreeRuleEntry OBJECT-TYPE
+    SYNTAX      UnisPortalFreeRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for portal-free rule.
+        It is indexed using the object Index."
+    INDEX
+        {
+            unisPortalFreeRuleIndex
+        }
+    ::= { unisPortalFreeRuleTable 1 }
+
+UnisPortalFreeRuleEntry ::= SEQUENCE
+    {
+        unisPortalFreeRuleIndex                   Integer32,
+        unisPortalFreeRuleSrcIfIndex              InterfaceIndex,
+        unisPortalFreeRuleSrcVlanID               Integer32,
+        unisPortalFreeRuleSrcMac                  MacAddress,
+        unisPortalFreeRuleAddrType                InetAddressType,
+        unisPortalFreeRuleSrcAddr                 InetAddress,
+        unisPortalFreeRuleSrcPrefix               InetAddressPrefixLength,
+        unisPortalFreeRuleDstAddr                 InetAddress,
+        unisPortalFreeRuleDstPrefix               InetAddressPrefixLength,
+        unisPortalFreeRuleProtocol                INTEGER,
+        unisPortalFreeRuleSrcPort                 Integer32,
+        unisPortalFreeRuleDstPort                 Integer32,
+        unisPortalFreeRuleRowStatus               RowStatus
+    }
+
+unisPortalFreeRuleIndex  OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the index of the table of unisPortalFreeRuleTable, it shows
+        the index of the portal-free rule."
+    ::={ unisPortalFreeRuleEntry 1 }
+
+unisPortalFreeRuleSrcIfIndex  OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The index of source interface."
+    ::={ unisPortalFreeRuleEntry 2 }
+
+unisPortalFreeRuleSrcVlanID  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The identification of source vlan."
+    ::={ unisPortalFreeRuleEntry 3 }
+
+unisPortalFreeRuleSrcMac  OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The MAC address to match against the packet's source MAC address."
+    ::={ unisPortalFreeRuleEntry 4 }
+
+unisPortalFreeRuleAddrType  OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of IP address used by this classifier entry.  While
+       other types of addresses are defined in the InetAddressType
+       textual convention, and DNS names, a classifier can only look at
+       packets on the wire."
+    ::={ unisPortalFreeRuleEntry 5 }
+
+unisPortalFreeRuleSrcAddr  OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The IP address to match against the packet's source IP
+       address.  This may be a DNS name or an IPv4 or IPv6
+       prefix.  unisPortalFreeRuleSrcPrefix indicates the
+       number of bits that are relevant."
+    ::={ unisPortalFreeRuleEntry 6 }
+
+unisPortalFreeRuleSrcPrefix  OBJECT-TYPE
+    SYNTAX      InetAddressPrefixLength
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The length of the CIDR Prefix carried in
+       unisPortalFreeRuleSrcAddr.  In IPv4 addresses, a length of 0
+       indicates a match of any address; a length of 32 indicates a
+       match of a single host address, and a length between 0 and 32
+       indicates the use of a CIDR Prefix.  IPv6 is similar, except that
+       prefix lengths range from 0..128."
+    ::={ unisPortalFreeRuleEntry 7 }
+
+unisPortalFreeRuleDstAddr  OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The IP address to match against the packet's destination IP
+       address.  This may be a DNS name or an IPv4 or IPv6
+       prefix.  unisPortalFreeRuleDstPrefix indicates the
+       number of bits that are relevant."
+    ::={ unisPortalFreeRuleEntry 8 }
+
+unisPortalFreeRuleDstPrefix  OBJECT-TYPE
+    SYNTAX      InetAddressPrefixLength
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The length of the CIDR Prefix carried in
+       unisPortalFreeRuleDstAddr.  In IPv4 addresses, a length of 0
+       indicates a match of any address; a length of 32 indicates a
+       match of a single host address, and a length between 0 and 32
+       indicates the use of a CIDR Prefix.  IPv6 is similar, except that
+       prefix lengths range from 0..128."
+    ::={ unisPortalFreeRuleEntry 9 }
+
+unisPortalFreeRuleProtocol  OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        invalid(0),
+        tcp(6),
+        udp(17)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The protocol-type of port."
+    ::={ unisPortalFreeRuleEntry 10 }
+
+unisPortalFreeRuleSrcPort  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The source port allows users to access."
+    ::={ unisPortalFreeRuleEntry 11 }
+
+unisPortalFreeRuleDstPort  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The destination port allows users to access."
+    ::={ unisPortalFreeRuleEntry 12 }
+
+unisPortalFreeRuleRowStatus OBJECT-TYPE
+    SYNTAX   RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is responsible for managing the creation, deletion and
+        modification of rows, which support active status and CreateAndGo,
+        Destroy operation."
+    ::= { unisPortalFreeRuleEntry 13 }
+
+--
+-- PORTAL Forbidden-rule Config Table
+--
+
+unisPortalForbiddenRuleTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalForbiddenRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes a portal-forbidden rule does not allow specified
+         users to access specified external websites."
+    ::= { unisPortalTables 9 }
+
+unisPortalForbiddenRuleEntry OBJECT-TYPE
+    SYNTAX      UnisPortalForbiddenRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for portal-forbidden rule.
+         It is indexed using the object Index."
+    INDEX
+        {
+            unisPortalForbiddenRuleIndex
+        }
+    ::= { unisPortalForbiddenRuleTable 1 }
+
+UnisPortalForbiddenRuleEntry ::= SEQUENCE
+    {
+        unisPortalForbiddenRuleIndex                   Integer32,
+        unisPortalForbiddenRuleSrcIfIndex              InterfaceIndex,
+        unisPortalForbiddenRuleSrcVlanID               Integer32,
+        unisPortalForbiddenRuleSrcMac                  MacAddress,
+        unisPortalForbiddenRuleAddrType                InetAddressType,
+        unisPortalForbiddenRuleSrcAddr                 InetAddress,
+        unisPortalForbiddenRuleSrcPrefix               InetAddressPrefixLength,
+        unisPortalForbiddenRuleDstAddr                 InetAddress,
+        unisPortalForbiddenRuleDstPrefix               InetAddressPrefixLength,
+        unisPortalForbiddenRuleProtocol                INTEGER,
+        unisPortalForbiddenRuleSrcPort                 Integer32,
+        unisPortalForbiddenRuleDstPort                 Integer32,
+        unisPortalForbiddenRuleRowStatus               RowStatus,
+        unisPortalForbiddenRuleSsidName                OCTET STRING
+    }
+
+unisPortalForbiddenRuleIndex  OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the index of the table of unisPortalForbiddenRuleTable, it shows
+        the index of the portal-forbidden rule."
+    ::={ unisPortalForbiddenRuleEntry 1 }
+
+unisPortalForbiddenRuleSrcIfIndex  OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The index of source interface."
+    ::={ unisPortalForbiddenRuleEntry 2 }
+
+unisPortalForbiddenRuleSrcVlanID  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The identification of source vlan."
+    ::={ unisPortalForbiddenRuleEntry 3 }
+
+unisPortalForbiddenRuleSrcMac  OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The MAC address to match against the packet's source MAC address."
+    ::={ unisPortalForbiddenRuleEntry 4 }
+
+unisPortalForbiddenRuleAddrType  OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of IP address used by this classifier entry.  While
+       other types of addresses are defined in the InetAddressType
+       textual convention, and DNS names, a classifier can only look at
+       packets on the wire."
+    ::={ unisPortalForbiddenRuleEntry 5 }
+
+unisPortalForbiddenRuleSrcAddr  OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The IP address to match against the packet's source IP
+       address.  This may be a DNS name or an IPv4 or IPv6
+       prefix.  unisPortalForbiddenRuleSrcPrefix indicates the
+       number of bits that are relevant."
+    ::={ unisPortalForbiddenRuleEntry 6 }
+
+unisPortalForbiddenRuleSrcPrefix  OBJECT-TYPE
+    SYNTAX      InetAddressPrefixLength
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The length of the CIDR Prefix carried in
+       unisPortalFreeRuleSrcAddr.  In IPv4 addresses, a length of 0
+       indicates a match of any address; a length of 32 indicates a
+       match of a single host address, and a length between 0 and 32
+       indicates the use of a CIDR Prefix.  IPv6 is similar, except that
+       prefix lengths range from 0..128."
+    ::={ unisPortalForbiddenRuleEntry 7 }
+
+unisPortalForbiddenRuleDstAddr  OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The IP address to match against the packet's destination IP
+       address.  This may be a DNS name or an IPv4 or IPv6
+       prefix.  unisPortalForbiddenRuleDstPrefix indicates the
+       number of bits that are relevant."
+    ::={ unisPortalForbiddenRuleEntry 8 }
+
+unisPortalForbiddenRuleDstPrefix  OBJECT-TYPE
+    SYNTAX      InetAddressPrefixLength
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The length of the CIDR Prefix carried in
+       unisPortalFreeRuleDstAddr.  In IPv4 addresses, a length of 0
+       indicates a match of any address; a length of 32 indicates a
+       match of a single host address, and a length between 0 and 32
+       indicates the use of a CIDR Prefix.  IPv6 is similar, except that
+       prefix lengths range from 0..128."
+    ::={ unisPortalForbiddenRuleEntry 9 }
+
+unisPortalForbiddenRuleProtocol  OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        invalid(0),
+        tcp(6),
+        udp(17)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The protocol-type of port."
+    ::={ unisPortalForbiddenRuleEntry 10 }
+
+unisPortalForbiddenRuleSrcPort  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The source port does not allow users to access."
+    ::={ unisPortalForbiddenRuleEntry 11 }
+
+unisPortalForbiddenRuleDstPort  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The destination port does not allow users to access."
+    ::={ unisPortalForbiddenRuleEntry 12 }
+
+unisPortalForbiddenRuleRowStatus OBJECT-TYPE
+    SYNTAX   RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is responsible for managing the creation, deletion and
+        modification of rows, which support active status and CreateAndGo,
+        Destroy operation."
+    ::= { unisPortalForbiddenRuleEntry 13 }
+
+unisPortalForbiddenRuleSsidName OBJECT-TYPE
+    SYNTAX   OCTET STRING (SIZE(1..128))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is used to match packet's source SSID."
+    ::= { unisPortalForbiddenRuleEntry 14 }
+--
+-- Define the portal Traps.
+--
+
+unisPortalTraps OBJECT IDENTIFIER ::= { unisPortal 3 }
+
+unisPortalTrapPrefix OBJECT IDENTIFIER ::= { unisPortalTraps 0 }
+
+unisPortalServerLost NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisPortalServerName,
+            unisPortalFirstTrapTime,
+            unisPortalServerIP,
+            unisPortalServerPort
+        }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the device finds that the portal server
+        is unreachable, the portal server's name is unisPortalServerName, and
+        the portal server's IP is unisPortalServerIP, and the portal server's
+        port is unisPortalServerPort, and the portal server has been enabled."
+    ::= { unisPortalTrapPrefix 1 }
+
+unisPortalServerGet NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisPortalServerName,
+            unisPortalFirstTrapTime,
+            unisPortalServerIP,
+            unisPortalServerPort
+        }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the device finds that the state of portal
+        server changes from unreachable state to reachable,
+        the portal server's name is unisPortalServerName, and the portal server's
+        IP is unisPortalServerIP, and the portal server's port is unisPortalServerPort,
+        and the portal server has been enabled."
+    ::= { unisPortalTrapPrefix 2 }
+
+unisPortalTrapVarObjects OBJECT IDENTIFIER ::= { unisPortalTraps 1 }
+
+unisPortalFirstTrapTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the first trap time."
+    ::= { unisPortalTrapVarObjects 1 }
+
+unisPortalServerIP OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The portal server's IP."
+    ::= { unisPortalTrapVarObjects 2 }
+
+-- PORTAL STATISTIC
+
+unisPortalStatistic OBJECT IDENTIFIER ::= { unisPortal 4 }
+
+-- PORTAL AUTH REQ STATISTIC
+
+unisPortalStatAuthReq OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the total number of portal authentication requests from the
+        portal server."
+    ::= { unisPortalStatistic 1 }
+
+-- PORTAL ACK LOGOUT STATISTIC
+
+unisPortalStatAckLogout OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of logout requests from the portal server."
+    ::= { unisPortalStatistic 2 }
+
+-- PORTAL NOTIFY LOGOUT STATISTIC
+
+unisPortalStatNotifyLogout OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of logout requests from the access device."
+    ::= { unisPortalStatistic 3 }
+
+-- PORTAL CHALLENGE TIMEOUT STATISTIC
+
+unisPortalStatChallengeTimeout OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of challenge from the portal server without
+        response."
+    ::= { unisPortalStatistic 4 }
+
+-- PORTAL CHALLENGE BUSY STATISTIC
+
+unisPortalStatChallengeBusy OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of device-busy responses for challenges from
+        the portal server."
+    ::= { unisPortalStatistic 5 }
+
+-- PORTAL CHALLENGE FAIL STATISTIC
+
+unisPortalStatChallengeFail OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of challenges from the portal server with
+        failure response."
+    ::= { unisPortalStatistic 6 }
+
+-- PORTAL authenticate TIMEOUT STATISTIC
+
+unisPortalStatAuthTimeout OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of authentication requests from the portal
+        server without responses."
+    ::= { unisPortalStatistic 7 }
+
+-- PORTAL authenticate FAIL STATISTIC
+
+unisPortalStatAuthFail OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of authentication requests from the portal
+        server with failure responses."
+    ::= { unisPortalStatistic 8 }
+
+-- PORTAL PASSWORD ERROR STATISTIC
+
+unisPortalStatPwdError OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of password errors."
+    ::= { unisPortalStatistic 9 }
+
+-- PORTAL authenticate BUSY STATISTIC
+
+unisPortalStatAuthBusy OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of device-busy responses to authentication
+        requests from the portal server."
+    ::= { unisPortalStatistic 10 }
+
+-- PORTAL authenticate DISORDER STATISTIC
+
+unisPortalStatAuthDisordered OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of disordered authentication packets from
+        the portal server."
+    ::= { unisPortalStatistic 11 }
+
+-- PORTAL authenticate UNKNOWN ERROR STATISTIC
+
+unisPortalStatAuthUnknownError OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of unknown errors."
+    ::= { unisPortalStatistic 12 }
+-- PORTAL authenticate response STATISTIC
+
+unisPortalStatAuthResp OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of authentication response messages
+        which are sent by device to portal server."
+    ::= { unisPortalStatistic 13 }
+
+-- PORTAL authenticate challenge request STATISTIC
+
+unisPortalStatChallengeReq OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of challenge request messages
+        which are sent by portal server to device."
+    ::= { unisPortalStatistic 14 }
+
+-- PORTAL authenticate challenge response STATISTIC
+
+unisPortalStatChallengeResp OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of challenge response messages
+        which are sent by device to portal server."
+    ::= { unisPortalStatistic 15 }
+
+-- PORTAL http request statistic
+
+unisPortalStatHttpReq OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of http request messages
+        which are sent by portal user to device."
+    ::= { unisPortalStatistic 16 }
+
+-- PORTAL http response statistic
+
+unisPortalStatHttpResp OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of http response messages
+        which are sent by  device to portal user."
+    ::= { unisPortalStatistic 17 }
+
+-- PORTAL HTTPS  request statistic
+
+unisPortalStatHttpsReq OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of HTTPS request messages
+        sent from portal users to the device."
+    ::= { unisPortalStatistic 18 }
+
+-- PORTAL HTTPS response statistic
+
+unisPortalStatHttpsResp OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the number of HTTPS response messages
+         sent from the device to portal users."
+    ::= { unisPortalStatistic 19 }
+
+
+-- PORTAL PACKET STATISTIC BY ERROR CODE
+
+unisPortalPktStatistic OBJECT IDENTIFIER ::= { unisPortal 5 }
+
+-- PORTAL REQ AUTH STATISTIC
+
+unisPortalPktStaReqAuthNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the total number of portal authentication requests from the
+        portal server."
+    ::= { unisPortalPktStatistic 1 }
+
+unisPortalPktStaAckAuthSuccess OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the total number of the response to REQ-AUTH packet of
+        portal server including error code 0 in the packet, that is
+        authentication success."
+    ::= { unisPortalPktStatistic 2 }
+
+unisPortalPktStaAckAuthReject OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the total number of the response to REQ-AUTH packet of
+        portal server including error code 1 in the packet, that is rejected
+        by server."
+    ::= { unisPortalPktStatistic 3 }
+
+unisPortalPktStaAckAuthEstablish OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the total number of the response to REQ-AUTH packet of
+        portal server including error code 2 in the packet, that is the link
+        is already established."
+    ::= { unisPortalPktStatistic 4 }
+
+unisPortalPktStaAckAuthBusy OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the total number of the response to REQ-AUTH packet of
+        portal server including error code 3 in the packet, that is the
+        system is busy."
+    ::= { unisPortalPktStatistic 5 }
+
+unisPortalPktStaAckAuthAuthFail OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the total number of the response to REQ-AUTH packet of
+        portal server including error code 4 in the packet, that is
+        authentication fail."
+    ::= { unisPortalPktStatistic 6 }
+
+unisPortalPktStaReqChallengeNum OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the total number of portal challenge requests from the
+        portal server."
+    ::= { unisPortalPktStatistic 7 }
+
+unisPortalPktStaAckChallengeSuccess OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the total number of the response to challenge packet of
+        portal server including error code 0 in the packet, that is
+        challenge is success."
+    ::= { unisPortalPktStatistic 8 }
+
+unisPortalPktStaAckChallengeReject OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the total number of the response to challenge packet of
+        portal server including error code 1 in the packet, that is
+        challenge is rejected by server."
+    ::= { unisPortalPktStatistic 9 }
+
+unisPortalPktStaAckChallengeEstablish OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the total number of the response to challenge packet of
+        portal server including error code 2 in the packet, that is the
+        link is alreadys established."
+    ::= { unisPortalPktStatistic 10 }
+
+unisPortalPktStaAckChallengeBusy OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the total number of the response to challenge packet of
+        portal server including error code 3 in the packet, that is the
+        system is busy."
+    ::= { unisPortalPktStatistic 11 }
+
+unisPortalPktStaAckChallengeAuthFail OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It shows the total number of the response to challenge packet of
+        portal server including error code 4 in the packet, that is
+        authentication fail."
+    ::= { unisPortalPktStatistic 12 }
+
+unisPortalExtConfig OBJECT IDENTIFIER ::= { unisPortal 6 }
+
+--
+-- PORTAL MAX USER NUMBER
+--
+
+unisPortalExtMaxUserNumber OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Specify the maximum number of online users."
+    ::= { unisPortalExtConfig 1 }
+
+--
+-- PORTAL CURRENT USER NUMBER
+--
+
+unisPortalExtCurrentUserNumber OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current number of online portal users."
+    ::= { unisPortalExtConfig 2 }
+
+--
+-- PORTAL STATUS
+--
+
+unisPortalExtStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+         enabled(1),
+         disabled(2)
+    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "It indicates the portal status.
+         enabled:
+            Portal is enabled on one or more interfaces.
+         disabled:
+            Portal is not enabled on any interface."
+    ::= { unisPortalExtConfig 3 }
+
+unisPortalExtTables OBJECT IDENTIFIER ::= { unisPortal 7 }
+
+--
+-- PORTAL server table
+--
+unisPortalExtSrvTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalExtSrvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table defines the name of the portal server.  It can be created
+        and destroyed by MIB."
+    ::= { unisPortalExtTables 1 }
+
+unisPortalExtSrvEntry OBJECT-TYPE
+    SYNTAX      UnisPortalExtSrvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for each name and URL of the portal server.
+        It is indexed by using the object unisPortalExtSrvName."
+    INDEX
+        {
+            unisPortalExtSrvName
+        }
+    ::= { unisPortalExtSrvTable 1 }
+
+
+UnisPortalExtSrvEntry ::= SEQUENCE
+    {
+        unisPortalExtSrvName          OCTET STRING,
+        unisPortalExtSrvIPAddrType    InetAddressType,
+        unisPortalExtSrvIP            InetAddress,
+        unisPortalExtSrvPort          Integer32,
+        unisPortalExtSrvRowStatus     RowStatus
+    }
+
+unisPortalExtSrvName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the index of the table unisPortalExtSrvTable.  It shows
+        the name of the portal server."
+    ::= { unisPortalExtSrvEntry 1 }
+
+unisPortalExtSrvIPAddrType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of the portal server IP address."
+    ::={ unisPortalExtSrvEntry 2 }
+
+unisPortalExtSrvIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "It shows the IP address of the portal server."
+    ::= { unisPortalExtSrvEntry 3 }
+
+unisPortalExtSrvPort OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "It shows the UDP port of the portal server.
+        The port will be used when clients send packets to the portal server.
+        Default value is 50100.
+        It is not configurable when the portal server has been enabled."
+    ::= { unisPortalExtSrvEntry 4 }
+
+unisPortalExtSrvRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is responsible for managing the creation, deletion and
+        modification of rows, which support active status and CreateAndGo and
+        Destroy operations.  To create a new row, the portal server must be
+        specified.
+        To destroy an existing row, the portal server MUST NOT be referenced by
+        an interface."
+    ::= { unisPortalExtSrvEntry 5 }
+
+--
+-- PORTAL web server table
+--
+unisPortalExtWebSrvTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalExtWebSrvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table defines the name of the portal Web server.  It can be created
+         and destroyed by MIB."
+    ::= { unisPortalExtTables 2 }
+
+unisPortalExtWebSrvEntry OBJECT-TYPE
+    SYNTAX      UnisPortalExtWebSrvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for each name and portal Web server.
+        It is indexed by using the object unisPortalExtWebSrvName."
+    INDEX
+        {
+            unisPortalExtWebSrvName
+        }
+    ::= { unisPortalExtWebSrvTable 1 }
+
+
+UnisPortalExtWebSrvEntry ::= SEQUENCE
+    {
+        unisPortalExtWebSrvName         OCTET STRING,
+        unisPortalExtWebSrvUrl          OCTET STRING,
+        unisPortalExtWebSrvRowStatus    RowStatus
+    }
+
+unisPortalExtWebSrvName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the index of the table unisPortalExtWebSrvTable.  It shows
+        the name of the portal Web server."
+    ::= { unisPortalExtWebSrvEntry 1 }
+
+unisPortalExtWebSrvUrl OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "It shows the URL to the portal Web server.
+        Users which have not logged on to portal will be redirected to the
+        portal server according to unisPortalServerIfUrl.
+        The value is consisted of protocol, IP address and relative path.
+        For example: http://10.1.1.1/portal."
+    ::= { unisPortalExtWebSrvEntry 2 }
+
+unisPortalExtWebSrvRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is responsible for managing the creation, deletion and
+        modification of rows, which support active status and CreateAndGo and
+        Destroy operations.  To create a new row, the portal server must be specified.
+        To destroy an existing row, the portal Web server MUST NOT be referenced by an
+        interface."
+    ::= { unisPortalExtWebSrvEntry 3 }
+
+unisPortalExtMTSrvTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalExtMTSrvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes the configuration of the MAC Trigger server."
+    ::= { unisPortalExtTables 3 }
+
+unisPortalExtMTSrvEntry OBJECT-TYPE
+    SYNTAX      UnisPortalExtMTSrvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in the table for the MAC Trigger server.  It is indexed by using the object Index."
+    INDEX
+        {
+            unisPortalExtMTSrvName
+        }
+    ::= { unisPortalExtMTSrvTable 1 }
+
+UnisPortalExtMTSrvEntry ::= SEQUENCE
+    {
+        unisPortalExtMTSrvName          OCTET STRING,
+        unisPortalExtMTSrvIPAddrType    InetAddressType,
+        unisPortalExtMTSrvIP            InetAddress,
+        unisPortalExtMTSrvPort          Integer32,
+        unisPortalExtMTDetctFlowPeriod  Integer32,
+        unisPortalExtMTThresholdFlow    Unsigned32,
+        unisPortalExtMTSrvRowStatus     RowStatus
+    }
+
+unisPortalExtMTSrvName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the index of the table unisPortalExtMTSrvTable.  It shows
+         the name of the MAC Trigger server."
+    ::= { unisPortalExtMTSrvEntry 1 }
+
+unisPortalExtMTSrvIPAddrType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of the MAC Trigger server IP address."
+    ::={ unisPortalExtMTSrvEntry 2 }
+
+unisPortalExtMTSrvIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "It shows the IP address of the MAC Trigger server."
+    ::= { unisPortalExtMTSrvEntry 3 }
+
+unisPortalExtMTSrvPort OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "It shows the UDP port of the MAC Trigger server.
+        The port will be used when clients send packets to the MAC Trigger server.
+        Default value is 50100."
+    DEFVAL { 50100 }
+    ::= { unisPortalExtMTSrvEntry 4 }
+
+unisPortalExtMTDetctFlowPeriod  OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "It shows the user flow detection interval (in seconds) when
+        MAC Trigger and Portal are enabled.
+        Default value is 300."
+    DEFVAL { 300 }
+    ::= { unisPortalExtMTSrvEntry 5 }
+
+unisPortalExtMTThresholdFlow  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "bytes"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "It shows the user traffic threshold (in bytes) that triggers authentication
+        when MAC Trigger and Portal are enabled.
+        Default value is 0."
+    DEFVAL { 0 }
+    ::= { unisPortalExtMTSrvEntry 6 }
+
+unisPortalExtMTSrvRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is responsible for managing the creation, deletion and
+        modification of rows, which support active status and CreateAndGo and
+        Destroy operations."
+    ::= { unisPortalExtMTSrvEntry 7 }
+--
+-- PORTAL extend if table
+--
+unisPortalExtIfConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalExtIfConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes portal information on interfaces."
+    ::= { unisPortalExtTables 4 }
+
+unisPortalExtIfConfigEntry OBJECT-TYPE
+    SYNTAX      UnisPortalExtIfConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for an interface on which
+        portal has been enabled.
+        It is indexed by using the object ifIndex."
+    INDEX
+        {
+            unisPortalExtIfIndex
+        }
+    ::= { unisPortalExtIfConfigTable 1 }
+
+UnisPortalExtIfConfigEntry ::= SEQUENCE
+    {
+        unisPortalExtIfIndex            InterfaceIndex,
+        unisPortalExtIfWebSrvName       OCTET STRING,
+        unisPortalExtIfDomainName       OCTET STRING,
+        unisPortalExtIfAuthMethod       UnisPortalAuthMethod,
+        unisPortalExtIfMTSrvName        OCTET STRING,
+        unisPortalExtIfMaxUser          Unsigned32
+    }
+
+unisPortalExtIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the interface index and the index of unisPortalExtIfConfigTable."
+    ::= { unisPortalExtIfConfigEntry 1 }
+
+unisPortalExtIfWebSrvName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The Portal Web server name must exist.  It references
+        unisPortalExtWebSrvName."
+    ::= { unisPortalExtIfConfigEntry 2 }
+
+unisPortalExtIfDomainName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Authentication domain."
+    ::= { unisPortalExtIfConfigEntry 3 }
+
+unisPortalExtIfAuthMethod OBJECT-TYPE
+    SYNTAX      UnisPortalAuthMethod
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Specify the portal authentication method."
+    ::= { unisPortalExtIfConfigEntry 4 }
+
+unisPortalExtIfMTSrvName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The MAC trigger server name must exist.  It references unisPortalExtMTSrvName."
+    ::= { unisPortalExtIfConfigEntry 5 }
+
+unisPortalExtIfMaxUser OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Maximum number of portal users."
+    ::= { unisPortalExtIfConfigEntry 6 }
+
+unisPortalExtIfIpv6ConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalExtIfIpv6ConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes IPv6 portal information on interfaces."
+    ::= { unisPortalExtTables 5 }
+
+unisPortalExtIfIpv6ConfigEntry OBJECT-TYPE
+    SYNTAX      UnisPortalExtIfIpv6ConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for an interface on which
+        IPv6 portal has been enabled.
+        It is indexed by using the object ifIndex."
+    INDEX
+        {
+            unisPortalExtIfIpv6Index
+        }
+    ::= { unisPortalExtIfIpv6ConfigTable 1 }
+
+UnisPortalExtIfIpv6ConfigEntry ::= SEQUENCE
+    {
+        unisPortalExtIfIpv6Index            InterfaceIndex,
+        unisPortalExtIfIpv6WebSrvName       OCTET STRING,
+        unisPortalExtIfIpv6DomainName       OCTET STRING,
+        unisPortalExtIfIpv6AuthMethod       UnisPortalAuthMethod,
+        unisPortalExtIfIpv6MaxUser          Unsigned32
+    }
+
+unisPortalExtIfIpv6Index OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the interface index and the index of unisPortalExtIfIpv6ConfigTable."
+    ::= { unisPortalExtIfIpv6ConfigEntry 1 }
+
+unisPortalExtIfIpv6WebSrvName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The Portal Web server name must exist.  It references unisPortalExtWebSrvName."
+    ::= { unisPortalExtIfIpv6ConfigEntry 2 }
+
+unisPortalExtIfIpv6DomainName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Authentication domain."
+    ::= { unisPortalExtIfIpv6ConfigEntry 3 }
+
+unisPortalExtIfIpv6AuthMethod  OBJECT-TYPE
+    SYNTAX      UnisPortalAuthMethod
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Specify the portal authentication method."
+    ::= { unisPortalExtIfIpv6ConfigEntry 4 }
+
+
+unisPortalExtIfIpv6MaxUser OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Maximum number of IPv6 portal users."
+    ::= { unisPortalExtIfIpv6ConfigEntry 5 }
+--
+-- PORTAL dot11 configuration table
+--
+unisPortalDot11SrvTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalDot11SrvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes the portal information on service templates."
+    ::= { unisPortalExtTables 6 }
+
+unisPortalDot11SrvEntry OBJECT-TYPE
+    SYNTAX      UnisPortalDot11SrvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for a service template on which
+        portal has been enabled.
+        It is indexed by using the object wlan service-template name."
+    INDEX
+        {
+            unisPortalDot11SrvTemName
+        }
+    ::= { unisPortalDot11SrvTable 1 }
+
+UnisPortalDot11SrvEntry ::= SEQUENCE
+    {
+        unisPortalDot11SrvTemName     OCTET STRING,
+        unisPortalDot11WebSrvName     OCTET STRING,
+        unisPortalDot11DomainName     OCTET STRING,
+        unisPortalDot11AuthMethod     UnisPortalAuthMethod,
+        unisPortalDot11MTSrvName      OCTET STRING,
+        unisPortalDot11MaxUser        Unsigned32
+    }
+
+unisPortalDot11SrvTemName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..63))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the index of the table unisPortalDot11SrvTable, it shows
+        the name of the wlan service-template."
+    ::= { unisPortalDot11SrvEntry 1 }
+
+unisPortalDot11WebSrvName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "It shows portal web-server name."
+    ::= { unisPortalDot11SrvEntry 2 }
+
+unisPortalDot11DomainName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "It shows portal authentication domain name."
+    ::= { unisPortalDot11SrvEntry 3 }
+
+unisPortalDot11AuthMethod  OBJECT-TYPE
+    SYNTAX      UnisPortalAuthMethod
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+     "Specify the portal authentication method on service templates."
+    ::= { unisPortalDot11SrvEntry 4 }
+
+unisPortalDot11MTSrvName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The MAC trigger server name must exist.  It references unisPortalExtMTSrvName."
+    ::= { unisPortalDot11SrvEntry 5 }
+
+unisPortalDot11MaxUser OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Maximum number of portal users."
+    ::= { unisPortalDot11SrvEntry 6 }
+
+unisPortalDot11Ipv6SrvTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPortalDot11Ipv6SrvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes IPv6 portal information on service templates."
+    ::= { unisPortalExtTables 7 }
+
+unisPortalDot11Ipv6SrvEntry OBJECT-TYPE
+    SYNTAX      UnisPortalDot11Ipv6SrvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "There is a row in this table for a service template on which
+        IPv6 portal has been enabled.
+        It is indexed by using the object wlan service-template name."
+    INDEX
+        {
+            unisPortalDot11Ipv6SrvTemName
+        }
+    ::= { unisPortalDot11Ipv6SrvTable 1 }
+
+UnisPortalDot11Ipv6SrvEntry ::= SEQUENCE
+    {
+        unisPortalDot11Ipv6SrvTemName     OCTET STRING,
+        unisPortalDot11Ipv6WebSrvName     OCTET STRING,
+        unisPortalDot11Ipv6DomainName     OCTET STRING,
+        unisPortalDot11Ipv6AuthMethod     UnisPortalAuthMethod,
+        unisPortalDot11Ipv6MaxUser        Unsigned32
+    }
+
+unisPortalDot11Ipv6SrvTemName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..63))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "It is the index of the table unisPortalDot11Ipv6SrvTable.  It shows
+        the name of the IPv6 portal server."
+    ::= { unisPortalDot11Ipv6SrvEntry 1 }
+
+unisPortalDot11Ipv6WebSrvName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "It shows the IPv6 portal Web server name."
+    ::= { unisPortalDot11Ipv6SrvEntry 2 }
+
+unisPortalDot11Ipv6DomainName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "IPv6 portal authentication domain name."
+    ::= { unisPortalDot11Ipv6SrvEntry 3 }
+
+unisPortalDot11Ipv6AuthMethod  OBJECT-TYPE
+    SYNTAX      UnisPortalAuthMethod
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+     "Specify the IPv6 portal authentication method on service templates."
+    ::= { unisPortalDot11Ipv6SrvEntry 4 }
+
+unisPortalDot11Ipv6MaxUser OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Maximum number of IPv6 portal users."
+    ::= { unisPortalDot11Ipv6SrvEntry 5 }
+
+END
+

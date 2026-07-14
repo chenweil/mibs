@@ -1,0 +1,1296 @@
+-- =============================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+-- Reference:
+-- Version: V1.6
+-- History:
+--   V1.0 2009-04-30 Initial Version by jinyi
+--   V1.1 2009-12-30 Added unisAccessMediaChanged by jinyi
+--   V1.2 2011-07-22 Added unisWirelessCardInterfaceIndex,
+--                   unisWirelessCardModemStatus in unisWirelessCardTable.
+--                   Added unis3GCdma1xRttTable, unis3GCdmaEvDoTable, unis3GGsmInfoTable
+--                   unis3GCurrentService, unis3GCurrentRssiBind, unis3GImsiBind,
+--                   unis3GRssiStrongSignalTrap, unis3GRssiMediumSignalTrap and
+--                   unis3GRssiWeakSignalTrap.
+--                   Changed MAX-ACCESS of unisWirelessCardIndex by songhao.
+--   V1.3 2012-08-02 Added unisWirelessCardModemMode, unisWirelessCardCurNetConn in
+--                   unisWirelessCardEntry.
+--                   Added unisSmsGroup and unisWirelessCardOnlineTable under unisWirelessCard.
+--                   Added unis3GGsmMcc, unis3GGsmMnc in unis3GGsmInfoEntry
+--                   Added unisLte under unis3GModemObjects
+--                   Added unisSmsSrcNumberBind, unisSmsTimeBind, unisSmsEncodeBind,
+--                   unisSmsContentBind, unisSmsTxNotifation, unisSmsRxNotifation by songhao.
+--   V1.4 2013-08-13 Added unisLteCurrentRssi,unisLteRssiMediumThreshold and
+--                   unisLteRssiWeakThreshold in UnisLteInfoEntry.
+--                   Added lte(5) in unis3GCurrentService by zuowenzhong.
+--   V1.5 2014-09-04 Added unis3GCdma1xRttBID, unis3GCdma1xRttSID and
+--                   unis3GCdma1xRttNID in unis3GCdma1xRttTable.
+--                   Added unis3GCdmaEvDoSubNetID in unis3GCdmaEvDoTable by lijuan.
+--   V1.6 2015-12-01 Modified description and added lte(5) in
+--                   unisWirelessCardModemMode by maqianli.
+-- =============================================================
+UNIS-3GMODEM-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Integer32, Unsigned32
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, TruthValue
+        FROM SNMPv2-TC
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB
+    InterfaceIndex
+        FROM IF-MIB
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unis3GModem MODULE-IDENTITY
+    LAST-UPDATED    "201512011200Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The information about the wireless card and the UIM
+         (User Identification Module)."
+    REVISION        "201512011200Z"
+    DESCRIPTION
+        "Modified description and added lte(5) in unisWirelessCardModemMode."
+    REVISION        "201409091200Z"
+    DESCRIPTION
+        "Added unis3GCdma1xRttTable and unis3GCdmaEvDoTable."
+    REVISION        "200904301200Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { unisCommon 98 }
+
+UnisUIMStatusType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The status of the UIM."
+    SYNTAX      INTEGER
+        {
+            absent(1),      -- the UIM is absent
+            initial(2),     -- the UIM is initial
+            fault(3),       -- something wrong in UIM
+            unprotected(4), -- the UIM is not protected with PIN
+                            -- (Personal Identification Number) and can be
+                            -- used normally
+            protected(5),   -- the UIM is protected with PIN and can be
+                            -- used normally
+            pinLocked(6),   -- the UIM is locked, and need be unlocked with PIN
+            pukLocked(7),   -- the UIM is locked, and need be unlocked with PUK
+                            -- (PIN Unblocking Key)
+            selfDestruct(8) -- the UIM is destruct by itself
+        }
+
+UnisSmsEncodeType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The encode type of Sms (short message service)."
+    SYNTAX      INTEGER
+        {
+            ascii(1),
+            ucs2(2)
+        }
+
+
+unis3GModemObjects     OBJECT IDENTIFIER ::= { unis3GModem 1 }
+
+unisWirelessCard OBJECT IDENTIFIER ::= { unis3GModemObjects 1 }
+unisUIM OBJECT IDENTIFIER ::= { unis3GModemObjects 2 }
+unis3GCdma OBJECT IDENTIFIER ::= { unis3GModemObjects 3 }
+unis3GGsm OBJECT IDENTIFIER ::= { unis3GModemObjects 4 }
+unisLte OBJECT IDENTIFIER ::= { unis3GModemObjects 5 }
+
+
+-- The wireless card table
+unisWirelessCardTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisWirelessCardEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains one row per wireless card."
+    ::= { unisWirelessCard 1 }
+
+unisWirelessCardEntry OBJECT-TYPE
+    SYNTAX      UnisWirelessCardEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information about a particular wireless card."
+    INDEX { unisWirelessCardIndex }
+    ::= { unisWirelessCardTable 1 }
+
+UnisWirelessCardEntry ::= SEQUENCE
+    {
+        unisWirelessCardIndex                Integer32,
+        unisWirelessCardModelName            SnmpAdminString,
+        unisWirelessCardMfgName              SnmpAdminString,
+        unisWirelessCardDescription          SnmpAdminString,
+        unisWirelessCardSerialNumber         SnmpAdminString,
+        unisWirelessCardCMIIID               SnmpAdminString,
+        unisWirelessCardHardwareVersion      SnmpAdminString,
+        unisWirelessCardFirmwareVersion      SnmpAdminString,
+        unisWirelessCardPRLVersion           SnmpAdminString,
+        unisWirelessCardInterfaceIndex       InterfaceIndex,
+        unisWirelessCardModemStatus          INTEGER,
+        unisWirelessCardModemMode            INTEGER,
+        unisWirelessCardCurNetConn           INTEGER
+    }
+
+unisWirelessCardIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..2147483647)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The index for this entry."
+    ::= { unisWirelessCardEntry 1 }
+
+unisWirelessCardModelName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The model name of this card."
+    ::= { unisWirelessCardEntry 2 }
+
+unisWirelessCardMfgName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the manufacturer of this card."
+    ::= { unisWirelessCardEntry 3 }
+
+unisWirelessCardDescription OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The textual description of this card."
+    ::= { unisWirelessCardEntry 4 }
+
+unisWirelessCardSerialNumber OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The vendor-specific serial number string for this card."
+    ::= { unisWirelessCardEntry 5 }
+
+unisWirelessCardCMIIID OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The card ID of CMII (Ministry of Information Industry of China)."
+    ::= { unisWirelessCardEntry 6 }
+
+unisWirelessCardHardwareVersion OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The vendor-specific hardware version string for this card."
+    ::= { unisWirelessCardEntry 7 }
+
+unisWirelessCardFirmwareVersion OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The vendor-specific firmware version string for this card."
+    ::= { unisWirelessCardEntry 8 }
+
+unisWirelessCardPRLVersion OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The preferred roaming list version for this card."
+    ::= { unisWirelessCardEntry 9 }
+
+unisWirelessCardInterfaceIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The interface index in IF-MIB of this card."
+    ::= { unisWirelessCardEntry 10 }
+
+unisWirelessCardModemStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        onLine(2),
+                        offLine(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The status of modem."
+    ::= { unisWirelessCardEntry 11 }
+
+unisWirelessCardModemMode OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        tdscdma(2),
+                        wcdma(3),
+                        cdma(4),
+                        lte(5)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The mode of the 3G and 4G Modem."
+    ::= { unisWirelessCardEntry 12 }
+
+unisWirelessCardCurNetConn OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        noService(2),
+                        gsm(3),
+                        gprs(4),
+                        edge(5),
+                        hsdpa(6),
+                        hsupa(7),
+                        hsupaAndhsdpa(8),
+                        hspaPlus(9),
+                        umts(10),
+                        dchspaPlus(11),
+                        lte(12),
+                        onexrtt(13),
+                        evdo(14),
+                        onexrttAndevdo(15),
+                        tdscdma(16)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current network connection."
+    ::= { unisWirelessCardEntry 13 }
+
+
+-- SMS group
+unisSmsGroup OBJECT IDENTIFIER ::= { unisWirelessCard 2 }
+
+-- SMS scalar objects
+unisSmsScalarObjects OBJECT IDENTIFIER ::= { unisSmsGroup 1 }
+
+unisSmsRxNotifSwitch OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The switch of notification when a short message received."
+    ::= { unisSmsScalarObjects 1 }
+
+
+-- SMS operation table
+unisSmsOperationTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisSmsOperationEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains one row per short message."
+    ::= { unisSmsGroup 2 }
+
+unisSmsOperationEntry OBJECT-TYPE
+    SYNTAX      UnisSmsOperationEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The information about the short message."
+    INDEX { unisWirelessCardIndex }
+    ::= { unisSmsOperationTable 1 }
+
+UnisSmsOperationEntry ::= SEQUENCE
+    {
+        unisSmsDestNumber        SnmpAdminString,
+        unisSmsEncode            UnisSmsEncodeType,
+        unisSmsContent           OCTET STRING,
+        unisSmsSendStatus        INTEGER
+    }
+
+
+unisSmsDestNumber OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..20))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The destination number of the short message."
+    ::= { unisSmsOperationEntry 1 }
+
+unisSmsEncode OBJECT-TYPE
+    SYNTAX      UnisSmsEncodeType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The encoded type of the short message."
+    DEFVAL      { 1 }
+    ::= { unisSmsOperationEntry 2 }
+
+unisSmsContent OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Content of the short message."
+    ::= { unisSmsOperationEntry 3 }
+
+unisSmsSendStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            set2Send(1),
+            ready2Send(2),
+            sending(3),
+            sentAlready(4),
+            telnumberInvalid(5),
+            paramInvalid(6),
+            contentTooLong(7),
+            codeError(8),
+            unknown(9),
+            busy(10),
+            notPresent(11),
+            notSupport(12),
+            initializing(13),
+            noCenterNum(14),
+            noSim(15),
+            simNotReady(16),
+            sendAtFailed(17),
+            sendDisable(18)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Status of the short message sent."
+    ::= { unisSmsOperationEntry 4 }
+
+-- Wireless card online table
+unisWirelessCardOnlineTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisWirelessCardOnlineEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains one row per wireless card."
+    ::= { unisWirelessCard 3 }
+
+unisWirelessCardOnlineEntry OBJECT-TYPE
+    SYNTAX      UnisWirelessCardOnlineEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information about online time of a wireless card."
+    INDEX { unisWirelessCardIndex, unisWirelessCardOnlineTime }
+    ::= { unisWirelessCardOnlineTable 1 }
+
+UnisWirelessCardOnlineEntry ::= SEQUENCE
+    {
+        unisWirelessCardOnlineTime       Unsigned32,
+        unisWirelessCardOnlineType       INTEGER
+    }
+
+unisWirelessCardOnlineTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index for this entry."
+    ::= { unisWirelessCardOnlineEntry 1 }
+
+unisWirelessCardOnlineType OBJECT-TYPE
+    SYNTAX    INTEGER
+        {
+            up(1),
+            down(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The online type of this wireless card."
+    ::= { unisWirelessCardOnlineEntry 2 }
+
+
+-- The UIM information table
+unisUIMInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisUIMInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains one row per UIM."
+    ::= { unisUIM 1 }
+
+unisUIMInfoEntry OBJECT-TYPE
+    SYNTAX      UnisUIMInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The information about the UIM."
+    INDEX { unisWirelessCardIndex, unisUIMIndex }
+    ::= { unisUIMInfoTable 1 }
+
+UnisUIMInfoEntry ::= SEQUENCE
+    {
+        unisUIMIndex          Integer32,
+        unisUIMStatus         UnisUIMStatusType,
+        unisUIMImsi           SnmpAdminString,
+        unisUIMPin            SnmpAdminString,
+        unisUIMVoltage        Unsigned32,
+        unisUIMProvider       SnmpAdminString,
+        unisUIMSignal         Integer32,
+        unisUIMTryPinPukTimes Unsigned32,
+        unisUIMOldPin         SnmpAdminString
+    }
+
+unisUIMIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index for this entry."
+    ::= { unisUIMInfoEntry 1 }
+
+unisUIMStatus OBJECT-TYPE
+    SYNTAX      UnisUIMStatusType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The status about this UIM."
+    ::= { unisUIMInfoEntry 2 }
+
+unisUIMImsi OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The IMSI (International Mobile Subscriber Identification Number) about
+        this UIM.  If this information is unknown to the agent, then this object
+        will be returned a zero-length string."
+    ::= { unisUIMInfoEntry 3 }
+
+unisUIMPin OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..9))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The PIN about this UIM.  If this information is unknown to the agent,
+        then this object will be returned a zero-length string."
+    ::= { unisUIMInfoEntry 4 }
+
+unisUIMVoltage OBJECT-TYPE
+    SYNTAX      Unsigned32(0..4294967295)
+    UNITS       "milli-volt"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The voltage about this UIM.  If this information is unknown to the
+        agent, then this object will be returned 4294967295."
+    ::= { unisUIMInfoEntry 5 }
+
+unisUIMProvider OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The provider of mobile network.  If this information is unknown to the
+        agent, then this object will be returned a zero-length string."
+    ::= { unisUIMInfoEntry 6 }
+
+unisUIMSignal OBJECT-TYPE
+    SYNTAX      Integer32(0..31 | 99)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The intensity of the signal about this UIM.
+        A value of '99' means no signal."
+    ::= { unisUIMInfoEntry 7 }
+
+unisUIMTryPinPukTimes OBJECT-TYPE
+    SYNTAX      Unsigned32(0..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of remaining times for unlocking PIN or PUK.
+        The value is associated the same instance of unisUIMStatus.  If this
+        information is unknown to the agent, then this object will be
+        returned 4294967295."
+    ::= { unisUIMInfoEntry 8 }
+
+unisUIMOldPin OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..9))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "The old PIN for this UIM."
+    ::= { unisUIMInfoEntry 9 }
+
+
+-- The CDMA information table of 1xRTT
+unis3GCdma1xRttTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Unis3GCdma1xRttEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "CDMA 1xRTT table."
+    ::= { unis3GCdma 1 }
+
+unis3GCdma1xRttEntry OBJECT-TYPE
+    SYNTAX      Unis3GCdma1xRttEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry of unis3GCdma1xRttTable."
+    INDEX { unisWirelessCardIndex }
+    ::= { unis3GCdma1xRttTable 1 }
+
+Unis3GCdma1xRttEntry ::= SEQUENCE
+    {
+        unis3GCdma1xRttCurrentRssi           Integer32,
+        unis3GCdma1xRttRssiMediumThreshold   Integer32,
+        unis3GCdma1xRttRssiWeakThreshold     Integer32,
+        unis3GCdma1xRttCurServiceStatus      INTEGER,
+        unis3GCdma1xRttCurRoamingStatus      INTEGER,
+        unis3GCdma1xRttBID                   Unsigned32,
+        unis3GCdma1xRttSID                   Unsigned32,
+        unis3GCdma1xRttNID                   Unsigned32
+    }
+
+unis3GCdma1xRttCurrentRssi OBJECT-TYPE
+    SYNTAX      Integer32 (-2147483648 | -150..0)
+    UNITS       "dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Received Signal Strength Indicator(RSSI) of CDMA 1xRTT."
+    ::= { unis3GCdma1xRttEntry 1 }
+
+unis3GCdma1xRttRssiMediumThreshold OBJECT-TYPE
+    SYNTAX      Integer32 (-150..0)
+    UNITS       "dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The medium signal threshold of CMDA 1xRTT RSSI.  The absolute
+        value of unis3GCdma1xRttRssiMediumThreshold should be less than
+        or equal to the absolute value of unis3GCdma1xRttRssiWeakThreshold
+        (|unis3GCdma1xRttRssiMediumThreshold| <= |unis3GCdma1xRttRssiWeakThreshold|)."
+    DEFVAL      { 0 }
+    ::= { unis3GCdma1xRttEntry 2 }
+
+unis3GCdma1xRttRssiWeakThreshold OBJECT-TYPE
+    SYNTAX      Integer32 (-150..0)
+    UNITS       "dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The weak signal threshold of CMDA 1xRTT RSSI.  The absolute
+        value of unis3GCdma1xRttRssiMediumThreshold should be less than
+        or equal to the absolute value of unis3GCdma1xRttRssiWeakThreshold
+        (|unis3GCdma1xRttRssiMediumThreshold| <= |unis3GCdma1xRttRssiWeakThreshold|)."
+    DEFVAL      { -150 }
+    ::= { unis3GCdma1xRttEntry 3 }
+
+unis3GCdma1xRttCurServiceStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        available(2),
+                        emergency(3),
+                        lowPower(4),
+                        noService(5)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The status of service."
+    ::= { unis3GCdma1xRttEntry 4 }
+
+unis3GCdma1xRttCurRoamingStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        roaming(2),
+                        home(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The status of roaming."
+    ::= { unis3GCdma1xRttEntry 5 }
+
+unis3GCdma1xRttBID OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Base Station ID(BID) of CDMA 1xRTT.
+        The invalid value is 4294967295(0xFFFFFFFF)."
+    ::= { unis3GCdma1xRttEntry 6 }
+
+unis3GCdma1xRttSID OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The System ID(SID) of CDMA 1xRTT.
+        The invalid value is 4294967295(0xFFFFFFFF)."
+    ::= { unis3GCdma1xRttEntry 7 }
+
+unis3GCdma1xRttNID OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Network ID(NID) of CDMA 1xRTT.
+        The invalid value is 4294967295(0xFFFFFFFF)."
+    ::= { unis3GCdma1xRttEntry 8 }
+
+-- The CDMA information table of EvDo
+unis3GCdmaEvDoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Unis3GCdmaEvDoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "CDMA EvDo table."
+    ::= { unis3GCdma 2 }
+
+unis3GCdmaEvDoEntry OBJECT-TYPE
+    SYNTAX      Unis3GCdmaEvDoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry of unis3GCdmaEvDoTable."
+    INDEX { unisWirelessCardIndex }
+    ::= { unis3GCdmaEvDoTable 1 }
+
+Unis3GCdmaEvDoEntry ::= SEQUENCE
+    {
+        unis3GCdmaEvDoCurrentRssi           Integer32,
+        unis3GCdmaEvDoRssiMediumThreshold   Integer32,
+        unis3GCdmaEvDoRssiWeakThreshold     Integer32,
+        unis3GCdmaEvDoCurServiceStatus      INTEGER,
+        unis3GCdmaEvDoCurRoamingStatus      INTEGER,
+        unis3GCdmaEvDoSubNetID              SnmpAdminString
+    }
+
+unis3GCdmaEvDoCurrentRssi OBJECT-TYPE
+    SYNTAX      Integer32 (-2147483648 | -150..0)
+    UNITS       "dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Received Signal Strength Indicator(RSSI) of CDMA EvDo."
+    ::= { unis3GCdmaEvDoEntry 1 }
+
+unis3GCdmaEvDoRssiMediumThreshold OBJECT-TYPE
+    SYNTAX      Integer32 (-150..0)
+    UNITS       "dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The medium signal threshold of CMDA EvDo RSSI.  The absolute
+        value of unis3GCdmaEvDoRssiMediumThreshold should be less than
+        or equal to the absolute value of unis3GCdmaEvDoRssiWeakThreshold
+        (|unis3GCdmaEvDoRssiMediumThreshold| <= |unis3GCdmaEvDoRssiWeakThreshold|)."
+    DEFVAL      { 0 }
+    ::= { unis3GCdmaEvDoEntry 2 }
+
+unis3GCdmaEvDoRssiWeakThreshold OBJECT-TYPE
+    SYNTAX      Integer32 (-150..0)
+    UNITS       "dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The weak signal threshold of CMDA EvDo RSSI.  The absolute
+        value of unis3GCdmaEvDoRssiMediumThreshold should be less than
+        or equal to the absolute value of unis3GCdmaEvDoRssiWeakThreshold
+        (|unis3GCdmaEvDoRssiMediumThreshold| <= |unis3GCdmaEvDoRssiWeakThreshold|)."
+    DEFVAL      { -150 }
+    ::= { unis3GCdmaEvDoEntry 3 }
+
+unis3GCdmaEvDoCurServiceStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        available(2),
+                        emergency(3),
+                        lowPower(4),
+                        noService(5)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The status of service."
+    ::= { unis3GCdmaEvDoEntry 4 }
+
+unis3GCdmaEvDoCurRoamingStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        roaming(2),
+                        home(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The status of roaming."
+    ::= { unis3GCdmaEvDoEntry 5 }
+
+unis3GCdmaEvDoSubNetID OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Sub Net ID of CDMA EvDo.
+        The invalid value is a zero-length string."
+    ::= { unis3GCdmaEvDoEntry 6 }
+
+-- The GSM information table
+unis3GGsmInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Unis3GGsmInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "GSM information table."
+    ::= { unis3GGsm 1 }
+
+unis3GGsmInfoEntry OBJECT-TYPE
+    SYNTAX      Unis3GGsmInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry of unis3GGsmInfoTable."
+    INDEX { unisWirelessCardIndex }
+    ::= { unis3GGsmInfoTable 1 }
+
+Unis3GGsmInfoEntry ::= SEQUENCE
+    {
+        unis3GGsmCurrentRssi             Integer32,
+        unis3GGsmRssiMediumThreshold     Integer32,
+        unis3GGsmRssiWeakThreshold       Integer32,
+        unis3GGsmImsi                    SnmpAdminString,
+        unis3GGsmImei                    SnmpAdminString,
+        unis3GGsmApn                     SnmpAdminString,
+        unis3GGsmPacketSessionStatus     INTEGER,
+        unis3GGsmNetworkSelectionMode    INTEGER,
+        unis3GGsmMobileNetworkName       SnmpAdminString,
+        unis3GGsmLac                     SnmpAdminString,
+        unis3GGsmCellId                  SnmpAdminString,
+        unis3GGsmSimStatus               INTEGER,
+        unis3GGsmCurServiceStatus        INTEGER,
+        unis3GGsmCurRoamingStatus        INTEGER,
+        unis3GGsmMcc                     SnmpAdminString,
+        unis3GGsmMnc                     SnmpAdminString
+    }
+
+unis3GGsmCurrentRssi OBJECT-TYPE
+    SYNTAX      Integer32 (-2147483648 | -150..0)
+    UNITS       "dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Received Signal Strength Indicator(RSSI) of GSM."
+    ::= { unis3GGsmInfoEntry 1 }
+
+unis3GGsmRssiMediumThreshold OBJECT-TYPE
+    SYNTAX      Integer32 (-150..0)
+    UNITS       "dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The medium signal threshold of GSM RSSI.  The absolute
+        value of unis3GGsmRssiMediumThreshold should be less than
+        or equal to the absolute value of unis3GGsmRssiWeakThreshold
+        (|unis3GGsmRssiMediumThreshold| <= |unis3GGsmRssiWeakThreshold|)."
+    DEFVAL      { 0 }
+    ::= { unis3GGsmInfoEntry 2 }
+
+unis3GGsmRssiWeakThreshold OBJECT-TYPE
+    SYNTAX      Integer32 (-150..0)
+    UNITS       "dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The weak signal threshold of GSM RSSI.  The absolute
+        value of unis3GGsmRssiMediumThreshold should be less than
+        or equal to the absolute value of unis3GGsmRssiWeakThreshold
+        (|unis3GGsmRssiMediumThreshold| <= |unis3GGsmRssiWeakThreshold|)."
+    DEFVAL      { -150 }
+    ::= { unis3GGsmInfoEntry 3 }
+
+unis3GGsmImsi OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The International Mobile Subscriber Identity(IMSI) of GSM."
+    ::= { unis3GGsmInfoEntry 4 }
+
+unis3GGsmImei OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The International Mobile Equipment Identity(IMEI) of GSM."
+    ::= { unis3GGsmInfoEntry 5 }
+
+unis3GGsmApn OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..100))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The Access Point Name(APN) of GSM."
+    ::= { unis3GGsmInfoEntry 6 }
+
+unis3GGsmPacketSessionStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        active(2),
+                        inactive(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The packet session status of GSM."
+    ::= { unis3GGsmInfoEntry 7 }
+
+unis3GGsmNetworkSelectionMode    OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        automatic(2),
+                        manual(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The network selection mode of GSM."
+    ::= { unis3GGsmInfoEntry 8 }
+
+unis3GGsmMobileNetworkName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The mobile network name of GSM."
+    ::= { unis3GGsmInfoEntry 9 }
+
+unis3GGsmLac OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Location Area Code(LAC) of GSM."
+    ::= { unis3GGsmInfoEntry 10 }
+
+unis3GGsmCellId OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The ID of cell."
+    ::= { unis3GGsmInfoEntry 11 }
+
+unis3GGsmSimStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        ok(2),
+                        notInsert(3),
+                        networkReject(4),
+                        blocked(5)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The status of SIM."
+    ::= { unis3GGsmInfoEntry 12 }
+
+unis3GGsmCurServiceStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        available(2),
+                        emergency(3),
+                        lowPower(4),
+                        noService(5)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The status of service."
+    ::= { unis3GGsmInfoEntry 13 }
+
+unis3GGsmCurRoamingStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        unknown(1),
+                        roaming(2),
+                        home(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The status of roaming."
+    ::= { unis3GGsmInfoEntry 14 }
+
+unis3GGsmMcc OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Mobile Country Code(MCC) of GSM."
+    ::= { unis3GGsmInfoEntry 15 }
+
+unis3GGsmMnc OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Mobile Network Code of GSM."
+    ::= { unis3GGsmInfoEntry 16 }
+
+
+-- The LTE infomation table
+unisLteInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisLteInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The quality of signal table."
+    ::= { unisLte 1 }
+
+unisLteInfoEntry OBJECT-TYPE
+    SYNTAX      UnisLteInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The quality about the signal."
+    INDEX { unisWirelessCardIndex }
+    ::= { unisLteInfoTable 1 }
+
+UnisLteInfoEntry ::= SEQUENCE
+    {
+        unisLteCurrentRsrp     Integer32,
+        unisLteCurrentRsrq     Integer32,
+        unisLteCurrentSinr     Integer32,
+        unisLteTxPower         Integer32,
+        unisLteCurrentRssi           Integer32,
+        unisLteRssiMediumThreshold   Integer32,
+        unisLteRssiWeakThreshold     Integer32
+    }
+
+unisLteCurrentRsrp OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Reference signal receiving power."
+    ::= { unisLteInfoEntry 1 }
+
+unisLteCurrentRsrq OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Reference signal receiving quality."
+    ::= { unisLteInfoEntry 2 }
+
+unisLteCurrentSinr OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Signal to interface plus noise ratio."
+    ::= { unisLteInfoEntry 3 }
+
+unisLteTxPower OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Transmit power, 0x8000 means invalid."
+    ::= { unisLteInfoEntry 4 }
+
+unisLteCurrentRssi OBJECT-TYPE
+    SYNTAX      Integer32 (-2147483648 | -150..0)
+    UNITS       "dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Received Signal Strength Indicator(RSSI) of LTE."
+    ::= { unisLteInfoEntry 5 }
+
+unisLteRssiMediumThreshold OBJECT-TYPE
+    SYNTAX      Integer32 (-150..0)
+    UNITS       "dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The medium signal threshold of LTE RSSI.  The absolute
+        value of unisLteRssiMediumThreshold should be less than
+        or equal to the absolute value of unisLteRssiWeakThreshold
+        (|unisLteRssiMediumThreshold| <= |unisLteRssiWeakThreshold|)."
+    DEFVAL      { 0 }
+    ::= { unisLteInfoEntry 6 }
+
+unisLteRssiWeakThreshold OBJECT-TYPE
+    SYNTAX      Integer32 (-150..0)
+    UNITS       "dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The weak signal threshold of LTE RSSI.  The absolute
+        value of unisLteRssiMediumThreshold should be less than
+        or equal to the absolute value of unisLteRssiWeakThreshold
+        (|unisLteRssiMediumThreshold| <= |unisLteRssiWeakThreshold|)."
+    DEFVAL      { -150 }
+    ::= { unisLteInfoEntry 7 }
+
+
+-- MIB trap definitions
+unis3GModemTrap       OBJECT IDENTIFIER ::= { unis3GModem 2 }
+unis3GModemTraps       OBJECT IDENTIFIER ::= { unis3GModem 3 }
+unis3GModemTrapPrefix  OBJECT IDENTIFIER ::= { unis3GModemTraps 0 }
+
+unisDevSerialNumber OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "The serial number of the current device."
+    ::= { unis3GModemTrap 1 }
+
+unisDeviceOUI OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..64))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "The OUI (Organizational Unique Identifier) of the current device."
+    ::= { unis3GModemTrap 2 }
+
+unisAccessMedia OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            unknown(1),
+            air(2),
+            cable(3)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "The current access media."
+    ::= { unis3GModemTrap 3 }
+
+unis3GCurrentService OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            unknown(1),
+            oneXRtt(2),
+            evDo(3),
+            gsm(4),
+            lte(5)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "The current service type that is bound in the notifications."
+    ::= { unis3GModemTrap 4 }
+
+unis3GCurrentRssiBind OBJECT-TYPE
+    SYNTAX      Integer32 (-2147483648 | -150..0)
+    UNITS       "dBm"
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "The current RSSI that is bound in the notifications."
+    ::= { unis3GModemTrap 5 }
+
+unis3GImsiBind OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "The IMSI that is bound in the notifications."
+    ::= { unis3GModemTrap 6 }
+
+unisSmsSrcNumberBind OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..20))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "The source number that is bound in the notifications."
+    ::= { unis3GModemTrap 7 }
+
+unisSmsTimeBind OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(1..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "The sending time that is bound in the notifications."
+    ::= { unis3GModemTrap 8 }
+
+unisSmsEncodeBind OBJECT-TYPE
+    SYNTAX      UnisSmsEncodeType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "The encoded type that is bound in the notifications."
+    ::= { unis3GModemTrap 9 }
+
+unisSmsContentBind OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..512))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "The content of short message that is bound in the notifications."
+    ::= { unis3GModemTrap 10 }
+
+
+unisWirelessCardInserted NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDeviceOUI,
+            unisDevSerialNumber,
+            unisWirelessCardSerialNumber,
+            unisUIMImsi
+        }
+    STATUS      current
+    DESCRIPTION
+        "A unisWirelessCardInserted notification is generated when a wireless
+        card is inserted."
+   ::= { unis3GModemTrapPrefix 1 }
+
+unisWirelessCardPulledOut NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDeviceOUI,
+            unisDevSerialNumber,
+            unisWirelessCardSerialNumber,
+            unisUIMImsi
+        }
+    STATUS      current
+    DESCRIPTION
+        "A unisWirelessCardPulledOut notification is generated when a wireless
+        card is pulled out."
+   ::= { unis3GModemTrapPrefix 2 }
+
+unisUIMPinInvalid NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDeviceOUI,
+            unisDevSerialNumber,
+            unisWirelessCardSerialNumber,
+            unisUIMImsi
+        }
+    STATUS      current
+    DESCRIPTION
+        "A unisUIMPinInvalid notification is generated when UIM PIN is invalid."
+   ::= { unis3GModemTrapPrefix 3 }
+
+unisUIMPinChanged NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDeviceOUI,
+            unisDevSerialNumber,
+            unisWirelessCardSerialNumber,
+            unisUIMImsi,
+            unisUIMOldPin,
+            unisUIMPin
+        }
+    STATUS      current
+    DESCRIPTION
+        "A unisUIMPinInvalid notification is generated when UIM PIN is changed."
+   ::= { unis3GModemTrapPrefix 4 }
+
+unisAccessMediaChanged NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDeviceOUI,
+            unisDevSerialNumber,
+            unisWirelessCardSerialNumber,
+            unisUIMImsi,
+            unisAccessMedia
+        }
+    STATUS      current
+    DESCRIPTION
+        "A unisAccessMediaChanged notification is generated when access media
+         is changed."
+   ::= { unis3GModemTrapPrefix 5 }
+
+unis3GRssiStrongSignalTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisWirelessCardIndex,
+            unisDeviceOUI,
+            unisDevSerialNumber,
+            unisWirelessCardSerialNumber,
+            unis3GCurrentService,
+            unis3GCurrentRssiBind,
+            unis3GImsiBind
+        }
+    STATUS      current
+    DESCRIPTION
+        "A unis3GRssiStrongSignalTrap notification is generated when current RSSI
+        exceeds the medium signal threshold."
+   ::= { unis3GModemTrapPrefix 6 }
+
+unis3GRssiMediumSignalTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisWirelessCardIndex,
+            unisDeviceOUI,
+            unisDevSerialNumber,
+            unisWirelessCardSerialNumber,
+            unis3GCurrentService,
+            unis3GCurrentRssiBind,
+            unis3GImsiBind
+        }
+    STATUS      current
+    DESCRIPTION
+        "A unis3GRssiMediumSignalTrap notification is generated when the current RSSI
+        falls or rises to a value between the medium and weak signal thresholds."
+   ::= { unis3GModemTrapPrefix 7 }
+
+
+unis3GRssiWeakSignalTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisWirelessCardIndex,
+            unisDeviceOUI,
+            unisDevSerialNumber,
+            unisWirelessCardSerialNumber,
+            unis3GCurrentService,
+            unis3GCurrentRssiBind,
+            unis3GImsiBind
+        }
+    STATUS      current
+    DESCRIPTION
+        "A unis3GRssiWeakSignalTrap notification is generated when current RSSI
+        falls below the weak signal threshold."
+   ::= { unis3GModemTrapPrefix 8 }
+
+unisSmsTxNotification NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisWirelessCardIndex,
+            unisSmsSendStatus
+        }
+    STATUS  current
+    DESCRIPTION
+        "A unisSmsTxNotification notification is generated
+        when a short message is sent."
+    ::= { unis3GModemTrapPrefix 9 }
+
+unisSmsRxNotification NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisWirelessCardIndex,
+            unisSmsSrcNumberBind,
+            unisSmsTimeBind,
+            unisSmsEncodeBind,
+            unisSmsContentBind
+        }
+    STATUS  current
+    DESCRIPTION
+        "A unisSmsRxNotification notification is generated
+        when a short message is received."
+    ::= { unis3GModemTrapPrefix 10 }
+
+END

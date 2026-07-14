@@ -1,0 +1,273 @@
+-- =============================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Traffic Statistics mib
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2022-03-30
+--        Initial Version by chenzhouhui
+-- =============================================================
+
+UNIS-TRAFFIC-STAT-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        Integer32, Unsigned32,
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        CounterBasedGauge64
+    FROM HCNUM-TC;
+
+unisTrafficStat  MODULE-IDENTITY
+        LAST-UPDATED    "202203301911Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+             "This MIB provides traffic statistics information."
+        REVISION        "202203301911Z"
+        DESCRIPTION
+                "Initial version of this MIB module,
+                 including unisTSSlotStatTable, unisTSSlotMonStatTable,unisTSSlotMonThresholdTable,
+                 unisTSSlotMonActionTable,unisTSSlotMonTrapPrex"
+        ::= { unisCommon 222 }
+
+unisTSGroup OBJECT IDENTIFIER ::= { unisTrafficStat 1 }
+-- =================================================================
+unisTSSlotStat OBJECT IDENTIFIER ::= { unisTSGroup 1 }
+
+unisTSSlotStatTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTSSlotStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is about some types of statistics."
+    ::= { unisTSSlotStat 1 }
+
+unisTSSlotStatEntry OBJECT-TYPE
+    SYNTAX      UnisTSSlotStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Entry items."
+    INDEX
+        {
+            unisTSFrameIndex,
+            unisTSSlotIndex
+        }
+    ::= { unisTSSlotStatTable 1 }
+
+UnisTSSlotStatEntry ::= SEQUENCE
+    {
+        unisTSFrameIndex               Integer32,
+        unisTSSlotIndex                Integer32,
+        unisTSPacketDropStatistics     CounterBasedGauge64
+    }
+
+unisTSFrameIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Frame index."
+    ::= { unisTSSlotStatEntry 1 }
+
+unisTSSlotIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Slot index."
+    ::= { unisTSSlotStatEntry 2 }
+
+unisTSPacketDropStatistics OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics about the number of dropped packets."
+    ::= { unisTSSlotStatEntry 3 }
+
+unisTSMonGroup OBJECT IDENTIFIER ::= { unisTrafficStat 2 }
+-- =================================================================
+unisTSSlotMonStat OBJECT IDENTIFIER ::= { unisTSMonGroup 1 }
+
+unisTSSlotMonStatTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTSSlotMonStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is about some types of statistics."
+    ::= { unisTSSlotMonStat 1 }
+
+unisTSSlotMonStatEntry OBJECT-TYPE
+    SYNTAX      UnisTSSlotMonStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Entry items."
+    INDEX
+        {
+            unisTSFrameIndex,
+            unisTSSlotIndex
+        }
+    ::= { unisTSSlotMonStatTable 1 }
+
+UnisTSSlotMonStatEntry ::= SEQUENCE
+    {
+        unisTSSlotMonPacketDropStatistics  CounterBasedGauge64
+    }
+
+unisTSSlotMonPacketDropStatistics OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Statistics about the number of dropped packets when the interval is reached."
+    ::= { unisTSSlotMonStatEntry 1 }
+
+-- =================================================================
+unisTSSlotMonControl  OBJECT IDENTIFIER ::= { unisTSMonGroup 2 }
+
+unisTSSlotMonThresholdTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTSSlotMonThresholdEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is about the upper threshold, lower threshold, and inspection interval of dropped packets.
+         The upper threshold and lower threshold must be bound together. After modification, the table unisSlotMonAlarmActionTable
+         will be changed."
+
+    ::= { unisTSSlotMonControl 1 }
+
+unisTSSlotMonThresholdEntry OBJECT-TYPE
+    SYNTAX      UnisTSSlotMonThresholdEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Entry items."
+    INDEX
+        {
+            unisTSFrameIndex,
+            unisTSSlotIndex
+        }
+    ::= { unisTSSlotMonThresholdTable 1 }
+
+UnisTSSlotMonThresholdEntry ::= SEQUENCE
+    {
+        unisTSSlotMonPacketDropLowThres              Unsigned32,
+        unisTSSlotMonPacketDropHighThres             Unsigned32,
+        unisTSSlotMonPacketDropInterval              Unsigned32
+    }
+
+unisTSSlotMonPacketDropLowThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Lower threshold for the number of dropped packets."
+    DEFVAL { 100 }
+    ::= { unisTSSlotMonThresholdEntry 1 }
+
+unisTSSlotMonPacketDropHighThres OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Upper threshold for the number of dropped packets."
+    DEFVAL { 1000000 }
+    ::= { unisTSSlotMonThresholdEntry 2 }
+
+unisTSSlotMonPacketDropInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Inspection interval for the number of dropped packets."
+    DEFVAL { 30 }
+    ::= { unisTSSlotMonThresholdEntry 3 }
+
+-- =================================================================
+unisTSSlotMonActionTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTSSlotMonActionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table can set or get whether to enable the slot shutdown or reboot function."
+    ::= { unisTSSlotMonControl 2 }
+
+unisTSSlotMonActionEntry OBJECT-TYPE
+    SYNTAX      UnisTSSlotMonActionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Entry items"
+    INDEX
+        {
+            unisTSFrameIndex,
+            unisTSSlotIndex
+        }
+    ::= { unisTSSlotMonActionTable 1 }
+
+UnisTSSlotMonActionEntry ::= SEQUENCE
+    {
+        unisTSSlotMonPacketDropAction        INTEGER
+    }
+
+unisTSSlotMonPacketDropAction OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            noAction(0),
+            shutdown(1),
+            reboot(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Always return noAction(0) when read.
+        Return shutdown(1) the slot when the number of dropped packets exceeds the upper threshold.
+        Rerurn reboot(2) the slot when the timer times out."
+    DEFVAL { 0 }
+    ::= { unisTSSlotMonActionEntry 1 }
+
+-- =================================================================
+-- Traps are defined below.
+
+unisTSSlotMonTrap OBJECT IDENTIFIER ::= { unisTrafficStat 3 }
+unisTSSlotMonTrapPrex OBJECT IDENTIFIER ::= { unisTSSlotMonTrap 0 }
+-- All trap definitions should be placed under this object.
+
+unisTSSlotMonPacketDropRising NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTSFrameIndex,
+            unisTSSlotIndex,
+            unisTSSlotMonPacketDropStatistics,
+            unisTSSlotMonPacketDropLowThres,
+            unisTSSlotMonPacketDropHighThres,
+            unisTSSlotMonPacketDropInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of dropped packets exceeds the
+         upper threshold."
+    ::= { unisTSSlotMonTrapPrex 1 }
+
+unisTSSlotMonPacketDropResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTSFrameIndex,
+            unisTSSlotIndex,
+            unisTSSlotMonPacketDropStatistics,
+            unisTSSlotMonPacketDropLowThres,
+            unisTSSlotMonPacketDropHighThres,
+            unisTSSlotMonPacketDropInterval
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the number of dropped packets drops from
+         above the upper threshold to below the lower threshold."
+    ::= { unisTSSlotMonTrapPrex 2 }
+
+
+END
+

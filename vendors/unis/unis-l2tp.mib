@@ -1,0 +1,219 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description:  This MIB file is used for configuration of L2TP(Layer 2
+--               Tunneling Protocol).
+--               include :1.L2TP statistics information
+-- Reference:
+-- Version: V1.3
+-- History:
+-- V1.0 2013-07-05 created by yanbotao
+-- V1.1 2019-04-12 add unisL2tpStatTemporarySessions and unisL2tpTunnelTable by zhouduan
+-- V1.2 2019-11-21 add unisL2tpRemoteIpAddress ,unisL2tpRemoteTunnelID, unisL2tpRemotePort
+--                 add unisL2tpRemoteName, unisL2tpTunnelState by zhouduan
+-- V1.3 2020-09-05 add unisL2tpStatsMaxSessions by tanjidong
+-- ============================================================================
+UNIS-L2TP-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, Counter32, Unsigned32, IpAddress, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM SNMPv2-TC;
+
+unisL2tp MODULE-IDENTITY
+    LAST-UPDATED "202009050000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The latest baseline."
+    REVISION "202009050000Z"
+    DESCRIPTION
+        "Add the objects of unisL2tpStatsMaxSessions."
+    REVISION "201911211452Z"                -- November 21, 2019 at 14:52 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 139 }
+
+--
+-- Node definitions
+--
+--
+-- Definitions of significant branches
+--
+unisL2tpObjects         OBJECT IDENTIFIER  ::= { unisL2tp 1 }
+unisL2tpScalar          OBJECT IDENTIFIER  ::= { unisL2tpObjects 1 }
+unisL2tpStats           OBJECT IDENTIFIER  ::= { unisL2tpScalar 1 }
+
+--
+-- The L2TP Scalar Status and Statistics Group
+--
+
+unisL2tpStatsTotalTunnels OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The total number of tunnels at the time of querying."
+    ::= { unisL2tpStats 1 }
+
+unisL2tpStatsTotalSessions OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The total number of sessions at the time of querying."
+    ::= { unisL2tpStats 2 }
+
+unisL2tpSessionRate  OBJECT-TYPE
+    SYNTAX        Integer32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The number of sessions that were created in the previous second."
+    ::= { unisL2tpStats 3 }
+
+unisL2tpStatsTemporarySessions  OBJECT-TYPE
+    SYNTAX        Unsigned32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The total number of temporary sessions at the time of querying."
+    ::= { unisL2tpStats 4 }
+
+unisL2tpStatsMaxSessions OBJECT-TYPE
+    SYNTAX        Unsigned32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The max number of sessions."
+    ::= { unisL2tpStats 5 }
+
+unisL2tpTunnel          OBJECT IDENTIFIER  ::= { unisL2tpObjects 2 }
+
+--
+-- The unisL2tpTunnelTable table
+--
+
+unisL2tpTunnelTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF UnisL2tpTunnelEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "A table containing L2tp tunnel specific variables
+        for this L2TP implementation."
+    ::= { unisL2tpTunnel 1 }
+
+unisL2tpTunnelEntry  OBJECT-TYPE
+    SYNTAX        UnisL2tpTunnelEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "Basic information about a particular L2tp tunnel."
+    INDEX     { unisL2tpTunnelType, unisL2tpLocalIpAddress, unisL2tpLocalTunnelID }
+    ::= { unisL2tpTunnelTable 1 }
+
+UnisL2tpTunnelEntry ::= SEQUENCE {
+    unisL2tpTunnelType
+        INTEGER,
+    unisL2tpLocalIpAddress
+        IpAddress,
+    unisL2tpLocalTunnelID
+        Unsigned32,
+    unisL2tpSessions
+        Unsigned32,
+    unisL2tpRemoteIpAddress
+        IpAddress,
+    unisL2tpRemoteTunnelID
+        Unsigned32,
+    unisL2tpRemotePort
+        Unsigned32,
+    unisL2tpRemoteName
+        DisplayString,
+    unisL2tpTunnelState
+        INTEGER
+    }
+
+unisL2tpTunnelType  OBJECT-TYPE
+    SYNTAX        INTEGER {
+        global(1),
+        instance(2)
+    }
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "The tunnel type, (1) global (2) instance."
+    ::= { unisL2tpTunnelEntry 1 }
+
+unisL2tpLocalIpAddress  OBJECT-TYPE
+    SYNTAX        IpAddress
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "The local tunnel IP address."
+    ::= { unisL2tpTunnelEntry 2 }
+
+unisL2tpLocalTunnelID  OBJECT-TYPE
+    SYNTAX        Unsigned32 (1..65535)
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "The local tunnel ID."
+    ::= { unisL2tpTunnelEntry 3 }
+
+unisL2tpSessions  OBJECT-TYPE
+    SYNTAX        Unsigned32 (0..4294967295)
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The total number of sessions at the time of querying."
+    ::= { unisL2tpTunnelEntry 4 }
+
+unisL2tpRemoteIpAddress  OBJECT-TYPE
+    SYNTAX        IpAddress
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The remote tunnel IP address."
+    ::= { unisL2tpTunnelEntry 5 }
+
+unisL2tpRemoteTunnelID  OBJECT-TYPE
+    SYNTAX        Unsigned32 (1..65535)
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The remote tunnel ID."
+    ::= { unisL2tpTunnelEntry 6 }
+
+unisL2tpRemotePort  OBJECT-TYPE
+    SYNTAX        Unsigned32 (0..65535)
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The remote tunnel port."
+    ::= { unisL2tpTunnelEntry 7 }
+
+unisL2tpRemoteName  OBJECT-TYPE
+    SYNTAX        DisplayString (SIZE (0..255))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The remote tunnel name."
+    ::= { unisL2tpTunnelEntry 8 }
+
+unisL2tpTunnelState  OBJECT-TYPE
+    SYNTAX        INTEGER {
+        idle(0),
+        waitReply(1),
+        established(2),
+        stopping(3)
+    }
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The current tunnel state, (0) idle (1) waitReply (2) established (3) stopping."
+    ::= { unisL2tpTunnelEntry 9 }
+
+END

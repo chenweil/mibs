@@ -1,0 +1,294 @@
+-- =================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: NETCONF mib
+-- Reference:
+-- Version: V1.2
+-- History:
+--  V1.0 Created by zhangfeng
+--      Initial version 2021-07-07
+--  V1.1 2022-06-14 Modified by yuantengfei
+--      Added unisNetconfSessionLoginTime, unisNetconfSessionAccessType
+--      and unisNetconfSessionUserRole to unisNetconfServerSessionStart.
+--      Added unisNetconfSessionLogoutTime, unisNetconfSessionAccessType
+--      and unisNetconfSessionUserRole to unisNetconfServerSessionEnd.
+--      Added unisNetconfSessionLoginTime and unisNetconfSessionAccessType
+--      to unisNetconfServerLoginFailure.
+--      Added unisNetconfServerLoginFailure.
+--  V1.2 2023-01-01 Modified by xiexiang
+--      Added unisNetconfCli.
+--      Added unisNetconfEditConfig.
+--      Added unisNetconfEditConfigCli.
+--      Added unisNetconfMsgDel.
+--      Added unisNetconfThread.
+--      Added unisNetconfAbnormalReason.
+--      Added unisNetconfOperationResult.
+-- =================================================================
+UNIS-NETCONF-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Integer32
+        FROM SNMPv2-SMI
+    DateAndTime, DisplayString
+        FROM SNMPv2-TC
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisNetconf MODULE-IDENTITY
+    LAST-UPDATED "202301010000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for NETCONF connection notification."
+    REVISION "202301010000Z"
+    DESCRIPTION
+        "Added unisNetconfCli.
+         Added unisNetconfEditConfig.
+         Added unisNetconfEditConfigCli.
+         Added unisNetconfMsgDel.
+         Added unisNetconfThread.
+         Added unisNetconfAbnormalReason.
+         Added unisNetconfOperationResult"
+    REVISION "202206140000Z"
+    DESCRIPTION
+        "Added unisNetconfSessionLoginTime, unisNetconfSessionAccessType
+         and unisNetconfSessionUserRole to unisNetconfServerSessionStart.
+         Added unisNetconfSessionLogoutTime, unisNetconfSessionAccessType
+         and unisNetconfSessionUserRole to unisNetconfServerSessionEnd.
+         Added unisNetconfSessionLoginTime and unisNetconfSessionAccessType
+         to unisNetconfServerLoginFailure.
+         Added unisNetconfServerLoginFailure."
+    REVISION    "202107070000Z"
+    DESCRIPTION    "The initial version."
+    ::= { unisCommon 206 }
+
+-- ==================================================================
+--
+-- NETCONF trap object
+--
+-- ==================================================================
+unisNetconfObjects OBJECT IDENTIFIER ::= { unisNetconf 1 }
+
+unisNetconfConnObjects OBJECT IDENTIFIER ::= { unisNetconfObjects 1 }
+
+unisNetconfSessionId OBJECT-TYPE
+    SYNTAX       Integer32(1..2147483647)
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "ID of a NETCONF session."
+    ::= { unisNetconfConnObjects 1 }
+
+unisNetconfSessionUserName OBJECT-TYPE
+    SYNTAX       DisplayString (SIZE(1..80))
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "Username of the NETCONF session."
+    ::= { unisNetconfConnObjects 2 }
+
+unisNetconfSessionPeerIPAddressType OBJECT-TYPE
+    SYNTAX       InetAddressType
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "Peer IP address type of the NETCONF session."
+    ::= { unisNetconfConnObjects 3 }
+
+unisNetconfSessionPeerIPAddress OBJECT-TYPE
+    SYNTAX       InetAddress
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "Peer IP address of the NETCONF session."
+    ::= { unisNetconfConnObjects 4 }
+
+unisNetconfSessionTerminationReason OBJECT-TYPE
+    SYNTAX              INTEGER
+    {
+        other               (1),
+        closed              (2),
+        linkDown            (3),
+        idleTimeout         (4)
+    }
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "Termination reason of the NETCONF session.
+       Value other(1) represents other reason.
+       Value closed(2) indicates that the session was closed.
+       Value linkDown(3) indicates that the session was abnormal.
+       Value idleTimeout(4) indicates that the session timed out."
+    ::= { unisNetconfConnObjects 5 }
+
+unisNetconfSessionLoginTime OBJECT-TYPE
+    SYNTAX       DateAndTime
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "Login time of the NETCONF session.
+        For example: 2021-09-14,13:30:16."
+    ::= { unisNetconfConnObjects 6 }
+
+unisNetconfSessionLogoutTime OBJECT-TYPE
+    SYNTAX       DateAndTime
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "Logout time of the NETCONF session.
+        For example: 2021-09-14,13:30:16."
+    ::= { unisNetconfConnObjects 7 }
+
+unisNetconfSessionAccessType OBJECT-TYPE
+    SYNTAX       INTEGER
+    {
+        other           (1),
+        web             (2),
+        soap            (3),
+        terminal        (4)
+    }
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "Login type for the NETCONF session.
+        Value other(1) represents other type.
+        Value web(2) represents Web login.
+        Value soap(3) represents SOAP login.
+        Value terminal(4) represents terminal login."
+    ::= { unisNetconfConnObjects 8 }
+
+unisNetconfSessionUserRole OBJECT-TYPE
+    SYNTAX       DisplayString (SIZE(1..80))
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "User role of the user established the NETCONF session.
+        The user role can be single or multiple, Because the
+        size of the defined user role remains unchanged, when
+        there are multiple user roles, the user roles may be
+        truncated."
+::= { unisNetconfConnObjects 9 }
+
+unisNetconfAbnormalReason OBJECT-TYPE
+    SYNTAX       DisplayString (SIZE(1..80))
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The abnormal reason of NETCONF server.
+        For example: Maximum number of NETCONF threads already reached."
+::= { unisNetconfConnObjects 10 }
+
+unisNetconfOperationResult OBJECT-TYPE
+    SYNTAX       DisplayString (SIZE(1..80))
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The operation result of NETCONF.
+        For example: Succeeded."
+::= { unisNetconfConnObjects 11 }
+
+
+unisNetconfTrap OBJECT IDENTIFIER ::= { unisNetconf 2 }
+
+unisNetconfConnTrapPrefix OBJECT IDENTIFIER ::= { unisNetconfTrap 0 }
+
+unisNetconfServerSessionStart NOTIFICATION-TYPE
+    OBJECTS {
+            unisNetconfSessionId,
+            unisNetconfSessionUserName,
+            unisNetconfSessionPeerIPAddressType,
+            unisNetconfSessionPeerIPAddress,
+            unisNetconfSessionLoginTime,
+            unisNetconfSessionAccessType,
+            unisNetconfSessionUserRole
+        }
+    STATUS  current
+    DESCRIPTION
+        "The NETCONF server created a session."
+::= { unisNetconfConnTrapPrefix 1 }
+
+unisNetconfServerSessionEnd NOTIFICATION-TYPE
+    OBJECTS {
+            unisNetconfSessionId,
+            unisNetconfSessionUserName,
+            unisNetconfSessionPeerIPAddressType,
+            unisNetconfSessionPeerIPAddress,
+            unisNetconfSessionTerminationReason,
+            unisNetconfSessionLogoutTime,
+            unisNetconfSessionAccessType,
+            unisNetconfSessionUserRole
+        }
+    STATUS  current
+    DESCRIPTION
+        "A session created by the NETCONF server ended."
+::= { unisNetconfConnTrapPrefix 2 }
+
+unisNetconfServerLoginFailure NOTIFICATION-TYPE
+    OBJECTS {
+            unisNetconfSessionUserName,
+            unisNetconfSessionPeerIPAddressType,
+            unisNetconfSessionPeerIPAddress,
+            unisNetconfSessionLoginTime,
+            unisNetconfSessionAccessType
+        }
+    STATUS  current
+    DESCRIPTION
+        "Failure in accessing the NETCONF server through a NETCONF session."
+::= { unisNetconfConnTrapPrefix 3 }
+
+unisNetconfCli NOTIFICATION-TYPE
+    OBJECTS {
+            unisNetconfSessionId,
+            unisNetconfSessionUserName,
+            unisNetconfOperationResult
+        }
+    STATUS  current
+    DESCRIPTION
+        "The NETCONF operation of cli."
+::= { unisNetconfConnTrapPrefix 4 }
+
+unisNetconfEditConfig NOTIFICATION-TYPE
+    OBJECTS {
+            unisNetconfSessionId,
+            unisNetconfSessionUserName,
+            unisNetconfOperationResult
+        }
+    STATUS  current
+    DESCRIPTION
+        "The NETCONF operation of edit config."
+::= { unisNetconfConnTrapPrefix 5 }
+
+unisNetconfEditConfigCli NOTIFICATION-TYPE
+    OBJECTS {
+            unisNetconfSessionId,
+            unisNetconfSessionUserName,
+            unisNetconfOperationResult
+        }
+    STATUS  current
+    DESCRIPTION
+        "The NETCONF operation of edit config cli."
+::= { unisNetconfConnTrapPrefix 6 }
+
+unisNetconfMsgDel NOTIFICATION-TYPE
+    OBJECTS {
+            unisNetconfAbnormalReason
+        }
+    STATUS  current
+    DESCRIPTION
+        "The packet size exceeded the upper limit."
+::= { unisNetconfConnTrapPrefix 7 }
+
+unisNetconfThread NOTIFICATION-TYPE
+    OBJECTS {
+            unisNetconfAbnormalReason
+        }
+    STATUS  current
+    DESCRIPTION
+        "Maximum number of NETCONF threads already reached."
+::= { unisNetconfConnTrapPrefix 8 }
+END

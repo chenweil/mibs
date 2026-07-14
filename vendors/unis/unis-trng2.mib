@@ -1,0 +1,280 @@
+-- =====================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Timerange MIB Definition
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 xujunjie,2012-05-14,Initial Version.
+-- V1.1 modified by MouXuanli
+--     Change name "trng" to "trange".
+-- =====================================================================
+UNIS-TRNG2-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    TruthValue, DateAndTime, RowStatus
+        FROM SNMPv2-TC;
+
+unisTRNG2 MODULE-IDENTITY
+    LAST-UPDATED "201303080000Z"        -- Mar 8, 2013 at 00:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The UNIS-TRNG2-MIB contains objects to
+        Configure the system absolute and periodic time-range."
+    REVISION "201303080000Z"        -- Mar 8, 2013 at 00:00 GMT
+    DESCRIPTION
+        "Modified to change node name from 'trng' to 'trange'."
+    REVISION "201205140000Z"        -- May 14, 2012 at 00:00 GMT
+    DESCRIPTION
+        "201205140000Z, --The initial revision of this MIB module."
+    ::= { unisCommon 121 }
+
+--
+-- Node definitions
+--
+
+unisTRNG2MibObjects OBJECT IDENTIFIER ::= { unisTRNG2 1 }
+
+-- unisTrangeCreateTimerangeTable
+
+unisTrangeCreateTimerangeTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisTrangeCreateTimerangeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Creat TimeRange."
+    ::= { unisTRNG2MibObjects 1 }
+
+unisTrangeCreateTimerangeEntry OBJECT-TYPE
+    SYNTAX UnisTrangeCreateTimerangeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Define the entry of unisTrangeCreateTimerangeTable"
+    INDEX { unisTrangeIndex }
+    ::= { unisTrangeCreateTimerangeTable 1 }
+
+UnisTrangeCreateTimerangeEntry ::=
+    SEQUENCE {
+        unisTrangeIndex
+            Integer32,
+        unisTrangeName
+            OCTET STRING,
+        unisTrangeValidFlag
+            TruthValue,
+        unisTrangeCreateRowStatus
+            RowStatus
+     }
+
+unisTrangeIndex OBJECT-TYPE
+    SYNTAX Integer32 (0..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "TimeRange's index"
+    ::= { unisTrangeCreateTimerangeEntry 1 }
+
+unisTrangeName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..32))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "TimeRange's name"
+    ::= { unisTrangeCreateTimerangeEntry 2 }
+
+unisTrangeValidFlag OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Valid or Invalid flag"
+    ::= { unisTrangeCreateTimerangeEntry 3 }
+
+unisTrangeCreateRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this conceptual row.Now only realize CreateAndGo and Destroy and Active."
+    ::= { unisTrangeCreateTimerangeEntry 4 }
+
+-- unisTrangeAbsoluteTable
+
+unisTrangeAbsoluteTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisTrangeAbsoluteEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Creat absoluteness time item of the TimeRange"
+    ::= { unisTRNG2MibObjects 2 }
+
+unisTrangeAbsoluteEntry OBJECT-TYPE
+    SYNTAX UnisTrangeAbsoluteEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Define the entry of unisTrangeAbsoluteTable"
+    INDEX { unisTrangeAbsoluteNameIndex, unisTrangeAbsoluteSubIndex }
+    ::= { unisTrangeAbsoluteTable 1 }
+
+UnisTrangeAbsoluteEntry ::=
+    SEQUENCE {
+        unisTrangeAbsoluteNameIndex
+            Integer32,
+        unisTrangeAbsoluteSubIndex
+            Integer32,
+        unisTrangeAbsoluteStartTime
+            DateAndTime,
+        unisTrangeAbsoluteEndTime
+            DateAndTime,
+        unisTrangeAbsolueRowStatus
+            RowStatus
+     }
+
+unisTrangeAbsoluteNameIndex OBJECT-TYPE
+    SYNTAX Integer32 (0..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "TimeRange's index"
+    ::= { unisTrangeAbsoluteEntry 1 }
+
+unisTrangeAbsoluteSubIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..12)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "SubItem's index"
+    ::= { unisTrangeAbsoluteEntry 2 }
+
+unisTrangeAbsoluteStartTime OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Start point of the timerange.The format defined like 'YYYY-MM-DD,hh:mm:0.0'."
+    ::= { unisTrangeAbsoluteEntry 3 }
+
+unisTrangeAbsoluteEndTime OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "End point of the timerange.The format defined like 'YYYY-MM-DD,hh:mm:0.0'."
+    ::= { unisTrangeAbsoluteEntry 4 }
+
+unisTrangeAbsolueRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this conceptual row. Now only realize CreateAndGo and Destroy and Active."
+    ::= { unisTrangeAbsoluteEntry 5 }
+
+-- unisTrangePeriodicTable
+
+unisTrangePeriodicTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisTrangePeriodicEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Creat periodic time item of the TimeRange"
+    ::= { unisTRNG2MibObjects 3 }
+
+unisTrangePeriodicEntry OBJECT-TYPE
+    SYNTAX UnisTrangePeriodicEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Define the index of unisTrangePeriodicTable"
+    INDEX { unisTrangePeriodicNameIndex, unisTrangePeriodicSubIndex }
+    ::= { unisTrangePeriodicTable 1 }
+
+UnisTrangePeriodicEntry ::=
+    SEQUENCE {
+        unisTrangePeriodicNameIndex
+            Integer32,
+        unisTrangePeriodicSubIndex
+            Integer32,
+        unisTrangePeriodicDayOfWeek
+            BITS,
+        unisTrangePeriodicStartTime
+            DateAndTime,
+        unisTrangePeriodicEndTime
+            DateAndTime,
+        unisTrangePeriodicRowStatus
+            RowStatus
+     }
+
+unisTrangePeriodicNameIndex OBJECT-TYPE
+    SYNTAX Integer32 (0..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "TimeRange's index"
+    ::= { unisTrangePeriodicEntry 1 }
+
+unisTrangePeriodicSubIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..32)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "SubItem's index"
+    ::= { unisTrangePeriodicEntry 2 }
+
+unisTrangePeriodicDayOfWeek OBJECT-TYPE
+    SYNTAX BITS {
+                    sunday(0),
+                    monday(1),
+                    tuesday(2),
+                    wednesday(3),
+                    thursday(4),
+                    friday(5),
+                    saturday(6)
+                }
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The day of week. This is a bit-map of possible conditions.
+        The various bit positions are:
+        |0        |sunday                 |
+        |1        |monday                 |
+        |2        |tuesday                |
+        |3        |wednesday              |
+        |4        |thursday               |
+        |5        |friday                 |
+        |6        |saturday               |
+        "
+    ::= { unisTrangePeriodicEntry 3 }
+
+unisTrangePeriodicStartTime OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Start point of this timerange,The format defined like 'hh:mm:0,0'."
+    ::= { unisTrangePeriodicEntry 4 }
+
+unisTrangePeriodicEndTime OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "End point of this timerange. The format definedlike 'hh:mm:0,0'."
+    ::= { unisTrangePeriodicEntry 5 }
+
+unisTrangePeriodicRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this conceptual row, Now only realize CreateAndGo and Destroy and Active."
+    ::= { unisTrangePeriodicEntry 6 }
+
+END

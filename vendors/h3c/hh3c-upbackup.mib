@@ -1,0 +1,236 @@
+-- =================================================================
+-- Copyright (c) 2004-2025 New H3C Tech. Co., Ltd. All rights reserved.
+--
+-- Description: The MIB of data and configuration on UP backup.
+-- Reference:
+-- Version: V1.1
+-- History:
+--   V1.0 Created by upbackup
+--     Initial version 2024-8-19
+--   V1.1 2025-3-25 add entry hh3cUpBackupIfLimitNum, hh3cUpBackupUpLimitNum
+--   and trap node hh3cUpBackupIfLimitSwitchTrap,
+--   hh3cUpBackupUpLimitSwitchTrap by chenyuanke 23108
+-- =================================================================
+HH3C-UPBACKUP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        hh3cCommon
+    FROM HH3C-OID-MIB
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE,
+        Integer32
+    FROM SNMPv2-SMI;
+
+hh3cUpBackup MODULE-IDENTITY
+    LAST-UPDATED "202503250000Z"
+    ORGANIZATION
+        "New H3C Technologies Co., Ltd."
+    CONTACT-INFO
+        "No.466 Changhe Road, Binjiang District, Hangzhou, Zhejiang
+         http://www.h3c.com
+         Zip: 310052"
+    DESCRIPTION
+        "This MIB provides config information of CP(Control Plane) UP(User Plane) backup profile."
+    REVISION "202503250000Z"
+    DESCRIPTION
+        "Add entry hh3cUpBackupIfLimitNum, hh3cUpBackupUpLimitNum.
+         Add trap node hh3cUpBackupIfLimitSwitchTrap, hh3cUpBackupUpLimitSwitchTrap."
+    REVISION "202408190000Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { hh3cCommon 192 }
+
+--
+-- Node definitions
+--
+
+-- =================================================================
+-- Scalar MIB objects, which are considered as global variables.
+
+-- =================================================================
+-- All table objects are defined below.
+
+hh3cUpBackupTables OBJECT IDENTIFIER ::= { hh3cUpBackup 1 }
+
+hh3cUpBackupTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cUpBackupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of UpBackup management information."
+    ::= { hh3cUpBackupTables 1 }
+
+hh3cUpBackupEntry OBJECT-TYPE
+    SYNTAX      Hh3cUpBackupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Entry items."
+    INDEX
+        {
+            hh3cUpBackupProfileId
+        }
+    ::= { hh3cUpBackupTable 1 }
+
+Hh3cUpBackupEntry ::= SEQUENCE
+    {
+        hh3cUpBackupProfileId              Integer32,
+        hh3cUpBackupMasterIfName           OCTET STRING,
+        hh3cUpBackupStandbyIfName          OCTET STRING,
+        hh3cUpBackupIfLimitNum             Integer32,
+        hh3cUpBackupUpLimitNum             Integer32
+    }
+
+hh3cUpBackupProfileId OBJECT-TYPE
+    SYNTAX      Integer32 (1..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The index value used to identify the UP(User Plane) backup profile."
+    ::= { hh3cUpBackupEntry 1 }
+
+hh3cUpBackupMasterIfName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(1..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A textual description of the entity.  This value could
+         include the full name of master interface."
+    ::= { hh3cUpBackupEntry 2 }
+
+hh3cUpBackupStandbyIfName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(1..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A textual description of the entity.  This value could
+         include the full name of standby interface."
+    ::= { hh3cUpBackupEntry 3 }
+
+hh3cUpBackupIfLimitNum OBJECT-TYPE
+    SYNTAX      Integer32 (0..15)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "A textual description of the entity.  This value could
+         include the upper limit for the number of faulty interfaces."
+    ::= { hh3cUpBackupEntry 4 }
+
+hh3cUpBackupUpLimitNum OBJECT-TYPE
+    SYNTAX      Integer32 (0..15)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "A textual description of the entity.  This value could
+         include the upper limit for the number of faulty UPs limit number."
+    ::= { hh3cUpBackupEntry 5 }
+
+-- Traps are defined below.
+hh3cUpBackupNotification OBJECT IDENTIFIER ::= { hh3cUpBackup 2 }
+
+hh3cUpBackupNotiObjects OBJECT IDENTIFIER ::= { hh3cUpBackupNotification 0 }
+
+hh3cUpBackupSwitchToBackupTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cUpBackupProfileId,
+            hh3cUpBackupMasterIfName,
+            hh3cUpBackupStandbyIfName
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when
+         switch the current master interface to the configured standby interface."
+    ::= { hh3cUpBackupNotiObjects 1 }
+
+hh3cUpBackupSwitchToMasterTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cUpBackupProfileId,
+            hh3cUpBackupMasterIfName,
+            hh3cUpBackupStandbyIfName
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when
+         switch the current master interface to the configured master interface."
+    ::= { hh3cUpBackupNotiObjects 2 }
+
+hh3cUpBackupSwitchToBothTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cUpBackupProfileId,
+            hh3cUpBackupMasterIfName,
+            hh3cUpBackupStandbyIfName
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when
+         there are two master interfaces."
+    ::= { hh3cUpBackupNotiObjects 3 }
+
+hh3cUpBackupSwitchToNullTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cUpBackupProfileId,
+            hh3cUpBackupMasterIfName,
+            hh3cUpBackupStandbyIfName
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when
+         there is no master interface."
+    ::= { hh3cUpBackupNotiObjects 4 }
+
+hh3cUpBackupSwitchToFailTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cUpBackupProfileId,
+            hh3cUpBackupMasterIfName,
+            hh3cUpBackupStandbyIfName
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when
+         the interface fails."
+    ::= { hh3cUpBackupNotiObjects 5 }
+
+hh3cUpBackupSwitchToRestoreTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cUpBackupProfileId,
+            hh3cUpBackupMasterIfName,
+            hh3cUpBackupStandbyIfName
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when
+         the interface is restored."
+    ::= { hh3cUpBackupNotiObjects 6 }
+
+hh3cUpBackupIfLimitSwitchTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cUpBackupProfileId,
+            hh3cUpBackupMasterIfName,
+            hh3cUpBackupIfLimitNum
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when
+         the number of faulty interfaces exceeds the limitation."
+    ::= { hh3cUpBackupNotiObjects 7 }
+
+hh3cUpBackupUpLimitSwitchTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cUpBackupProfileId,
+            hh3cUpBackupMasterIfName,
+            hh3cUpBackupUpLimitNum
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when
+         the number of faulty UPs exceeds the limitation."
+    ::= { hh3cUpBackupNotiObjects 8 }
+
+END

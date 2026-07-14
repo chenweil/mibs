@@ -1,0 +1,671 @@
+-- ==========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The purpose of this MIB file is to provide the definition of
+--              voice dial control configuration, it includes the common
+--              cofiguration of entities, and special configuration for
+--              pots entities and VoIP entities.
+-- Reference:
+-- Version: V1.2
+-- History:
+-- V1.0 2008-02-17 Initial version, created by Tian Xiaoqiang, Qu Jin
+-- V1.1 2009-04-16 Add number management table 'unisVoEntityNumberTable', by
+--                 Qu Pingping.
+-- V1.2 2009-12-09 Add g729br8 to "UnisCodecType", Wang Tong.
+--                 Modify scope of unisVoEntityNumberAuthUser, 
+--                 from 31 to 63 by yangzhanhua.
+-- ==========================================================================
+UNIS-VOICE-DIAL-CONTROL-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+        OBJECT-TYPE, MODULE-IDENTITY, Integer32
+    FROM SNMPv2-SMI
+        TEXTUAL-CONVENTION, RowStatus, TruthValue
+    FROM SNMPv2-TC
+        InetAddressType, InetAddress
+    FROM INET-ADDRESS-MIB
+        AbsoluteCounter32
+    FROM DIAL-CONTROL-MIB
+        unisVoice
+    FROM UNIS-OID-MIB;
+
+
+unisVoiceEntityControl MODULE-IDENTITY
+    LAST-UPDATED "200904160000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file is to provide the definition of
+        voice dial control configuration."
+    REVISION "200904160000Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisVoice 14 }
+
+-- ======================================
+--          Type declaration
+-- ======================================
+UnisCodecType      ::= TEXTUAL-CONVENTION
+STATUS       current
+DESCRIPTION
+        "Type of Codec."
+SYNTAX  INTEGER
+        {
+        g711a(1),
+        g711u(2),
+        g723r53(3),
+        g723r63(4),
+        g729r8(5),
+        g729a(6),
+        g726r16(7),
+        g726r24(8),
+        g726r32(9),
+        g726r40(10),
+        unknown(11),
+        g729br8(12)
+        }
+
+UnisOutBandMode    ::= TEXTUAL-CONVENTION
+STATUS       current
+DESCRIPTION
+        "Type of OutBandMode."
+SYNTAX  INTEGER
+        {
+        voice(1),
+        h245AlphaNumeric(2),
+        h225(3),
+        sip(4),
+        nte(5),
+        vofr(6)
+        }
+
+UnisFaxProtocolType    ::= TEXTUAL-CONVENTION
+STATUS       current
+DESCRIPTION
+        "Type of FaxProtocol."
+SYNTAX INTEGER
+        {
+        t38(1),
+        standardt38(2),
+        pcmG711alaw(3),
+        pcmG711ulaw(4)
+        }
+
+UnisFaxBaudrateType    ::= TEXTUAL-CONVENTION
+STATUS       current
+DESCRIPTION
+        "Type of FaxBaudrate."
+SYNTAX INTEGER
+        {
+        disable(1),
+        voice(2),
+        b2400(3),
+        b4800(4),
+        b9600(5),
+        b14400(6)
+        }
+UnisFaxTrainMode   ::= TEXTUAL-CONVENTION
+STATUS       current
+DESCRIPTION
+        "Type of FaxTrainMode."
+SYNTAX INTEGER
+        {
+        local(1),
+        ppp(2)
+        }
+
+UnisRegisterdStatus    ::= TEXTUAL-CONVENTION
+STATUS       current
+DESCRIPTION
+        "Type of Registerd Status."
+SYNTAX INTEGER
+        {
+        other(1),           -- pots entity has not matched number or has not
+                            -- line with valid voice subscriber-line, or has not
+                            -- turned on registered switch
+        offline(2),         -- register failed or out of management with server
+        online(3),          -- register successfully
+        login(4),           -- registering to the server
+        logout(5)           -- registering out from the server
+        }
+
+unisVoEntityObjects OBJECT IDENTIFIER ::= { unisVoiceEntityControl 1 }
+
+-- ========================================================================
+--                      unisVoEntityCreateTable
+--
+-- ========================================================================
+
+unisVoEntityCreateTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UNISVoEntityCreateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table contains the voice entity information that
+        is used to create an ifIndexed row."
+    ::= { unisVoEntityObjects 1 }
+
+unisVoEntityCreateEntry OBJECT-TYPE
+    SYNTAX      UNISVoEntityCreateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The entry of unisVoEntityCreateTable."
+    INDEX
+        {
+            unisVoEntityIndex
+        }
+    ::= { unisVoEntityCreateTable 1 }
+
+UNISVoEntityCreateEntry ::= SEQUENCE
+    {
+        unisVoEntityIndex        Integer32,
+        unisVoEntityType         INTEGER,
+        unisVoEntityRowStatus    RowStatus
+    }
+
+unisVoEntityIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An arbitrary index that uniquely identifies a voice entity."
+    ::= { unisVoEntityCreateEntry 1 }
+
+unisVoEntityType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            pots(1),
+            voip(2),
+            vofr(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specify the type of voice related encapsulation."
+    ::= { unisVoEntityCreateEntry 2 }
+
+unisVoEntityRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        " This object is used to create, delete or modify a row in
+        this table. The unisVoEntityType object should not be
+        modified once the new row has been created."
+    ::= { unisVoEntityCreateEntry 3 }
+
+-- ========================================================================
+--                      unisVoEntityCommonConfigTable
+--
+-- ========================================================================
+unisVoEntityCommonConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UNISVoEntityCommonConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains the general voice entity information."
+    ::= { unisVoEntityObjects 2 }
+
+
+unisVoEntityCommonConfigEntry OBJECT-TYPE
+    SYNTAX      UNISVoEntityCommonConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The entry of unisVoEntityCommonConfigTable."
+    INDEX
+        {
+            unisVoEntityCfgIndex
+        }
+    ::= { unisVoEntityCommonConfigTable 1 }
+
+
+UNISVoEntityCommonConfigEntry ::= SEQUENCE
+    {
+        unisVoEntityCfgIndex                Integer32,
+        unisVoEntityCfgCodec1st             UnisCodecType,
+        unisVoEntityCfgCodec2nd             UnisCodecType,
+        unisVoEntityCfgCodec3rd             UnisCodecType,
+        unisVoEntityCfgCodec4th             UnisCodecType,
+        unisVoEntityCfgDSCP                 Integer32,
+        unisVoEntityCfgVADEnable            TruthValue,
+        unisVoEntityCfgOutbandMode          UnisOutBandMode,
+        unisVoEntityCfgFaxLevel             Integer32,
+        unisVoEntityCfgFaxBaudrate          UnisFaxBaudrateType,
+        unisVoEntityCfgFaxLocalTrainPara    Integer32,
+        unisVoEntityCfgFaxProtocol          UnisFaxProtocolType,
+        unisVoEntityCfgFaxHRPackNum         Integer32,
+        unisVoEntityCfgFaxLRPackNum         Integer32,
+        unisVoEntityCfgFaxSendNSFEnable     TruthValue,
+        unisVoEntityCfgFaxTrainMode         UnisFaxTrainMode,
+        unisVoEntityCfgFaxEcm               TruthValue,
+        unisVoEntityCfgPriority             Integer32,
+        unisVoEntityCfgDescription          OCTET STRING
+    }
+
+unisVoEntityCfgIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An arbitrary index that uniquely identifies a voice entity."
+    ::= { unisVoEntityCommonConfigEntry 1 }
+
+unisVoEntityCfgCodec1st OBJECT-TYPE
+    SYNTAX      UnisCodecType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the first desirable CODEC of speech
+        of this dial entity."
+    ::= { unisVoEntityCommonConfigEntry 2 }
+
+
+unisVoEntityCfgCodec2nd OBJECT-TYPE
+    SYNTAX      UnisCodecType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the second desirable CODEC of speech
+        of this dial entity."
+    ::= { unisVoEntityCommonConfigEntry 3 }
+
+
+unisVoEntityCfgCodec3rd OBJECT-TYPE
+    SYNTAX      UnisCodecType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the third desirable CODEC of speech
+        of this dial entity."
+    ::= { unisVoEntityCommonConfigEntry 4 }
+
+
+unisVoEntityCfgCodec4th OBJECT-TYPE
+    SYNTAX      UnisCodecType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the forth desirable CODEC of speech
+        of this dial entity."
+    ::= { unisVoEntityCommonConfigEntry 5 }
+
+
+unisVoEntityCfgDSCP OBJECT-TYPE
+    SYNTAX      Integer32(0..63)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the DSCP(Different Service Code Point)
+        value of voice packets."
+    ::= { unisVoEntityCommonConfigEntry 6 }
+
+
+unisVoEntityCfgVADEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates whether the VAD(Voice Activity Detection)
+        is enabled."
+    ::= { unisVoEntityCommonConfigEntry 7 }
+
+
+unisVoEntityCfgOutbandMode OBJECT-TYPE
+    SYNTAX      UnisOutBandMode
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the DTMF(Dual Tone Multi-Frequency)
+        outband type of this dial entity."
+    ::= { unisVoEntityCommonConfigEntry 8 }
+
+
+unisVoEntityCfgFaxLevel OBJECT-TYPE
+    SYNTAX      Integer32(-60..-3)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the fax level of this dial entity."
+    ::= { unisVoEntityCommonConfigEntry 9 }
+
+
+unisVoEntityCfgFaxBaudrate OBJECT-TYPE
+    SYNTAX      UnisFaxBaudrateType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the fax baudrate of this dial entity."
+    ::= { unisVoEntityCommonConfigEntry 10 }
+
+
+unisVoEntityCfgFaxLocalTrainPara OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the fax local train threshold of this
+        dial entity."
+    ::= { unisVoEntityCommonConfigEntry 11 }
+
+
+unisVoEntityCfgFaxProtocol OBJECT-TYPE
+    SYNTAX      UnisFaxProtocolType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the fax protocol of this dial entity."
+    ::= { unisVoEntityCommonConfigEntry 12 }
+
+
+unisVoEntityCfgFaxHRPackNum OBJECT-TYPE
+    SYNTAX      Integer32(0..2)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the high speed redundancy packet
+        numbers of t38 and standard-t38."
+    ::= { unisVoEntityCommonConfigEntry 13 }
+
+
+unisVoEntityCfgFaxLRPackNum OBJECT-TYPE
+    SYNTAX      Integer32(0..5)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the low speed redundancy packet
+        numbers of t38 and standard-t38."
+    ::= { unisVoEntityCommonConfigEntry 14 }
+
+
+unisVoEntityCfgFaxSendNSFEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates whether sends NSF(Non-Standard Faculty)
+        to fax of this dial entity."
+    ::= { unisVoEntityCommonConfigEntry 15 }
+
+
+unisVoEntityCfgFaxTrainMode OBJECT-TYPE
+    SYNTAX      UnisFaxTrainMode
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the fax train mode of this dial entity."
+    ::= { unisVoEntityCommonConfigEntry 16 }
+
+
+unisVoEntityCfgFaxEcm OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates whether the ECM(Error Correct Mode)
+        is enabled."
+    ::= { unisVoEntityCommonConfigEntry 17 }
+
+
+unisVoEntityCfgPriority OBJECT-TYPE
+    SYNTAX      Integer32(0..10)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the priority of this dial entity."
+    ::= { unisVoEntityCommonConfigEntry 18 }
+
+
+unisVoEntityCfgDescription OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..80))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the textual description of this
+        dial entity."
+    ::= { unisVoEntityCommonConfigEntry 19 }
+
+
+
+
+-- ========================================================================
+--                      unisVoPOTSEntityConfigTable
+--
+-- ========================================================================
+unisVoPOTSEntityConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UNISVoPOTSEntityConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains the POTS(Public Switched Telephone Network)
+        entity information."
+    ::= { unisVoEntityObjects 3 }
+
+
+unisVoPOTSEntityConfigEntry OBJECT-TYPE
+    SYNTAX      UNISVoPOTSEntityConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The entry of unisVoPOTSEntityConfigTable."
+    INDEX
+        {
+            unisVoPOTSEntityConfigIndex
+        }
+    ::= { unisVoPOTSEntityConfigTable 1 }
+
+
+UNISVoPOTSEntityConfigEntry ::= SEQUENCE
+    {
+        unisVoPOTSEntityConfigIndex      Integer32,
+        unisVoPOTSEntityConfigPrefix     OCTET STRING,
+        unisVoPOTSEntityConfigSubLine    OCTET STRING,
+        unisVoPOTSEntityConfigSendNum    Integer32
+    }
+
+unisVoPOTSEntityConfigIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An arbitrary index that uniquely identifies a voice entity."
+    ::= { unisVoPOTSEntityConfigEntry 1 }
+
+
+unisVoPOTSEntityConfigPrefix OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..31))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the prefix which is added to the
+        called number."
+    ::= { unisVoPOTSEntityConfigEntry 2 }
+
+
+unisVoPOTSEntityConfigSubLine OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the voice subscriber line of
+        this dial entity."
+    ::= { unisVoPOTSEntityConfigEntry 3 }
+
+
+unisVoPOTSEntityConfigSendNum OBJECT-TYPE
+    SYNTAX      Integer32(0..31|65534|65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the digit of phone number to be
+        sent to the destination.
+        0..31: Number of digits (that are extracted from the end of a number)
+        to be sent, in the range of 0 to 31. It is not greater than the total
+        number of digits of the called number.
+        65534: Sends all digits of a called number.
+        65535: Sends a truncated called number."
+    ::= { unisVoPOTSEntityConfigEntry 4 }
+
+
+
+-- ========================================================================
+--                      unisVoVoIPEntityConfigTable
+--
+-- ========================================================================
+unisVoVoIPEntityConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UNISVoVoIPEntityConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains the VoIP entity information."
+    ::= { unisVoEntityObjects 4 }
+
+
+unisVoVoIPEntityConfigEntry OBJECT-TYPE
+    SYNTAX      UNISVoVoIPEntityConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The entry of unisVoVoIPEntityConfigTable."
+    INDEX
+        {
+            unisVoVoIPEntityCfgIndex
+        }
+    ::= { unisVoVoIPEntityConfigTable 1 }
+
+
+UNISVoVoIPEntityConfigEntry ::= SEQUENCE
+    {
+        unisVoVoIPEntityCfgIndex             Integer32,
+        unisVoVoIPEntityCfgTargetType        INTEGER,
+        unisVoVoIPEntityCfgTargetAddrType    InetAddressType,
+        unisVoVoIPEntityCfgTargetAddr        InetAddress
+    }
+
+unisVoVoIPEntityCfgIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An arbitrary index that uniquely identifies a voice entity."
+    ::= { unisVoVoIPEntityConfigEntry 1 }
+
+
+unisVoVoIPEntityCfgTargetType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            unknown(1),
+            ras(2),
+            h323IpAddress(3),
+            sipIpAddress(4),
+            sipProxy(5)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the type of the session target of this entity."
+    ::= { unisVoVoIPEntityConfigEntry 2 }
+
+
+unisVoVoIPEntityCfgTargetAddrType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The IP address type of object unisVoVoIPEntityCfgTargetAddr."
+    ::= { unisVoVoIPEntityConfigEntry 3 }
+
+
+unisVoVoIPEntityCfgTargetAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the target IP address."
+    ::= { unisVoVoIPEntityConfigEntry 4 }
+
+-- ========================================================================
+--                      unisVoEntityNumberTable
+--
+-- ========================================================================
+unisVoEntityNumberTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVoEntityNumberEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table contains the number management information."
+    ::= { unisVoEntityObjects 5 }
+
+
+unisVoEntityNumberEntry OBJECT-TYPE
+    SYNTAX      UnisVoEntityNumberEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The entry of unisVoEntityNumberTable.  UnisVoEntityIndex
+        is used to uniquely identify these numbers registered on
+        the server.  The same value of unisVoEntityIndex used in
+        the corresponding UNISVoEntityCommonConfigTable is used here."
+    INDEX
+        {
+            unisVoEntityIndex
+        }
+    ::= { unisVoEntityNumberTable 1 }
+
+UnisVoEntityNumberEntry ::= SEQUENCE
+{
+    unisVoEntityNumberAuthUser                   OCTET STRING,
+    unisVoEntityNumberPasswordType               Integer32,
+    unisVoEntityNumberPassword                   OCTET STRING,
+    unisVoEntityNumberStatus                     UnisRegisterdStatus,
+    unisVoEntityNumberExpires                    Integer32
+}
+
+unisVoEntityNumberAuthUser OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..63))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the username of the entity number to authorize."
+    ::= { unisVoEntityNumberEntry 1 }
+
+unisVoEntityNumberPasswordType OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the password type of the entity number to authorize.
+         The encrypting type of password:
+         0 : password simple, means password is clean text.
+         1 : password cipher, means password is encrypted text.
+         default is 65535."
+    ::= { unisVoEntityNumberEntry 2 }
+
+unisVoEntityNumberPassword OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..16 | 24))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the password of the entity number to authorize."
+    ::= { unisVoEntityNumberEntry 3 }
+
+unisVoEntityNumberStatus OBJECT-TYPE
+    SYNTAX      UnisRegisterdStatus
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the current state of the entity number."
+    ::= { unisVoEntityNumberEntry 4 }
+
+unisVoEntityNumberExpires OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This is the interval time for entity number updating registered message."
+    ::= { unisVoEntityNumberEntry 5 }
+
+END

@@ -1,0 +1,316 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description: This MIB will maintain the products MIB OID and management
+--              properties root node.
+--
+-- Reference:
+-- Version: V1.12
+-- History:
+--   V1.00 2015-09-17 Initial version, creating by songhao
+--   V1.01 2018-04-18 add 13 under unisNetworking by jiliyan
+--                    add 166 to 175 under unisCommon by jiliyan
+--   V1.02 2019-01-25 add 176 to 180 under unisCommon by jiliyan
+--   V1.03 2019-07-11 add 181 to 183 under unisCommon by jiliyan
+--   V1.04 2019-11-14 add 185 under unisCommon by jiliyan
+--   V1.05 2020-01-06 add 186 under unisCommon by jiliyan
+--   V1.06 2020-04-08 ADD 14  under unisNetworking by jiliyan
+--   V1.07 2020/06/09 add 187 to 188 under unisCommon by jiliyan
+--   V1.08 2020/07/08 add 189 under unisCommon by jiliyan
+--   V1.09 2020/08/07 add 190-191 under unisCommon by jiliyan
+--   V1.10 2020/09/08 add 15 under unisNetworking by jiliyan
+--         2020/09/08 add 192 under unisCommon by jiliyan
+--   V1.11 2020/10/13 add 193-196 under unisCommon by jiliyan
+--   V1.12 2020/11/09 add 197-198 under unisCommon by jiliyan
+--         2020/11/00 mod name of 194 195 by jiliyan
+-- ============================================================================
+UNIS-OID-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+        enterprises
+            FROM RFC1155-SMI;
+
+-- Objects under .enterprises
+    unisplendour    OBJECT IDENTIFIER ::= { enterprises 10519 }
+    unisNetworking  OBJECT IDENTIFIER ::= { unisplendour 256 }
+
+-- Objects under .enterprises.unisplendour.unisNetworking
+    unisProductId               OBJECT IDENTIFIER ::= { unisNetworking 1 }
+    unisCommon                  OBJECT IDENTIFIER ::= { unisNetworking 2 }
+    unisEntityVendorTypeOID     OBJECT IDENTIFIER ::= { unisNetworking 3 }
+    unisNM                      OBJECT IDENTIFIER ::= { unisNetworking 4 }
+    unisSystem                  OBJECT IDENTIFIER ::= { unisNetworking 6 }
+    unisSNMPAgCpb               OBJECT IDENTIFIER ::= { unisNetworking 7 }
+    unisRhw                     OBJECT IDENTIFIER ::= { unisNetworking 8 }
+    unisSurveillanceMIB         OBJECT IDENTIFIER ::= { unisNetworking 9 }
+    unisStorageRef              OBJECT IDENTIFIER ::= { unisNetworking 10 }
+    unisJointMibs               OBJECT IDENTIFIER ::= { unisNetworking 12 }
+    unis2014                    OBJECT IDENTIFIER ::= { unisNetworking 13 }
+    unisSNA                     OBJECT IDENTIFIER ::= { unisNetworking 14 }
+    unisBasesoft                OBJECT IDENTIFIER ::= { unisNetworking 15 }
+
+-- Objects under .enterprises.unisplendour.unisCommon
+    unisFtm                     OBJECT IDENTIFIER ::= { unisCommon 1 }
+    unisUIMgt                   OBJECT IDENTIFIER ::= { unisCommon 2 }
+    unisSystemMan               OBJECT IDENTIFIER ::= { unisCommon 3 }
+    unisConfig                  OBJECT IDENTIFIER ::= { unisCommon 4 }
+    unisFlash                   OBJECT IDENTIFIER ::= { unisCommon 5 }
+    unisEntityExtend            OBJECT IDENTIFIER ::= { unisCommon 6 }
+    unisIPSecMonitor            OBJECT IDENTIFIER ::= { unisCommon 7 }
+    unisAcl                     OBJECT IDENTIFIER ::= { unisCommon 8 }
+    unisVoiceVlan               OBJECT IDENTIFIER ::= { unisCommon 9 }
+    unisL4Redirect              OBJECT IDENTIFIER ::= { unisCommon 10 }
+    unisIpPBX                   OBJECT IDENTIFIER ::= { unisCommon 11 }
+    unisUser                    OBJECT IDENTIFIER ::= { unisCommon 12 }
+    unisRadius                  OBJECT IDENTIFIER ::= { unisCommon 13 }
+    unisPowerEthernetExt        OBJECT IDENTIFIER ::= { unisCommon 14 }
+    unisEntityRelation          OBJECT IDENTIFIER ::= { unisCommon 15 }
+    unisProtocolVlan            OBJECT IDENTIFIER ::= { unisCommon 16 }
+    unisQosProfile              OBJECT IDENTIFIER ::= { unisCommon 17 }
+    unisNat                     OBJECT IDENTIFIER ::= { unisCommon 18 }
+    unisPos                     OBJECT IDENTIFIER ::= { unisCommon 19 }
+    unisNS                      OBJECT IDENTIFIER ::= { unisCommon 20 }
+    unisAAL5                    OBJECT IDENTIFIER ::= { unisCommon 21 }
+    unisSSH                     OBJECT IDENTIFIER ::= { unisCommon 22 }
+    unisRSA                     OBJECT IDENTIFIER ::= { unisCommon 23 }
+    unisVrrpExt                 OBJECT IDENTIFIER ::= { unisCommon 24 }
+    unisIpa                     OBJECT IDENTIFIER ::= { unisCommon 25 }
+    unisPortSecurity            OBJECT IDENTIFIER ::= { unisCommon 26 }
+    unisVpls                    OBJECT IDENTIFIER ::= { unisCommon 27 }
+    unisE1                      OBJECT IDENTIFIER ::= { unisCommon 28 }
+    unisT1                      OBJECT IDENTIFIER ::= { unisCommon 29 }
+    unisIKEMonitor              OBJECT IDENTIFIER ::= { unisCommon 30 }
+    unisWebSwitch               OBJECT IDENTIFIER ::= { unisCommon 31 }
+    unisAutoDetect              OBJECT IDENTIFIER ::= { unisCommon 32 }
+    unisIpBroadcast             OBJECT IDENTIFIER ::= { unisCommon 33 }
+    unisIpx                     OBJECT IDENTIFIER ::= { unisCommon 34 }
+    unisIPS                     OBJECT IDENTIFIER ::= { unisCommon 35 }
+    unisDhcpSnoop               OBJECT IDENTIFIER ::= { unisCommon 36 }
+    unisProtocolPriority        OBJECT IDENTIFIER ::= { unisCommon 37 }
+    unisTrap                    OBJECT IDENTIFIER ::= { unisCommon 38 }
+    unisVoice                   OBJECT IDENTIFIER ::= { unisCommon 39 }
+    unisIfExt                   OBJECT IDENTIFIER ::= { unisCommon 40 }
+    unisCfCard                  OBJECT IDENTIFIER ::= { unisCommon 41 }
+    unisEpon                    OBJECT IDENTIFIER ::= { unisCommon 42 }
+    unisDldp                    OBJECT IDENTIFIER ::= { unisCommon 43 }
+    unisUnicast                 OBJECT IDENTIFIER ::= { unisCommon 44 }
+    unisRrpp                    OBJECT IDENTIFIER ::= { unisCommon 45 }
+    unisDomain                  OBJECT IDENTIFIER ::= { unisCommon 46 }
+    unisIds                     OBJECT IDENTIFIER ::= { unisCommon 47 }
+    unisRcr                     OBJECT IDENTIFIER ::= { unisCommon 48 }
+    unisAtmDxi                  OBJECT IDENTIFIER ::= { unisCommon 49 }
+    unisMulticast               OBJECT IDENTIFIER ::= { unisCommon 50 }
+    unisMpm                     OBJECT IDENTIFIER ::= { unisCommon 51 }
+    unisOadp                    OBJECT IDENTIFIER ::= { unisCommon 52 }
+    unisTunnel                  OBJECT IDENTIFIER ::= { unisCommon 53 }
+    unisGre                     OBJECT IDENTIFIER ::= { unisCommon 54 }
+    unisObjectInfo              OBJECT IDENTIFIER ::= { unisCommon 55 }
+    unisStorage                 OBJECT IDENTIFIER ::= { unisCommon 56 }
+    unisDvpn                    OBJECT IDENTIFIER ::= { unisCommon 57 }
+    unisDhcpRelay               OBJECT IDENTIFIER ::= { unisCommon 58 }
+    unisIsis                    OBJECT IDENTIFIER ::= { unisCommon 59 }
+    unisRpr                     OBJECT IDENTIFIER ::= { unisCommon 60 }
+    unisSubnetVlan              OBJECT IDENTIFIER ::= { unisCommon 61 }
+    unisDlswExt                 OBJECT IDENTIFIER ::= { unisCommon 62 }
+    unisSyslog                  OBJECT IDENTIFIER ::= { unisCommon 63 }
+    unisFlowTemplate            OBJECT IDENTIFIER ::= { unisCommon 64 }
+    unisQos2                    OBJECT IDENTIFIER ::= { unisCommon 65 }
+    unisStormConstrain          OBJECT IDENTIFIER ::= { unisCommon 66 }
+    unisIpAddrMIB               OBJECT IDENTIFIER ::= { unisCommon 67 }
+    unisMirrGroup               OBJECT IDENTIFIER ::= { unisCommon 68 }
+    unisQINQ                    OBJECT IDENTIFIER ::= { unisCommon 69 }
+    unisTransceiver             OBJECT IDENTIFIER ::= { unisCommon 70 }
+    unisIpv6AddrMIB             OBJECT IDENTIFIER ::= { unisCommon 71 }
+    unisBfdMIB                  OBJECT IDENTIFIER ::= { unisCommon 72 }
+    unisRCP                     OBJECT IDENTIFIER ::= { unisCommon 73 }
+    unisAcfp                    OBJECT IDENTIFIER ::= { unisCommon 74 }
+    unisDot11                   OBJECT IDENTIFIER ::= { unisCommon 75 }
+    unisE1T1VI                  OBJECT IDENTIFIER ::= { unisCommon 76 }
+    uniswapiMIB                 OBJECT IDENTIFIER ::= { unisCommon 77 }
+    unisL2VpnPwe3               OBJECT IDENTIFIER ::= { unisCommon 78 }
+    unisMplsOam                 OBJECT IDENTIFIER ::= { unisCommon 79 }
+    unisMplsOamPs               OBJECT IDENTIFIER ::= { unisCommon 80 }
+    unisSiemMib                 OBJECT IDENTIFIER ::= { unisCommon 81 }
+    unisUps                     OBJECT IDENTIFIER ::= { unisCommon 82 }
+    unisEOCCommon               OBJECT IDENTIFIER ::= { unisCommon 83 }
+    unisHPEOC                   OBJECT IDENTIFIER ::= { unisCommon 84 }
+    unisAFC                     OBJECT IDENTIFIER ::= { unisCommon 85 }
+    unisMultCDR                 OBJECT IDENTIFIER ::= { unisCommon 86 }
+    unisMACInformation          OBJECT IDENTIFIER ::= { unisCommon 87 }
+    unisFireWall                OBJECT IDENTIFIER ::= { unisCommon 88 }
+    unisDSP                     OBJECT IDENTIFIER ::= { unisCommon 89 }
+    unisNetMan                  OBJECT IDENTIFIER ::= { unisCommon 90 }
+    unisStack                   OBJECT IDENTIFIER ::= { unisCommon 91 }
+    unisPosa                    OBJECT IDENTIFIER ::= { unisCommon 92 }
+    unisWebAuthentication       OBJECT IDENTIFIER ::= { unisCommon 93 }
+    unisCATVTransceiver         OBJECT IDENTIFIER ::= { unisCommon 94 }
+    unisLpbkdt                  OBJECT IDENTIFIER ::= { unisCommon 95 }
+    unisMultiMedia              OBJECT IDENTIFIER ::= { unisCommon 96 }
+    unisDns                     OBJECT IDENTIFIER ::= { unisCommon 97 }
+    unis3GModem                 OBJECT IDENTIFIER ::= { unisCommon 98 }
+    unisPortal                  OBJECT IDENTIFIER ::= { unisCommon 99 }
+    unislldp                    OBJECT IDENTIFIER ::= { unisCommon 100 }
+    unisDHCPServer              OBJECT IDENTIFIER ::= { unisCommon 101 }
+    unisPPPoEServer             OBJECT IDENTIFIER ::= { unisCommon 102 }
+    unisL2Isolate               OBJECT IDENTIFIER ::= { unisCommon 103 }
+    unisSnmpExt                 OBJECT IDENTIFIER ::= { unisCommon 104 }
+    unisVsi                     OBJECT IDENTIFIER ::= { unisCommon 105 }
+    unisEvc                     OBJECT IDENTIFIER ::= { unisCommon 106 }
+    unisMinm                    OBJECT IDENTIFIER ::= { unisCommon 107 }
+    unisBlg                     OBJECT IDENTIFIER ::= { unisCommon 108 }
+    unisRS485                   OBJECT IDENTIFIER ::= { unisCommon 109 }
+    unisARPRatelimit            OBJECT IDENTIFIER ::= { unisCommon 110 }
+    unisLI                      OBJECT IDENTIFIER ::= { unisCommon 111 }
+    unisDar                     OBJECT IDENTIFIER ::= { unisCommon 112 }
+    unisPBR                     OBJECT IDENTIFIER ::= { unisCommon 113 }
+    unisAAANasId                OBJECT IDENTIFIER ::= { unisCommon 114 }
+    unisTeTunnel                OBJECT IDENTIFIER ::= { unisCommon 115 }
+    unisLB                      OBJECT IDENTIFIER ::= { unisCommon 116 }
+    unisDldp2                   OBJECT IDENTIFIER ::= { unisCommon 117 }
+    unisWIPS                    OBJECT IDENTIFIER ::= { unisCommon 118 }
+    unisInfoCenter              OBJECT IDENTIFIER ::= { unisCommon 119 }
+    unisFCoE                    OBJECT IDENTIFIER ::= { unisCommon 120 }
+    unisTRNG2                   OBJECT IDENTIFIER ::= { unisCommon 121 }
+    unisDhcp4                   OBJECT IDENTIFIER ::= { unisCommon 122 }
+    unisMulticastSnoop          OBJECT IDENTIFIER ::= { unisCommon 123 }
+    unisDhcpSnoop2              OBJECT IDENTIFIER ::= { unisCommon 124 }
+    unisRmonExt                 OBJECT IDENTIFIER ::= { unisCommon 125 }
+    unisIPsecMonitorV2          OBJECT IDENTIFIER ::= { unisCommon 126 }
+    unisSan                     OBJECT IDENTIFIER ::= { unisCommon 127 }
+    unisSpb                     OBJECT IDENTIFIER ::= { unisCommon 128 }
+    unisPex                     OBJECT IDENTIFIER ::= { unisCommon 129 }
+    unisSlbg                    OBJECT IDENTIFIER ::= { unisCommon 130 }
+    unisPvst                    OBJECT IDENTIFIER ::= { unisCommon 131 }
+    unisEvi                     OBJECT IDENTIFIER ::= { unisCommon 132 }
+    unisIssuUpgrade             OBJECT IDENTIFIER ::= { unisCommon 133 }
+    unisEvb                     OBJECT IDENTIFIER ::= { unisCommon 134 }
+    unisFcoeMode                OBJECT IDENTIFIER ::= { unisCommon 135 }
+    unisMDC                     OBJECT IDENTIFIER ::= { unisCommon 136 }
+    unisQinQv2                  OBJECT IDENTIFIER ::= { unisCommon 137 }
+    unisVmap                    OBJECT IDENTIFIER ::= { unisCommon 138 }
+    unisL2tp                    OBJECT IDENTIFIER ::= { unisCommon 139 }
+    unisMultilinkPPPV2          OBJECT IDENTIFIER ::= { unisCommon 140 }
+    unisLocAAASrv               OBJECT IDENTIFIER ::= { unisCommon 141 }
+    unisMplsExt                 OBJECT IDENTIFIER ::= { unisCommon 142 }
+    unisMplsTe                  OBJECT IDENTIFIER ::= { unisCommon 143 }
+    unisBpa                     OBJECT IDENTIFIER ::= { unisCommon 144 }
+    unisLicense                 OBJECT IDENTIFIER ::= { unisCommon 145 }
+    unisSmlk                    OBJECT IDENTIFIER ::= { unisCommon 147 }
+    unisARPSourceSuppression    OBJECT IDENTIFIER ::= { unisCommon 146 }
+    unisLBv2                    OBJECT IDENTIFIER ::= { unisCommon 148 }
+    unisSession                 OBJECT IDENTIFIER ::= { unisCommon 149 }
+    unisVxlan                   OBJECT IDENTIFIER ::= { unisCommon 150 }
+    unisRddc                    OBJECT IDENTIFIER ::= { unisCommon 151 }
+    unisIpRanDcn                OBJECT IDENTIFIER ::= { unisCommon 152 }
+    unis8021XExt2               OBJECT IDENTIFIER ::= { unisCommon 153 }
+    unisContext                 OBJECT IDENTIFIER ::= { unisCommon 154 }
+    unisObjp                    OBJECT IDENTIFIER ::= { unisCommon 155 }
+    unisNvgre                   OBJECT IDENTIFIER ::= { unisCommon 156 }
+    unisWlanMt                  OBJECT IDENTIFIER ::= { unisCommon 157 }
+    unisRbac                    OBJECT IDENTIFIER ::= { unisCommon 158 }
+    unisDHCP6Server             OBJECT IDENTIFIER ::= { unisCommon 159 }
+    unisMplsVpnBgp              OBJECT IDENTIFIER ::= { unisCommon 160 }
+    unisOspf                    OBJECT IDENTIFIER ::= { unisCommon 161 }
+    unisL2vpn                   OBJECT IDENTIFIER ::= { unisCommon 162 }
+    unisMACsec                  OBJECT IDENTIFIER ::= { unisCommon 163 }
+    unisFailover                OBJECT IDENTIFIER ::= { unisCommon 164 }
+    unisVpnPeer                 OBJECT IDENTIFIER ::= { unisCommon 165 }
+    unisSecp                    OBJECT IDENTIFIER ::= { unisCommon 166 }
+    unisOfp                     OBJECT IDENTIFIER ::= { unisCommon 167 }
+    unisARPEntry                OBJECT IDENTIFIER ::= { unisCommon 168 }
+    unisResMon                  OBJECT IDENTIFIER ::= { unisCommon 169 }
+    unisSslvpn                  OBJECT IDENTIFIER ::= { unisCommon 170 }
+    unisSecHigh                 OBJECT IDENTIFIER ::= { unisCommon 171 }
+    unisBgpEvpn                 OBJECT IDENTIFIER ::= { unisCommon 172 }
+    unisEvpn                    OBJECT IDENTIFIER ::= { unisCommon 173 }
+    unisLTE                     OBJECT IDENTIFIER ::= { unisCommon 174 }
+    unisPPP                     OBJECT IDENTIFIER ::= { unisCommon 175 }
+    unisDrni                    OBJECT IDENTIFIER ::= { unisCommon 176 }
+    unisFlexE                   OBJECT IDENTIFIER ::= { unisCommon 177 }
+    unisVlanGroup               OBJECT IDENTIFIER ::= { unisCommon 178 }
+    unisDhcp6                   OBJECT IDENTIFIER ::= { unisCommon 179 }
+    unisVbr                     OBJECT IDENTIFIER ::= { unisCommon 180 }
+    unisAAA                     OBJECT IDENTIFIER ::= { unisCommon 181 }
+    unisBgp4v2                  OBJECT IDENTIFIER ::= { unisCommon 183 }
+    unisTwmap                   OBJECT IDENTIFIER ::= { unisCommon 184 }
+    unisLTEMEC                  OBJECT IDENTIFIER ::= { unisCommon 185 }
+    unisSrpolicy                OBJECT IDENTIFIER ::= { unisCommon 186 }
+    unisRbm                     OBJECT IDENTIFIER ::= { unisCommon 187 }
+    unis5GC                     OBJECT IDENTIFIER ::= { unisCommon 188 }
+    unisSrv6Policy              OBJECT IDENTIFIER ::= { unisCommon 189 }
+    unisCusp                    OBJECT IDENTIFIER ::= { unisCommon 190 }
+    unisSava                    OBJECT IDENTIFIER ::= { unisCommon 191 }
+    unisUpBackup                OBJECT IDENTIFIER ::= { unisCommon 192 }
+    unisVlanTerm                OBJECT IDENTIFIER ::= { unisCommon 193 }
+    unisCupmCp                  OBJECT IDENTIFIER ::= { unisCommon 194 }
+    unisCupmUp                  OBJECT IDENTIFIER ::= { unisCommon 195 }
+    unisVnfDevice               OBJECT IDENTIFIER ::= { unisCommon 196 }
+    unisSrv6                    OBJECT IDENTIFIER ::= { unisCommon 197 }
+    uniseNodeBBU                OBJECT IDENTIFIER ::= { unisCommon 198 }    
+
+-- Objects under .enterprises.unisplendour.unisCommon.unisQos2
+    unisIfQos2                  OBJECT IDENTIFIER ::= { unisQos2 1 }
+    unisCBQos2                  OBJECT IDENTIFIER ::= { unisQos2 2 }
+
+-- Objects under .enterprises.unisplendour.unisSNMPAgCpb
+    unisQosCapability           OBJECT IDENTIFIER ::= { unisSNMPAgCpb 1 }
+
+-- Objects under .enterprises.unisplendour.unisRhw
+    unisDHCPRelayMib            OBJECT IDENTIFIER ::= { unisRhw 1 }
+    unisDHCPServerMib           OBJECT IDENTIFIER ::= { unisRhw 2 }
+    unisNqa                     OBJECT IDENTIFIER ::= { unisRhw 3 }
+    unisrmonExtend              OBJECT IDENTIFIER ::= { unisRhw 4 }
+    unispaeExtMib               OBJECT IDENTIFIER ::= { unisRhw 6 }
+    unisHgmp                    OBJECT IDENTIFIER ::= { unisRhw 7 }
+    unisDevice                  OBJECT IDENTIFIER ::= { unisRhw 8 }
+    unisMpls                    OBJECT IDENTIFIER ::= { unisRhw 12 }
+    unisTRNG                    OBJECT IDENTIFIER ::= { unisRhw 13 }
+    unisUserLogMIB              OBJECT IDENTIFIER ::= { unisRhw 18 }
+    unisNTP                     OBJECT IDENTIFIER ::= { unisRhw 22 }
+    unisLAG                     OBJECT IDENTIFIER ::= { unisRhw 25 }
+    unisSmonExtend              OBJECT IDENTIFIER ::= { unisRhw 26 }
+    unisQoS                     OBJECT IDENTIFIER ::= { unisRhw 32 }
+    unisMultilinkPPP            OBJECT IDENTIFIER ::= { unisRhw 33 }
+    unislswCommon               OBJECT IDENTIFIER ::= { unisRhw 35 }
+    unismlsr                    OBJECT IDENTIFIER ::= { unisRhw 36 }
+    unisdlsw                    OBJECT IDENTIFIER ::= { unisRhw 37 }
+
+-- Object under .enterprises.unisplendour.unisSurveillanceMIB
+    unisVMMan     OBJECT IDENTIFIER ::= { unisSurveillanceMIB 1 }
+    unisPUMan     OBJECT IDENTIFIER ::= { unisSurveillanceMIB 2 }
+    unisMSMan     OBJECT IDENTIFIER ::= { unisSurveillanceMIB 3 }
+
+-- Object under .enterprises.unisplendour.unisStorageRef
+    unisStorageMIB      OBJECT IDENTIFIER ::= { unisStorageRef 1 }
+    unisStorageSnap     OBJECT IDENTIFIER ::= { unisStorageRef 2 }
+    unisDisk            OBJECT IDENTIFIER ::= { unisStorageRef 3 }
+    unisRaid            OBJECT IDENTIFIER ::= { unisStorageRef 4 }
+    unisLogicVolume     OBJECT IDENTIFIER ::= { unisStorageRef 5 }
+
+-- Objects under .enterprises.unisplendour.unisRhw.unisMpls
+    unisMplsLsr         OBJECT IDENTIFIER ::= { unisMpls 1 }
+    unisMplsLdp         OBJECT IDENTIFIER ::= { unisMpls 2 }
+    unisMplsVpn         OBJECT IDENTIFIER ::= { unisMpls 3 }
+
+-- Objects under .enterprises.unisplendour.unisRhw.unislswCommon
+    unisLswExtInterface     OBJECT IDENTIFIER ::= { unislswCommon 1 }
+    unisLswVlan             OBJECT IDENTIFIER ::= { unislswCommon 2 }
+    unisLswMacPort          OBJECT IDENTIFIER ::= { unislswCommon 3 }
+    unisLswArpMib           OBJECT IDENTIFIER ::= { unislswCommon 4 }
+    unisLswL2InfMib         OBJECT IDENTIFIER ::= { unislswCommon 5 }
+    unisLswRstpMib          OBJECT IDENTIFIER ::= { unislswCommon 6 }
+    unisLswIgmpsnoopingMib  OBJECT IDENTIFIER ::= { unislswCommon 7 }
+    unisLswDhcpMib          OBJECT IDENTIFIER ::= { unislswCommon 8 }
+    unisLswdevMMib          OBJECT IDENTIFIER ::= { unislswCommon 9 }
+    unisLswTrapMib          OBJECT IDENTIFIER ::= { unislswCommon 12 }
+    unisdot1sMstp           OBJECT IDENTIFIER ::= { unislswCommon 14 }
+    unisLswQosAclMib        OBJECT IDENTIFIER ::= { unislswCommon 16 }
+    unisLswMix              OBJECT IDENTIFIER ::= { unislswCommon 17 }
+    unisLswDeviceAdmin      OBJECT IDENTIFIER ::= { unislswCommon 18 }
+
+-- Objects under .enterprises.unisplendour.unisRhw.unismlsr
+    unisNDEC            OBJECT IDENTIFIER ::= { unismlsr 2 }
+    unisredundancyPower OBJECT IDENTIFIER ::= { unismlsr 4 }
+    unisredundancyFan   OBJECT IDENTIFIER ::= { unismlsr 5 }
+    unispos             OBJECT IDENTIFIER ::= { unismlsr 8 }
+    unisIsdnMib         OBJECT IDENTIFIER ::= { unismlsr 9 }
+
+END

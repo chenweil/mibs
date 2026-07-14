@@ -1,0 +1,962 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: License management
+-- Reference:
+-- Version: V1.3
+-- History:
+--   V1.0 2013-09-18 Initial version by Song Hao and Deng Kai.
+--   V1.1 2019-01-14 Modified version by Song Hao and Deng Shuhua.
+--      Add unisLicenseServerIp and unisLicenseServerPort to UnisLicenseDevInfoEntry
+--      Add notification objects:
+--          unisLicenseReconnectWithServer
+--          unisLicenseDisconnectWithServer
+--   V1.2 2019-11-07 Modified version by Deng Shuhua.
+--      Add serverLicense to unisLicenseFeatureState
+--   V1.3 2020-07-27 Modified version by Lu Xiang.
+--      Add Add unisLicenseLowerUsageThreshold, unisLicenseUpperUsageThreshold
+--          and unisLicenseCurrentUsageRate to unisLicenseNotificationBindings
+--      Add notification objects:
+--          unisLicenseBelowUsageThreshold
+--          unisLicenseOverUsageThreshold
+-- =================================================================
+UNIS-LICENSE-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, IpAddress, Unsigned32, TimeTicks
+        FROM SNMPv2-SMI
+    RowStatus, DateAndTime, TruthValue
+        FROM SNMPv2-TC
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB
+    PhysicalIndex, PhysicalIndexOrZero
+        FROM ENTITY-MIB;
+
+unisLicense MODULE-IDENTITY
+    LAST-UPDATED "202007271000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB is used to manage license, including license key,
+        activation key and activation file."
+    REVISION "202007271000Z"
+    DESCRIPTION
+        "Add Add unisLicenseLowerUsageThreshold, unisLicenseUpperUsageThreshold
+         and unisLicenseCurrentUsageRate to unisLicenseNotificationBindings
+         Add notification objects:
+         unisLicenseBelowUsageThreshold and unisLicenseOverUsageThreshold."
+    REVISION "201911121000Z"
+    DESCRIPTION
+        "Add serverLicense to unisLicenseFeatureState."
+    REVISION "201901141000Z"
+    DESCRIPTION
+        "Add unisLicenseServerIp and unisLicenseServerPort to
+         UnisLicenseDevInfoEntry.  Add notification objects:
+         unisLicenseReconnectWithServer and unisLicenseDisconnectWithServer."
+    REVISION "201309181000Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { unisCommon 145 }
+
+-- Defined the framework
+unisLicenseScalarObjects OBJECT IDENTIFIER ::= { unisLicense 1 }
+unisLicenseTables OBJECT IDENTIFIER ::= { unisLicense 2 }
+unisLicenseNotifications OBJECT IDENTIFIER ::= { unisLicense 3 }
+
+-- Begin of scalar objects
+unisLicenseNotifyEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates whether the notifications of license should be
+        generated."
+    DEFVAL { true }
+    ::= { unisLicenseScalarObjects 1 }
+
+unisLicenseOpEntryMaxNum OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..20)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the maximum number of entries
+        that may be held in unisLicenseOpEntry.
+
+        When the number of entries in unisLicenseOpEntry reached the value
+        of this object, the oldest entry would be destroyed automatic after
+        executing a new operation."
+    DEFVAL { 10 }
+    ::= { unisLicenseScalarObjects 2 }
+
+unisLicenseNextFreeOpIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the appropriate value for unisLicenseOpIndex
+        that can be used to create an entry in unisLicenseOpTable."
+    ::= { unisLicenseScalarObjects 3 }
+-- End of scalar objects
+
+-- Begin of device information
+unisLicenseDevInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisLicenseDevInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that displays device information which use to apply license."
+    ::= { unisLicenseTables 1 }
+
+unisLicenseDevInfoEntry OBJECT-TYPE
+    SYNTAX      UnisLicenseDevInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A set of objects that displays device information of license."
+    INDEX
+        {
+            unisLicensePhysicalIndex
+        }
+    ::= { unisLicenseDevInfoTable 1 }
+
+UnisLicenseDevInfoEntry ::= SEQUENCE
+    {
+        unisLicensePhysicalIndex       PhysicalIndex,
+        unisLicenseSN                  SnmpAdminString,
+        unisLicenseDeviceIDType        INTEGER,
+        unisLicenseDeviceID            SnmpAdminString,
+        unisLicenseHardwareInfo        SnmpAdminString,
+        unisLicenseMaxNum              Unsigned32,
+        unisLicenseUsedNum             Unsigned32,
+        unisLicenseRecyclableNum       Unsigned32,
+        unisLicenseInstallType         INTEGER,
+        unisLicenseFileStoragePath     SnmpAdminString,
+        unisLicenseServerIp            IpAddress,
+        unisLicenseServerPort          Unsigned32
+    }
+
+unisLicensePhysicalIndex OBJECT-TYPE
+    SYNTAX      PhysicalIndex
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The entPhysicalIndex of the device.
+
+        The meaning of this object is associated with the management state
+        which from unisLicenseInstallType.
+
+        Note that:
+        1) unisLicenseInstallType is installInChassis.
+           This object represents the entPhysicalIndex of the local active MPU.
+
+        2) unisLicenseInstallType is installInSlot.
+           This object represents the entPhysicalIndex of MPU boards.
+
+        3) unisLicenseInstallType is installInCPU.
+           This object represents the entPhysicalIndex of the CPUs on an MPU board.
+        "
+    ::= { unisLicenseDevInfoEntry 1 }
+
+unisLicenseSN OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The serial number of the device."
+    ::= { unisLicenseDevInfoEntry 2 }
+
+unisLicenseDeviceIDType   OBJECT-TYPE
+    SYNTAX      INTEGER {
+                  invalid(1),
+                  keyString(2),
+                  file(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The types of device ID.
+
+        invalid - The device ID is invalid.
+        keyString - The device ID is a string.
+        file - The device ID is a file."
+    ::= { unisLicenseDevInfoEntry 3 }
+
+unisLicenseDeviceID OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A string represents the device ID.
+
+        For example:
+        Device ID: XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX
+
+        This object can not be read when unisLicenseDeviceIDType is invalid,
+        and a file name with full path while unisLicenseDeviceIDType is file.
+
+        For example:
+        Device ID: flash:/xxx.did"
+    ::= { unisLicenseDevInfoEntry 4 }
+
+unisLicenseHardwareInfo OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The information of the device hardware."
+    ::= { unisLicenseDevInfoEntry 5 }
+
+unisLicenseMaxNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The max number of licenses that can be installed in device."
+    ::= { unisLicenseDevInfoEntry 6 }
+
+unisLicenseUsedNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of installed licenses."
+    ::= { unisLicenseDevInfoEntry 7 }
+
+unisLicenseRecyclableNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of recyclable storage for licenses."
+    ::= { unisLicenseDevInfoEntry 8 }
+
+unisLicenseInstallType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                  invalid(1),
+                  installInChassis(2),
+                  installInSlot(3),
+                  installInCPU(4)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The state of license management.
+        This object determines the instance of
+        unisLicensePhysicalIndex and unisLicenseOpPhysicalIndex.
+
+        invalid - The state is invalid as driver fault.
+
+        installInChassis - License is chassis locked.
+
+        installInSlot - License is MPU locked.
+
+        installInCPU - License is CPU locked."
+    ::= { unisLicenseDevInfoEntry 9 }
+
+unisLicenseFileStoragePath   OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The storage path of the installed license files."
+    ::= { unisLicenseDevInfoEntry 10 }
+
+unisLicenseServerIp OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The IP address of the license server."
+    ::= { unisLicenseDevInfoEntry 11 }
+
+unisLicenseServerPort OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The port number of the license server."
+    ::= { unisLicenseDevInfoEntry 12 }
+-- End of device information
+
+-- Begin of general information
+unisLicenseGeneralTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisLicenseGeneralEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that displays general information of installed license."
+    ::= { unisLicenseTables 2 }
+
+unisLicenseGeneralEntry OBJECT-TYPE
+    SYNTAX      UnisLicenseGeneralEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A set of objects that displays general information of
+        installed license."
+    INDEX
+        {
+            unisLicensePhysicalIndex,
+            unisLicenseIndex
+        }
+    ::= { unisLicenseGeneralTable 1 }
+
+UnisLicenseGeneralEntry ::= SEQUENCE
+    {
+        unisLicenseIndex                Unsigned32,
+        unisLicenseFeature              SnmpAdminString,
+        unisLicenseProductDescr         OCTET STRING,
+        unisLicenseFileDescr            SnmpAdminString,
+        unisLicenseState                INTEGER,
+        unisLicenseActivationFile       SnmpAdminString,
+        unisLicenseActivationKey        SnmpAdminString,
+        unisLicenseLicenseKey           SnmpAdminString,
+        unisLicenseUninstActivationFile SnmpAdminString,
+        unisLicenseUninstActivationKey  SnmpAdminString,
+        unisLicenseType                 INTEGER,
+        unisLicenseInstalledTime        DateAndTime,
+        unisLicenseUninstalledTime      DateAndTime,
+        unisLicenseDaysLeft             Unsigned32,
+        unisLicenseValidityStart        DateAndTime,
+        unisLicenseValidityEnd          DateAndTime,
+        unisLicenseExpiredDays          Unsigned32,
+        unisLicenseCount                Unsigned32
+    }
+
+unisLicenseIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "ID that can be used to uniquely identify a license.
+        It may use a stable storage index."
+    ::= { unisLicenseGeneralEntry 1 }
+
+unisLicenseFeature OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the licensed feature.
+
+        When there multiple features, this object will display with space
+        as delimiter."
+    ::= { unisLicenseGeneralEntry 2 }
+
+unisLicenseProductDescr OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The product description in a license."
+    ::= { unisLicenseGeneralEntry 3 }
+
+unisLicenseFileDescr OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..1024))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The file description in activation file."
+    ::= { unisLicenseGeneralEntry 4 }
+
+unisLicenseState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                  invalid(1),
+                  inuse(2),
+                  usable(3),
+                  expired(4),
+                  uninstalled(5),
+                  unusable(6)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The state of an installed license.
+
+        invalid - The license is invalid and cannot be used.
+        inuse - The license is being used.
+        usable - The license is available for use.
+                 1. If multiple days-restricted licenses for one feature
+                    are installed, only one license is in 'inuse' state and
+                    the rest licenses are in 'usable' state.
+                 2. A date-restricted license is in this state if its
+                    start date is not reached.
+        expired - The license has expired.
+        uninstalled - The license has been uninstalled.
+        unusable - The license cannot be used."
+    ::= { unisLicenseGeneralEntry 5 }
+
+unisLicenseActivationFile OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of an installed activation file, with device name and
+        file name.
+
+        For example:
+        flash:/license/210231A1V0A1290000012013032718261184345.ak
+        "
+    ::= { unisLicenseGeneralEntry 6 }
+
+unisLicenseActivationKey OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The activation key that has been installed.
+
+        For example:
+        Activation Key: dyKT-x3vc-W@Ca-n4gn-Yo83-rVY3-C8:7-e3pg"
+    ::= { unisLicenseGeneralEntry 7 }
+
+unisLicenseLicenseKey OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The license key that has been installed."
+    ::= { unisLicenseGeneralEntry 8 }
+
+unisLicenseUninstActivationFile OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "If an activation file is uninstalled, the system creates an
+        uninstall file.  Use this file together with the SN and DID of the
+        transfer destination to register the license for the transfer
+        destination."
+    ::= { unisLicenseGeneralEntry 9 }
+
+unisLicenseUninstActivationKey OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "If an activation key is uninstalled, the system creates an
+        uninstall key.  Use this key together with the SN and DID of the
+        transfer destination to register the license for the transfer
+        destination."
+    ::= { unisLicenseGeneralEntry 10 }
+
+unisLicenseType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                  unknown(1),
+                  permanent(2),
+                  daysRestricted(3),
+                  trialDaysRestricted(4),
+                  dateRestricted(5),
+                  trialDateRestricted(6),
+                  countRestricted(7),
+                  trialCountRestricted(8)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "License type by validity period.
+
+        unknown - The system cannot obtain the license type.
+
+        permanent - Purchased license that never expires and is always valid.
+
+        daysRestricted - Purchased license that is valid for a period in days.
+        trialDaysRestricted - Free trial license that is valid for
+                              a period in days.
+
+        dateRestricted - Purchased license that is valid for an
+                         absolute date range.
+        trialDateRestricted - Free trial license that is valid for
+                              an absolute date range.
+
+        countRestricted - Purchased license that is valid for
+                          several useing times.
+        trialCountRestricted - Free trial license that is valid for
+                               several useing times.
+        "
+    ::= { unisLicenseGeneralEntry 11 }
+
+unisLicenseInstalledTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Time when the license was installed.
+
+        For example, it would be displayed as:
+        2013-9-20,13:30:15.0
+        "
+    ::= { unisLicenseGeneralEntry 12 }
+
+unisLicenseUninstalledTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The time when the license was uninstalled.
+
+        For example, it would be displayed as:
+        2013-9-26,15:12:20.0
+        "
+    ::= { unisLicenseGeneralEntry 13 }
+
+unisLicenseDaysLeft OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Remaining days of the license.
+        This object is available for a days-restricted license."
+    ::= { unisLicenseGeneralEntry 14 }
+
+unisLicenseValidityStart OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Start date for a date-restricted license.
+        This object is available for a date-restricted license.
+        But if the start date is not limited, this object is unavailable.
+
+        For example, it would be displayed as:
+        2013-9-26,15:12:20.0
+        "
+    ::= { unisLicenseGeneralEntry 15 }
+
+unisLicenseValidityEnd OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "End date for a date-restricted license.
+        This object is available for a date-restricted license.
+        But if the end date is not limited, this object is unavailable.
+
+        For example, it would be displayed as:
+        2014-9-26,15:12:20.0
+        "
+    ::= { unisLicenseGeneralEntry 16 }
+
+unisLicenseExpiredDays OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Passed days after a license has been expired."
+    ::= { unisLicenseGeneralEntry 17 }
+
+unisLicenseCount OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The effective number of license.
+        This object is available for a count-restricted license."
+    ::= { unisLicenseGeneralEntry 18 }
+-- End of general information
+
+-- Begin of feature information
+unisLicenseFeatureTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisLicenseFeatureEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that displays installed licenses for features."
+    ::= { unisLicenseTables 3 }
+
+unisLicenseFeatureEntry OBJECT-TYPE
+    SYNTAX      UnisLicenseFeatureEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A set of objects that displays installed licenses for features."
+    INDEX
+        {
+            unisLicensePhysicalIndex,
+            IMPLIED unisLicenseFeatureName
+        }
+    ::= { unisLicenseFeatureTable 1 }
+
+UnisLicenseFeatureEntry ::= SEQUENCE
+    {
+        unisLicenseFeatureName      SnmpAdminString,
+        unisLicenseFeatureState     INTEGER
+    }
+
+unisLicenseFeatureName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Feature that must be licensed before being used."
+    ::= { unisLicenseFeatureEntry 1 }
+
+unisLicenseFeatureState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                  notLicensed(1),
+                  trialLicense(2),
+                  formalLicense(3),
+                  serverLicense(4)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "License type by purchasing state.
+
+        notLicensed - The feature is not licensed.
+        trialLicense - The feature is using trial license.
+        formalLicense - The feature is using purchased license.
+        serverLicense - The feature is using license authorized by license server."
+    ::= { unisLicenseFeatureEntry 2 }
+-- End of feature information
+
+-- Begin of operation table
+unisLicenseOpTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisLicenseOpEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that used to install or uninstall license."
+    ::= { unisLicenseTables 4 }
+
+unisLicenseOpEntry OBJECT-TYPE
+    SYNTAX      UnisLicenseOpEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A set of objects used to install or uninstall license."
+    INDEX
+        {
+            unisLicenseOpIndex
+        }
+    ::= { unisLicenseOpTable 1 }
+
+UnisLicenseOpEntry ::= SEQUENCE
+    {
+        unisLicenseOpIndex          Unsigned32,
+        unisLicenseOpPhysicalIndex  PhysicalIndexOrZero,
+        unisLicenseOpType           INTEGER,
+        unisLicenseOpString         SnmpAdminString,
+        unisLicenseOpNotifyEnable   TruthValue,
+        unisLicenseOpRowStatus      RowStatus,
+        unisLicenseOpState          INTEGER,
+        unisLicenseOpFailedReason   SnmpAdminString,
+        unisLicenseOpEndTime        TimeTicks
+    }
+
+unisLicenseOpIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "ID that can be used to uniquely identify an operation."
+    ::= { unisLicenseOpEntry 1 }
+
+unisLicenseOpPhysicalIndex OBJECT-TYPE
+    SYNTAX      PhysicalIndexOrZero
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object indicates that the entPhysicalIndex of the device
+        where the operation is being executed.
+
+        The meaning of this object is associated with the management state
+        from unisLicenseInstallType.
+
+        Note that:
+        1) unisLicenseInstallType is installInChassis.
+           This object represents the entPhysicalIndex of chassis local master.
+
+        2) unisLicenseInstallType is installInSlot.
+           This object represents the entPhysicalIndex of MPU boards.
+
+        3) unisLicenseInstallType is installInCPU.
+           This object represents the entPhysicalIndex of CPUs.
+
+        This object must be set and can not be set to zero when
+        executing an operation.
+        "
+    ::= { unisLicenseOpEntry 2 }
+
+unisLicenseOpType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                  compress(1),
+                  delete(2),
+                  installActivationFile(3),
+                  installActivationKey(4),
+                  installLicenseKey(5),
+                  uninstallActivationFile(6),
+                  uninstallActivationKey(7),
+                  uninstallLicenseKey(8)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of this operation.
+
+        compress - Compress the license storage if the free license storage
+                   is not sufficient.
+        Note that:
+        1) After compressing, the expired licenses and uninstalled licenses
+           in the storage area will be cleared.
+        2) The DID changes each time the license storage is compressed.
+        3) Before performing a compression, make sure all activation files
+           generated based on the old DID have been installed.
+           They cannot be installed after the compression.
+
+        delete - Compress one license storage only.
+
+        installActivationFile   -  Install an activation file.
+
+        installActivationKey    -  Install an activation key.
+
+        installLicenseKey       -  Install a license key.
+
+        uninstallActivationFile -  Uninstall an activation file.
+
+        uninstallActivationKey  -  Uninstall an activation key.
+
+        uninstallLicenseKey     -  Uninstall a license key."
+    ::= { unisLicenseOpEntry 3 }
+
+unisLicenseOpString OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object might be an activation file name, an activation key or
+        a license key that is to be installed, uninstalled or deleted.
+
+        The operation type is specified in unisLicenseOpType.
+
+        For compressing, this object must not be bound when creating a row.
+
+        For deletion, this object could be an activation file, an activation
+        key or a license key.
+
+        For installActivationFile and uninstallActivationFile,
+        this object must be a name of an activation file, with full path.
+        Such as: flash:/license/210231A1V0A1290000012013032718261184345.ak
+
+        For installActivationKey and uninstallActivationKey,
+        this object must be an activation key.
+
+        For installLicenseKey and uninstallLicenseKey,
+        this object must be a license key."
+    ::= { unisLicenseOpEntry 4 }
+
+unisLicenseOpNotifyEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object indicates whether 'unisLicenseOpCompletion' notifications
+        will be generated after this operation is completed.
+
+        Note that, this object is meaningless if the value of
+        'unisLicenseNotifyEnable' is 'false'."
+    DEFVAL { false }
+    ::= { unisLicenseOpEntry 5 }
+
+unisLicenseOpRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this conceptual row.
+
+        When an entry was in active status, values of any object in this entry
+        are forbidden to be changed."
+    ::= { unisLicenseOpEntry 6 }
+
+unisLicenseOpState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                  opInProgress(1),
+                  opSuccessful(2),
+                  opFailed(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The state of this operation.
+
+        opInProgress - This operation is in progress.
+        opSuccessful - Successful to execute this operation.
+        opFailed - Failed to execute this operation,
+                   and 'unisLicenseOpFailedReason' will indicate the detailed
+                   cause of the failure."
+    ::= { unisLicenseOpEntry 7 }
+
+unisLicenseOpFailedReason OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the detailed cause of the failure when this
+        operation failed."
+    ::= { unisLicenseOpEntry 8 }
+
+unisLicenseOpEndTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of sysUpTime when the operation is done."
+    ::= { unisLicenseOpEntry 9 }
+-- End of operation table
+
+-- Begin of notifications
+unisLicenseNotificationPrefix OBJECT IDENTIFIER ::= { unisLicenseNotifications 0 }
+
+unisLicenseOpCompletion NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisLicenseOpIndex,
+            unisLicenseOpPhysicalIndex,
+            unisLicenseOpType,
+            unisLicenseOpString,
+            unisLicenseOpState,
+            unisLicenseOpFailedReason
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when a license operation completed."
+    ::= { unisLicenseNotificationPrefix 1 }
+
+unisLicenseActivationFileLost NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisLicensePhysicalIndex,
+            unisLicenseActivationFile
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when the activation file
+        has been lost."
+    ::= { unisLicenseNotificationPrefix 2 }
+
+unisLicenseActivationFileRestored NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisLicensePhysicalIndex,
+            unisLicenseActivationFile
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when the activation file
+        restored successfully."
+    ::= { unisLicenseNotificationPrefix 3 }
+
+unisLicenseExpired NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisLicenseFeatureName,
+            unisLicenseFeatureState
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when the license expires."
+    ::= { unisLicenseNotificationPrefix 4 }
+
+unisLicenseExpireWarning NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisLicenseFeatureName,
+            unisLicenseFeatureState,
+            unisLicenseBindValidityPeriodRemaining
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when is about to expire."
+    ::= { unisLicenseNotificationPrefix 5 }
+
+unisLicenseReconnectWithServer NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisLicensePhysicalIndex,
+            unisLicenseServerIp,
+            unisLicenseServerPort
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when the license client is reconnected to the license server."
+    ::= { unisLicenseNotificationPrefix 6 }
+
+unisLicenseDisconnectWithServer NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisLicensePhysicalIndex,
+            unisLicenseServerIp,
+            unisLicenseServerPort
+        }
+    STATUS      current
+    DESCRIPTION
+        " This notification is generated when the license client is disconnected from the license server."
+    ::= { unisLicenseNotificationPrefix 7 }
+
+unisLicenseBelowUsageThreshold NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisLicenseFeatureName,
+            unisLicenseLowerUsageThreshold,
+            unisLicenseUpperUsageThreshold,
+            unisLicenseCurrentUsageRate
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when the license usage drops below warning threshold."
+    ::= { unisLicenseNotificationPrefix 8 }
+
+unisLicenseOverUsageThreshold NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisLicenseFeatureName,
+            unisLicenseLowerUsageThreshold,
+            unisLicenseUpperUsageThreshold,
+            unisLicenseCurrentUsageRate
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when the license usage is over warning threshold."
+    ::= { unisLicenseNotificationPrefix 9 }
+-- End of notifications
+
+-- Begin of notification bindings
+unisLicenseNotificationBindings OBJECT IDENTIFIER ::= { unisLicenseNotifications 1 }
+
+unisLicenseBindValidityPeriodRemaining OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "days"
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the remaining days before
+        the feature's license expires."
+    ::= { unisLicenseNotificationBindings 1 }
+unisLicenseLowerUsageThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the lower warning threshold of usage."
+    ::= { unisLicenseNotificationBindings 2 }
+unisLicenseUpperUsageThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the upper warning threshold of usage."
+    ::= { unisLicenseNotificationBindings 3 }
+unisLicenseCurrentUsageRate OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the license current usage rate."
+    ::= { unisLicenseNotificationBindings 4 }
+-- End of notification bindings
+
+END

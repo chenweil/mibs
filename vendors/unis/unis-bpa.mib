@@ -1,0 +1,205 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: BGP policy accounting MIB File
+-- Reference:
+-- Version: V1.2
+-- History:
+-- V1.0 2013-08-14 created by wangzhenjun
+-- V1.1 2013-11-13 modified by wangzhenjun
+--      Changed MAX-ACCESS of unisBpaDirection, and added this node to the
+--      index of unisBpaCfgEntry
+--      Deleted value 'none(0), both(3)' from data type 'unisBpaSrcOrDest'
+--      Deleted DEVAL of unisBpaSrcOrDest
+--      Deleted value 'none(0)' from data type 'unisBpaSrcOrDest'
+--      Modified descriptions of unisBpaDirection, unisBpaSrcOrDest and
+--      unisBpaTrafficIndex
+-- V1.2 2014-11-20 modified by gongqing
+--      Modified the value range of unisBpaTrafficIndex from
+--      (1..64) to (1..128)
+-- =================================================================
+UNIS-BPA-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, Integer32, Counter64
+        FROM SNMPv2-SMI
+    RowStatus
+        FROM SNMPv2-TC
+    ifIndex
+        FROM IF-MIB
+    InetAddressType
+        FROM INET-ADDRESS-MIB;
+
+unisBpa MODULE-IDENTITY
+    LAST-UPDATED
+        "201411200927Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB contains objects that manage the configuration and information
+         of BGP policy accounting.  It accounts IP packets by user defined
+         BGP policy.
+        "
+    REVISION
+        "201411200927Z"
+    DESCRIPTION
+        "Modified the value range of unisBpaTrafficIndex."
+    REVISION
+        "201311131128Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 144 }
+
+unisBpaObjects OBJECT IDENTIFIER ::= { unisBpa 1 }
+
+-- BGP policy accounting configuration table
+unisBpaCfgTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisBpaCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A table for BGP policy accounting configuration."
+    ::= { unisBpaObjects 1 }
+
+unisBpaCfgEntry    OBJECT-TYPE
+    SYNTAX      UnisBpaCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry for BGP policy accounting configuration."
+    INDEX {
+            ifIndex,
+            unisBpaDirection
+          }
+    ::= { unisBpaCfgTable 1 }
+
+UnisBpaCfgEntry ::=
+    SEQUENCE
+    {
+            unisBpaDirection              INTEGER,
+            unisBpaSrcOrDest              INTEGER,
+            unisBpaRowStatus              RowStatus
+    }
+
+unisBpaDirection    OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+         input(1),
+         output(2)
+    }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Identify the direction of IP packets on which BGP
+                 policy accounting takes effect.
+                 input  :input direction
+                 output :output direction"
+    ::= { unisBpaCfgEntry 1 }
+
+unisBpaSrcOrDest    OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+         source(1),
+         destination(2),
+         both(3)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Identify IP packet's Destination or Source IP address that
+                 BGP policy accounting relies on.
+                 source      :source IP address of the IP packet
+                 destination :destination IP address of the IP packet
+                 both        :both source and destination IP addresses"
+    DEFVAL      { destination }
+    ::= { unisBpaCfgEntry 2 }
+
+unisBpaRowStatus   OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "This object manages the creation, deletion, and modification
+             of rows in the unisBpaCfgTable, which supports the
+             active status, createAndGo operation, and destroy operation."
+    ::= { unisBpaCfgEntry 3 }
+
+-- BGP policy accounting statistics table
+unisBpaStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisBpaStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A table for BGP policy accounting statistics."
+    ::= { unisBpaObjects 2 }
+
+unisBpaStatEntry OBJECT-TYPE
+    SYNTAX      UnisBpaStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry for BGP policy accounting statistics."
+    INDEX
+    {
+            ifIndex,
+            unisBpaTrafficType,
+            unisBpaTrafficIndex
+    }
+    ::= { unisBpaStatTable 1 }
+
+UnisBpaStatEntry ::=
+    SEQUENCE
+    {
+            unisBpaTrafficType        InetAddressType,
+            unisBpaTrafficIndex       Integer32,
+            unisBpaInPacketCount      Counter64,
+            unisBpaInOctetCount       Counter64,
+            unisBpaOutPacketCount     Counter64,
+            unisBpaOutOctetCount      Counter64
+    }
+
+unisBpaTrafficType    OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Type of IP packets, IPv4 or IPv6."
+    ::= { unisBpaStatEntry 1 }
+
+unisBpaTrafficIndex    OBJECT-TYPE
+    SYNTAX      Integer32  (1..128)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Traffic index generated by a BGP policy."
+    ::= { unisBpaStatEntry 2 }
+
+unisBpaInPacketCount   OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The total number of received packets with the specified
+                 traffic type and traffic index."
+    ::= { unisBpaStatEntry 3 }
+
+unisBpaInOctetCount    OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The total number of received bytes with the specified
+                 traffic type and traffic index."
+    ::= { unisBpaStatEntry 4 }
+
+unisBpaOutPacketCount   OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The total number of output packets with the specified
+                 traffic type and traffic index."
+    ::= { unisBpaStatEntry 5 }
+
+unisBpaOutOctetCount   OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The total number of output bytes with the specified
+                 traffic type and traffic index."
+    ::= { unisBpaStatEntry 6 }
+
+END

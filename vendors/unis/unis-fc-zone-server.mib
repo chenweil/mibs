@@ -1,0 +1,1552 @@
+-- =====================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--    This MIB module is intended for management of Fibre Channel Zoning
+--    Servers, including both Basic Zoning Management and Enhanced Zoning
+--    Management.
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 Initial version created by qiaoxinghua 2013-12-25
+-- =====================================================================
+UNIS-FC-ZONE-SERVER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    UnisFcNameId
+        FROM UNIS-FC-TC-MIB
+    unisSan, unisVsanIndex
+        FROM UNIS-VSAN-MIB
+    ifIndex, ifDescr
+        FROM IF-MIB
+    Unsigned32, Counter64, OBJECT-TYPE, MODULE-IDENTITY,
+    NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    RowStatus, TruthValue, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    t11ZsActiveZoneIndex, t11ZsActiveZoneMemberIndex
+        FROM T11-FC-ZONE-SERVER-MIB;
+
+unisFcZoneServer MODULE-IDENTITY
+    LAST-UPDATED "201312251507Z"        -- December 25, 2013 at 15:07 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB module is intended for management of FC(Fibre Channel)
+         Zoning entities, including Basic Zoning Management and Enhanced
+         Zoning Management."
+    REVISION "201312251507Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { unisSan 9 }
+
+--
+-- Textual conventions
+--
+UnisFcZsGenName ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "255a"
+    STATUS       current
+    DESCRIPTION
+        "Represents the general names for a Zone Set, Zone or Zone
+         alias object.
+
+         Each octet in this string is an ASCII code for an English
+         letter, digit, or special character such as the dollar sign ($),
+         minus sign (-), caret (^), or underscores (_).
+
+         This string must contain at least one character and must start
+         with an English letter."
+    SYNTAX OCTET STRING (SIZE (1..255))
+
+UnisFcZsGenNameOrZero ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "255a"
+    STATUS       current
+    DESCRIPTION
+        "Represents the general names for a Zone Set, Zone or Zone
+         alias object.
+
+         Each octet in this string is an ASCII code for an English
+         letter, digit, or special character such as the dollar sign ($),
+         minus sign (-), caret (^), or underscores (_).
+
+         This string must start with an English letter."
+    SYNTAX OCTET STRING (SIZE (0..255))
+
+UnisFcZsZoneMemberType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Represents the addressing mechanism by
+         which a member is identified:
+
+        'fcid'            - FC ID of N_Port.
+        'fwwn'            - WWN(World Wide Name) of F_Port.
+        'pwwn'            - WWN(World Wide Name) of N_Port.
+        'aliasName'       - Zone alias name.
+        "
+    SYNTAX INTEGER
+    {
+    fcid(1),
+    fwwn(2),
+    pwwn(3),
+    aliasName(4)
+    }
+
+--
+-- Node definitions
+--
+unisFcZoneMibObjects OBJECT IDENTIFIER ::= { unisFcZoneServer 1 }
+
+unisFcZsConfiguration OBJECT IDENTIFIER ::= { unisFcZoneMibObjects 1 }
+
+-- Zone Server Table
+unisFcZsServerTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsServerEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table that contains information about the Zone Servers
+         in each VSAN and provides the capability to perform
+         operations on their Zone Server databases."
+    ::= { unisFcZsConfiguration 1 }
+
+unisFcZsServerEntry OBJECT-TYPE
+    SYNTAX UnisFcZsServerEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information specific to a Zone
+         Server for a particular VSAN."
+    INDEX { unisVsanIndex }
+    ::= { unisFcZsServerTable 1 }
+
+
+UnisFcZsServerEntry ::=
+    SEQUENCE {
+        unisFcZsZoneModeCfg
+            INTEGER,
+        unisFcZsHardZoneEnable
+            TruthValue,
+        unisFcZsDistributeRule
+            INTEGER,
+        unisFcZsDefaultZoneSetting
+            INTEGER,
+        unisFcZsMergeControlSetting
+            INTEGER,
+        unisFcZsServerLastResult
+            INTEGER
+     }
+
+unisFcZsZoneModeCfg OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        basic(1),
+        enhanced(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The operational mode of the Zone Server.
+
+         Setting this object to 'enhanced' is a request to
+         set the operational mode of the Zone Server to
+         Enhanced mode.  This is possible only if all
+         switches in the Fibre Channel Fabric are capable
+         of working in Enhanced mode.
+
+         Setting this object to 'basic' is a request to set
+         the operational mode of the Zone Server to Basic
+         mode."
+    ::= { unisFcZsServerEntry 1 }
+
+unisFcZsHardZoneEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This object indicates whether this switch, no matter
+         in Basic or Enhanced mode, enforces Hard Zoning in
+         this VSAN."
+    ::= { unisFcZsServerEntry 2 }
+
+unisFcZsDistributeRule OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        none(1),
+        activeOnly(2),
+        full(3)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This object specifies whether a complete distribution
+         (or merge) will be applied when an activation(or merge)
+         happened in Basic mode.
+
+         If this object is set to 'full', both the Active
+         Zone Set and Zone Set Database will be distributed
+         (or merged) when an activation operation(or merge) is
+         performed.
+
+         If this object is set to 'activeOnly', only the
+         Active Zone Set will be distributed(or merged) when
+         an activation operation(or merge) is performed.
+
+         The value 'none' is meaningless and can be used only
+         in Enhanced mode."
+    ::= { unisFcZsServerEntry 3 }
+
+unisFcZsDefaultZoneSetting OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        deny(1),
+        permit(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This object controls the Zoning flag that governs the
+         behavior of the Default Zone in this VSAN.
+
+         If this object is set to 'permit', the members of the
+         Default Zone in this VSAN can communicate with each
+         other.
+
+         If this object is set to 'deny', the members of the
+         Default Zone in this VSAN cannot communicate with each
+         other."
+    ::= { unisFcZsServerEntry 4 }
+
+unisFcZsMergeControlSetting OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        none(1),
+        allow(2),
+        restrict(3)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This object controls the Enhanced Zoning flag that
+         indicates the Merge Control Setting for this VSAN.
+         It is meaningful only in Enhanced mode:
+
+         'none'     - This value is meaningless and only can be
+                      used in Basic mode.
+         'allow'    - A switch may join the Fabric only if
+                      its Zoning Database is able to merge
+                      with the Fabric's Zoning Database.
+         'restrict' - A switch may join the Fabric only if
+                      its Zoning Database is equal to the
+                      Fabric's Zoning Database."
+    ::= { unisFcZsServerEntry 5 }
+
+unisFcZsServerLastResult OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        none(1),
+        success(2),
+        busy(3),
+        noSupportInFabric(4),
+        noSupportInBasic(5),
+        noSupportInEnhanced(6),
+        activeZoneSetTooBig(7),
+        otherFault(8)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Current operational status of the latest configuration
+         in this VSAN:
+
+         'none'                - No corresponding operation has been performed
+                                 yet.
+         'success'             - The configuration was performed successfully.
+         'busy'                - The configuration was performed unsuccessfully,
+                                 because the system is busy with another zoning
+                                 operation.
+         'noSupportInFabric'   - The configuration was performed unsuccessfully,
+                                 because one or more switches in this Fabric
+                                 don't support Enhanced zoning.
+         'noSupportInBasic'    - The configuration was performed unsuccessfully,
+                                 because it is not supported in Basic mode.
+         'noSupportInEnhanced' - The configuration was performed unsuccessfully,
+                                 because it is not supported in Enhanced mode.
+         'activeZoneSetTooBig' - The configuration was performed unsuccessfully,
+                                 because the Active Zone Set is too large to be
+                                 supported.
+         'otherFault'          - The configuration was performed unsuccessfully
+                                 for other reasons."
+    ::= { unisFcZsServerEntry 6 }
+
+-- Zoneset Table
+unisFcZsZonesetTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsZonesetEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table that contains information about each Zone
+         Set in the Zone Set Database of the Zone Servers
+         in a specified VSAN."
+    ::= { unisFcZsConfiguration 2 }
+
+unisFcZsZonesetEntry OBJECT-TYPE
+    SYNTAX UnisFcZsZonesetEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains the information of a Zone Set configured
+         in a specified VSAN."
+    INDEX { unisVsanIndex, unisFcZsZonesetIndex }
+    ::= { unisFcZsZonesetTable 1 }
+
+
+UnisFcZsZonesetEntry ::=
+    SEQUENCE {
+        unisFcZsZonesetIndex
+            Unsigned32,
+        unisFcZsZonesetName
+            UnisFcZsGenName,
+        unisFcZsZonesetRowStatus
+            RowStatus
+     }
+
+unisFcZsZonesetIndex OBJECT-TYPE
+    SYNTAX Unsigned32(1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of a Zone Set, which uniquely identifies a Zone Set in
+         the Zone Set Database on local switch."
+    ::= { unisFcZsZonesetEntry 1 }
+
+unisFcZsZonesetName OBJECT-TYPE
+    SYNTAX UnisFcZsGenName
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The name of this Zone Set, which should be unique
+         within a VSAN.
+         The Zone Set can be renamed by setting this object
+         to a new value."
+    ::= { unisFcZsZonesetEntry 2 }
+
+unisFcZsZonesetRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this conceptual row."
+    ::= { unisFcZsZonesetEntry 3 }
+
+-- Zone Table
+unisFcZsZoneTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsZoneEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains information about all the Zones
+        in the Zone Set Database of the Zone Servers in each VSAN."
+    ::= { unisFcZsConfiguration 3 }
+
+unisFcZsZoneEntry OBJECT-TYPE
+    SYNTAX UnisFcZsZoneEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about a Zone
+         in the Zone Set Database in a specified VSAN."
+    INDEX { unisVsanIndex, unisFcZsZoneIndex }
+    ::= { unisFcZsZoneTable 1 }
+
+
+UnisFcZsZoneEntry ::=
+    SEQUENCE {
+        unisFcZsZoneIndex
+            Unsigned32,
+        unisFcZsZoneName
+            UnisFcZsGenName,
+        unisFcZsZonePairwiseEnable
+            TruthValue,
+        unisFcZsZoneRowStatus
+            RowStatus
+     }
+
+unisFcZsZoneIndex OBJECT-TYPE
+    SYNTAX Unsigned32(1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An index value that uniquely identifies this
+         Zone in the Zone Set Database on local switch."
+    ::= { unisFcZsZoneEntry 1 }
+
+unisFcZsZoneName OBJECT-TYPE
+    SYNTAX UnisFcZsGenName
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The name of this Zone, which should be unique
+         within a VSAN.
+
+         The Zone can be renamed by setting this object
+         to a new value."
+    ::= { unisFcZsZoneEntry 2 }
+
+unisFcZsZonePairwiseEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "This object specifies whether Pairwise Zoning is enabled in this
+         Zone.
+
+         When Pairwise Zoning is enabled in a Zone, the behaviors of members
+         in this Zone will be controlled through their roles.  The members
+         with the same role ('initiator' or 'target') can't communicate with
+         each other, but those with different roles or with the same role
+         'both' can communicate with each other.
+
+         When Pairwise Zoning is disabled in a Zone, the behaviors of members
+         in this Zone will not be affected by their roles."
+    DEFVAL { false }
+    ::= { unisFcZsZoneEntry 3 }
+
+unisFcZsZoneRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this conceptual row."
+    ::= { unisFcZsZoneEntry 4 }
+
+-- Set Zone Table
+unisFcZsSetZoneTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsSetZoneEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table specifies which Zone belongs to which Zone
+         Set in the Zone Set Database of the Zone Servers."
+    ::= { unisFcZsConfiguration 4 }
+
+unisFcZsSetZoneEntry OBJECT-TYPE
+    SYNTAX UnisFcZsSetZoneEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry specifies that a particular Zone is one of the Zones
+         that form a particular Zone Set in the Zone Set database of a
+         specified VSAN.
+
+         When a row in this table exists, it references one row in
+         the unisFcZsZonesetTable and one row in the unisFcZsZoneTable.
+         The agent must ensure that both such rows when referenced by an
+         active row in this table, do exist and have a status of
+         'active'."
+    INDEX { unisVsanIndex,
+            unisFcZsZonesetIndex,
+            unisFcZsZoneIndex }
+    ::= { unisFcZsSetZoneTable 1 }
+
+
+UnisFcZsSetZoneEntry ::=
+    SEQUENCE {
+        unisFcZsSetZoneRowStatus
+            RowStatus
+     }
+
+unisFcZsSetZoneRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this conceptual row."
+    ::= { unisFcZsSetZoneEntry 1 }
+
+-- Zone alias Table
+unisFcZsZoneAliasTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsZoneAliasEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains information about the Zone aliases
+         in the Zone Set Database of the Zone Server in each
+         VSAN."
+    ::= { unisFcZsConfiguration 5 }
+
+unisFcZsZoneAliasEntry OBJECT-TYPE
+    SYNTAX UnisFcZsZoneAliasEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry contains information about a Zone alias in
+         the Zone Set Database of a particular VSAN."
+    INDEX { unisVsanIndex, unisFcZsZoneAliasIndex }
+    ::= { unisFcZsZoneAliasTable 1 }
+
+
+UnisFcZsZoneAliasEntry ::=
+    SEQUENCE {
+        unisFcZsZoneAliasIndex
+            Unsigned32,
+        unisFcZsZoneAliasName
+            UnisFcZsGenName,
+        unisFcZsZoneAliasRowStatus
+            RowStatus
+     }
+
+unisFcZsZoneAliasIndex OBJECT-TYPE
+    SYNTAX Unsigned32(1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An index value that uniquely identifies this Zone
+         alias within the Zone Set Database."
+    ::= { unisFcZsZoneAliasEntry 1 }
+
+unisFcZsZoneAliasName OBJECT-TYPE
+    SYNTAX UnisFcZsGenName
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The name of this Zone alias, which should be unique
+         within a VSAN.
+
+         The Zone alias can be renamed by setting this object
+         to a new value."
+    ::= { unisFcZsZoneAliasEntry 2 }
+
+unisFcZsZoneAliasRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this conceptual row."
+    ::= { unisFcZsZoneAliasEntry 3 }
+
+-- Zone Member Table
+unisFcZsZoneMemberTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsZoneMemberEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains all members of a Zone/Zone alias
+         and information about those members in the Zone Set
+         Database of the Zone Server in each VSAN."
+    ::= { unisFcZsConfiguration 6 }
+
+unisFcZsZoneMemberEntry OBJECT-TYPE
+    SYNTAX UnisFcZsZoneMemberEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry represents the relationship between a
+         member and (one of) its 'parent(s)', i.e., a Zone
+         or Zone alias the member belongs, within
+         a particular VSAN."
+    INDEX { unisVsanIndex,
+            unisFcZsZoneMemberParentType,
+            unisFcZsZoneMemberParentIndex,
+            unisFcZsZoneMemberIndex }
+    ::= { unisFcZsZoneMemberTable 1 }
+
+
+UnisFcZsZoneMemberEntry ::=
+    SEQUENCE {
+        unisFcZsZoneMemberParentType
+            INTEGER,
+        unisFcZsZoneMemberParentIndex
+            Unsigned32,
+        unisFcZsZoneMemberIndex
+            Unsigned32,
+        unisFcZsZoneMemberFormat
+            UnisFcZsZoneMemberType,
+        unisFcZsZoneMemberIdentifier
+            OCTET STRING,
+        unisFcZsZoneMemberPairwiseRole
+            INTEGER,
+        unisFcZsZoneMemberRowStatus
+            RowStatus
+     }
+
+unisFcZsZoneMemberParentType OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        zone(1),
+        alias(2)
+        }
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This object determines whether this member belongs
+         to a Zone or Zone alias."
+    ::= { unisFcZsZoneMemberEntry 1 }
+
+unisFcZsZoneMemberParentIndex OBJECT-TYPE
+    SYNTAX Unsigned32(1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This object contains the index value of the Zone or
+         Zone alias to which this member belongs.
+
+         If the value of the corresponding instance of
+         unisFcZsZoneMemberParentType is 'zone', this object
+         will contain the value of the unisFcZsZoneIndex object of
+         the Zone to which this member belongs.
+
+         If the value of the corresponding instance of
+         unisFcZsZoneMemberParentType is 'alias', this object
+         will contain the value of the unisFcZsAliasIndex object
+         of the Zone alias to which this member belongs."
+    ::= { unisFcZsZoneMemberEntry 2 }
+
+unisFcZsZoneMemberIndex OBJECT-TYPE
+    SYNTAX Unsigned32(1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An index value that uniquely identifies this Zone
+         member among all Zone members in the Zone or Zone
+         alias they belongs to."
+    ::= { unisFcZsZoneMemberEntry 3 }
+
+unisFcZsZoneMemberFormat OBJECT-TYPE
+    SYNTAX UnisFcZsZoneMemberType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "This object identifies the format of the
+         Zone/Zone alias member's identifier that is contained
+         in unisFcZsZoneMemberIdentifier.
+
+         This object cannot be modified while the value of the
+         unisFcZsZoneMemberRowStatus object is 'active'."
+    ::= { unisFcZsZoneMemberEntry 4 }
+
+unisFcZsZoneMemberIdentifier OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..255))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "This object contains the Member Identifier of the
+         Zone or Zone alias.  The interpretation of this object
+         depends on the value of the corresponding instance
+         of unisFcZsZoneMemberFormat:
+
+         - if unisFcZsZoneMemberFormat is 'fcid', this object
+           contains the 3-octet N_Port FC ID.
+
+         - if unisFcZsZoneMemberFormat is 'fwwn', this object
+           contains an 8-octet F_Port WWN.
+
+         - if unisFcZsZoneMemberFormat is 'pwwn', this object
+           contains an 8-octet N_Port WWN.
+
+         - if unisFcZsZoneMemberFormat is 'aliasName', this
+           object contains the value of unisFcZsZoneAliasName
+           for some Zone alias in the same Zone Set Database.
+
+         This object cannot be modified while the value of the
+         unisFcZsZoneMemberRowStatus object is 'active'."
+    ::= { unisFcZsZoneMemberEntry 5 }
+
+unisFcZsZoneMemberPairwiseRole OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        none(1),
+        both(2),
+        initiator(3),
+        target(4)
+        }
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "This object identifies the Pairwise role of the Zone/Zone alias
+         member.
+
+         If unisFcZsZoneMemberFormat is 'aliasName', the value of this
+         object can only be 'none'.
+         If unisFcZsZoneMemberFormat is not 'aliasName', the value of
+         this object can't be 'none', and the default value is 'both'
+         (including both 'initiator' and 'target' role).
+
+         This object can be modified while the value of the
+         unisFcZsZoneMemberRowStatus object is 'active'.
+
+         The Pairwise role of a port member takes effect only when the
+         unisFcZsZonePairwiseEnable of the Zone to which the port member
+         belongs is set to 'true'."
+    ::= { unisFcZsZoneMemberEntry 6 }
+
+unisFcZsZoneMemberRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this conceptual row."
+    ::= { unisFcZsZoneMemberEntry 7 }
+
+unisFcZsOperation OBJECT IDENTIFIER ::= { unisFcZoneMibObjects 2 }
+
+unisFcZsActivateTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsActivateEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table provides a mechanism to allow a Zone Set
+         to be activated."
+    ::= { unisFcZsOperation 1 }
+
+unisFcZsActivateEntry OBJECT-TYPE
+    SYNTAX UnisFcZsActivateEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry contains information of the activation about
+         a Zone Set."
+    INDEX { unisVsanIndex }
+    ::= { unisFcZsActivateTable 1 }
+
+
+UnisFcZsActivateEntry ::=
+    SEQUENCE {
+        unisFcZsActivate
+            UnisFcZsGenNameOrZero,
+        unisFcZsDeactivate
+            INTEGER,
+        unisFcZsActivateResult
+            INTEGER,
+        unisFcZsActivateFailReason
+            INTEGER
+     }
+
+unisFcZsActivate OBJECT-TYPE
+    SYNTAX UnisFcZsGenNameOrZero
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Name of the Zone Set that needs to be activated.  The value of this
+         object when read is always zero-length."
+    ::= { unisFcZsActivateEntry 1 }
+
+unisFcZsDeactivate OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        noOper(1),
+        deactivate(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "A request to deactivate the currently active Zone Set.  The value of
+         this object when read is always 'noOper'.
+
+        'noOper'      - Specifies no operation.
+        'deactivate'  - Specifies the deactivate operation."
+    ::= { unisFcZsActivateEntry 2 }
+
+unisFcZsActivateResult OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        none(1),
+        inProgress(2),
+        activateSuccess(3),
+        activateFailure(4),
+        deactivateSuccess(5),
+        deactivateFailure(6)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "As a result of the most recent activation/deactivation.
+
+        'none'               - No activation/deactivation invoked since the
+                               last restart of the management system.
+        'inProcess'          - Activation/deactivation is still in progress.
+        'activateSuccess'    - Activation completed successfully.
+        'activateFailure'    - Activation failed due to some reason.
+        'deactivateSuccess'  - Deactivation completed successfully.
+        'deactivateFailure'  - Deactivation failed due to some reason."
+    ::= { unisFcZsActivateEntry 3 }
+
+unisFcZsActivateFailReason OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        none(1),
+        busy(2),
+        activeZoneSetTooBig(3),
+        noZoneSet(4),
+        noMember(5)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The reason for the most recent failure of a Zone Set activation or
+         deactivation.
+
+         'none'                 - No activation/deactivation invoked or the
+                                  result of activation/deactivation is success.
+         'busy'                 - The management system is busy in some other
+                                  process.
+         'activeZoneSetTooBig'  - The Active Zone Set size in packet reached
+                                  the maximum limit in Basic mode.
+         'noZoneSet'            - No specified Zone Set found.
+         'noMember'             - No port member found in the specified
+                                  Zone Set."
+    ::= { unisFcZsActivateEntry 4 }
+
+unisFcZsDistributeTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsDistributeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table provides an operational object to trigger a distribution
+         for each existing VSAN."
+    ::= { unisFcZsOperation 2 }
+
+unisFcZsDistributeEntry OBJECT-TYPE
+    SYNTAX UnisFcZsDistributeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This entry provides an operational object to trigger a distribution
+         for a specified VSAN."
+    INDEX { unisVsanIndex }
+    ::= { unisFcZsDistributeTable 1 }
+
+
+UnisFcZsDistributeEntry ::=
+    SEQUENCE {
+        unisFcZsDistribute
+            INTEGER,
+        unisFcZsDistributeLastResult
+            INTEGER,
+        unisFcZsDistributeReasonCode
+            Unsigned32,
+        unisFcZsDistributeExplainCode
+            Unsigned32
+     }
+
+unisFcZsDistribute OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        noOper(1),
+        distribute(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specifies the operation of triggering a distribution in this VSAN.
+
+         'noOper'      - Specifies no operation.
+         'distribute'  - Specifies the distribute operation."
+    ::= { unisFcZsDistributeEntry 1 }
+
+unisFcZsDistributeLastResult OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        none(1),
+        success(2),
+        inProgress(3),
+        rejectFailure(4),
+        otherFault(5)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Specifies the result of triggering a distribution for VSAN.
+
+        'none'          - No distribution invoked via the corresponding
+                          instance of distribution.
+        'success'       - Distribution completed successfully.
+        'inProgress'    - Distribution is still in progress.
+        'rejectFailure' - Distribution failed due to an SW_RJT.
+        'otherFault'    - Distribution/commit failed for some other reason."
+    ::= { unisFcZsDistributeEntry 2 }
+
+unisFcZsDistributeReasonCode OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The reason code in the SW_RJT packet received in the most recent
+         distribution.
+
+         This object is meaningful only when the value of
+         unisFcZsDistributeLastResult is 'rejectFailure'."
+    ::= { unisFcZsDistributeEntry 3 }
+
+unisFcZsDistributeExplainCode OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "This object contains the corresponding reason code explanation for
+         unisFcZsDistributeReasonCode, and is meaningful only when the value
+         of unisFcZsDistributeLastResult is 'rejectFailure'."
+    ::= { unisFcZsDistributeEntry 4 }
+
+unisFcZsClearDatabaseTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsClearDatabaseEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table provides an operational object to clear
+         the local Zone Set Database for each existing VSAN."
+    ::= { unisFcZsOperation 3 }
+
+unisFcZsClearDatabaseEntry OBJECT-TYPE
+    SYNTAX UnisFcZsClearDatabaseEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry provides an operational object to clear
+         the local Zone Set Database for a specified VSAN."
+    INDEX { unisVsanIndex }
+    ::= { unisFcZsClearDatabaseTable 1 }
+
+
+UnisFcZsClearDatabaseEntry ::=
+    SEQUENCE {
+        unisFcZsClearDatabase
+            INTEGER
+     }
+
+unisFcZsClearDatabase OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        noOper(1),
+        clearDb(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the operation of clearing local Zone Set Database in this VSAN.
+
+         'noOper'    - Specifies no operation.
+         'clearDb'   - Specifies clear operation."
+    ::= { unisFcZsClearDatabaseEntry 1 }
+
+unisFcZsClearPktStatsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsClearPktStatsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table provides an operational object to clear
+         the statistics on packets for each existing VSAN."
+    ::= { unisFcZsOperation 4 }
+
+unisFcZsClearPktStatsEntry OBJECT-TYPE
+    SYNTAX UnisFcZsClearPktStatsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry provides an operational object to clear
+         the statistics on packets for a specified VSAN."
+    INDEX { unisVsanIndex }
+    ::= { unisFcZsClearPktStatsTable 1 }
+
+
+UnisFcZsClearPktStatsEntry ::=
+    SEQUENCE {
+        unisFcZsClearPktStats
+            INTEGER
+     }
+
+unisFcZsClearPktStats OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        noOper(1),
+        clearStats(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Specify the operation of clearing the statistics on
+        packets in this VSAN.
+
+         'noOper'       - Specifies no operation.
+         'clearStats'   - Specifies the clear operation."
+    ::= { unisFcZsClearPktStatsEntry 1 }
+
+unisFcZsClearAllPktStats OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        noOper(1),
+        clearStats(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "An operational object to clear the statistics on
+        packets for all existing VSANs.
+
+         'noOper'         - Specifies no operation.
+         'clearStats'     - Specifies the clear operation."
+    ::= { unisFcZsOperation 5 }
+
+
+unisFcZsInformation OBJECT IDENTIFIER ::= { unisFcZoneMibObjects 3 }
+
+unisFcZsActiveZoneTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsActiveZoneEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains information about Active Zone
+         in each existing VSAN."
+    ::= { unisFcZsInformation 1 }
+
+unisFcZsActiveZoneEntry OBJECT-TYPE
+    SYNTAX UnisFcZsActiveZoneEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry contains information about Active Zone
+         in a specified VSAN."
+    INDEX {  unisVsanIndex,
+             t11ZsActiveZoneIndex}
+    ::= { unisFcZsActiveZoneTable 1 }
+
+
+UnisFcZsActiveZoneEntry ::=
+    SEQUENCE {
+        unisFcZsActiveZonePairwiseEnable
+            TruthValue
+     }
+
+unisFcZsActiveZonePairwiseEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates whether Pairwise Zoning of an Active Zone is enabled."
+    ::= { unisFcZsActiveZoneEntry 1 }
+
+
+unisFcZsActiveMemberTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsActiveMemberEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains information about Active Zone members
+         in each existing VSAN."
+    ::= { unisFcZsInformation 2 }
+
+unisFcZsActiveMemberEntry OBJECT-TYPE
+    SYNTAX UnisFcZsActiveMemberEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry contains information about Active Zone members
+         in a specified VSAN."
+    INDEX {  unisVsanIndex,
+             t11ZsActiveZoneIndex,
+             t11ZsActiveZoneMemberIndex  }
+    ::= { unisFcZsActiveMemberTable 1 }
+
+
+UnisFcZsActiveMemberEntry ::=
+    SEQUENCE {
+        unisFcZsActiveMemberPairwiseRole
+            INTEGER
+     }
+
+unisFcZsActiveMemberPairwiseRole OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        both(1),
+        initiator(2),
+        target(3)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates which role the Active Zone member is playing."
+    ::= { unisFcZsActiveMemberEntry 1 }
+
+
+unisFcZsServerStatusTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsServerStatusEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains the configuration and running state of
+         each existing VSAN."
+    ::= { unisFcZsInformation 3 }
+
+unisFcZsServerStatusEntry OBJECT-TYPE
+    SYNTAX UnisFcZsServerStatusEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry contains the configuration and running state of
+         a specified VSAN."
+    INDEX { unisVsanIndex }
+    ::= { unisFcZsServerStatusTable 1 }
+
+
+UnisFcZsServerStatusEntry ::=
+    SEQUENCE {
+        unisFcZsServerStatus
+            INTEGER,
+        unisFcZsHardZoneStatus
+            INTEGER,
+        unisFcZsAliasCount
+            Unsigned32,
+        unisFcZsZoneCount
+            Unsigned32,
+        unisFcZsZonesetCount
+            Unsigned32
+     }
+
+unisFcZsServerStatus OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        free(1),
+        distribute(2),
+        merge(3)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The current status of Zone Server.
+
+        'free'        - The Zone Server is now free.
+        'distribute'  - The Zone Server is now busy distributing.
+        'merge'       - The Zone Server is now busy merging."
+    ::= { unisFcZsServerStatusEntry 1 }
+
+unisFcZsHardZoneStatus OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        enable(1),
+        adminDisable(2),
+        noResourceDisable(3)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The current status of Hard Zone Server.
+
+        'enable'            - Hard Zone Server is enabled.
+        'adminDisable'      - Hard Zone Server is disabled administratively.
+        'noResourceDisable' - Hard Zone Server is disabled due to lack of
+                              hardware resource."
+    ::= { unisFcZsServerStatusEntry 2 }
+
+unisFcZsAliasCount OBJECT-TYPE
+    SYNTAX Unsigned32(0..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of Zone aliases that exist in the specified VSAN."
+    ::= { unisFcZsServerStatusEntry 3 }
+
+unisFcZsZoneCount OBJECT-TYPE
+    SYNTAX Unsigned32(0..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of Zones that exist in the specified VSAN."
+    ::= { unisFcZsServerStatusEntry 4 }
+
+unisFcZsZonesetCount OBJECT-TYPE
+    SYNTAX Unsigned32(0..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of Zone Sets that exist in the specified VSAN."
+    ::= { unisFcZsServerStatusEntry 5 }
+
+unisFcZsPktStatsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsPktStatsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Packet statistic table of Zone Servers."
+    ::= { unisFcZsInformation 4 }
+
+unisFcZsPktStatsEntry OBJECT-TYPE
+    SYNTAX UnisFcZsPktStatsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry contains the statistics on packets of
+        Zone Servers."
+    INDEX { unisVsanIndex }
+    ::= { unisFcZsPktStatsTable 1 }
+
+
+UnisFcZsPktStatsEntry ::=
+    SEQUENCE {
+        unisFcZsPktInMergeReqCount
+            Counter64,
+        unisFcZsPktOutMergeReqCount
+            Counter64,
+        unisFcZsPktInMergeAccCount
+            Counter64,
+        unisFcZsPktOutMergeAccCount
+            Counter64,
+        unisFcZsPktInMergeRjtCount
+            Counter64,
+        unisFcZsPktOutMergeRjtCount
+            Counter64,
+        unisFcZsPktInChangeReqCount
+            Counter64,
+        unisFcZsPktOutChangeReqCount
+            Counter64,
+        unisFcZsPktInChangeAccCount
+            Counter64,
+        unisFcZsPktOutChangeAccCount
+            Counter64,
+        unisFcZsPktInChangeRjtCount
+            Counter64,
+        unisFcZsPktOutChangeRjtCount
+            Counter64
+     }
+
+unisFcZsPktInMergeReqCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of Merge Request Frames received by local Zone
+         Server from other Zone Servers."
+    ::= { unisFcZsPktStatsEntry 1 }
+
+unisFcZsPktOutMergeReqCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of Merge Request Frames sent by local Zone Server
+         to other Zone Servers."
+    ::= { unisFcZsPktStatsEntry 2 }
+
+unisFcZsPktInMergeAccCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of Merge Accept Frames received by local Zone
+         Server from other Zone Servers."
+    ::= { unisFcZsPktStatsEntry 3 }
+
+unisFcZsPktOutMergeAccCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of Merge Accept Frames sent by local Zone Server
+         to other Zone Servers."
+    ::= { unisFcZsPktStatsEntry 4 }
+
+unisFcZsPktInMergeRjtCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of Merge Reject Frames received by local Zone
+         Server from other Zone Servers."
+    ::= { unisFcZsPktStatsEntry 5 }
+
+unisFcZsPktOutMergeRjtCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of Merge Reject Frames sent by local Zone Server
+         to other Zone Servers."
+    ::= { unisFcZsPktStatsEntry 6 }
+
+unisFcZsPktInChangeReqCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of change requests received by local Zone
+         Server from other Zone Servers."
+    ::= { unisFcZsPktStatsEntry 7 }
+
+unisFcZsPktOutChangeReqCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of change requests sent by local Zone Server
+         to other Zone Servers."
+    ::= { unisFcZsPktStatsEntry 8 }
+
+unisFcZsPktInChangeAccCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of Accept messages received from other Zone Servers
+         in response to change request sent by local Zone Server."
+    ::= { unisFcZsPktStatsEntry 9 }
+
+unisFcZsPktOutChangeAccCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of Accept messages sent to other Zone Servers
+         in response to change request received by local Zone Server."
+    ::= { unisFcZsPktStatsEntry 10 }
+
+unisFcZsPktInChangeRjtCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of Reject messages received from other Zone Servers
+         in response to change request sent by local Zone Server."
+    ::= { unisFcZsPktStatsEntry 11 }
+
+unisFcZsPktOutChangeRjtCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of Reject messages sent to other Zone Servers
+         in response to change request received by local Zone Server."
+    ::= { unisFcZsPktStatsEntry 12 }
+
+
+unisFcZsNextFreeIndexInfo OBJECT IDENTIFIER ::= { unisFcZsInformation 5 }
+
+unisFcZsZonesetNextFreeIndex OBJECT-TYPE
+    SYNTAX Unsigned32(1..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Specifies the latest available index of unisFcZsZonesetIndex that
+         can be used to identify a new Zone Set."
+    ::= { unisFcZsNextFreeIndexInfo 1 }
+
+unisFcZsZoneNextFreeIndex OBJECT-TYPE
+    SYNTAX Unsigned32(1..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Specifies the latest available index of unisFcZsZoneIndex that
+         can be used to identify a new Zone."
+    ::= { unisFcZsNextFreeIndexInfo 2 }
+
+unisFcZsZoneAliasNextFreeIndex OBJECT-TYPE
+    SYNTAX Unsigned32(1..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Specifies the latest available index of unisFcZsZoneAliasIndex that
+         can be used to identify a new Zone alias."
+    ::= { unisFcZsNextFreeIndexInfo 3 }
+
+unisFcZsZoneMemberNextFreeIndexTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFcZsZoneMemberNextFreeIndexEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains the information of the latest available index that
+         can be used to identify a new member in each Zone or Zone alias."
+    ::= { unisFcZsNextFreeIndexInfo 4 }
+
+unisFcZsZoneMemberNextFreeIndexEntry OBJECT-TYPE
+    SYNTAX UnisFcZsZoneMemberNextFreeIndexEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry contains the information of the latest available index that
+         can be used to identify a new member in a Zone or Zone alias."
+    INDEX { unisFcZsZoneMemberParentType,
+            unisFcZsZoneMemberParentIndex }
+    ::= { unisFcZsZoneMemberNextFreeIndexTable 1 }
+
+UnisFcZsZoneMemberNextFreeIndexEntry ::=
+    SEQUENCE {
+              unisFcZsZoneMemberNextFreeIndex
+              Unsigned32
+             }
+
+unisFcZsZoneMemberNextFreeIndex OBJECT-TYPE
+    SYNTAX Unsigned32(1..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Specifies the latest available index of unisFcZsZoneMemberIndex that
+         can be used to identify a new member in a Zone or Zone alias."
+    ::= { unisFcZsZoneMemberNextFreeIndexEntry 1 }
+
+
+unisFcZsNotification OBJECT IDENTIFIER ::= { unisFcZoneMibObjects 4 }
+
+unisFcZsNotificationPrefix OBJECT IDENTIFIER ::= { unisFcZsNotification 0 }
+
+unisFcZsDefaultZoneChangedNotify NOTIFICATION-TYPE
+    OBJECTS { unisVsanIndex,
+              unisFcZsLocalSwitchWWN,
+              unisFcZsDefaultZoneSetting }
+    STATUS current
+    DESCRIPTION
+        "A unisFcZsDefaultZoneChangedNotify notification is sent when
+         the Default Zone setting of a specified VSAN is changed."
+    ::= { unisFcZsNotificationPrefix 1 }
+
+unisFcZsHardZoneChangedNotify NOTIFICATION-TYPE
+    OBJECTS { unisVsanIndex,
+              unisFcZsLocalSwitchWWN,
+              unisFcZsHardZoneStatus }
+    STATUS current
+    DESCRIPTION
+        "A unisFcZsHardZoneChangedNotify notification is sent when
+         the hard Zone configuration of a specified VSAN is changed."
+    ::= { unisFcZsNotificationPrefix 2 }
+
+unisFcZsMergeFailedNotify NOTIFICATION-TYPE
+    OBJECTS { ifIndex,
+              ifDescr,
+              unisVsanIndex,
+              unisFcZsLocalSwitchWWN,
+              unisFcZsPeerSwitchWWN,
+              unisFcZsMergeFailCause
+            }
+    STATUS current
+    DESCRIPTION
+        "A unisFcZsMergeFailedNotify notification is sent when a Zone merge
+         failure occurs."
+    ::= { unisFcZsNotificationPrefix 3 }
+
+unisFcZsMergeSucceededNotify NOTIFICATION-TYPE
+    OBJECTS { ifIndex,
+              ifDescr,
+              unisVsanIndex,
+              unisFcZsLocalSwitchWWN,
+              unisFcZsPeerSwitchWWN
+            }
+    STATUS current
+    DESCRIPTION
+        "A unisFcZsMergeSucceededNotify notification is sent when a successful
+         Zone merge occurs."
+    ::= { unisFcZsNotificationPrefix 4 }
+
+unisFcZsActivationCompletedNotify NOTIFICATION-TYPE
+    OBJECTS { unisVsanIndex,
+              unisFcZsLocalSwitchWWN,
+              unisFcZsActivateResult
+            }
+    STATUS current
+    DESCRIPTION
+        "A unisFcZsActivationCompletedNotify notification is sent whenever a
+         activation/deactivation is completed."
+    ::= { unisFcZsNotificationPrefix 5 }
+
+unisFcZsNotificationSwitch OBJECT IDENTIFIER ::= { unisFcZsNotification 1 }
+
+unisFcZsDefaultZoneChangedEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether the module will generate
+         traps for Default Zone setting change events."
+    ::= { unisFcZsNotificationSwitch 1 }
+
+unisFcZsHardZoneChangedEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether the module will generate
+         traps for hard Zone change events."
+    ::= { unisFcZsNotificationSwitch 2 }
+
+unisFcZsMergeFailedEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether the module will generate
+         traps for Zone merge failure events."
+    ::= { unisFcZsNotificationSwitch 3 }
+
+unisFcZsMergeSucceededEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether the module will generate
+         traps for Zone merge success events."
+    ::= { unisFcZsNotificationSwitch 4 }
+
+unisFcZsActivationCompletedEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether the module will generate
+         traps for activation/deactivation-completed events."
+    ::= { unisFcZsNotificationSwitch 5 }
+
+unisFcZsObjsForNotification OBJECT IDENTIFIER ::= { unisFcZsNotification 2 }
+
+unisFcZsLocalSwitchWWN OBJECT-TYPE
+    SYNTAX UnisFcNameId
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "This object indicates the WWN of the local switch."
+    ::= { unisFcZsObjsForNotification 1 }
+
+unisFcZsPeerSwitchWWN OBJECT-TYPE
+    SYNTAX UnisFcNameId
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "This object indicates the WWN of the peer switch."
+    ::= { unisFcZsObjsForNotification 2 }
+
+unisFcZsMergeFailCause OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        zoneModeInconsistent(1),
+        zonePolicyNotEqual(2),
+        hardZoneInconsistent(3),
+        dataNotEqualInRestrict(4),
+        activeZoneSetMergeFailed(5),
+        zoneMergeDataTooBig(6),
+        zoningObjectNumberTooBig(7),
+        zoneDbMergeFaildInBasic(8),
+        zoneDbMergeFaildInEnhanced(9),
+        other(10)
+        }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Indicates the reason of a Zone merge failure.
+
+         'zoneModeInconsistent'        - The zone mode is inconsistent.
+         'zonePolicyNotEqual'          - Zone Merge-Control setting or
+                                         Default-Zone doesn't match.
+         'hardZoneInconsistent'        - The Hard Zone Attribute is
+                                         inconsistent.
+         'dataNotEqualInRestrict'      - The Merge-Control setting is
+                                         Restrict and the peer zoning
+                                         database is not equal.
+         'activeZoneSetMergeFailed'    - The Active Zone Set merge failed.
+         'zoneMergeDataTooBig'         - The merged packet was
+                                         too large.
+         'zoningObjectNumberTooBig'    - The number of zoning objects exceeded
+                                         the limit.
+         'zoneDbMergeFaildInBasic'     - The database merge failed in Basic
+                                         mode.
+         'zoneDbMergeFaildInEnhanced'  - The database merge failed in Enhanced
+                                         mode.
+         'other'                       - Unknown reason."
+    ::= { unisFcZsObjsForNotification 3 }
+
+END

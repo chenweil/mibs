@@ -1,0 +1,1091 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:  DHCP Server MIB
+-- Reference:
+-- Version: V1.7
+-- History:
+-- V1.0 Initial version Created by y04444
+-- V1.1 2009-09-07 Modify by xuyufei
+--      Add DHCP Server trap
+-- V1.2 2010-05-30 Modify by liuxiaoming06874
+--      Add unisDHCPSrvMibObject,including unisDHCPSrvGlobalPoolTable
+--      unisDHCPSrvGlobalPoolConfigTable,unisDHCPSrvGlobalPoolParaTable
+--      unisDHCPSrvGlobalPoolOptionTable
+--      2010-08-13 Modify by Cui Jing
+--      Add unisDHCPSrvGlobalPoolStatTable,
+--      modify unisDHCPServerReqTimes and unisDHCPServerReqSuccessTimes.
+-- V1.3 2011-08-10 Modify by zhangshuai06624
+--      modify unisDHCPSrvGlbPoolReqTimes and unisDHCPSrvGlbPoolSuccessTimes.
+--      Add unisDHCPSrvGlbPoolDiscoverTimes, unisDHCPSrvGlbPoolOfferTimes and
+--      unisDHCPSrvGlbPoolACKTimes
+-- V1.4 2011-11-23 Modify by zhangshuai06624
+--      Add unisDHCPServerTrapObjects and unisDHCPServerFirstTrapTime
+-- V1.5 2012-08-10 Modify by xuyufei03122
+--      modify unisDHCPSrvGlbPoolOptHexString
+-- V1.6 2013-08-28 Modify by ganchanghua06076
+--      Add unisDHCPSvrOptionGroupTable, unisDHCPSvrOptionTable,
+--      unisDHCPSvrVerifyMacTable and unisDHCPSvrPoolMacTable.
+--      2013-10-17 Modify by xuyufei03122
+--      Add unisDHCPSrvGlbPoolTotalIpNum and unisDHCPSrvGlbPoolInUsedIpNum
+-- V1.7 2014-04-17 Modify by cuixiaohui03029
+--      Add unisDHCPSrvGlobalPoolAllocObject
+--      Add unisDHCPSrvGlbPoolLeaseTimeSec
+--      Add unisDHCPSrvGlbPoolCliGWIPAddr
+-- =================================================================
+UNIS-DHCP-SERVER-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, NOTIFICATION-TYPE, MODULE-IDENTITY, IpAddress, Integer32,
+    TimeTicks, Counter32
+        FROM SNMPv2-SMI
+    RowStatus, MacAddress
+        FROM SNMPv2-TC;
+
+unisDHCPServer MODULE-IDENTITY
+    LAST-UPDATED "200905060000Z"            -- May 06th, 2009 at 00:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for DHCP server."
+    REVISION    "200905060000Z"
+    DESCRIPTION
+        "Initial version"
+    ::= { unisCommon 101 }
+
+--
+-- Define the DHCP Server GLOBAL.
+--
+    unisDHCPServerObjects OBJECT IDENTIFIER ::= { unisDHCPServer 1 }
+
+    unisDHCPServerIPPoolUsage OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Usage factor of DHCP server ip pool."
+        ::= { unisDHCPServerObjects 1 }
+
+    unisDHCPServerReqTimes OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Number of requests received by the DHCP server."
+        ::= { unisDHCPServerObjects 2 }
+
+    unisDHCPServerReqSuccessTimes OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Number of requests success responses sent by the DHCP server."
+        ::= { unisDHCPServerObjects 3 }
+
+    unisDHCPServerAvgIpUseThreshold OBJECT-TYPE
+        SYNTAX      Integer32 (0..100)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Threshold of average IP usage of a DHCP server pool in 5 minutes."
+        ::= { unisDHCPServerObjects 4 }
+
+    unisDHCPServerMaxIpUseThreshold OBJECT-TYPE
+        SYNTAX      Integer32 (0..100)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Threshold of maximum IP usage of a DHCP server pool in 5 minutes."
+        ::= { unisDHCPServerObjects 5 }
+
+    unisDHCPServerAllocateThreshold OBJECT-TYPE
+        SYNTAX      Integer32 (0..100)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Threshold of DHCP server allocated IP address in 5 minutes."
+        ::= { unisDHCPServerObjects 6 }
+
+--
+-- Define the DHCP Server Tables.
+--
+    unisDHCPServerTables OBJECT IDENTIFIER ::= { unisDHCPServer 2 }
+
+    unisDHCPServerPoolName OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..255))
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "DHCP server pool name."
+        ::= { unisDHCPServerTables 1 }
+
+-- =================================================================
+-- 1st Table of unisDHCPServerTables: unisDHCPSrvGlobalPoolTable
+-- =================================================================
+    unisDHCPSrvGlobalPoolTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisDHCPSrvGlobalPoolEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table for creating DHCP server global pools."
+        ::= { unisDHCPServerTables 2 }
+
+    unisDHCPSrvGlobalPoolEntry OBJECT-TYPE
+        SYNTAX      UnisDHCPSrvGlobalPoolEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry containing objects for creating or
+            deleting a global pool for the DHCP server."
+        INDEX { unisDHCPSrvGlobalPoolName }
+        ::= { unisDHCPSrvGlobalPoolTable 1 }
+
+    UnisDHCPSrvGlobalPoolEntry ::=
+        SEQUENCE
+            {
+                unisDHCPSrvGlobalPoolName         OCTET STRING,
+                unisDHCPSrvGlobalPoolRowStatus    RowStatus
+            }
+
+    unisDHCPSrvGlobalPoolName OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..255))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "DHCP server global pool name."
+        ::= { unisDHCPSrvGlobalPoolEntry 1 }
+
+    unisDHCPSrvGlobalPoolRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus.  Three actions are used: active,
+            createAndGo, destroy."
+        ::= { unisDHCPSrvGlobalPoolEntry 2 }
+
+-- =================================================================
+-- 2nd Table of unisDHCPServerTables: unisDHCPSrvGlobalPoolConfigTable
+-- =================================================================
+    unisDHCPSrvGlobalPoolConfigTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisDHCPSrvGlobalPoolConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing the configurations of dhcp
+            server global pools."
+        ::= { unisDHCPServerTables 3 }
+
+    unisDHCPSrvGlobalPoolConfigEntry OBJECT-TYPE
+        SYNTAX      UnisDHCPSrvGlobalPoolConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry containing the objects for configuring
+            the network ip or host ip etc. to global pools for
+            DHCP server."
+        INDEX { unisDHCPSrvGlobalPoolName }
+        ::= { unisDHCPSrvGlobalPoolConfigTable 1 }
+
+    UnisDHCPSrvGlobalPoolConfigEntry ::=
+        SEQUENCE
+            {
+                unisDHCPSrvGlobalPoolType              INTEGER,
+                unisDHCPSrvGlobalPoolNetwork           IpAddress,
+                unisDHCPSrvGlobalPoolNetworkMask       IpAddress,
+                unisDHCPSrvGlobalPoolHostIPAddr        IpAddress,
+                unisDHCPSrvGlobalPoolHostMask          IpAddress,
+                unisDHCPSrvGlobalPoolHostHAddr         MacAddress,
+                unisDHCPSrvGlobalPoolCfgUndoFlag       INTEGER,
+                unisDHCPSrvGlobalPoolStartAddr         IpAddress,
+                unisDHCPSrvGlobalPoolEndAddr           IpAddress,
+                unisDHCPSrvGlobalPoolAllocObject       INTEGER
+            }
+
+    unisDHCPSrvGlobalPoolType OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                null(0),
+                host(1),
+                network(2)
+            }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Type of a DHCP global pool.  Any operations of
+            this object will be bound with the operations
+            of unisDHCPSrvGlobalPoolNetwork, unisDHCPSrvGlobalPoolHostIPAddr,
+            or unisDHCPSrvGlobalPoolHostHAddr.
+            That means any operation of this object alone will
+            be regarded as invalid operation."
+        ::= { unisDHCPSrvGlobalPoolConfigEntry 1 }
+
+    unisDHCPSrvGlobalPoolNetwork OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Network ip of a DHCP global pool.
+            To delete a configured network ip, please set
+            unisDHCPSrvGlobalPoolCfgUndoFlag to 1."
+        ::= { unisDHCPSrvGlobalPoolConfigEntry 2 }
+
+    unisDHCPSrvGlobalPoolNetworkMask OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Net mask of a DHCP global pool(network).
+            The SET operation to this object ought to be with
+            the SET of unisDHCPSrvGlobalPoolNetwork together, and
+            any SET operation alone to this object will be
+            regarded as an invalid operation.
+            When a network ip of a DHCP global pool was
+            deleted, the net mask would also be deleted
+            automatically, and no further operation needed."
+        ::= { unisDHCPSrvGlobalPoolConfigEntry 3 }
+
+    unisDHCPSrvGlobalPoolHostIPAddr OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Host ip of a DHCP global pool.
+            To delete a configured network ip, please set
+            unisDHCPSrvGlobalPoolCfgUndoFlag to 2."
+        ::= { unisDHCPSrvGlobalPoolConfigEntry 4 }
+
+    unisDHCPSrvGlobalPoolHostMask OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Net mask of a DHCP global pool(host)
+            The SET operation to this object ought to be with
+            the SET of unisDHCPSrvGlobalPoolHostIPAddr together,
+            and any SET operation alone to this object will be
+            regarded as an invalid operation.
+            When a host ip of a DHCP global pool was
+            deleted, the net mask would also be deleted
+            automatically, and no further operation needed."
+        ::= { unisDHCPSrvGlobalPoolConfigEntry 5 }
+
+    unisDHCPSrvGlobalPoolHostHAddr OBJECT-TYPE
+        SYNTAX      MacAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Hardware address of a DHCP global pool(host).
+            To delete a configured hardware address, please
+            set unisDHCPSrvGlobalPoolCfgUndoFlag to 3."
+        ::= { unisDHCPSrvGlobalPoolConfigEntry 6 }
+
+    unisDHCPSrvGlobalPoolCfgUndoFlag OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                undonetworkip(1),
+                undohostip(2),
+                undohosthaddr(3)
+            }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Flag of undo operation for unisDHCPSrvGlobalPoolConfigTable."
+        ::= { unisDHCPSrvGlobalPoolConfigEntry 7 }
+
+    unisDHCPSrvGlobalPoolStartAddr OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Start IP of a DHCP global pool.
+            To delete a configured start IP, please set
+            unisDHCPSrvGlobalPoolStartAddr to 0.  It takes
+            effect only when unisDHCPSrvGlobalPoolNetwork is set."
+        ::= { unisDHCPSrvGlobalPoolConfigEntry 8 }
+
+    unisDHCPSrvGlobalPoolEndAddr OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "End ip of a DHCP global pool."
+        ::= { unisDHCPSrvGlobalPoolConfigEntry 9 }
+
+    unisDHCPSrvGlobalPoolAllocObject OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                user(0),
+                admin(1)
+            }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "A DHCP global pool type for object allocated address.
+            User: the DHCP global pool allocates address for user.
+            Admin: the DHCP global pool allocates address for route
+            or switch.  The default value is 0."
+        ::= { unisDHCPSrvGlobalPoolConfigEntry 10 }
+-- =================================================================
+-- 3rd Table of unisDHCPServerTables: unisDHCPSrvGlobalPoolParaTable
+-- =================================================================
+    unisDHCPSrvGlobalPoolParaTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisDHCPSrvGlobalPoolParaEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table for configuring parameters to DHCP global
+            pools."
+        ::= { unisDHCPServerTables 4 }
+
+    unisDHCPSrvGlobalPoolParaEntry OBJECT-TYPE
+        SYNTAX      UnisDHCPSrvGlobalPoolParaEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry containing the objects for the
+            configurations of parameters of DHCP global pools."
+        INDEX { unisDHCPSrvGlobalPoolName }
+        ::= { unisDHCPSrvGlobalPoolParaTable 1 }
+
+    UnisDHCPSrvGlobalPoolParaEntry ::=
+        SEQUENCE
+            {
+                unisDHCPSrvGlbPoolLeaseDay                 Integer32,
+                unisDHCPSrvGlbPoolLeaseHour                Integer32,
+                unisDHCPSrvGlbPoolLeaseMinute              Integer32,
+                unisDHCPSrvGlbPoolLeaseUnlimited           INTEGER,
+                unisDHCPSrvGlbPoolDomainName               OCTET STRING,
+                unisDHCPSrvGlbPoolCliGWIPStr               OCTET STRING,
+                unisDHCPSrvGlbPoolCliGWIPUndo              IpAddress,
+                unisDHCPSrvGlbPoolCliDNSIPStr              OCTET STRING,
+                unisDHCPSrvGlbPoolCliDNSIPUndo             IpAddress,
+                unisDHCPSrvGlbPoolCliNetbiosType           INTEGER,
+                unisDHCPSrvGlbPoolCliNbnsIPStr             OCTET STRING,
+                unisDHCPSrvGlbPoolCliNbnsIPUndo            IpAddress,
+                unisDHCPSrvGlbPoolParaUndoFlag             INTEGER,
+                unisDHCPSrvGlbPoolIPInUseReset             INTEGER,
+                unisDHCPSrvGlbPoolLeaseTime                TimeTicks,
+                unisDHCPSrvGlbPoolPrimaryDNSIP             IpAddress,
+                unisDHCPSrvGlbPoolSecondaryDNSIP           IpAddress,
+                unisDHCPSrvGlbPoolLeaseSecond              Integer32,
+                unisDHCPSrvGlbPoolLeaseTimeSec             Integer32,
+                unisDHCPSrvGlbPoolCliGWIPAddr              IpAddress
+            }
+
+    unisDHCPSrvGlbPoolLeaseDay OBJECT-TYPE
+        SYNTAX      Integer32(0..365)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Number of days of the lease."
+        DEFVAL { 1 }
+        ::= { unisDHCPSrvGlobalPoolParaEntry 1 }
+
+    unisDHCPSrvGlbPoolLeaseHour OBJECT-TYPE
+        SYNTAX      Integer32(0..23)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Number of hours of the lease."
+        DEFVAL { 0 }
+        ::= { unisDHCPSrvGlobalPoolParaEntry 2 }
+
+    unisDHCPSrvGlbPoolLeaseMinute OBJECT-TYPE
+        SYNTAX      Integer32(0..59)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Number of minutes of the lease."
+        DEFVAL { 0 }
+        ::= { unisDHCPSrvGlobalPoolParaEntry 3 }
+
+    unisDHCPSrvGlbPoolLeaseUnlimited OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                invalid(0),
+                unlimited(1)
+            }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "A flag denoting if the lease of a pool is
+            unlimited."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 4 }
+
+    unisDHCPSrvGlbPoolDomainName OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..255))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Domain name for DHCP clients."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 5 }
+
+    unisDHCPSrvGlbPoolCliGWIPStr OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..129))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "String of gateway ip addresses for DHCP clients.
+            Since mostly 8 ip can be configured for a pool
+            totally, a string is defined to get or configure 8 ip
+            ip at a time."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 6 }
+
+    unisDHCPSrvGlbPoolCliGWIPUndo OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "A gateway ip address to delete.  This object is
+            only for deleting a given ip of gateway router."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 7 }
+
+    unisDHCPSrvGlbPoolCliDNSIPStr OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..129))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "String of DNS server ip addresses for DHCP clients.
+            Since mostly 8 ip can be configured for a pool
+            totally, a string is defined to get or configure 8
+            ip at a time."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 8 }
+
+    unisDHCPSrvGlbPoolCliDNSIPUndo OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "A DNS server ip address to delete.  This object
+            is only for deleting a given ip of DNS server."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 9 }
+
+    unisDHCPSrvGlbPoolCliNetbiosType OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                null(0),
+                bnode(1),
+                pnode(2),
+                mnode(4),
+                hnode(8)
+            }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "NetBios node type for DHCP clients."
+        DEFVAL { 0 }
+        ::= { unisDHCPSrvGlobalPoolParaEntry 10 }
+
+    unisDHCPSrvGlbPoolCliNbnsIPStr OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..129))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "String of NetBios server ip addresses for DHCP
+            clients.  Since mostly 8 ip can be configured for
+            a pool totally, so a string is defined to get or
+            configure 8 ip at a time."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 11 }
+
+    unisDHCPSrvGlbPoolCliNbnsIPUndo OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "A NetBios server ip address to delete.  This
+            object is only for deleting a given ip of NetBios
+            server."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 12 }
+
+    unisDHCPSrvGlbPoolParaUndoFlag OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                undoDomain(1),
+                undoLease(2),
+                undoGateway(3),
+                undoDns(4),
+                undoNbns(5),
+                undoNbType(6)
+            }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Flag of undo-operation for unisDHCPSrvGlobalPoolParaTable."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 13 }
+
+    unisDHCPSrvGlbPoolIPInUseReset OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                reset(1)
+            }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Reset the auto binding ip of the given global
+            pool for DHCP server."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 14 }
+
+    unisDHCPSrvGlbPoolLeaseTime OBJECT-TYPE
+        SYNTAX      TimeTicks
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Number of timeticks of the lease."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 15 }
+
+    unisDHCPSrvGlbPoolPrimaryDNSIP OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The Primary DNS server IP address to be assigned to the
+            client.  To delete a configured Primary DNS server IP, please
+            set unisDHCPSrvGlbPoolPrimaryDNSIP to 0.   It takes
+            effect only when unisDHCPSrvGlobalPoolNetwork is set."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 16 }
+
+    unisDHCPSrvGlbPoolSecondaryDNSIP OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The Secondary DNS server IP address to be assigned to the
+            client.  To delete a configured Secondary DNS server IP, please
+            set unisDHCPSrvGlbPoolSecondaryDNSIP to 0.  It takes
+            effect only when unisDHCPSrvGlobalPoolNetwork is set."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 17 }
+
+    unisDHCPSrvGlbPoolLeaseSecond OBJECT-TYPE
+        SYNTAX      Integer32(0..59)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Number of seconds of the lease."
+        DEFVAL { 0 }
+        ::= { unisDHCPSrvGlobalPoolParaEntry 18 }
+
+    unisDHCPSrvGlbPoolLeaseTimeSec OBJECT-TYPE
+        SYNTAX      Integer32 (5..31622399)
+        UNITS      "seconds"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Number of seconds of the lease.  The default
+             value is 86400"
+        ::= { unisDHCPSrvGlobalPoolParaEntry 19 }
+
+    unisDHCPSrvGlbPoolCliGWIPAddr OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Ip addresses of gateway for DHCP clients."
+        ::= { unisDHCPSrvGlobalPoolParaEntry 20 }
+
+-- =================================================================
+-- 4th Table of unisDHCPServerTables: unisDHCPSrvGlobalPoolOptionTable
+-- =================================================================
+    unisDHCPSrvGlobalPoolOptionTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisDHCPSrvGlobalPoolOptionEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table for configuring options to DHCP global pools."
+        ::= { unisDHCPServerTables 5 }
+
+    unisDHCPSrvGlobalPoolOptionEntry OBJECT-TYPE
+        SYNTAX      UnisDHCPSrvGlobalPoolOptionEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry containing the objects for configuring
+            options to DHCP global pools."
+        INDEX { unisDHCPSrvGlobalPoolName, unisDHCPSrvGlbPoolOptCode }
+        ::= { unisDHCPSrvGlobalPoolOptionTable 1 }
+
+    UnisDHCPSrvGlobalPoolOptionEntry ::=
+        SEQUENCE
+            {
+                unisDHCPSrvGlbPoolOptCode         Integer32,
+                unisDHCPSrvGlbPoolOptType         INTEGER,
+                unisDHCPSrvGlbPoolOptAscii        OCTET STRING,
+                unisDHCPSrvGlbPoolOptHexString    OCTET STRING,
+                unisDHCPSrvGlbPoolOptIPString     OCTET STRING,
+                unisDHCPSrvGlbPoolOptRowStatus    RowStatus
+             }
+
+    unisDHCPSrvGlbPoolOptCode OBJECT-TYPE
+        SYNTAX      Integer32 (1..254)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Option code."
+        ::= { unisDHCPSrvGlobalPoolOptionEntry 1 }
+
+    unisDHCPSrvGlbPoolOptType OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                ascii(1),
+                hex(2),
+                ip(3)
+            }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Option type."
+        ::= { unisDHCPSrvGlobalPoolOptionEntry 2 }
+
+    unisDHCPSrvGlbPoolOptAscii OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..63))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Ascii string of an option."
+        ::= { unisDHCPSrvGlobalPoolOptionEntry 3 }
+
+    unisDHCPSrvGlbPoolOptHexString OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..573))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Hex string of an option.  1st to 16th hex strings,
+            which are 2 bytes, 4 bytes, 6 bytes or 8 bytes,
+            can be configured at most simultaneously.
+            That means the format of each string
+            must be '12', '1234', '123456' or '12345678'."
+        ::= { unisDHCPSrvGlobalPoolOptionEntry 4 }
+
+    unisDHCPSrvGlbPoolOptIPString OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..129))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "IP string of an option.  1 to 8 ip addresses  can
+            be configured at most simultaneously."
+        ::= { unisDHCPSrvGlobalPoolOptionEntry 5 }
+
+    unisDHCPSrvGlbPoolOptRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus.  Three actions are used: active,
+            createAndGo, destroy."
+        ::= { unisDHCPSrvGlobalPoolOptionEntry 6 }
+
+-- =================================================================
+-- 5th Table of unisDHCPServerTables: unisDHCPSrvGlobalPoolStatTable
+-- =================================================================
+    unisDHCPSrvGlobalPoolStatTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisDHCPSrvGlobalPoolStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The statistics of each DHCP address pool."
+        ::= { unisDHCPServerTables 6 }
+
+    unisDHCPSrvGlobalPoolStatEntry OBJECT-TYPE
+        SYNTAX      UnisDHCPSrvGlobalPoolStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry containing the statistics of each DHCP address pool."
+        INDEX { unisDHCPSrvGlobalPoolName }
+        ::= { unisDHCPSrvGlobalPoolStatTable 1 }
+
+    UnisDHCPSrvGlobalPoolStatEntry ::=
+        SEQUENCE
+            {
+                unisDHCPSrvGlbPoolIPPoolUsage     Integer32,
+                unisDHCPSrvGlbPoolReqTimes        Counter32,
+                unisDHCPSrvGlbPoolSuccessTimes    Counter32,
+                unisDHCPSrvGlbPoolDiscoverTimes   Counter32,
+                unisDHCPSrvGlbPoolOfferTimes      Counter32,
+                unisDHCPSrvGlbPoolACKTimes        Counter32,
+                unisDHCPSrvGlbPoolTotalIpNum      Counter32,
+                unisDHCPSrvGlbPoolInUsedIpNum     Counter32
+             }
+
+    unisDHCPSrvGlbPoolIPPoolUsage OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Utilization rate of IP addresses in each DHCP address pool, in percentage."
+        ::= { unisDHCPSrvGlobalPoolStatEntry 1 }
+
+    unisDHCPSrvGlbPoolReqTimes OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Number of request packets received by each DHCP address pool,
+            including the request packets for an extension of the lease."
+        ::= { unisDHCPSrvGlobalPoolStatEntry 2 }
+
+    unisDHCPSrvGlbPoolSuccessTimes OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Number of positive responses sent by each DHCP address pool,
+            including responses to the request for an extension of the lease."
+        ::= { unisDHCPSrvGlobalPoolStatEntry 3 }
+
+    unisDHCPSrvGlbPoolDiscoverTimes OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Number of discover packets received by each DHCP address pool."
+        ::= { unisDHCPSrvGlobalPoolStatEntry 4 }
+
+    unisDHCPSrvGlbPoolOfferTimes OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Number of offer packets sent by each DHCP address pool."
+        ::= { unisDHCPSrvGlobalPoolStatEntry 5 }
+
+    unisDHCPSrvGlbPoolACKTimes OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Number of ACK packets sent by each DHCP address pool."
+        ::= { unisDHCPSrvGlobalPoolStatEntry 6 }
+
+    unisDHCPSrvGlbPoolTotalIpNum OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Number of IP addresses in each DHCP address pool."
+        ::= { unisDHCPSrvGlobalPoolStatEntry 7 }
+
+    unisDHCPSrvGlbPoolInUsedIpNum OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Number of allocated IP addresses in each DHCP address pool."
+        ::= { unisDHCPSrvGlobalPoolStatEntry 8 }
+
+-- =================================================================
+-- 6th Table of unisDHCPServerTables: unisDHCPSvrOptionGroupTable
+-- =================================================================
+    unisDHCPSvrOptionGroupTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisDHCPSvrOptionGroupEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table for creating DHCP server global option groups."
+        ::= { unisDHCPServerTables 7 }
+
+    unisDHCPSvrOptionGroupEntry OBJECT-TYPE
+        SYNTAX      UnisDHCPSvrOptionGroupEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry containing objects for creating or
+            deleting a global option group."
+        INDEX { unisDHCPSvrOptionGroupIndex }
+        ::= { unisDHCPSvrOptionGroupTable 1 }
+
+    UnisDHCPSvrOptionGroupEntry ::=
+        SEQUENCE
+            {   unisDHCPSvrOptionGroupIndex      Integer32,
+                unisDHCPSvrOptionGroupRowstatus  RowStatus
+            }
+
+    unisDHCPSvrOptionGroupIndex OBJECT-TYPE
+        SYNTAX      Integer32 (0..2147483647)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The global option group index."
+        ::= { unisDHCPSvrOptionGroupEntry 1 }
+
+    unisDHCPSvrOptionGroupRowstatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus.  Three actions are used: active,
+            createAndGo, destroy."
+        ::= { unisDHCPSvrOptionGroupEntry 2 }
+
+-- =================================================================
+-- 7th Table of unisDHCPServerTables: unisDHCPSvrOptionTable
+-- =================================================================
+    unisDHCPSvrOptionTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisDHCPSvrOptionEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table for configuring options in a global option group."
+        ::= { unisDHCPServerTables 8 }
+
+    unisDHCPSvrOptionEntry OBJECT-TYPE
+        SYNTAX      UnisDHCPSvrOptionEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry containing objects for configuring
+             an option in a global option group."
+        INDEX {unisDHCPSvrOptionGroupIndex , unisDHCPSvrOptionCode }
+        ::= { unisDHCPSvrOptionTable 1 }
+
+    UnisDHCPSvrOptionEntry ::=
+        SEQUENCE
+            {   unisDHCPSvrOptionCode         Integer32,
+                unisDHCPSvrOptionType         INTEGER,
+                unisDHCPSvrOptionAsciiString  OCTET STRING,
+                unisDHCPSvrOptionHexString    OCTET STRING,
+                unisDHCPSvrOptionIPString     OCTET STRING,
+                unisDHCPSvrOptionRowstatus    RowStatus
+            }
+
+
+    unisDHCPSvrOptionCode OBJECT-TYPE
+        SYNTAX      Integer32 (1..254)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Option code."
+        ::= { unisDHCPSvrOptionEntry 1 }
+
+    unisDHCPSvrOptionType OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                ascii(1),
+                hex(2),
+                ip(3)
+            }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Option type."
+        ::= { unisDHCPSvrOptionEntry 2 }
+
+    unisDHCPSvrOptionAsciiString OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..255))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Ascii string of an option."
+        DEFVAL { "" }
+        ::= { unisDHCPSvrOptionEntry 3 }
+
+    unisDHCPSvrOptionHexString OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..573))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Hex string of an option.  1 to 16 hex strings,
+            which are 2 bytes, 4 bytes, 6 bytes or 8 bytes,
+            can be configured at most simultaneously.
+            That means the format of each string
+            must be '12', '1234', '123456' or '12345678'."
+        DEFVAL { "" }
+        ::= { unisDHCPSvrOptionEntry 4 }
+
+    unisDHCPSvrOptionIPString OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..129))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Ip string of an option.  1 to 8 ip addresses can
+            be configured at most simultaneously."
+        DEFVAL { "" }
+        ::= { unisDHCPSvrOptionEntry 5 }
+
+    unisDHCPSvrOptionRowstatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus.  Three actions are used: active,
+            createAndGo, destroy."
+        ::= { unisDHCPSvrOptionEntry 6 }
+
+-- =================================================================
+-- 8th Table of unisDHCPServerTables: unisDHCPSvrVerifyMacTable
+-- =================================================================
+    unisDHCPSvrVerifyMacTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisDHCPSvrVerifyMacEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing the verifying switches status for pools."
+        ::= { unisDHCPServerTables 9 }
+
+    unisDHCPSvrVerifyMacEntry OBJECT-TYPE
+        SYNTAX      UnisDHCPSvrVerifyMacEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry containing the switch status for a pool."
+        INDEX { unisDHCPSrvGlobalPoolName }
+        ::= { unisDHCPSvrVerifyMacTable 1 }
+
+    UnisDHCPSvrVerifyMacEntry ::=
+        SEQUENCE
+            {
+                unisDHCPSvrVerifyMacSwitch    INTEGER
+            }
+
+    unisDHCPSvrVerifyMacSwitch OBJECT-TYPE
+        SYNTAX  INTEGER
+            {
+                enabled(1),
+                disabled(2)
+            }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The switch status for this pool.
+             It has two defined values: enabled and disabled.
+             If the value is enabled, the DHCP server only allocates IP address
+             to host in the MAC list.  The default value is disabled."
+        DEFVAL { disabled }
+        ::= { unisDHCPSvrVerifyMacEntry 1 }
+
+-- =================================================================
+-- 9th Table of unisDHCPServerTables: unisDHCPSvrPoolMacTable
+-- =================================================================
+    unisDHCPSvrPoolMacTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisDHCPSvrPoolMacEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing the MAC addresses list for pools."
+        ::= { unisDHCPServerTables 10 }
+
+    unisDHCPSvrPoolMacEntry OBJECT-TYPE
+        SYNTAX      UnisDHCPSvrPoolMacEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry containing a MAC address and a mask."
+        INDEX { unisDHCPSrvGlobalPoolName, unisDHCPSvrPoolMac, unisDHCPSvrPoolMacMask }
+        ::= { unisDHCPSvrPoolMacTable 1 }
+
+    UnisDHCPSvrPoolMacEntry ::=
+        SEQUENCE
+            {   unisDHCPSvrPoolMac               MacAddress,
+                unisDHCPSvrPoolMacMask           MacAddress,
+                unisDHCPSvrPoolMacOptIndex       Integer32,
+                unisDHCPSvrPoolMacRowstatus      RowStatus
+            }
+
+    unisDHCPSvrPoolMac OBJECT-TYPE
+        SYNTAX      MacAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "MAC address."
+        ::= { unisDHCPSvrPoolMacEntry 1 }
+
+    unisDHCPSvrPoolMacMask OBJECT-TYPE
+        SYNTAX      MacAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Mask for MAC address."
+        ::= { unisDHCPSvrPoolMacEntry 2 }
+
+    unisDHCPSvrPoolMacOptIndex OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Option group index binding for the MAC address."
+        DEFVAL { 0 }
+        ::= { unisDHCPSvrPoolMacEntry 3 }
+
+    unisDHCPSvrPoolMacRowstatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus.  Three actions are used: active,
+            createAndGo, destroy."
+        ::= { unisDHCPSvrPoolMacEntry 4 }
+
+--
+-- Define the DHCP Server Traps.
+--
+    unisDHCPServerTraps OBJECT IDENTIFIER ::= { unisDHCPServer 3 }
+
+    unisDHCPServerTrapPrefix OBJECT IDENTIFIER ::= { unisDHCPServerTraps 0 }
+
+    unisDHCPServerAddrExhaust NOTIFICATION-TYPE
+        OBJECTS
+        {
+            unisDHCPServerPoolName,
+            unisDHCPServerFirstTrapTime
+        }
+        STATUS      current
+        DESCRIPTION
+            "This trap is generated when the device DHCP server address
+            exhaust."
+        ::= { unisDHCPServerTrapPrefix 1 }
+
+    unisDHCPServerAddrExhaustRecover NOTIFICATION-TYPE
+        OBJECTS
+        {
+            unisDHCPServerPoolName,
+            unisDHCPServerFirstTrapTime
+        }
+        STATUS      current
+        DESCRIPTION
+            "This trap is generated when the device DHCP server address
+            exhaust recover."
+        ::= { unisDHCPServerTrapPrefix 2 }
+
+    unisDHCPServerAvgIpUsageOverflow NOTIFICATION-TYPE
+        OBJECTS
+        {
+            unisDHCPServerPoolName
+        }
+        STATUS      current
+        DESCRIPTION
+            "This trap is generated when the average IP address usage
+            of DHCP server pool in 5 minutes overflows."
+        ::= { unisDHCPServerTrapPrefix 3 }
+
+    unisDHCPServerMaxIpUsageOverflow NOTIFICATION-TYPE
+        OBJECTS
+        {
+            unisDHCPServerPoolName
+        }
+        STATUS      current
+        DESCRIPTION
+            "This trap is generated when the maximum IP address usage
+            of DHCP server pool in 5 minutes overflows."
+        ::= { unisDHCPServerTrapPrefix 4 }
+
+    unisDHCPServerAllocateOverflow NOTIFICATION-TYPE
+        STATUS      current
+        DESCRIPTION
+            "This trap is generated when the number of DHCP server
+            allocated IP address in 5 minutes overflows."
+        ::= { unisDHCPServerTrapPrefix 5 }
+
+    unisDHCPServerTrapObjects OBJECT IDENTIFIER ::= { unisDHCPServerTraps 1 }
+
+    unisDHCPServerFirstTrapTime  OBJECT-TYPE
+        SYNTAX      TimeTicks
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "Represents the first trap time."
+        ::= { unisDHCPServerTrapObjects 1 }
+
+END

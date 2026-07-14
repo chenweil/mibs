@@ -1,0 +1,2261 @@
+-- ====================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB is designed to get IPsec tunnels' statistic information.
+-- Reference:
+-- Version: 1.1
+-- History:
+--   V1.0: The initial version created by Wanghaisheng and Weiyanheng.
+--   V1.1: 2017-10-31 Added unisIPsecTunnelStatByDescripV2Table,unisIPsecConnectionStopV2,
+--         unisIPsecConnectionStartV2,unisIPsecConnectionStopCntlV2 and
+--         unisIPsecConnectionStartCntlV2 by shihaohao
+-- =====================================================================
+UNIS-IPSEC-MONITOR-V2-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        ifIndex
+            FROM RFC1213-MIB
+        InterfaceIndex
+            FROM IF-MIB
+        DisplayString, TEXTUAL-CONVENTION, TruthValue
+            FROM SNMPv2-TC
+        Integer32, Counter32, Counter64, OBJECT-TYPE,
+        MODULE-IDENTITY, Gauge32, NOTIFICATION-TYPE, Unsigned32
+            FROM SNMPv2-SMI
+        InetAddressType, InetAddress
+            FROM INET-ADDRESS-MIB
+        MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+            FROM SNMPv2-CONF
+        unisCommon
+            FROM UNIS-OID-MIB;
+
+    unisIPsecMonitorV2 MODULE-IDENTITY
+        LAST-UPDATED "201710311650Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "The MIB is designed to get statistic information of IPsec tunnels.
+             With this MIB, we can get information of a certain tunnel or all
+             tunnels."
+         REVISION "201710311650Z"
+         DESCRIPTION
+            "Add the objects of unisIPsecTunnelStatByDescripV2Table,unisIPsecConnectionStopV2,
+            unisIPsecConnectionStartV2,unisIPsecConnectionStopCntlV2 and
+            unisIPsecConnectionStartCntlV2."
+        REVISION
+            "201206270000Z"
+        DESCRIPTION
+            "Initial version."
+        ::= { unisCommon 126 }
+
+    UnisIPsecDiffHellmanGrpV2   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The Diffie Hellman Group used in the IKE and IPsec negotiations.
+             invalidGroup(2147483647) is defined as invalid value."
+        SYNTAX INTEGER {
+            none(0),
+            dhGroup1(1),
+            dhGroup2(2),
+            dhGroup5(5),
+            dhGroup14(14),
+            dhGroup24(24),
+            invalidGroup(2147483647)
+        }
+
+    UnisIPsecEncapModeV2        ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The encapsulation mode used by an IPsec Phase-2 Tunnel.
+             invalidMode(2147483647) is defined as invalid value."
+        SYNTAX INTEGER {
+            tunnel(1),
+            transport(2),
+            invalidMode(2147483647)
+        }
+
+    UnisIPsecEncryptAlgoV2   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The encryption algorithm used in the IKE and IPsec negotiations.
+             invalidAlg(2147483647) is defined as invalid value."
+        SYNTAX INTEGER {
+            none(0),
+            desCbc(1),
+            ideaCbc(2),
+            blowfishCbc(3),
+            rc5R16B64Cbc(4),
+            tripleDesCbc(5),
+            castCbc(6),
+            aesCbc(7),
+            nsaCbc(8),
+            aesCbc128(9),
+            aesCbc192(10),
+            aesCbc256(11),
+            aesCtr(12),
+            aesCamelliaCbc(13),
+            rc4(14),
+            invalidAlg(2147483647)
+        }
+
+    UnisIPsecAuthAlgoV2   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The authentication algorithm used in the IKE negotiations.
+             invalidAlg(2147483647) is defined as invalid value."
+        SYNTAX INTEGER {
+            none(0),
+            md5(1),
+            sha1(2),
+            sha256(3),
+            sha384(4),
+            sha512(5),
+            invalidAlg(2147483647)
+        }
+
+    UnisIPsecSaProtocolV2   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The protocol of security association."
+        SYNTAX INTEGER {
+            reserved(0),
+            ah(2),
+            esp(3),
+            ipcomp(4)
+        }
+
+    UnisIPsecIDTypeV2   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The type of IPsec Identity."
+        SYNTAX INTEGER {
+            reserved(0),
+            ipv4Addr(1),
+            fqdn(2),         -- fully-qualified domain name
+            userFqdn(3),     -- fully-qualified username
+            ipv4AddrSubnet(4),
+            ipv6Addr(5),
+            ipv6AddrSubnet(6),
+            ipv4AddrRange(7),
+            ipv6AddrRange(8),
+            derAsn1Dn(9),    -- the binary DER encoding of an ASN.1 X.500 Distinguished
+                             -- Name [X.501] of the princIPal whose certificates are
+                             -- being exchanged to establish the SA.
+            derAsn1Gn(10),   -- the binary DER encoding of an ASN.1 X.500 GeneralName
+                             -- [X.509] of the princIPal whose certificates are being
+                             -- exchanged to establish the SA.
+            keyId(11)        -- specifies an opaque byte stream which may be used to
+                             -- pass vendor-specific information necessary to identify
+                             -- which pre-shared key should be used to authenticate
+                             -- Aggressive mode negotiations.
+        }
+
+    UnisIPsecTrafficTypeV2   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The type of the data flow."
+        SYNTAX INTEGER {
+            ipv4Addr(1),
+            ipv4AddrSubnet(4),
+            ipv6Addr(5),
+            ipv6AddrSubnet(6),
+            ipv4AddrRange(7),
+            ipv6AddrRange(8)
+        }
+
+    UnisIPsecNegoTypeV2   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The type of key used by an IPsec Phase-2 Tunnel.
+            invalidType(2147483647) is defined as invalid value."
+        SYNTAX INTEGER {
+            ike(1),
+            manual(2),
+            invalidType(2147483647)
+        }
+
+    UnisIPsecTunnelStateV2   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The state of IPsec tunnel."
+        SYNTAX INTEGER {
+            active(1),
+            timeout(2)
+        }
+
+-- ========================================================================
+-- Node definitions
+-- ========================================================================
+-- Begin the node of unisIPsecObjectsV2.
+
+    unisIPsecObjectsV2 OBJECT IDENTIFIER ::= { unisIPsecMonitorV2 1 }
+
+-- =======================================
+-- Begin the unisIPsecScalarObjectsV2.
+-- =======================================
+    unisIPsecScalarObjectsV2 OBJECT IDENTIFIER ::= { unisIPsecObjectsV2 1 }
+
+    unisIPsecMIBVersion OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Version string of this MIB."
+        ::= { unisIPsecScalarObjectsV2 1 }
+
+-- ===============================================
+-- Begin the table of unisIPsecTunnelV2Table.
+-- ===============================================
+
+    unisIPsecTunnelV2Table OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisIPsecTunnelV2Entry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IPsec Phase-2 Tunnel Table.  There is one entry in this
+             table for each active IPsec Phase-2 Tunnel."
+        ::= { unisIPsecObjectsV2 2 }
+
+    unisIPsecTunnelV2Entry OBJECT-TYPE
+        SYNTAX UnisIPsecTunnelV2Entry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Information about unisIPsecTunnelV2Table."
+        INDEX { unisIPsecTunIndexV2 }
+        ::= { unisIPsecTunnelV2Table 1 }
+
+    UnisIPsecTunnelV2Entry ::=
+        SEQUENCE {
+            unisIPsecTunIndexV2
+                Integer32,
+            unisIPsecTunIfIndexV2
+                InterfaceIndex,
+            unisIPsecTunIKETunnelIndexV2
+                Integer32,
+            unisIPsecTunIKETunLocalIDTypeV2
+                UnisIPsecIDTypeV2,
+            unisIPsecTunIKETunLocalIDVal1V2
+                DisplayString,
+            unisIPsecTunIKETunLocalIDVal2V2
+                DisplayString,
+            unisIPsecTunIKETunRemoteIDTypeV2
+                UnisIPsecIDTypeV2,
+            unisIPsecTunIKETunRemoteIDVal1V2
+                DisplayString,
+            unisIPsecTunIKETunRemoteIDVal2V2
+                DisplayString,
+            unisIPsecTunLocalAddrTypeV2
+                InetAddressType,
+            unisIPsecTunLocalAddrV2
+                InetAddress,
+            unisIPsecTunRemoteAddrTypeV2
+                InetAddressType,
+            unisIPsecTunRemoteAddrV2
+                InetAddress,
+            unisIPsecTunKeyTypeV2
+                UnisIPsecNegoTypeV2,
+            unisIPsecTunEncapModeV2
+                UnisIPsecEncapModeV2,
+            unisIPsecTunInitiatorV2
+                INTEGER,
+            unisIPsecTunLifeSizeV2
+                Gauge32,
+            unisIPsecTunLifeTimeV2
+                Integer32,
+            unisIPsecTunRemainTimeV2
+                Integer32,
+            unisIPsecTunActiveTimeV2
+                Integer32,
+            unisIPsecTunRemainSizeV2
+                Gauge32,
+            unisIPsecTunTotalRefreshesV2
+                Counter32,
+            unisIPsecTunCurrentSaInstancesV2
+                Gauge32,
+            unisIPsecTunInSaEncryptAlgoV2
+                UnisIPsecEncryptAlgoV2,
+            unisIPsecTunInSaAhAuthAlgoV2
+                UnisIPsecAuthAlgoV2,
+            unisIPsecTunInSaEspAuthAlgoV2
+                UnisIPsecAuthAlgoV2,
+            unisIPsecTunDiffHellmanGrpV2
+                UnisIPsecDiffHellmanGrpV2,
+            unisIPsecTunOutSaEncryptAlgoV2
+                UnisIPsecEncryptAlgoV2,
+            unisIPsecTunOutSaAhAuthAlgoV2
+                UnisIPsecAuthAlgoV2,
+            unisIPsecTunOutSaEspAuthAlgoV2
+                UnisIPsecAuthAlgoV2,
+            unisIPsecTunPolicyNameV2
+                OCTET STRING,
+            unisIPsecTunPolicyNumV2
+                Integer32,
+            unisIPsecTunStatusV2
+                INTEGER,
+            unisIPsecTunPolicyDescriptionV2
+                OCTET STRING
+
+        }
+
+    unisIPsecTunIndexV2 OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The index of IPsec Phase-2 Tunnel Table.  The value of
+             the index is a number which begins at one and is
+             incremented with each tunnel that is created.  The
+             value of this object will wrap at 2147483647."
+        ::= { unisIPsecTunnelV2Entry 1 }
+
+    unisIPsecTunIfIndexV2 OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The interface index( the ifIndex of ifTable )."
+        ::= { unisIPsecTunnelV2Entry 2 }
+
+    unisIPsecTunIKETunnelIndexV2 OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The index of the associated IPsec Phase-1 IKE Tunnel
+             (IKETunIndex in the IKETunnelTable).  2147483647 is defined as
+             invalid value."
+        ::= { unisIPsecTunnelV2Entry 3 }
+
+    unisIPsecTunIKETunLocalIDTypeV2 OBJECT-TYPE
+        SYNTAX UnisIPsecIDTypeV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of the local peer identity for the associated IPsec
+             Phase-1 IKE Tunnel (IKETunLocalType in the IKETunnelTable)."
+        ::= { unisIPsecTunnelV2Entry 4 }
+
+    unisIPsecTunIKETunLocalIDVal1V2 OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The value of the local peer identity for the associated IPsec
+             Phase-1 IKE Tunnel (IKETunLocalValue1 in the IKETunnelTable).
+
+             If the local peer type is ipv4Addr/ipv6Addr, this is the IP address
+             used to identify the local peer.
+
+             If the local peer type is ipv4AddrSubnet/ipv6AddrSubnet, this is
+             the subnet address.
+
+             If the local peer type is ipv4AddrRange/ipv6AddrRange, this is
+             the beginning IP address of the range.
+
+             If the local peer type is fqdn/userFqdn, this is the host name
+             used to identify the local peer.
+
+             If the local peer type is derAsn1Dn, this is the binary DER
+             encoding of an ASN.1 X.500 Distinguished Name [X.501] of the
+             principal whose certificates are being exchanged to establish
+             the SA.
+
+             If the local peer type is derAsn1Gn, this is the binary DER
+             encoding of an ASN.1 X.500 GeneralName [X.509] of the principal
+             whose certificates are being exchanged to establish the SA.
+
+             If the local peer type is keyId, this is an opaque byte
+             stream which may be used to pass vendor-specific information
+             necessary to identify which pre-shared key should be used to
+             authenticate Aggressive mode negotiations."
+        ::= { unisIPsecTunnelV2Entry 5 }
+
+    unisIPsecTunIKETunLocalIDVal2V2 OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The second specification of the local peer's IP address for the
+             associated IPsec Phase-1 IKE Tunnel (IKETunLocalValue2 in the
+             IKETunnelTable).
+
+             If the local peer type is ipv4AddrSubnet/ipv6AddrSubnet, this
+             is the subnet mask.
+
+             If the local peer type is ipv4AddrRange/ipv6AddrRange, this is
+             the ending IP address of the range.
+
+             If the local peer type is others, this is a zero-length string."
+        ::= { unisIPsecTunnelV2Entry 6 }
+
+    unisIPsecTunIKETunRemoteIDTypeV2 OBJECT-TYPE
+        SYNTAX UnisIPsecIDTypeV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of the remote peer identity for the associated IPsec
+             Phase-1 IKE Tunnel (IKETunRemoteType in the IKETunnelTable)."
+        ::= { unisIPsecTunnelV2Entry 7 }
+
+    unisIPsecTunIKETunRemoteIDVal1V2 OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The value of the remote peer identity for the associated IPsec
+             Phase-1 IKE Tunnel (IKETunRemoteValue1 in the IKETunnelTable).
+
+             If the remote peer type is ipv4Addr/ipv6Addr, this is the IP address
+             used to identify the remote peer.
+
+             If the remote peer type is ipv4AddrSubnet/ipv6AddrSubnet, this is
+             the subnet address.
+
+             If the remote peer type is ipv4AddrRange/ipv6AddrRange, this is
+             the beginning IP address of the range.
+
+             If the remote peer type is fqdn/userFqdn, this is the host name
+             used to identify the remote peer.
+
+             If the remote peer type is derAsn1Dn, this is the binary DER
+             encoding of an ASN.1 X.500 Distinguished Name [X.501] of the
+             principal whose certificates are being exchanged to establish
+             the SA.
+
+             If the remote peer type is derAsn1Gn, this is the binary DER
+             encoding of an ASN.1 X.500 GeneralName [X.509] of the principal
+             whose certificates are being exchanged to establish the SA.
+
+             If the remote peer type is keyId, this is an opaque byte
+             stream which may be used to pass vendor-specific information
+             necessary to identify which pre-shared key should be used to
+             authenticate Aggressive mode negotiations."
+        ::= { unisIPsecTunnelV2Entry 8 }
+
+    unisIPsecTunIKETunRemoteIDVal2V2 OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The second specification of the remote peer's IP address for the
+             associated IPsec Phase-1 IKE Tunnel(IKETunRemoteValue2 in the
+             IKETunnelTable).
+
+             If the remote peer type is ipv4AddrSubnet/ipv6AddrSubnet, this
+             is the subnet mask.
+
+             If the remote peer type is ipv4AddrRange/ipv6AddrRange, this is
+             the ending IP address of the range.
+
+             If the remote peer type is others, this is a zero-length string."
+        ::= { unisIPsecTunnelV2Entry 9 }
+
+    unisIPsecTunLocalAddrTypeV2 OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of the IP address for the local peer of the IPsec Phase-2
+            Tunnel."
+        ::= { unisIPsecTunnelV2Entry 10 }
+
+    unisIPsecTunLocalAddrV2 OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The IP address of the local peer for the IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelV2Entry 11 }
+
+    unisIPsecTunRemoteAddrTypeV2 OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of the IP address for the remote peer of the IPsec Phase-2
+             Tunnel."
+        ::= { unisIPsecTunnelV2Entry 12 }
+
+    unisIPsecTunRemoteAddrV2 OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The IP address of the remote peer for the IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelV2Entry 13 }
+
+    unisIPsecTunKeyTypeV2 OBJECT-TYPE
+        SYNTAX UnisIPsecNegoTypeV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The key negotiate mode used by the IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelV2Entry 14 }
+
+    unisIPsecTunEncapModeV2 OBJECT-TYPE
+        SYNTAX UnisIPsecEncapModeV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The encapsulation mode used by the IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelV2Entry 15 }
+
+    unisIPsecTunInitiatorV2 OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                local(1),
+                remote(2),
+                none(2147483647)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The initiator of this IPsec tunnel.  Value none is used for manual
+             IPsec tunnel, for there is no initiator or responder in this method."
+        ::= { unisIPsecTunnelV2Entry 16 }
+
+    unisIPsecTunLifeSizeV2 OBJECT-TYPE
+        SYNTAX Gauge32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The negotiated LifeSize of the IPsec Phase-2 Tunnel in kilobytes.
+             0 is defined as invalid value."
+        ::= { unisIPsecTunnelV2Entry 17 }
+
+    unisIPsecTunLifeTimeV2 OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The negotiated LifeTime of the IPsec Phase-2 Tunnel in seconds.
+             2147483647 is defined as invalid value."
+        ::= { unisIPsecTunnelV2Entry 18 }
+
+    unisIPsecTunRemainTimeV2 OBJECT-TYPE
+        SYNTAX Integer32 (0..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The remain time of SA in seconds.  2147483647 is defined as invalid
+            value."
+        ::= { unisIPsecTunnelV2Entry 19 }
+
+    unisIPsecTunActiveTimeV2 OBJECT-TYPE
+        SYNTAX Integer32 (0..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The duration the IPsec Phase-2 Tunnel has been active in
+             hundredths of seconds.  2147483647 is defined as invalid value."
+        ::= { unisIPsecTunnelV2Entry 20 }
+
+    unisIPsecTunRemainSizeV2 OBJECT-TYPE
+        SYNTAX Gauge32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The remain LifeSize of SA in kilobytes.  0 is defined as
+            invalid value."
+        ::= { unisIPsecTunnelV2Entry 21 }
+
+    unisIPsecTunTotalRefreshesV2 OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of security association refreshing performed."
+        ::= { unisIPsecTunnelV2Entry 22 }
+
+    unisIPsecTunCurrentSaInstancesV2 OBJECT-TYPE
+        SYNTAX Gauge32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of security associations which are currently active
+             or expiring."
+        ::= { unisIPsecTunnelV2Entry 23 }
+
+    unisIPsecTunInSaEncryptAlgoV2 OBJECT-TYPE
+        SYNTAX UnisIPsecEncryptAlgoV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The encryption algorithm used by the inbound security association
+             of the IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelV2Entry 24 }
+
+    unisIPsecTunInSaAhAuthAlgoV2 OBJECT-TYPE
+        SYNTAX UnisIPsecAuthAlgoV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The authentication algorithm used by the inbound authentication
+             header (AH) security association of the IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelV2Entry 25 }
+
+    unisIPsecTunInSaEspAuthAlgoV2 OBJECT-TYPE
+        SYNTAX UnisIPsecAuthAlgoV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The authentication algorithm used by the inbound encapsulation
+             security protocol(ESP) security association of the IPsec
+             Phase-2 Tunnel."
+        ::= { unisIPsecTunnelV2Entry 26 }
+
+    unisIPsecTunDiffHellmanGrpV2 OBJECT-TYPE
+        SYNTAX UnisIPsecDiffHellmanGrpV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Diffie Hellman Group used by the security association of the
+             IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelV2Entry 27 }
+
+    unisIPsecTunOutSaEncryptAlgoV2 OBJECT-TYPE
+        SYNTAX UnisIPsecEncryptAlgoV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The encryption algorithm used by the outbound security
+             association of the IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelV2Entry 28 }
+
+    unisIPsecTunOutSaAhAuthAlgoV2 OBJECT-TYPE
+        SYNTAX UnisIPsecAuthAlgoV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The authentication algorithm used by the outbound
+             authentication header (AH) security association of
+             the IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelV2Entry 29 }
+
+    unisIPsecTunOutSaEspAuthAlgoV2 OBJECT-TYPE
+        SYNTAX UnisIPsecAuthAlgoV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The authentication algorithm used by the outbound encapsulation
+             security protocol(ESP) security association of the IPsec
+             Phase-2 Tunnel."
+        ::= { unisIPsecTunnelV2Entry 30 }
+
+    unisIPsecTunPolicyNameV2 OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(1..63))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The policy name used by this IPsec tunnel."
+        ::= { unisIPsecTunnelV2Entry 31 }
+
+    unisIPsecTunPolicyNumV2 OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The sequence number of policy used by this IPsec tunnel."
+        ::= { unisIPsecTunnelV2Entry 32 }
+
+    unisIPsecTunStatusV2 OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                initial(1),
+                ready(2),
+                rekeyed(3),
+                closed(4)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The status of the IPsec Tunnel."
+        ::= { unisIPsecTunnelV2Entry 33 }
+
+    unisIPsecTunPolicyDescriptionV2 OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(1..80))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "IPsec policy description of an IPsec tunne."
+        ::= { unisIPsecTunnelV2Entry 34 }
+
+
+-- ===============================================
+-- Begin the table of unisIPsecTunnelStatV2Table.
+-- ===============================================
+
+    unisIPsecTunnelStatV2Table OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisIPsecTunnelStatV2Entry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IPsec Phase-2 Tunnel Statistics Table."
+        ::= { unisIPsecObjectsV2 3 }
+
+    unisIPsecTunnelStatV2Entry OBJECT-TYPE
+        SYNTAX UnisIPsecTunnelStatV2Entry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Information about unisIPsecTunnelStatV2Table."
+        INDEX { unisIPsecTunIndexV2 }
+        ::= { unisIPsecTunnelStatV2Table 1 }
+
+    UnisIPsecTunnelStatV2Entry ::=
+        SEQUENCE {
+            unisIPsecTunInOctetsV2
+                Counter64,
+            unisIPsecTunInDecompOctetsV2
+                Counter64,
+            unisIPsecTunInPktsV2
+                Counter64,
+            unisIPsecTunInDropPktsV2
+                Counter64,
+            unisIPsecTunInReplayDropPktsV2
+                Counter64,
+            unisIPsecTunInAuthFailsV2
+                Counter64,
+            unisIPsecTunInDecryptFailsV2
+                Counter64,
+            unisIPsecTunOutOctetsV2
+                Counter64,
+            unisIPsecTunOutUncompOctetsV2
+                Counter64,
+            unisIPsecTunOutPktsV2
+                Counter64,
+            unisIPsecTunOutDropPktsV2
+                Counter64,
+            unisIPsecTunOutEncryptFailsV2
+                Counter64,
+            unisIPsecTunNoMemoryDropPktsV2
+                Counter64,
+            unisIPsecTunQueueFullDropPktsV2
+                Counter64,
+            unisIPsecTunInvalidLenDropPktsV2
+                Counter64,
+            unisIPsecTunTooLongDropPktsV2
+                Counter64,
+            unisIPsecTunInvalidSaDropPktsV2
+                Counter64
+        }
+
+    unisIPsecTunInOctetsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of octets received by this IPsec Phase-2 Tunnel.
+             This value is accumulated BEFORE determining whether or not the
+             packet should be decompressed."
+        ::= { unisIPsecTunnelStatV2Entry 1 }
+
+    unisIPsecTunInDecompOctetsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of decompressed octets received by this IPsec
+             Phase-2 Tunnel.  This value is accumulated AFTER the packet
+             is decompressed."
+        ::= { unisIPsecTunnelStatV2Entry 2 }
+
+    unisIPsecTunInPktsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets received by this IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelStatV2Entry 3 }
+
+    unisIPsecTunInDropPktsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped during receiving process
+             by this IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelStatV2Entry 4 }
+
+    unisIPsecTunInReplayDropPktsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped during
+             receiving process due to Anti-Replay process
+             by this IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelStatV2Entry 5 }
+
+    unisIPsecTunInAuthFailsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of inbound authentication's
+             which ended in failure by this IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelStatV2Entry 6 }
+
+    unisIPsecTunInDecryptFailsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of inbound decryption's
+             which ended in failure by this IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelStatV2Entry 7 }
+
+    unisIPsecTunOutOctetsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of octets sent by this IPsec Phase-2 Tunnel.
+             This value is accumulated AFTER determining whether or not
+             the packet should be compressed."
+        ::= { unisIPsecTunnelStatV2Entry 8 }
+
+    unisIPsecTunOutUncompOctetsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of uncompressed octets sent by this IPsec Phase-2
+             Tunnel.  This value is accumulated BEFORE the packet is compressed."
+        ::= { unisIPsecTunnelStatV2Entry 9 }
+
+    unisIPsecTunOutPktsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets sent by this IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelStatV2Entry 10 }
+
+    unisIPsecTunOutDropPktsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped during sending process
+             by this IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelStatV2Entry 11 }
+
+    unisIPsecTunOutEncryptFailsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of outbound encryption's which ended in failure
+             by this IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelStatV2Entry 12 }
+
+    unisIPsecTunNoMemoryDropPktsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped due to no enough memory by this
+             IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelStatV2Entry 13 }
+
+    unisIPsecTunQueueFullDropPktsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped due to queue full by this
+             IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelStatV2Entry 14 }
+
+    unisIPsecTunInvalidLenDropPktsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped due to invalid length packet
+             by this IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelStatV2Entry 15 }
+
+    unisIPsecTunTooLongDropPktsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped due to too long packet by this
+             IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelStatV2Entry 16 }
+
+    unisIPsecTunInvalidSaDropPktsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped due to invalid SA by this
+             IPsec Phase-2 Tunnel."
+        ::= { unisIPsecTunnelStatV2Entry 17 }
+
+-- ===============================================
+-- Begin the table of unisIPsecSaV2Table.
+-- ===============================================
+
+    unisIPsecSaV2Table OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisIPsecSaV2Entry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IPsec Phase-2 Security Protection Index Table.  This table
+             contains an entry for each active and expiring security association."
+        ::= { unisIPsecObjectsV2 4 }
+
+    unisIPsecSaV2Entry OBJECT-TYPE
+        SYNTAX UnisIPsecSaV2Entry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Information about unisIPsecSaV2Table."
+        INDEX { unisIPsecTunIndexV2,unisIPsecSaIndexV2 }
+        ::= { unisIPsecSaV2Table 1 }
+
+    UnisIPsecSaV2Entry ::=
+        SEQUENCE {
+            unisIPsecSaIndexV2
+                Integer32,
+            unisIPsecSaDirectionV2
+                INTEGER,
+            unisIPsecSaSpiValueV2
+                Unsigned32,
+            unisIPsecSaSecProtocolV2
+                UnisIPsecSaProtocolV2,
+            unisIPsecSaEncryptAlgoV2
+                UnisIPsecEncryptAlgoV2,
+            unisIPsecSaAuthAlgoV2
+                UnisIPsecAuthAlgoV2,
+            unisIPsecSaStatusV2
+                INTEGER
+        }
+
+    unisIPsecSaIndexV2 OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The number of the Sa associated with the Phase-2 Tunnel
+             Table.  The value of this index is a number which begins
+             at one and is incremented with each Sa associated with
+             an IPsec Phase-2 Tunnel.  The value of this object will
+             wrap at 2,147,483,647."
+        ::= { unisIPsecSaV2Entry 1 }
+
+    unisIPsecSaDirectionV2 OBJECT-TYPE
+        SYNTAX INTEGER {
+            in(1),
+            out(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The direction of the SA."
+        ::= { unisIPsecSaV2Entry 2 }
+
+    unisIPsecSaSpiValueV2 OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4294967295)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The value of the SPI."
+        ::= { unisIPsecSaV2Entry 3 }
+
+    unisIPsecSaSecProtocolV2 OBJECT-TYPE
+        SYNTAX UnisIPsecSaProtocolV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The security protocol of the SA."
+        ::= { unisIPsecSaV2Entry 4 }
+
+    unisIPsecSaEncryptAlgoV2 OBJECT-TYPE
+        SYNTAX UnisIPsecEncryptAlgoV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The encryption algorithm used by the security association
+             of the IPsec Phase-2 Tunnel."
+        ::= { unisIPsecSaV2Entry 5 }
+
+    unisIPsecSaAuthAlgoV2 OBJECT-TYPE
+        SYNTAX UnisIPsecAuthAlgoV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The authentication algorithm used by the SA."
+        ::= { unisIPsecSaV2Entry 6 }
+
+    unisIPsecSaStatusV2 OBJECT-TYPE
+        SYNTAX INTEGER {
+            active(1),
+            expiring(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The status of the SA."
+        ::= { unisIPsecSaV2Entry 7 }
+
+-- ===============================================
+-- Begin the table of unisIPsecTrafficV2Table.
+-- ===============================================
+
+    unisIPsecTrafficV2Table OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisIPsecTrafficV2Entry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IPsec Phase-2 Tunnel Traffic Table."
+        ::= { unisIPsecObjectsV2 5 }
+
+    unisIPsecTrafficV2Entry OBJECT-TYPE
+        SYNTAX UnisIPsecTrafficV2Entry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Information about unisIPsecTrafficV2Table."
+        INDEX { unisIPsecTunIndexV2 }
+        ::= { unisIPsecTrafficV2Table 1 }
+
+    UnisIPsecTrafficV2Entry ::=
+        SEQUENCE {
+            unisIPsecTrafficLocalTypeV2
+                UnisIPsecTrafficTypeV2,
+            unisIPsecTrafficLocalAddr1TypeV2
+                InetAddressType,
+            unisIPsecTrafficLocalAddr1V2
+                InetAddress,
+            unisIPsecTrafficLocalAddr2TypeV2
+                InetAddressType,
+            unisIPsecTrafficLocalAddr2V2
+                InetAddress,
+            unisIPsecTrafficLocalProtocol1V2
+                Integer32,
+            unisIPsecTrafficLocalProtocol2V2
+                Integer32,
+            unisIPsecTrafficLocalPort1V2
+                Integer32,
+            unisIPsecTrafficLocalPort2V2
+                Integer32,
+            unisIPsecTrafficRemoteTypeV2
+                UnisIPsecTrafficTypeV2,
+            unisIPsecTrafficRemAddr1TypeV2
+                InetAddressType,
+            unisIPsecTrafficRemAddr1V2
+                InetAddress,
+            unisIPsecTrafficRemAddr2TypeV2
+                InetAddressType,
+            unisIPsecTrafficRemAddr2V2
+                InetAddress,
+            unisIPsecTrafficRemoPro1V2
+                Integer32,
+            unisIPsecTrafficRemoPro2V2
+                Integer32,
+            unisIPsecTrafficRemPort1V2
+                Integer32,
+            unisIPsecTrafficRemPort2V2
+                Integer32
+    }
+
+    unisIPsecTrafficLocalTypeV2 OBJECT-TYPE
+        SYNTAX UnisIPsecTrafficTypeV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of the local peer's traffic.  Possible values are:
+            1) A single IP address
+            2) An IP address range
+            3) An IP subnet"
+        ::= { unisIPsecTrafficV2Entry 1 }
+
+    unisIPsecTrafficLocalAddr1TypeV2 OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of the first IP address specification for the local peer's
+             traffic."
+        ::= { unisIPsecTrafficV2Entry 2 }
+
+    unisIPsecTrafficLocalAddr1V2 OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The first IP address specification of the local peer's traffic.
+
+            If the local peer's traffic type is single IP address, this is the
+            IP address.
+
+            If the local peer's traffic type is IP subnet, this is the subnet address.
+
+            If the local peer's traffic type is IP address range, this is the
+            beginning IP address of the range."
+        ::= { unisIPsecTrafficV2Entry 3 }
+
+    unisIPsecTrafficLocalAddr2TypeV2 OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of the second IP address specification for the local peer's
+             traffic."
+        ::= { unisIPsecTrafficV2Entry 4 }
+
+    unisIPsecTrafficLocalAddr2V2 OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The second IP address specification of the local peer's traffic.
+
+            If the local peer's traffic type is single IP address, this is the
+            IP address.
+
+            If the local peer's traffic type is IP subnet, this is the subnet mask.
+
+            If the local peer's traffic type is IP address range, this is the
+            ending IP address of the range."
+        ::= { unisIPsecTrafficV2Entry 5 }
+
+    unisIPsecTrafficLocalProtocol1V2 OBJECT-TYPE
+        SYNTAX Integer32 (0..255)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The first protocol number specification of the local peer's traffic.
+
+            If the protocol type of the local peer's traffic is single protocol,
+            this is the protocol number.
+
+            If the protocol type of the local peer's traffic is protocol range,
+            this is the beginning protocol number of the range."
+        ::= { unisIPsecTrafficV2Entry 6 }
+
+    unisIPsecTrafficLocalProtocol2V2 OBJECT-TYPE
+        SYNTAX Integer32 (0..255)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The second protocol number specification of the local peer's traffic.
+
+            If the protocol type of the local peer's traffic is single protocol,
+            this is the protocol number.
+
+            If the protocol type of the local peer's traffic is protocol range,
+            this is the ending protocol number of the range."
+        ::= { unisIPsecTrafficV2Entry 7 }
+
+    unisIPsecTrafficLocalPort1V2 OBJECT-TYPE
+        SYNTAX Integer32 (0..65535)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The first port number specification of the local peer's traffic.
+
+            If the port type of the local peer's traffic is single port, this is
+            the port number.
+
+            If the port type of the local peer's traffic is port range, this is
+            the beginning port number of the range."
+        ::= { unisIPsecTrafficV2Entry 8 }
+
+    unisIPsecTrafficLocalPort2V2 OBJECT-TYPE
+        SYNTAX Integer32 (0..65535)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The second port number specification of the local peer's traffic.
+
+            If the port type of the local peer's traffic is single port, this is
+            the port number.
+
+            If the port type of the local peer's traffic is port range, this is
+            the ending port number of the range."
+        ::= { unisIPsecTrafficV2Entry 9 }
+
+    unisIPsecTrafficRemoteTypeV2 OBJECT-TYPE
+        SYNTAX UnisIPsecTrafficTypeV2
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of the remote peer's traffic.  Possible values are:
+            1) A single IP address
+            2) An IP address range
+            3) An IP subnet"
+        ::= { unisIPsecTrafficV2Entry 10 }
+
+    unisIPsecTrafficRemAddr1TypeV2 OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of the first IP address specification for the remote peer's
+             traffic."
+        ::= { unisIPsecTrafficV2Entry 11 }
+
+    unisIPsecTrafficRemAddr1V2 OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The first IP address specification of the remote peer's traffic.
+
+            If the remote traffic type is single IP address, this is the IP address.
+
+            If the remote traffic type is IP subnet, this is the subnet address.
+
+            If the remote traffic type is IP address range, this is the beginning
+            IP address of the range."
+        ::= { unisIPsecTrafficV2Entry 12 }
+
+    unisIPsecTrafficRemAddr2TypeV2 OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of the second IP address specification for the remote peer's
+             traffic."
+        ::= { unisIPsecTrafficV2Entry 13 }
+
+    unisIPsecTrafficRemAddr2V2 OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The second IP address specification of the remote peer's traffic.
+
+            If the remote traffic type is single IP address, this is the IP address.
+
+            If the remote traffic type is IP subnet, this is the subnet mask.
+
+            If the remote traffic type is IP address range, this is the ending IP
+            address of the range."
+        ::= { unisIPsecTrafficV2Entry 14 }
+
+    unisIPsecTrafficRemoPro1V2 OBJECT-TYPE
+        SYNTAX Integer32 (0..255)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The first protocol number specification of the remote peer's traffic.
+
+            If the protocol type of the remote peer's traffic is single protocol,
+            this is the protocol number.
+
+            If the protocol type of the remote peer's traffic is protocol range,
+            this is the beginning protocol number of the range."
+        ::= { unisIPsecTrafficV2Entry 15 }
+
+    unisIPsecTrafficRemoPro2V2 OBJECT-TYPE
+        SYNTAX Integer32 (0..255)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The second protocol number specification of the remote peer's traffic.
+
+            If the protocol type of the remote peer's traffic is single protocol,
+            this is the protocol number.
+
+            If the protocol type of the remote peer's traffic is protocol range,
+            this is the ending protocol number of the range."
+        ::= { unisIPsecTrafficV2Entry 16 }
+
+    unisIPsecTrafficRemPort1V2 OBJECT-TYPE
+        SYNTAX Integer32 (0..65535)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The first port number specification of the remote peer's traffic.
+
+            If the port type of the remote peer's traffic is single port,
+            this is the port number.
+
+            If the port type of the remote peer's traffic is port range,
+            this is the beginning port number of the range."
+        ::= { unisIPsecTrafficV2Entry 17 }
+
+    unisIPsecTrafficRemPort2V2 OBJECT-TYPE
+        SYNTAX Integer32 (0..65535)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The second port number specification of the remote peer's traffic.
+
+            If the port type of the remote peer's traffic is single port,
+            this is the port number.
+
+            If the port type of the remote peer's traffic is port range,
+            this is the ending port number of the range."
+        ::= { unisIPsecTrafficV2Entry 18 }
+
+-- ===============================================
+-- Begin the unisIPsecGlobalStatsV2.
+-- ===============================================
+
+    unisIPsecGlobalStatsV2 OBJECT IDENTIFIER ::= { unisIPsecObjectsV2 6 }
+
+    unisIPsecGlobalActiveTunnelsV2 OBJECT-TYPE
+        SYNTAX Gauge32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of currently active IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 1 }
+
+    unisIPsecGlobalActiveSasV2 OBJECT-TYPE
+        SYNTAX Gauge32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of currently active or expiring IPsec Phase-2 SA."
+        ::= { unisIPsecGlobalStatsV2 2 }
+
+    unisIPsecGlobalInOctetsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of octets received by all current and previous
+             IPsec Phase-2 Tunnels.  This value is accumulated BEFORE determining
+             whether or not the packet should be decompressed."
+        ::= { unisIPsecGlobalStatsV2 3 }
+
+    unisIPsecGlobalInDecompOctetsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of decompressed octets received by all current
+             and previous IPsec Phase-2 Tunnels.  This value is accumulated
+             AFTER the packet is decompressed."
+        ::= { unisIPsecGlobalStatsV2 4 }
+
+    unisIPsecGlobalInPktsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets received by all current and
+             previous IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 5 }
+
+    unisIPsecGlobalInDropsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped during receiving
+             process by all current and previous IPsec Phase-2
+             Tunnels."
+        ::= { unisIPsecGlobalStatsV2 6 }
+
+    unisIPsecGlobalInReplayDropsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped during receiving
+             process due to Anti-Replay process by all
+             current and previous IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 7 }
+
+    unisIPsecGlobalInAuthFailsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of inbound authentication's which ended
+             in failure by all current and previous IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 8 }
+
+    unisIPsecGlobalInDecryptFailsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of inbound decryption's which ended in
+             failure by all current and previous IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 9 }
+
+    unisIPsecGlobalOutOctetsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of octets sent by all current and previous
+             IPsec Phase-2 Tunnels.  This value is accumulated AFTER
+             determining whether or not the packet should be compressed."
+        ::= { unisIPsecGlobalStatsV2 10 }
+
+    unisIPsecGlobalOutUncompOctetsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of uncompressed octets sent by all current
+             and previous IPsec Phase-2 Tunnels.  This value is accumulated
+             BEFORE the packet is compressed."
+        ::= { unisIPsecGlobalStatsV2 11 }
+
+    unisIPsecGlobalOutPktsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets sent by all current and previous
+             IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 12 }
+
+    unisIPsecGlobalOutDropsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped during sending process
+             by all current and previous IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 13 }
+
+    unisIPsecGlobalOutEncryptFailsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of outbound encryption's which ended in failure
+             by all current and previous IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 14 }
+
+    unisIPsecGlobalNoMemoryDropsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped due to no enough memory
+             by all current and previous IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 15 }
+
+    unisIPsecGlobalNoFindSaDropsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped due to not find SA by
+             all current and previous IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 16 }
+
+    unisIPsecGlobalQueueFullDropsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped due to queue full by
+             all current and previous IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 17 }
+
+    unisIPsecGlobalInvalidLenDropsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped due to invalid packet
+             length by all current and previous IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 18 }
+
+    unisIPsecGlobalTooLongDropsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped due to too long packet by
+             all current and previous IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 19 }
+
+    unisIPsecGlobalInvalidSaDropsV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped due to invalid SA by all
+             current and previous IPsec Phase-2 Tunnels."
+        ::= { unisIPsecGlobalStatsV2 20 }
+
+-- ===============================================
+-- Begin the unisIPsecTrapObjectV2.
+-- ===============================================
+
+    unisIPsecTrapObjectV2 OBJECT IDENTIFIER ::= { unisIPsecObjectsV2 7 }
+
+    unisIPsecPolicyNameV2 OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(1..63))
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The IPsec policy name with a trap."
+        ::= { unisIPsecTrapObjectV2 1 }
+
+    unisIPsecPolicySeqNumV2 OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The IPsec policy sequence number with a trap."
+        ::= { unisIPsecTrapObjectV2 2 }
+
+    unisIPsecPolicySizeV2 OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The number of IPsec policies with a trap."
+        ::= { unisIPsecTrapObjectV2 3 }
+
+-- ===============================================
+-- Begin the unisIPsecTrapCntlV2.
+-- ===============================================
+
+
+    unisIPsecTrapCntlV2 OBJECT IDENTIFIER ::= { unisIPsecObjectsV2 8 }
+
+    unisIPsecTrapGlobalCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether all IPsec traps should be generated."
+        ::= { unisIPsecTrapCntlV2 1 }
+
+    unisIPsecTunnelStartTrapCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisIPsecTunnelStartV2 traps should be generated."
+        ::= { unisIPsecTrapCntlV2 2 }
+
+    unisIPsecTunnelStopTrapCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisIPsecTunnelStopV2 traps should be generated."
+        ::= { unisIPsecTrapCntlV2 3 }
+
+    unisIPsecNoSaTrapCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisIPsecNoSaFailureV2 traps should be generated."
+        ::= { unisIPsecTrapCntlV2 4 }
+
+    unisIPsecAuthFailureTrapCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisIPsecAuthFailFailureV2 traps should be generated."
+        ::= { unisIPsecTrapCntlV2 5 }
+
+    unisIPsecEncryFailureTrapCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisIPsecEncryFailFailureV2 traps should be generated."
+        ::= { unisIPsecTrapCntlV2 6 }
+
+    unisIPsecDecryFailureTrapCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisIPsecDecryFailFailureV2 traps should be generated."
+        ::= { unisIPsecTrapCntlV2 7 }
+
+    unisIPsecInvalidSaTrapCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisIPsecInvalidSaFailureV2 traps should be generated."
+        ::= { unisIPsecTrapCntlV2 8 }
+
+    unisIPsecPolicyAddTrapCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisIPsecPolicyAddV2 traps should be generated."
+        ::= { unisIPsecTrapCntlV2 9 }
+
+    unisIPsecPolicyDelTrapCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisIPsecPolicyDelV2 traps should be generated."
+        ::= { unisIPsecTrapCntlV2 10 }
+
+    unisIPsecPolicyAttachTrapCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisIPsecPolicyAttachV2 traps should be generated."
+        ::= { unisIPsecTrapCntlV2 11 }
+
+    unisIPsecPolicyDetachTrapCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisIPsecPolicyDetachV2 traps should be generated."
+        ::= { unisIPsecTrapCntlV2 12 }
+
+    unisIPsecConnectionStartCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisIPsecConnectionStartV2 traps should be generated."
+        ::= { unisIPsecTrapCntlV2 13 }
+
+    unisIPsecConnectionStopCntlV2 OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Indicates whether unisIPsecConnectionStopV2 traps should be generated."
+        ::= { unisIPsecTrapCntlV2 14 }
+
+-- ===============================================
+-- definition of traps.
+-- ===============================================
+
+    unisIPsecTrapV2 OBJECT IDENTIFIER ::= { unisIPsecObjectsV2 9 }
+
+    unisIPsecNotificationsV2 OBJECT IDENTIFIER ::= { unisIPsecTrapV2 0 }
+
+    unisIPsecTunnelStartV2 NOTIFICATION-TYPE
+        OBJECTS {
+                    unisIPsecTunIndexV2,
+                    unisIPsecTunLocalAddrTypeV2,
+                    unisIPsecTunLocalAddrV2,
+                    unisIPsecTunRemoteAddrTypeV2,
+                    unisIPsecTunRemoteAddrV2,
+                    unisIPsecTunLifeTimeV2,
+                    unisIPsecTunLifeSizeV2
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when an IPsec Phase-2
+             Tunnel is created."
+        ::= { unisIPsecNotificationsV2 1 }
+
+    unisIPsecTunnelStopV2 NOTIFICATION-TYPE
+        OBJECTS {
+                    unisIPsecTunIndexV2,
+                    unisIPsecTunLocalAddrTypeV2,
+                    unisIPsecTunLocalAddrV2,
+                    unisIPsecTunRemoteAddrTypeV2,
+                    unisIPsecTunRemoteAddrV2,
+                    unisIPsecTunActiveTimeV2
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when an IPsec Phase-2
+             Tunnel is deleted."
+        ::= { unisIPsecNotificationsV2 2 }
+
+    unisIPsecNoSaFailureV2 NOTIFICATION-TYPE
+        OBJECTS {
+                    unisIPsecTunIndexV2,
+                    unisIPsecTunLocalAddrTypeV2,
+                    unisIPsecTunLocalAddrV2,
+                    unisIPsecTunRemoteAddrTypeV2,
+                    unisIPsecTunRemoteAddrV2
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when an IPsec Phase-2
+             non-existent SA error occurs."
+        ::= { unisIPsecNotificationsV2 3 }
+
+    unisIPsecAuthFailFailureV2 NOTIFICATION-TYPE
+        OBJECTS {
+                    unisIPsecTunIndexV2,
+                    unisIPsecTunLocalAddrTypeV2,
+                    unisIPsecTunLocalAddrV2,
+                    unisIPsecTunRemoteAddrTypeV2,
+                    unisIPsecTunRemoteAddrV2
+                  }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when the IPsec phase-2
+             authentication failure occurs."
+        ::= { unisIPsecNotificationsV2 4 }
+
+    unisIPsecEncryFailFailureV2 NOTIFICATION-TYPE
+        OBJECTS {
+                    unisIPsecTunIndexV2,
+                    unisIPsecTunLocalAddrTypeV2,
+                    unisIPsecTunLocalAddrV2,
+                    unisIPsecTunRemoteAddrTypeV2,
+                    unisIPsecTunRemoteAddrV2
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when the IPsec phase-2
+             tunnel has an encrypting failure."
+        ::= { unisIPsecNotificationsV2 5 }
+
+    unisIPsecDecryFailFailureV2 NOTIFICATION-TYPE
+        OBJECTS {
+                    unisIPsecTunIndexV2,
+                    unisIPsecTunLocalAddrTypeV2,
+                    unisIPsecTunLocalAddrV2,
+                    unisIPsecTunRemoteAddrTypeV2,
+                    unisIPsecTunRemoteAddrV2
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when the IPsec phase-2
+             tunnel has a decrypting failure."
+        ::= { unisIPsecNotificationsV2 6 }
+
+    unisIPsecInvalidSaFailureV2 NOTIFICATION-TYPE
+        OBJECTS {
+                    unisIPsecTunIndexV2,
+                    unisIPsecSaIndexV2,
+                    unisIPsecTunLocalAddrTypeV2,
+                    unisIPsecTunLocalAddrV2,
+                    unisIPsecTunRemoteAddrTypeV2,
+                    unisIPsecTunRemoteAddrV2,
+                    unisIPsecSaSpiValueV2
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when the IPsec phase-2
+             invalid SA failure occurs."
+        ::= { unisIPsecNotificationsV2 7 }
+
+    unisIPsecPolicyAddV2 NOTIFICATION-TYPE
+        OBJECTS { unisIPsecPolicyNameV2,
+                  unisIPsecPolicySeqNumV2,
+                  unisIPsecPolicySizeV2
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when an IPsec policy is added."
+        ::= { unisIPsecNotificationsV2 8 }
+
+    unisIPsecPolicyDelV2 NOTIFICATION-TYPE
+        OBJECTS { unisIPsecPolicyNameV2,
+                  unisIPsecPolicySeqNumV2,
+                  unisIPsecPolicySizeV2
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when an IPsec policy is deleted."
+        ::= { unisIPsecNotificationsV2 9 }
+
+    unisIPsecPolicyAttachV2 NOTIFICATION-TYPE
+        OBJECTS { unisIPsecPolicyNameV2,
+                  unisIPsecPolicySizeV2,
+                  ifIndex
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when an IPsec policy is attached
+             with one interface."
+        ::= { unisIPsecNotificationsV2 10 }
+
+    unisIPsecPolicyDetachV2 NOTIFICATION-TYPE
+        OBJECTS { unisIPsecPolicyNameV2,
+                  unisIPsecPolicySizeV2,
+                  ifIndex
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when an IPsec policy is detached
+             with one interface."
+        ::= { unisIPsecNotificationsV2 11 }
+
+    unisIPsecConnectionStartV2 NOTIFICATION-TYPE
+        OBJECTS {
+                    unisIPsecPolicyDescripV2
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when an IPsec connection
+             is created."
+        ::= { unisIPsecNotificationsV2 12 }
+
+    unisIPsecConnectionStopV2 NOTIFICATION-TYPE
+        OBJECTS {
+                    unisIPsecPolicyDescripV2
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when an IPsec connection
+             is terminated."
+        ::= { unisIPsecNotificationsV2 13 }
+
+-- ===============================================
+-- Begin the table of unisIPsecTunnelStatByDescripV2Table.
+-- ===============================================
+
+    unisIPsecTunnelStatByDescripV2Table OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisIPsecTunnelStatByDescripV2Entry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table contains IPsec phase-2 tunnel statistics by description."
+        ::= { unisIPsecObjectsV2 10 }
+
+    unisIPsecTunnelStatByDescripV2Entry OBJECT-TYPE
+        SYNTAX UnisIPsecTunnelStatByDescripV2Entry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry of IPsec phase-2 tunnels statistics by description table."
+        INDEX { unisIPsecPolicyDescripV2 }
+        ::= { unisIPsecTunnelStatByDescripV2Table 1 }
+
+    UnisIPsecTunnelStatByDescripV2Entry ::=
+        SEQUENCE {
+            unisIPsecPolicyDescripV2
+                OCTET STRING,
+            unisIPsecTunInOctetsByDescripV2
+                Counter64,
+            unisIPsecTunInDecompOctetsByDescripV2
+                Counter64,
+            unisIPsecTunInPktsByDescripV2
+                Counter64,
+            unisIPsecTunInDropPktsByDescripV2
+                Counter64,
+            unisIPsecTunInReplayDropPktsByDescripV2
+                Counter64,
+            unisIPsecTunInAuthFailsByDescripV2
+                Counter64,
+            unisIPsecTunInDecryptFailsByDescripV2
+                Counter64,
+            unisIPsecTunOutOctetsByDescripV2
+                Counter64,
+            unisIPsecTunOutUncompOctetsByDescripV2
+                Counter64,
+            unisIPsecTunOutPktsByDescripV2
+                Counter64,
+            unisIPsecTunOutDropPktsByDescripV2
+                Counter64,
+            unisIPsecTunOutEncryptFailsByDescripV2
+                Counter64,
+            unisIPsecTunNoMemoryDropPktsByDescripV2
+                Counter64,
+            unisIPsecTunQueueFullDropPktsByDescripV2
+                Counter64,
+            unisIPsecTunInvalidLenDropPktsByDescripV2
+                Counter64,
+            unisIPsecTunTooLongDropPktsByDescripV2
+                Counter64,
+            unisIPsecTunInvalidSaDropPktsByDescripV2
+                Counter64
+        }
+
+    unisIPsecPolicyDescripV2 OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(1..80))
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The IPsec policy's description."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 1 }
+
+    unisIPsecTunInOctetsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of octets received by IPsec phase-2 tunnels.
+             This value is accumulated BEFORE determining whether or not the
+             packet should be decompressed."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 2 }
+
+    unisIPsecTunInDecompOctetsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of decompressed octets received by IPsec
+             phase-2 tunnels.  This value is accumulated AFTER the packet
+             is decompressed."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 3 }
+
+    unisIPsecTunInPktsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets received by IPsec phase-2 tunnels."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 4 }
+
+    unisIPsecTunInDropPktsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped by IPsec phase-2 tunnels during receiving process."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 5 }
+
+    unisIPsecTunInReplayDropPktsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of receive  packets dropped by IPsec phase-2 tunnels
+            due to Anti-Replay processing."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 6 }
+
+    unisIPsecTunInAuthFailsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of inbound authentication
+             failures on IPsec phase-2 tunnels."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 7 }
+
+    unisIPsecTunInDecryptFailsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of inbound decryption
+             failures on IPsec phase-2 tunnels."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 8 }
+
+    unisIPsecTunOutOctetsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of octets sent by IPsec phase-2 tunnels.
+             This value is accumulated AFTER determining whether or not
+             the packet should be compressed."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 9 }
+
+    unisIPsecTunOutUncompOctetsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of uncompressed octets sent by IPsec phase-2
+             tunnels.  This value is accumulated BEFORE the packet is compressed."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 10 }
+
+    unisIPsecTunOutPktsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets sent by IPsec phase-2 tunnels."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 11 }
+
+    unisIPsecTunOutDropPktsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped by IPsec phase-2 tunnels during sending process."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 12 }
+
+    unisIPsecTunOutEncryptFailsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of outbound encryption failures
+             on IPsec Phase-2 Tunnels."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 13 }
+
+    unisIPsecTunNoMemoryDropPktsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped by IPsec phase-2 tunnels due to no enough memory."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 14 }
+
+    unisIPsecTunQueueFullDropPktsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped by
+             IPsec phase-2 tunnels due to queue full."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 15 }
+
+    unisIPsecTunInvalidLenDropPktsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped by IPsec phase-2 tunnels due to invalid length packet."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 16 }
+
+    unisIPsecTunTooLongDropPktsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped by IPsec phase-2 tunnels due to packet."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 17 }
+
+    unisIPsecTunInvalidSaDropPktsByDescripV2 OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped by IPsec phase-2 tunnels due to invalid SA."
+        ::= { unisIPsecTunnelStatByDescripV2Entry 18 }
+
+-- ===============================================
+-- Conformance Information
+-- ===============================================
+    unisIPsecConformanceV2   OBJECT IDENTIFIER
+        ::= { unisIPsecMonitorV2 2 }
+    unisIPsecCompliancesV2   OBJECT IDENTIFIER
+        ::= { unisIPsecConformanceV2 1 }
+    unisIPsecGroupsV2        OBJECT IDENTIFIER
+        ::= { unisIPsecConformanceV2 2 }
+
+-- ===============================================
+-- Compliance Statements
+-- ===============================================
+    unisIPsecComplianceV2 MODULE-COMPLIANCE
+        STATUS current
+        DESCRIPTION
+            " "
+        MODULE -- this module
+        MANDATORY-GROUPS
+            {
+                unisIPsecScalarObjectsGroupV2,
+                unisIPsecTunnelTableGroupV2,
+                unisIPsecTunnelStatGroupV2,
+                unisIPsecSaGroupV2,
+                unisIPsecTrafficTableGroupV2,
+                unisIPsecGlobalStatsGroupV2,
+                unisIPsecTrapObjectGroupV2,
+                unisIPsecTrapCntlGroupV2,
+                unisIPsecTrapGroupV2
+            }
+        ::= { unisIPsecCompliancesV2 1 }
+
+    unisIPsecScalarObjectsGroupV2 OBJECT-GROUP
+        OBJECTS {
+                    unisIPsecMIBVersion
+                }
+        STATUS current
+        DESCRIPTION
+            "The group contains all of scalar objects of the MIB."
+        ::= { unisIPsecGroupsV2 1 }
+
+    unisIPsecTunnelTableGroupV2 OBJECT-GROUP
+        OBJECTS {
+                    unisIPsecTunIfIndexV2,
+                    unisIPsecTunIKETunnelIndexV2,
+                    unisIPsecTunIKETunLocalIDTypeV2,
+                    unisIPsecTunIKETunLocalIDVal1V2,
+                    unisIPsecTunIKETunLocalIDVal2V2,
+                    unisIPsecTunIKETunRemoteIDTypeV2,
+                    unisIPsecTunIKETunRemoteIDVal1V2,
+                    unisIPsecTunIKETunRemoteIDVal2V2,
+                    unisIPsecTunLocalAddrTypeV2,
+                    unisIPsecTunLocalAddrV2,
+                    unisIPsecTunRemoteAddrTypeV2,
+                    unisIPsecTunRemoteAddrV2,
+                    unisIPsecTunKeyTypeV2,
+                    unisIPsecTunEncapModeV2,
+                    unisIPsecTunInitiatorV2,
+                    unisIPsecTunLifeSizeV2,
+                    unisIPsecTunLifeTimeV2,
+                    unisIPsecTunRemainTimeV2,
+                    unisIPsecTunActiveTimeV2,
+                    unisIPsecTunRemainSizeV2,
+                    unisIPsecTunTotalRefreshesV2,
+                    unisIPsecTunCurrentSaInstancesV2,
+                    unisIPsecTunInSaEncryptAlgoV2,
+                    unisIPsecTunInSaAhAuthAlgoV2,
+                    unisIPsecTunInSaEspAuthAlgoV2,
+                    unisIPsecTunDiffHellmanGrpV2,
+                    unisIPsecTunOutSaEncryptAlgoV2,
+                    unisIPsecTunOutSaAhAuthAlgoV2,
+                    unisIPsecTunOutSaEspAuthAlgoV2,
+                    unisIPsecTunPolicyNameV2,
+                    unisIPsecTunPolicyNumV2,
+                    unisIPsecTunStatusV2,
+                    unisIPsecTunPolicyDescriptionV2
+                }
+        STATUS current
+        DESCRIPTION
+            "The group contains the IPsec tunnel's property information."
+        ::= { unisIPsecGroupsV2 2 }
+
+    unisIPsecTunnelStatGroupV2 OBJECT-GROUP
+        OBJECTS {
+                    unisIPsecTunInOctetsV2,
+                    unisIPsecTunInDecompOctetsV2,
+                    unisIPsecTunInPktsV2,
+                    unisIPsecTunInDropPktsV2,
+                    unisIPsecTunInReplayDropPktsV2,
+                    unisIPsecTunInAuthFailsV2,
+                    unisIPsecTunInDecryptFailsV2,
+                    unisIPsecTunOutOctetsV2,
+                    unisIPsecTunOutUncompOctetsV2,
+                    unisIPsecTunOutPktsV2,
+                    unisIPsecTunOutDropPktsV2,
+                    unisIPsecTunOutEncryptFailsV2,
+                    unisIPsecTunNoMemoryDropPktsV2,
+                    unisIPsecTunQueueFullDropPktsV2,
+                    unisIPsecTunInvalidLenDropPktsV2,
+                    unisIPsecTunTooLongDropPktsV2,
+                    unisIPsecTunInvalidSaDropPktsV2
+                }
+        STATUS current
+        DESCRIPTION
+            "The group contains the IPsec tunnel's statistic information."
+        ::= { unisIPsecGroupsV2 3 }
+
+    unisIPsecSaGroupV2 OBJECT-GROUP
+        OBJECTS {
+                    unisIPsecSaDirectionV2,
+                    unisIPsecSaSpiValueV2,
+                    unisIPsecSaSecProtocolV2,
+                    unisIPsecSaEncryptAlgoV2,
+                    unisIPsecSaAuthAlgoV2,
+                    unisIPsecSaStatusV2
+                }
+        STATUS current
+        DESCRIPTION
+            "The group contains the SA's property information."
+        ::= { unisIPsecGroupsV2 4 }
+
+    unisIPsecTrafficTableGroupV2 OBJECT-GROUP
+        OBJECTS {
+            unisIPsecTrafficLocalTypeV2,
+            unisIPsecTrafficLocalAddr1TypeV2,
+            unisIPsecTrafficLocalAddr1V2,
+            unisIPsecTrafficLocalAddr2TypeV2,
+            unisIPsecTrafficLocalAddr2V2,
+            unisIPsecTrafficLocalProtocol1V2,
+            unisIPsecTrafficLocalProtocol2V2,
+            unisIPsecTrafficLocalPort1V2,
+            unisIPsecTrafficLocalPort2V2,
+            unisIPsecTrafficRemoteTypeV2,
+            unisIPsecTrafficRemAddr1TypeV2,
+            unisIPsecTrafficRemAddr1V2,
+            unisIPsecTrafficRemAddr2TypeV2,
+            unisIPsecTrafficRemAddr2V2,
+            unisIPsecTrafficRemoPro1V2,
+            unisIPsecTrafficRemoPro2V2,
+            unisIPsecTrafficRemPort1V2,
+            unisIPsecTrafficRemPort2V2
+        }
+        STATUS current
+        DESCRIPTION
+            "The group contains the property information of the
+             data flow protected by IPsec tunnel."
+        ::= { unisIPsecGroupsV2 5 }
+
+    unisIPsecGlobalStatsGroupV2 OBJECT-GROUP
+        OBJECTS {
+                    unisIPsecGlobalActiveTunnelsV2,
+                    unisIPsecGlobalActiveSasV2,
+                    unisIPsecGlobalInOctetsV2,
+                    unisIPsecGlobalInDecompOctetsV2,
+                    unisIPsecGlobalInPktsV2,
+                    unisIPsecGlobalInDropsV2,
+                    unisIPsecGlobalInReplayDropsV2,
+                    unisIPsecGlobalInAuthFailsV2,
+                    unisIPsecGlobalInDecryptFailsV2,
+                    unisIPsecGlobalOutOctetsV2,
+                    unisIPsecGlobalOutUncompOctetsV2,
+                    unisIPsecGlobalOutPktsV2,
+                    unisIPsecGlobalOutDropsV2,
+                    unisIPsecGlobalOutEncryptFailsV2,
+                    unisIPsecGlobalNoMemoryDropsV2,
+                    unisIPsecGlobalNoFindSaDropsV2,
+                    unisIPsecGlobalQueueFullDropsV2,
+                    unisIPsecGlobalInvalidLenDropsV2,
+                    unisIPsecGlobalTooLongDropsV2,
+                    unisIPsecGlobalInvalidSaDropsV2
+                }
+        STATUS current
+        DESCRIPTION
+            "The group contains all of the IPsec tunnel's statistic
+             information."
+        ::= { unisIPsecGroupsV2 6 }
+
+    unisIPsecTrapObjectGroupV2 OBJECT-GROUP
+        OBJECTS {
+                    unisIPsecPolicyNameV2,
+                    unisIPsecPolicySeqNumV2,
+                    unisIPsecPolicySizeV2
+                }
+        STATUS current
+        DESCRIPTION
+            "The group contains all of trap objects of IPsec tunnels."
+        ::= { unisIPsecGroupsV2 7 }
+
+    unisIPsecTrapCntlGroupV2 OBJECT-GROUP
+        OBJECTS {
+                    unisIPsecTrapGlobalCntlV2,
+                    unisIPsecTunnelStartTrapCntlV2,
+                    unisIPsecTunnelStopTrapCntlV2,
+                    unisIPsecNoSaTrapCntlV2,
+                    unisIPsecAuthFailureTrapCntlV2,
+                    unisIPsecEncryFailureTrapCntlV2,
+                    unisIPsecDecryFailureTrapCntlV2,
+                    unisIPsecInvalidSaTrapCntlV2,
+                    unisIPsecPolicyAddTrapCntlV2,
+                    unisIPsecPolicyDelTrapCntlV2,
+                    unisIPsecPolicyAttachTrapCntlV2,
+                    unisIPsecPolicyDetachTrapCntlV2
+                }
+        STATUS current
+        DESCRIPTION
+            "The group contains all of trap switches of IPsec tunnels."
+        ::= { unisIPsecGroupsV2 8 }
+
+    unisIPsecTrapGroupV2 NOTIFICATION-GROUP
+        NOTIFICATIONS {
+                          unisIPsecTunnelStartV2,
+                          unisIPsecTunnelStopV2,
+                          unisIPsecNoSaFailureV2,
+                          unisIPsecAuthFailFailureV2,
+                          unisIPsecEncryFailFailureV2,
+                          unisIPsecDecryFailFailureV2,
+                          unisIPsecInvalidSaFailureV2,
+                          unisIPsecPolicyAddV2,
+                          unisIPsecPolicyDelV2,
+                          unisIPsecPolicyAttachV2,
+                          unisIPsecPolicyDetachV2,
+                          unisIPsecConnectionStartV2,
+                          unisIPsecConnectionStopV2
+                      }
+        STATUS current
+        DESCRIPTION
+            "The group contains all of trap of IPsec tunnels."
+        ::= { unisIPsecGroupsV2 9 }
+
+
+END
+

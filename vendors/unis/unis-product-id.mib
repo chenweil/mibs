@@ -1,0 +1,314 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Product sysObjectID MIB
+-- Reference: UNIS-OID-MIB
+-- Version: V1.10
+-- History:
+--   V1.00 2015-09-17 Initial version, creating by songhao
+--         2016-06-20 Add OID 1 under unisWireless by jiliyan
+--         2016-10-13 Add OID 23-24 under unisSwitch by jiliyan
+---        2016-12-01 Add OID 25-38 under unisSwitch by jiliyan
+--         2016-12-23 Modified name of 1 unisWireless by jiliyan
+--         2017-01-16 Add OID 31 under unisSecurity by jiliyan
+--         2017-05-11 Add OID 32 33 under unisSecurity by jiliyan
+---        2017-05-25 Add OID 25-29 under unisSwitch by jiliyan
+---        2017-06-27 Add OID 30-38 under unisSwitch by jiliyan
+--         2017-08-28 Add OID 34 37 under unisSecurity by jiliyan
+--         2017-09-12 Add OID 38 under unisSecurity by jiliyan
+--         2017-09-26 Add OID 39 under unisSecurity by jiliyan
+--         2017-10-26 Add OID 40 under unisSecurity by jiliyan
+--         2017-11-08 Add OID 13,14 under unisRouter by jiliyan
+--         2017-11-22 Add OID 41-45 under unisSecurity by jiliyan
+--         2018-01-02 Add OID 41-45 under unisSecurity by jiliyan
+--         2018-01-08 Add OID 47 under unisSecurity by jiliyan
+--         2018-01-12 Add OID 15-16 under unisRouter by jiliyan
+--         2018-01-18 Add OID 39 under unisSwitch by jiliyan
+--         2018-03-28 Add OID 17 under unisRouter by jiliyan
+--   V1.01 2018-09-21 Add OID 40-52 under unisSwitch by jiliyan
+--   V1.02 Add OID 53-64 under unisSecurity by jiliyan
+--         2019-03-29 Mod OID 55,58 under unisSecurity by jiliyan
+--         2019-04-16 Mod OID 49-52 under unisSwitch by jiliyan
+--         Add OID 53 under unisSwitch by jiliyan
+--         Add OID 18 under unisRouter by jiliyan
+--   V1.03 2019-08-21 Add OID 55 under unisSwitch by jiliyan
+--         Add OID 65-75 under unisSecurity by jiliyan
+--         Add OID 19-20 under unisRouter by jiliyan
+--   V1.04 2019-11-27 by jiliyan
+--         Add OID 76-83 under unisSecurity by jiliyan
+--   V1.05 2020-01-10 by jiliyan
+--         Add OID 84-89 under unisSecurity by jiliyan
+--   V1.06 2020-05-14 by jiliyan
+--         Add OID 90-99 under unisSecurity by jiliyan
+--         Add OID 56 under unisSwitch by jiliyan
+--   V1.07 2020-07-21 by jiliyan
+--         Add OID 57-63 under unisSwitch by jiliyan
+--   V1.08 2020-08-12 by jiliyan
+--         Add OID 64-66 under unisSwitch by jiliyan
+--         Add OID 100-125 under unisSecurity by jiliyan
+--         Add OID 21  under unisRouter by jiliyan
+--         Modified name of 24 under unisSwitch by jiliyan
+--   V1.09 2020-09-16 by jiliyan
+--         Add OID 126-137 under unisSecurity by jiliyan
+--   V1.10 2020-10-20 by jiliyan
+--         Add OID 67-69 under unisSwitch by jiliyan
+--         Add OID 138-149 under unisSecurity by jiliyan
+-- ============================================================================
+UNIS-PRODUCT-ID-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+        unisProductId
+            FROM UNIS-OID-MIB;
+
+-- OID of unisProductId is 1.3.6.1.4.1.10519.256.1
+unisSwitch                      OBJECT IDENTIFIER ::= { unisProductId 1 }
+unisRouter                      OBJECT IDENTIFIER ::= { unisProductId 2 }
+unisWireless                    OBJECT IDENTIFIER ::= { unisProductId 3 }
+unisSecurity                    OBJECT IDENTIFIER ::= { unisProductId 4 }
+
+
+-- begin unisSwitch
+unisS5200-28S-EI                OBJECT IDENTIFIER ::= { unisSwitch 1 }
+unisS5200-52S-EI                OBJECT IDENTIFIER ::= { unisSwitch 2 }
+unisS5200-28F-EI                OBJECT IDENTIFIER ::= { unisSwitch 3 }
+unisS5200-28S-HPWR-EI           OBJECT IDENTIFIER ::= { unisSwitch 4 }
+unisS5200-52S-PWR-EI            OBJECT IDENTIFIER ::= { unisSwitch 5 }
+unisS5200-28P-SI                OBJECT IDENTIFIER ::= { unisSwitch 6 }
+unisS5200-52P-SI                OBJECT IDENTIFIER ::= { unisSwitch 7 }
+unisS5200-28P-HPWR-SI           OBJECT IDENTIFIER ::= { unisSwitch 8 }
+unisS3200-28P-EI                OBJECT IDENTIFIER ::= { unisSwitch 9 }
+unisS3200-52P-EI                OBJECT IDENTIFIER ::= { unisSwitch 10 }
+unisS3200-28P-HPWR-EI           OBJECT IDENTIFIER ::= { unisSwitch 11 }
+unisS5600-30S-EI                OBJECT IDENTIFIER ::= { unisSwitch 12 }
+unisS5600-54S-EI                OBJECT IDENTIFIER ::= { unisSwitch 13 }
+unisS5600-30C-EI                OBJECT IDENTIFIER ::= { unisSwitch 14 }
+unisS5600-54C-EI                OBJECT IDENTIFIER ::= { unisSwitch 15 }
+unisS5600-30F-EI                OBJECT IDENTIFIER ::= { unisSwitch 16 }
+unisS5600-30C-PWR-EI            OBJECT IDENTIFIER ::= { unisSwitch 17 }
+unisS5600-54C-PWR-EI            OBJECT IDENTIFIER ::= { unisSwitch 18 }
+unisS10600-06                   OBJECT IDENTIFIER ::= { unisSwitch 19 }
+unisS10600-10                   OBJECT IDENTIFIER ::= { unisSwitch 20 }
+unisS8600-06E                   OBJECT IDENTIFIER ::= { unisSwitch 21 }
+unisS8600-02E                   OBJECT IDENTIFIER ::= { unisSwitch 22 }
+unisS12600-08                   OBJECT IDENTIFIER ::= { unisSwitch 23 }
+unisS12600X-16                  OBJECT IDENTIFIER ::= { unisSwitch 24 }
+unisS5600-54C-EI-G              OBJECT IDENTIFIER ::= { unisSwitch 25 }
+unisS5600-54F-EI-G              OBJECT IDENTIFIER ::= { unisSwitch 26 }
+unisS6600X-54XG-EI-G            OBJECT IDENTIFIER ::= { unisSwitch 27 }
+unisS8600X-03-G                 OBJECT IDENTIFIER ::= { unisSwitch 28 }
+unisS8600X-06-G                 OBJECT IDENTIFIER ::= { unisSwitch 29 }
+unisS5600-30C-EI-G              OBJECT IDENTIFIER ::= { unisSwitch 30 }
+unisS5600-30F-EI-G              OBJECT IDENTIFIER ::= { unisSwitch 31 }
+unisS5200S-28S-HI               OBJECT IDENTIFIER ::= { unisSwitch 32 }
+unisS5200S-52S-HI               OBJECT IDENTIFIER ::= { unisSwitch 33 }
+unisS5200S-28S-PWR-HI           OBJECT IDENTIFIER ::= { unisSwitch 34 }
+unisS5200S-52S-PWR-HI           OBJECT IDENTIFIER ::= { unisSwitch 35 }
+unisS5200S-52F-EI               OBJECT IDENTIFIER ::= { unisSwitch 36 }
+unisS5200S-28P-EI               OBJECT IDENTIFIER ::= { unisSwitch 37 }
+unisS5200S-52P-EI               OBJECT IDENTIFIER ::= { unisSwitch 38 }
+unisS7800-54QF-H3               OBJECT IDENTIFIER ::= { unisSwitch 39 }
+unisS5600-34C-EI                OBJECT IDENTIFIER ::= { unisSwitch 40 }
+unisS5600X-30C-EI               OBJECT IDENTIFIER ::= { unisSwitch 41 }
+unisS5600X-54C-EI               OBJECT IDENTIFIER ::= { unisSwitch 42 }
+unisS5600X-30F-EI               OBJECT IDENTIFIER ::= { unisSwitch 43 }
+unisS6600X-30QC-EI              OBJECT IDENTIFIER ::= { unisSwitch 44 }
+unisS6600X-54QC-EI              OBJECT IDENTIFIER ::= { unisSwitch 45 }
+unisS5200S-28F-EI               OBJECT IDENTIFIER ::= { unisSwitch 46 }
+unisS5200S-28S-EI               OBJECT IDENTIFIER ::= { unisSwitch 47 }
+unisS5200S-52S-EI               OBJECT IDENTIFIER ::= { unisSwitch 48 }
+unisS10600X-06                  OBJECT IDENTIFIER ::= { unisSwitch 49 }
+unisS10600X-08                  OBJECT IDENTIFIER ::= { unisSwitch 50 }
+unisS10600X-08-V                OBJECT IDENTIFIER ::= { unisSwitch 51 }
+unisS10600X-10                  OBJECT IDENTIFIER ::= { unisSwitch 52 }
+unisS12600-08-G                 OBJECT IDENTIFIER ::= { unisSwitch 53 }
+unisS8600X-03                   OBJECT IDENTIFIER ::= { unisSwitch 54 }
+unisS5200S-12TP-EI              OBJECT IDENTIFIER ::= { unisSwitch 55 }
+unisS6600XP-54XG-EI-G           OBJECT IDENTIFIER ::= { unisSwitch 56 }
+unisS5200S-52ST-PWR-EI          OBJECT IDENTIFIER ::= { unisSwitch 57 }
+unisS5800XP-40F-HI-G            OBJECT IDENTIFIER ::= { unisSwitch 58 }
+unisS6600XP-30XG-EI-G           OBJECT IDENTIFIER ::= { unisSwitch 59 }
+unisS5800XP-40C-HI-G            OBJECT IDENTIFIER ::= { unisSwitch 60 }
+unisS5800XP-56F-HI-G            OBJECT IDENTIFIER ::= { unisSwitch 61 }
+unisS5800XP-56C-HI-G            OBJECT IDENTIFIER ::= { unisSwitch 62 }
+unisS6600X-54HT-EI-G            OBJECT IDENTIFIER ::= { unisSwitch 63 }
+unisS6600XP-54HT-EI-G           OBJECT IDENTIFIER ::= { unisSwitch 64 }
+unisS9600-04                    OBJECT IDENTIFIER ::= { unisSwitch 65 }
+unisS12600-04-G                 OBJECT IDENTIFIER ::= { unisSwitch 66 }
+unisS8600X-03M-G                OBJECT IDENTIFIER ::= { unisSwitch 67 }
+unisS5200-54C-EI-G              OBJECT IDENTIFIER ::= { unisSwitch 68 }
+unisS5200-30C-EI-G              OBJECT IDENTIFIER ::= { unisSwitch 69 }
+
+
+
+-- begin unisRouter
+unisR5900-06                    OBJECT IDENTIFIER ::= { unisRouter 1 }
+unisR3900-04                    OBJECT IDENTIFIER ::= { unisRouter 2 }
+unisR3900-S51                   OBJECT IDENTIFIER ::= { unisRouter 3 }
+unisR3900-S28                   OBJECT IDENTIFIER ::= { unisRouter 4 }
+unisR3900-S10                   OBJECT IDENTIFIER ::= { unisRouter 5 }
+unisR900-S06                    OBJECT IDENTIFIER ::= { unisRouter 6 }
+unisR900-S06-L                  OBJECT IDENTIFIER ::= { unisRouter 7 }
+unisR7900-08                    OBJECT IDENTIFIER ::= { unisRouter 8 }
+unisR7900-16                    OBJECT IDENTIFIER ::= { unisRouter 9 }
+unisR9900-08                    OBJECT IDENTIFIER ::= { unisRouter 10 }
+unisR9900-12                    OBJECT IDENTIFIER ::= { unisRouter 11 }
+unisR3900-02-G                  OBJECT IDENTIFIER ::= { unisRouter 12 }
+unisMSR3610-G                   OBJECT IDENTIFIER ::= { unisRouter 13 }
+unisR3900-G                     OBJECT IDENTIFIER ::= { unisRouter 14 }
+unisR9900-16                    OBJECT IDENTIFIER ::= { unisRouter 15 }
+unisR9900-06-S                  OBJECT IDENTIFIER ::= { unisRouter 16 }
+unis-R9900-08                   OBJECT IDENTIFIER ::= { unisRouter 17 }
+unisR9900-03-S-G                OBJECT IDENTIFIER ::= { unisRouter 18 }
+unisR17900-08                   OBJECT IDENTIFIER ::= { unisRouter 19 }
+unisR17900-20                   OBJECT IDENTIFIER ::= { unisRouter 20 }
+unisR5900-08-G                  OBJECT IDENTIFIER ::= { unisRouter 21 }
+
+
+-- begin unisWireless
+unisWX3540H                     OBJECT IDENTIFIER ::= { unisWireless 1 }
+
+
+-- begin unisSecurity
+unisACG1000-B                   OBJECT IDENTIFIER ::= { unisSecurity 1 }
+unisACG1000-S                   OBJECT IDENTIFIER ::= { unisSecurity 2 }
+unisACG1000-T                   OBJECT IDENTIFIER ::= { unisSecurity 3 }
+unisACG1000-A                   OBJECT IDENTIFIER ::= { unisSecurity 4 }
+unisACG1000-E                   OBJECT IDENTIFIER ::= { unisSecurity 5 }
+unisF5000-G20                   OBJECT IDENTIFIER ::= { unisSecurity 6 }
+unisF1000-G20                   OBJECT IDENTIFIER ::= { unisSecurity 7 }
+unisF1000-G50                   OBJECT IDENTIFIER ::= { unisSecurity 8 }
+unisF1000-G60                   OBJECT IDENTIFIER ::= { unisSecurity 9 }
+unisF1000-G80                   OBJECT IDENTIFIER ::= { unisSecurity 10 }
+unisT1000-G20                   OBJECT IDENTIFIER ::= { unisSecurity 11 }
+unisT1000-G50                   OBJECT IDENTIFIER ::= { unisSecurity 12 }
+unisT1000-G60                   OBJECT IDENTIFIER ::= { unisSecurity 13 }
+unisT1000-G80                   OBJECT IDENTIFIER ::= { unisSecurity 14 }
+unisT5000-G20                   OBJECT IDENTIFIER ::= { unisSecurity 15 }
+unisF5000-M06                   OBJECT IDENTIFIER ::= { unisSecurity 16 }
+unisT5000-M06                   OBJECT IDENTIFIER ::= { unisSecurity 17 }
+unisF1000-Context               OBJECT IDENTIFIER ::= { unisSecurity 18 }
+unisF5000-Context               OBJECT IDENTIFIER ::= { unisSecurity 19 }
+unisT1000-Context               OBJECT IDENTIFIER ::= { unisSecurity 20 }
+unisT5000-Context               OBJECT IDENTIFIER ::= { unisSecurity 21 }
+unisF5000-M6-FW-Context         OBJECT IDENTIFIER ::= { unisSecurity 22 }
+unisF5000-M6-FW4-Context        OBJECT IDENTIFIER ::= { unisSecurity 23 }
+unisF5000-M6-IPS-Context        OBJECT IDENTIFIER ::= { unisSecurity 24 }
+unisF1000                       OBJECT IDENTIFIER ::= { unisSecurity 25 }
+unisL1000                       OBJECT IDENTIFIER ::= { unisSecurity 26 }
+unisT1000                       OBJECT IDENTIFIER ::= { unisSecurity 27 }
+unisF5000                       OBJECT IDENTIFIER ::= { unisSecurity 28 }
+unisL5000                       OBJECT IDENTIFIER ::= { unisSecurity 29 }
+unisT5000                       OBJECT IDENTIFIER ::= { unisSecurity 30 }
+unisF1000-G5                    OBJECT IDENTIFIER ::= { unisSecurity 31 }
+unisF1000-E                     OBJECT IDENTIFIER ::= { unisSecurity 32 }
+unisT1000-E                     OBJECT IDENTIFIER ::= { unisSecurity 33 }
+unisF5000-G30                   OBJECT IDENTIFIER ::= { unisSecurity 34 }
+unisF5000-G60                   OBJECT IDENTIFIER ::= { unisSecurity 35 }
+unisW2000-G30                   OBJECT IDENTIFIER ::= { unisSecurity 36 }
+unisW2000-G50                   OBJECT IDENTIFIER ::= { unisSecurity 37 }
+unisT5000-G30                   OBJECT IDENTIFIER ::= { unisSecurity 38 }
+unisF50X0-context               OBJECT IDENTIFIER ::= { unisSecurity 39 }
+unisT50X0-Context               OBJECT IDENTIFIER ::= { unisSecurity 40 }
+unisACG1000-G30                 OBJECT IDENTIFIER ::= { unisSecurity 41 }
+unisACG1000-G50                 OBJECT IDENTIFIER ::= { unisSecurity 42 }
+unisACG1000-G60                 OBJECT IDENTIFIER ::= { unisSecurity 43 }
+unisXSCAN-G10                   OBJECT IDENTIFIER ::= { unisSecurity 44 }
+unisXSCAN-G20                   OBJECT IDENTIFIER ::= { unisSecurity 45 }
+unisD2000-G20                   OBJECT IDENTIFIER ::= { unisSecurity 46 }
+unisA2000-G20                   OBJECT IDENTIFIER ::= { unisSecurity 47 }
+unisKVW-G10                     OBJECT IDENTIFIER ::= { unisSecurity 48 }
+unisKVW-G20                     OBJECT IDENTIFIER ::= { unisSecurity 49 }
+unisKVW-G30                     OBJECT IDENTIFIER ::= { unisSecurity 50 }
+unisF1000-CN60                  OBJECT IDENTIFIER ::= { unisSecurity 51 }
+unisF1000-CN80                  OBJECT IDENTIFIER ::= { unisSecurity 52 }
+unisF5000-M14                   OBJECT IDENTIFIER ::= { unisSecurity 54 }
+unisT1000-CN80-Context          OBJECT IDENTIFIER ::= { unisSecurity 55 }
+unisF1000-CN80-Context          OBJECT IDENTIFIER ::= { unisSecurity 56 }
+unisF1000-CN60-Context          OBJECT IDENTIFIER ::= { unisSecurity 57 }
+unisT1000-CN60-Context          OBJECT IDENTIFIER ::= { unisSecurity 58 }
+unisT1000-CN60                  OBJECT IDENTIFIER ::= { unisSecurity 59 }
+unisT1000-CN80                  OBJECT IDENTIFIER ::= { unisSecurity 60 }
+unisL1000-CN80-Context          OBJECT IDENTIFIER ::= { unisSecurity 61 }
+unisL1000-CN80                  OBJECT IDENTIFIER ::= { unisSecurity 62 }
+unisL1000-CN60                  OBJECT IDENTIFIER ::= { unisSecurity 63 }
+unisL1000-CN60-Context          OBJECT IDENTIFIER ::= { unisSecurity 64 }
+unis-A2000-E                    OBJECT IDENTIFIER ::= { unisSecurity 65 }
+unis-GAP2000-E                  OBJECT IDENTIFIER ::= { unisSecurity 66 }
+unis-VPN1000-E                  OBJECT IDENTIFIER ::= { unisSecurity 67 }
+unis-F1000-E-L                  OBJECT IDENTIFIER ::= { unisSecurity 68 }
+unis-T1000-E-L                  OBJECT IDENTIFIER ::= { unisSecurity 69 }
+unis-ACG1000-E-Q                OBJECT IDENTIFIER ::= { unisSecurity 70 }
+unis-ACG1000-E                  OBJECT IDENTIFIER ::= { unisSecurity 71 }
+unis-W2000-E                    OBJECT IDENTIFIER ::= { unisSecurity 72 }
+unis-XSCAN-CN60                 OBJECT IDENTIFIER ::= { unisSecurity 73 }
+unisL1000-Context               OBJECT IDENTIFIER ::= { unisSecurity 74 }
+unisL5000-Context               OBJECT IDENTIFIER ::= { unisSecurity 75 }
+unisF5000-CN20                  OBJECT IDENTIFIER ::= { unisSecurity 76 }
+unisF5000-CN40                  OBJECT IDENTIFIER ::= { unisSecurity 77 }
+unisF5000-CN40-Context          OBJECT IDENTIFIER ::= { unisSecurity 78 }
+unisF5000-CN20-Context          OBJECT IDENTIFIER ::= { unisSecurity 79 }
+unisF5000-CN30-D-Context        OBJECT IDENTIFIER ::= { unisSecurity 80 }
+unisF5000-CN30-D                OBJECT IDENTIFIER ::= { unisSecurity 81 }
+unisF5000-CN60-D-Context        OBJECT IDENTIFIER ::= { unisSecurity 82 }
+unisF5000-CN60-D                OBJECT IDENTIFIER ::= { unisSecurity 83 }
+unisT5000-G30-D-Context         OBJECT IDENTIFIER ::= { unisSecurity 84 }
+unisT1000-G60-D                 OBJECT IDENTIFIER ::= { unisSecurity 85 }
+unisT1000-G60-D-Context         OBJECT IDENTIFIER ::= { unisSecurity 86 }
+unisT5000-G30-D                 OBJECT IDENTIFIER ::= { unisSecurity 87 }
+unisT5000-G60-Context           OBJECT IDENTIFIER ::= { unisSecurity 88 }
+unisT5000-G60                   OBJECT IDENTIFIER ::= { unisSecurity 89 }
+unisSAG-8000-T10                OBJECT IDENTIFIER ::= { unisSecurity 90 }
+unisNGFW-8000-T50               OBJECT IDENTIFIER ::= { unisSecurity 91 }
+unisNGFW-8000-T20               OBJECT IDENTIFIER ::= { unisSecurity 92 }
+unisSAG-8000-T30                OBJECT IDENTIFIER ::= { unisSecurity 93 }
+unisNGIPS-8000-T20              OBJECT IDENTIFIER ::= { unisSecurity 94 }
+unisACG1000-G80                 OBJECT IDENTIFIER ::= { unisSecurity 95 }
+unisF1000-CN80-G                OBJECT IDENTIFIER ::= { unisSecurity 96 }
+unisNGIPS-8000-T50              OBJECT IDENTIFIER ::= { unisSecurity 97 }
+unisACG1000-G70                 OBJECT IDENTIFIER ::= { unisSecurity 98 }
+unisT1000-CN80-G                OBJECT IDENTIFIER ::= { unisSecurity 99 }
+unisNGFW8000-X25                OBJECT IDENTIFIER ::= { unisSecurity 100 }
+unisNGFW8000-X25-Context        OBJECT IDENTIFIER ::= { unisSecurity 101 }
+unisNGFW8000-X45-Context        OBJECT IDENTIFIER ::= { unisSecurity 102 }
+unisNGFW8000-X45                OBJECT IDENTIFIER ::= { unisSecurity 103 }
+unisNGFW8000-X40                OBJECT IDENTIFIER ::= { unisSecurity 104 }
+unisNGFW8000-X20-Context        OBJECT IDENTIFIER ::= { unisSecurity 105 }
+unisNGFW8000-X20                OBJECT IDENTIFIER ::= { unisSecurity 106 }
+unisNGFW8000-X40-Context        OBJECT IDENTIFIER ::= { unisSecurity 107 }
+unisNGIPS8000-X40               OBJECT IDENTIFIER ::= { unisSecurity 108 }
+unisNGIPS8000-X40-Context       OBJECT IDENTIFIER ::= { unisSecurity 109 }
+unisSAG8000-X10-Context         OBJECT IDENTIFIER ::= { unisSecurity 110 }
+unisSAG8000-X10                 OBJECT IDENTIFIER ::= { unisSecurity 111 }
+unisSAG8000-X30                 OBJECT IDENTIFIER ::= { unisSecurity 112 }
+unisSAG8000-X30-Context         OBJECT IDENTIFIER ::= { unisSecurity 123 }
+unisNGIPS8000-X20               OBJECT IDENTIFIER ::= { unisSecurity 124 }
+unisNGIPS8000-X20-Context       OBJECT IDENTIFIER ::= { unisSecurity 125 }
+unisT1000-G55                   OBJECT IDENTIFIER ::= { unisSecurity 126 }
+unisT5000-G15-D-Context         OBJECT IDENTIFIER ::= { unisSecurity 127 }
+unisT5000-G15                   OBJECT IDENTIFIER ::= { unisSecurity 128 }
+unisT5000-G15-Context           OBJECT IDENTIFIER ::= { unisSecurity 129 }
+unisT1000-G25                   OBJECT IDENTIFIER ::= { unisSecurity 130 }
+unisT1000-G85-Context           OBJECT IDENTIFIER ::= { unisSecurity 131 }
+unisT1000-G55-Context           OBJECT IDENTIFIER ::= { unisSecurity 132 }
+unisT1000-G85                   OBJECT IDENTIFIER ::= { unisSecurity 133 }
+unisT5000-G15-D                 OBJECT IDENTIFIER ::= { unisSecurity 134 }
+unisT1000-G25-Context           OBJECT IDENTIFIER ::= { unisSecurity 135 }
+unisT1000-G65                   OBJECT IDENTIFIER ::= { unisSecurity 136 }
+unisT1000-G65-Context           OBJECT IDENTIFIER ::= { unisSecurity 137 }
+unisNGIPS8000-T25               OBJECT IDENTIFIER ::= { unisSecurity 138 }
+unisNGFW8000-T55                OBJECT IDENTIFIER ::= { unisSecurity 139 }
+unisNGIPS8000-T25-Context       OBJECT IDENTIFIER ::= { unisSecurity 140 }
+unisNGFW8000-T25                OBJECT IDENTIFIER ::= { unisSecurity 141 }
+unisNGFW8000-T55-Context        OBJECT IDENTIFIER ::= { unisSecurity 142 }
+unisNGIPS8000-T55               OBJECT IDENTIFIER ::= { unisSecurity 143 }
+unisNGFW8000-T25-Context        OBJECT IDENTIFIER ::= { unisSecurity 144 }
+unisNGIPS8000-T55-Context       OBJECT IDENTIFIER ::= { unisSecurity 145 }
+unisT5000-CN40                  OBJECT IDENTIFIER ::= { unisSecurity 146 }
+unisT5000-CN20-Context          OBJECT IDENTIFIER ::= { unisSecurity 147 }
+unisT5000-CN40-Context          OBJECT IDENTIFIER ::= { unisSecurity 148 }
+unisT5000-CN20                  OBJECT IDENTIFIER ::= { unisSecurity 149 }
+
+
+
+
+
+END

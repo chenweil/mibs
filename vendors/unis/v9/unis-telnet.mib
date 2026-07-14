@@ -1,0 +1,77 @@
+-- =================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: telnet mib
+-- Reference:
+-- Version: V1.0
+-- History:
+--  V1.0 Created by zhangfeng
+--      2022-08-24 Initial version
+-- =================================================================
+UNIS-TELNET-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Unsigned32
+        FROM SNMPv2-SMI;
+
+unisTelnet MODULE-IDENTITY
+    LAST-UPDATED "202208240000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for telnet."
+    REVISION    "202208240000Z"
+    DESCRIPTION    "The initial version."
+    ::= { unisCommon 249 }
+
+unisTelnets OBJECT IDENTIFIER ::= { unisTelnet 1 }
+-- ==================================================================
+--
+-- TELNETS trap parameters
+--
+-- ==================================================================
+unisTelnetsObjForTrap OBJECT IDENTIFIER ::= { unisTelnets 1 }
+
+unisTelnetsLoginFailedTimes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Users login failed times."
+    ::= { unisTelnetsObjForTrap 1 }
+
+unisTelnetsLoginFailedStatPeriod OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "minutes"
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Users login failed statistic period."
+    ::= { unisTelnetsObjForTrap 2 }
+
+-- ==================================================================
+--
+-- TELNETS traps
+--
+-- ==================================================================
+unisTelnetsTraps OBJECT IDENTIFIER ::= { unisTelnets 2 }
+unisTelnetsTrapsPrefix OBJECT IDENTIFIER ::= { unisTelnetsTraps 0 }
+
+unisTelnetsLoginFailed NOTIFICATION-TYPE
+    OBJECTS { unisTelnetsLoginFailedTimes, unisTelnetsLoginFailedStatPeriod }
+    STATUS  current
+    DESCRIPTION
+        "Users failed to login telnet server too frequently."
+    ::= { unisTelnetsTrapsPrefix 1 }
+
+unisTelnetsLoginFailedClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+        "The telnet user login-failed alarm was cleared."
+    ::= { unisTelnetsTrapsPrefix 2 }
+
+END

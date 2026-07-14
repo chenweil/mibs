@@ -1,0 +1,164 @@
+-- ============================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The purpose of this MIB file is to provide the definition of
+--              the Ip Source Guard trap.
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 2022-07-27
+--   Initial version, created by wangyuqing
+-- V1.1 2022-12-22
+--   Add 'unisIpsgVlanDropAlarm'
+--   And 'unisIpsgVlanDropAlarmResume'
+--   And 'unisIpsgDropVlan'
+--   And 'unisIpsgChassis'
+--   And 'unisIpsgSlot' by wangyuqing
+-- ============================================================================
+UNIS-IPSG-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        InetAddressType
+    FROM INET-ADDRESS-MIB;
+
+-- Node definitions
+unisIpsg MODULE-IDENTITY
+    LAST-UPDATED "202212221800Z"        -- DEC 22, 2022 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file is to provide the definition of the Ip Source Guard."
+    REVISION "202212221800Z"
+    DESCRIPTION
+        "Add the objects of unisIpsgVlanDropAlarm, unisIpsgVlanDropAlarmResume,
+        unisIpsgChassis, unisIpsgSlot and unisIpsgDropVlan."
+    REVISION "202207271800Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 246}
+
+-- unisIpsgTrapPkt
+unisIpsgTrapPkt OBJECT IDENTIFIER ::= { unisIpsg 1 }
+
+unisIpsgTrapPkts OBJECT IDENTIFIER  ::= { unisIpsgTrapPkt 0 }
+
+unisIpsgDropAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpsgDropFamily,
+            unisIpsgDropIfName,
+            unisIpsgDropThreshold,
+            unisIpsgChassis,
+            unisIpsgSlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the number of packets discarded by Ip Source Guard on an interface exceeds the threshold,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisIpsgTrapPkts 1 }
+
+unisIpsgDropAlarmResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpsgDropFamily,
+            unisIpsgDropIfName,
+            unisIpsgDropThreshold,
+            unisIpsgChassis,
+            unisIpsgSlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the number of packets discarded by Ip Source Guard on an interface drops below the threshold,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisIpsgTrapPkts 2 }
+
+unisIpsgVlanDropAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpsgDropFamily,
+            unisIpsgDropVlan,
+            unisIpsgDropThreshold,
+            unisIpsgChassis,
+            unisIpsgSlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the number of packets discarded by Ip Source Guard on the vlan exceeds the threshold,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisIpsgTrapPkts 3 }
+
+unisIpsgVlanDropAlarmResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpsgDropFamily,
+            unisIpsgDropVlan,
+            unisIpsgDropThreshold,
+            unisIpsgChassis,
+            unisIpsgSlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the number of packets discarded by Ip Source Guard on the vlan drops below the threshold,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisIpsgTrapPkts 4 }
+
+unisIpsgTrapPktObjects OBJECT IDENTIFIER  ::= { unisIpsgTrapPkt 1 }
+
+-- unisIpsgTrapPktObjects
+
+unisIpsgDropFamily OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The protocol family may be ipv4 or ipv6 ."
+    ::= { unisIpsgTrapPktObjects 1 }
+
+unisIpsgDropIfName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE (0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of interface name."
+    ::= { unisIpsgTrapPktObjects 2 }
+
+unisIpsgDropThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of Threshold."
+    ::= { unisIpsgTrapPktObjects 3 }
+
+unisIpsgDropVlan OBJECT-TYPE
+    SYNTAX      Unsigned32(1..4094)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of vlan id."
+    ::= { unisIpsgTrapPktObjects 4 }
+
+unisIpsgChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+        not a stacked device ."
+    ::= { unisIpsgTrapPktObjects 5 }
+
+unisIpsgSlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of slot."
+    ::= { unisIpsgTrapPktObjects 6 }
+
+END

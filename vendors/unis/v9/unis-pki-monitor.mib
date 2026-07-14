@@ -1,0 +1,828 @@
+-- ====================================================================
+-- Copyright (c) 2024 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB is designed to get PKI trap information.
+-- Reference:
+-- Version: 1.3
+-- History:
+--   V1.0: The initial version created by Zhaoming.
+--   V1.1: Modified by Zhaoming Dec.30 2021
+--           1) 'unisPKICertUpdateTime' was added to the 'unisPKIGetLocalCertSucScep'
+--               and 'unisPKIGetLocalCertFailScep' traps.
+--   V1.2: Modified by skf9095 Sep.22 2022
+--           1) Added the 'unisPKICrlHasExpiredTrapCntl'
+--               and 'unisPKICrlHasExpired' traps.
+--           2) Added the 'unisPKIWriteToFlashFailTrapCntl'
+--               and 'unisPKIWriteToFlashFail' traps.
+--   V1.3: Modified by Wangyong Oct.10 2023
+--           1) Added the 'unisPKIGetCaFailTrapCntl'
+--               and 'unisPKIGetCaFail' traps.
+--           2) Added the 'unisPKIGetCrlFailTrapCntl'
+--               and 'unisPKIGetCrlFail' traps.
+-- =====================================================================
+UNIS-PKI-MONITOR-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    DisplayString, TruthValue, DateAndTime
+        FROM SNMPv2-TC
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisPKIMonitor MODULE-IDENTITY
+    LAST-UPDATED "202310101120Z"             -- October 10, 2023 at 12:47 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB is designed to obtain the alarm information of the PKI module."
+    REVISION "202310101120Z"
+    DESCRIPTION
+        "Add unisPKIGetCaFailTrapCntl to unisPKITrapCntlGroup.
+         Add unisPKIGetCrlFailTrapCntl to unisPKITrapCntlGroup.
+         Add unisPKIGetCaFail to unisPKITrapGroup.
+         Add unisPKIGetCrlFailTrap to unisPKITrapGroup."
+    REVISION "202209221725Z"
+    DESCRIPTION
+        "Add unisPKICrlHasExpiredTrapCntl to unisPKITrapCntlGroup.
+         Add unisPKIWriteToFlashFailTrapCntl to unisPKITrapCntlGroup.
+         Add unisPKICrlHasExpired to unisPKITrapGroup.
+         Add unisPKIWriteToFlashFail to unisPKITrapGroup."
+    REVISION "202112301247Z"
+    DESCRIPTION
+        "This revision is about the trap unisPKIGetLocalCertSucScep and
+         unisPKIGetLocalCertFailScep."
+    REVISION
+        "202109141347Z"
+    DESCRIPTION
+        "Initial version."
+    ::= { unisCommon 209 }
+
+
+-- ========================================================================
+-- Node definitions
+-- ========================================================================
+-- Begin the node of unisPKIObjects.
+
+unisPKIObjects OBJECT IDENTIFIER ::= { unisPKIMonitor 1 }
+-- =======================================
+-- Begin the unisPKITrapObject.
+-- =======================================
+
+unisPKITrapObject OBJECT IDENTIFIER ::= { unisPKIObjects 1 }
+
+unisPKICACertIssuer   OBJECT-TYPE
+    SYNTAX DisplayString(SIZE(0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The issuer of CA certificate with a trap."
+    ::= { unisPKITrapObject 1 }
+
+unisPKICACertSubject   OBJECT-TYPE
+    SYNTAX DisplayString(SIZE(0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The subject of CA certificate with a trap."
+    ::= { unisPKITrapObject 2 }
+
+unisPKICACertStartTime   OBJECT-TYPE
+    SYNTAX DateAndTime(SIZE(8 | 11))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The time when the CA certificate becomes effective with a trap."
+    ::= { unisPKITrapObject 3 }
+
+unisPKICACertFinishTime   OBJECT-TYPE
+    SYNTAX DateAndTime(SIZE(8 | 11))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The time when the CA certificate expires with a trap."
+    ::= { unisPKITrapObject 4 }
+
+unisPKICrlIssuer   OBJECT-TYPE
+    SYNTAX DisplayString(SIZE(0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The issuer of CRL with a trap."
+    ::= { unisPKITrapObject 5 }
+
+unisPKICrlStartTime   OBJECT-TYPE
+    SYNTAX DateAndTime(SIZE(8 | 11))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The time when the CRL becomes effective with a trap."
+    ::= { unisPKITrapObject 6 }
+
+unisPKICrlFinishTime   OBJECT-TYPE
+    SYNTAX DateAndTime(SIZE(8 | 11))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The time when CRL expires with a trap."
+    ::= { unisPKITrapObject 7 }
+
+unisPKIDomainName  OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The PKI domain name with a trap."
+    ::= { unisPKITrapObject 8 }
+
+unisPKICrlUrl   OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..1023))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The URL path of CRL with a trap."
+    ::= { unisPKITrapObject 9 }
+
+unisPKIVrfName   OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The VPN instance name with a trap."
+    ::= { unisPKITrapObject 10 }
+
+unisPKICertUrl   OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..1023))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The URL path of the certificate with a trap."
+    ::= { unisPKITrapObject 11 }
+
+unisPKILocalCertIssuer   OBJECT-TYPE
+    SYNTAX DisplayString(SIZE(0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The issuer of local certificate with a trap."
+    ::= { unisPKITrapObject 12 }
+
+unisPKILocalCertSubject   OBJECT-TYPE
+    SYNTAX DisplayString(SIZE(0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The subject of local certificate with a trap."
+    ::= { unisPKITrapObject 13 }
+
+unisPKILocalCertStartTime   OBJECT-TYPE
+    SYNTAX DateAndTime(SIZE(8 | 11))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The time when the local certificate becomes effective with a trap."
+    ::= { unisPKITrapObject 14 }
+
+unisPKILocalCertFinishTime   OBJECT-TYPE
+    SYNTAX DateAndTime(SIZE(8 | 11))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The time when the local certificate expires with a trap."
+    ::= { unisPKITrapObject 15 }
+
+unisPKIEntityName  OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The entity name with a trap."
+    ::= { unisPKITrapObject 16 }
+
+unisPKICertSave   OBJECT-TYPE
+    SYNTAX DisplayString(SIZE(0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The certificate save file name with a trap."
+    ::= { unisPKITrapObject 17 }
+
+unisPKICertUpdateTime   OBJECT-TYPE
+    SYNTAX DateAndTime(SIZE(8 | 11))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Time when the certificate was updated with a trap."
+    ::= { unisPKITrapObject 18 }
+
+unisPKIGetCaFailReason   OBJECT-TYPE
+    SYNTAX DisplayString(SIZE(0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The reason for failure to obtain certificate from ca server with a trap."
+    ::= { unisPKITrapObject 19}
+
+unisPKIGetCrlFailReason   OBJECT-TYPE
+    SYNTAX DisplayString(SIZE(0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The reason for failure to get crl with a trap."
+    ::= { unisPKITrapObject 20}
+
+-- =======================================
+-- Begin the unisPKITrapCntl.
+-- =======================================
+
+unisPKITrapCntl OBJECT IDENTIFIER ::= { unisPKIObjects 2 }
+
+unisPKITrapGlobalCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether all PKI traps should be generated."
+    ::= { unisPKITrapCntl 1 }
+
+unisPKICACertInvalidTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKICACertInvalid traps should be generated."
+    ::= { unisPKITrapCntl 2 }
+
+unisPKICACertValidTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKICACertValid traps should be generated."
+    ::= { unisPKITrapCntl 3 }
+
+unisPKICrlInvalidTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKICrlInvalid traps should be generated."
+    ::= { unisPKITrapCntl 4 }
+
+unisPKICrlValidTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKICrlValid traps should be generated."
+    ::= { unisPKITrapCntl 5 }
+
+unisPKIGetCrlSucHttpTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKIGetCrlSucHttp traps should be generated."
+    ::= { unisPKITrapCntl 6 }
+
+unisPKIGetCrlFailHttpTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKIGetCrlFailHttp traps should be generated."
+    ::= { unisPKITrapCntl 7 }
+
+unisPKIGetCrlSucLdapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKIGetCrlSucLdap traps should be generated."
+    ::= { unisPKITrapCntl 8 }
+
+unisPKIGetCrlFailLdapTrapCntl   OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKIGetCrlFailLdap traps should be generated."
+    ::= { unisPKITrapCntl 9 }
+
+unisPKIGetCrlSucScepTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKIGetCrlSucScep traps should be generated."
+    ::= { unisPKITrapCntl 10 }
+
+unisPKIGetCrlFailScepTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKIGetCrlFailScep traps should be generated."
+    ::= { unisPKITrapCntl 11 }
+
+unisPKILocCertInvalidTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKILocalCertInvalid traps should be generated."
+    ::= { unisPKITrapCntl 12 }
+
+unisPKILocCertValidTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKILocalCertValid traps should be generated."
+    ::= { unisPKITrapCntl 13 }
+
+unisPKIGetLocCertSucLdapTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKIGetLocalCertSucLdap traps should be generated."
+    ::= { unisPKITrapCntl 14 }
+
+unisPKIGetLocCertFailLdapTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKIGetLocalCertFailLdap traps should be generated."
+    ::= { unisPKITrapCntl 15 }
+
+unisPKIGetLocCeSucScepTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKIGetLocalCertSucScep traps should be generated."
+    ::= { unisPKITrapCntl 16 }
+
+unisPKIGetLocCeFailScepTrapCntl   OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKIGetLocalCertFailScep traps should be generated."
+    ::= { unisPKITrapCntl 17 }
+
+unisPKILocCertNearExpirTrapCntl OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKILocalCertNearlyExpired traps should be generated."
+    ::= { unisPKITrapCntl 18 }
+
+unisPKILocCertHasExpirTrapCntl   OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKILocalCertHasExpired traps should be generated."
+    ::= { unisPKITrapCntl 19 }
+
+unisPKICrlHasExpiredTrapCntl   OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKICrlHasExpired traps should be generated."
+    ::= { unisPKITrapCntl 20 }
+
+unisPKIWriteToFlashFailTrapCntl   OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKIWriteToFlashFail traps should be generated."
+    ::= { unisPKITrapCntl 21 }
+
+unisPKIGetCaFailTrapCntl   OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKIGetCaFailTrapCntl traps should be generated."
+    ::= { unisPKITrapCntl 22 }
+
+unisPKIGetCrlFailTrapCntl   OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Indicates whether unisPKIGetCrlFailTrapCntl traps should be generated."
+    ::= { unisPKITrapCntl 23 }
+
+-- ================================================
+-- definition of traps.
+-- ================================================
+
+unisPKITrap OBJECT IDENTIFIER ::= { unisPKIObjects 3 }
+unisPKINotifications OBJECT IDENTIFIER ::= { unisPKITrap 0 }
+
+unisPKICACertInvalid NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKICACertIssuer,
+                unisPKICACertSubject,
+                unisPKICACertStartTime,
+                unisPKICACertFinishTime
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the CA
+         certificate is invalid."
+            ::= { unisPKINotifications 1 }
+
+unisPKICACertValid  NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKICACertIssuer,
+                unisPKICACertSubject,
+                unisPKICACertStartTime,
+                unisPKICACertFinishTime
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the CA
+         certificate is valid."
+            ::= { unisPKINotifications 2 }
+
+unisPKICrlInvalid NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKICrlIssuer,
+                unisPKICrlStartTime,
+                unisPKICrlFinishTime
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the CRL
+         is invalid."
+            ::= { unisPKINotifications 3 }
+
+unisPKICrlValid NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKICrlIssuer,
+                unisPKICrlStartTime,
+                unisPKICrlFinishTime
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the CRL
+         is valid."
+            ::= { unisPKINotifications 4 }
+
+unisPKIGetCrlSucHttp NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKICrlUrl,
+                unisPKIVrfName
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the CRL is
+         successfully obtained through the HTTP protocol."
+            ::= { unisPKINotifications 5 }
+
+unisPKIGetCrlFailHttp NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKICrlUrl,
+                unisPKIVrfName
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the CRL fails to
+         be obtained through the HTTP protocol."
+            ::= { unisPKINotifications 6 }
+
+unisPKIGetCrlSucLdap NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKICrlUrl,
+                unisPKIVrfName
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the CRL is
+         successfully obtained through the LDAP protocol."
+            ::= { unisPKINotifications 7 }
+
+unisPKIGetCrlFailLdap NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKICrlUrl,
+                unisPKIVrfName
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the CRL fails to
+         be obtained through the LDAP protocol."
+            ::= { unisPKINotifications 8 }
+
+unisPKIGetCrlSucScep NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKIVrfName,
+                unisPKICertUrl
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the CRL
+         is successfully obtained through the SCEP protocol."
+            ::= { unisPKINotifications 9 }
+
+unisPKIGetCrlFailScep NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKIVrfName,
+                unisPKICertUrl
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the CRL
+         fails to be obtained through the SCEP protocol."
+            ::= { unisPKINotifications 10 }
+
+unisPKILocalCertInvalid NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKILocalCertIssuer,
+                unisPKILocalCertSubject,
+                unisPKILocalCertStartTime,
+                unisPKILocalCertFinishTime
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the local
+         certificate is invalid."
+            ::= { unisPKINotifications 11 }
+
+unisPKILocalCertValid NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKILocalCertIssuer,
+                unisPKILocalCertSubject,
+                unisPKILocalCertStartTime,
+                unisPKILocalCertFinishTime
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the local
+         certificate is valid."
+            ::= { unisPKINotifications 12 }
+
+unisPKIGetLocalCertSucLdap NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKIVrfName,
+                unisPKICertUrl,
+                unisPKIEntityName,
+                unisPKICertSave
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the local certificate
+         is successfully obtained through the LDAP protocol."
+            ::= { unisPKINotifications 13 }
+
+unisPKIGetLocalCertFailLdap NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKIVrfName,
+                unisPKICertUrl,
+                unisPKIEntityName,
+                unisPKICertSave
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the local certificate
+         fails to be obtained through the LDAP protocol."
+            ::= { unisPKINotifications 14 }
+
+unisPKIGetLocalCertSucScep NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKIVrfName,
+                unisPKICertUrl,
+                unisPKICertSave,
+                unisPKICertUpdateTime
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the local certificate
+         is successfully obtained through the SCEP protocol. When the local
+         certificate is not obtained through renewal, unisPKICertUpdateTime is
+         set to all zeros."
+            ::= { unisPKINotifications 15 }
+
+unisPKIGetLocalCertFailScep NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKIVrfName,
+                unisPKICertUrl,
+                unisPKICertSave,
+                unisPKICertUpdateTime
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the local certificate
+         fails to be obtained through the SCEP protocol. When the local
+         certificate is not obtained through renewal, unisPKICertUpdateTime is
+         set to all zeros."
+            ::= { unisPKINotifications 16 }
+
+unisPKILocalCertNearlyExpired NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKILocalCertIssuer,
+                unisPKILocalCertSubject,
+                unisPKILocalCertStartTime,
+                unisPKILocalCertFinishTime
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the local
+         certificate is about to expire."
+            ::= { unisPKINotifications 17 }
+
+unisPKILocalCertHasExpired NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKILocalCertIssuer,
+                unisPKILocalCertSubject,
+                unisPKILocalCertStartTime,
+                unisPKILocalCertFinishTime
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the
+         local certificate has expired."
+            ::= { unisPKINotifications 18 }
+
+unisPKICrlHasExpired NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKICrlIssuer,
+                unisPKICrlStartTime,
+                unisPKICrlFinishTime
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated when the
+         CRL expires."
+            ::= { unisPKINotifications 19 }
+
+unisPKIWriteToFlashFail NOTIFICATION-TYPE
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated in case of failure to write CRL or certificate to flash."
+            ::= { unisPKINotifications 20 }
+
+unisPKIGetCaFail NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIGetCaFailReason
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated in case of failure to get certificate from ca server."
+            ::= { unisPKINotifications 21 }
+
+unisPKIGetCrlFail NOTIFICATION-TYPE
+    OBJECTS {
+                unisPKIDomainName,
+                unisPKIVrfName,
+                unisPKICrlUrl,
+                unisPKIGetCrlFailReason
+            }
+    STATUS     current
+    DESCRIPTION
+        "This notification is generated in case of failure to get crl."
+            ::= { unisPKINotifications 22 }
+
+-- =======================================
+-- Conformance Information
+-- =======================================
+unisPKIConformance   OBJECT IDENTIFIER
+                         ::= { unisPKIMonitor 2 }
+unisPKICompliances   OBJECT IDENTIFIER
+                         ::= { unisPKIConformance 1 }
+unisPKIGroups        OBJECT IDENTIFIER
+                         ::= { unisPKIConformance 2 }
+
+-- =======================================
+-- Compliance Statements
+-- =======================================
+unisPKICompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+        " "
+    MODULE -- this module
+    MANDATORY-GROUPS
+        {
+            unisPKITrapObjectGroup,
+            unisPKITrapCntlGroup,
+            unisPKITrapGroup
+        }
+    ::= { unisPKICompliances 1 }
+
+unisPKITrapObjectGroup OBJECT-GROUP
+    OBJECTS {
+                unisPKICACertIssuer,
+                unisPKICACertSubject,
+                unisPKICACertStartTime,
+                unisPKICACertFinishTime,
+                unisPKICrlIssuer,
+                unisPKICrlStartTime,
+                unisPKICrlFinishTime,
+                unisPKIDomainName,
+                unisPKICrlUrl,
+                unisPKIVrfName,
+                unisPKICertUrl,
+                unisPKILocalCertIssuer,
+                unisPKILocalCertSubject,
+                unisPKILocalCertStartTime,
+                unisPKILocalCertFinishTime,
+                unisPKIEntityName,
+                unisPKICertSave,
+                unisPKICertUpdateTime,
+                unisPKIGetCaFailReason,
+                unisPKIGetCrlFailReason
+            }
+    STATUS current
+    DESCRIPTION
+        "The group contains all of trap objects of PKI module."
+    ::= { unisPKIGroups 1 }
+
+unisPKITrapCntlGroup OBJECT-GROUP
+    OBJECTS {
+                unisPKITrapGlobalCntl,
+                unisPKICACertInvalidTrapCntl,
+                unisPKICACertValidTrapCntl,
+                unisPKICrlInvalidTrapCntl,
+                unisPKICrlValidTrapCntl,
+                unisPKIGetCrlSucHttpTrapCntl,
+                unisPKIGetCrlFailHttpTrapCntl,
+                unisPKIGetCrlSucLdapCntl,
+                unisPKIGetCrlFailLdapTrapCntl,
+                unisPKIGetCrlSucScepTrapCntl,
+                unisPKIGetCrlFailScepTrapCntl,
+                unisPKILocCertInvalidTrapCntl,
+                unisPKILocCertValidTrapCntl,
+                unisPKIGetLocCertSucLdapTrapCntl,
+                unisPKIGetLocCertFailLdapTrapCntl,
+                unisPKIGetLocCeSucScepTrapCntl,
+                unisPKIGetLocCeFailScepTrapCntl,
+                unisPKILocCertNearExpirTrapCntl,
+                unisPKILocCertHasExpirTrapCntl,
+                unisPKICrlHasExpiredTrapCntl,
+                unisPKIWriteToFlashFailTrapCntl,
+                unisPKIGetCaFailTrapCntl,
+                unisPKIGetCrlFailTrapCntl
+            }
+    STATUS current
+    DESCRIPTION
+        "The group contains all of trap switches of PKI module."
+    ::= { unisPKIGroups 2 }
+
+unisPKITrapGroup  NOTIFICATION-GROUP
+    NOTIFICATIONS {
+                      unisPKICACertInvalid,
+                      unisPKICACertValid,
+                      unisPKICrlInvalid,
+                      unisPKICrlValid,
+                      unisPKIGetCrlSucHttp,
+                      unisPKIGetCrlFailHttp,
+                      unisPKIGetCrlSucLdap,
+                      unisPKIGetCrlFailLdap,
+                      unisPKIGetCrlSucScep,
+                      unisPKIGetCrlFailScep,
+                      unisPKILocalCertInvalid,
+                      unisPKILocalCertValid,
+                      unisPKIGetLocalCertSucLdap,
+                      unisPKIGetLocalCertFailLdap,
+                      unisPKIGetLocalCertSucScep,
+                      unisPKIGetLocalCertFailScep,
+                      unisPKILocalCertNearlyExpired,
+                      unisPKILocalCertHasExpired,
+                      unisPKICrlHasExpired,
+                      unisPKIWriteToFlashFail,
+                      unisPKIGetCaFail,
+                      unisPKIGetCrlFail
+                  }
+    STATUS current
+    DESCRIPTION
+        "The group contains all of trap of PKI module."
+    ::= { unisPKIGroups 3 }
+
+END
+

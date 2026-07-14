@@ -1,0 +1,85 @@
+-- ==========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The file defines a MIB to provide MACSEC configuration
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2015-09-01 created by liubo
+-- ==========================================================================
+UNIS-MACSEC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE
+        FROM SNMPv2-SMI
+    InterfaceIndex
+        FROM IF-MIB
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisMACsec MODULE-IDENTITY
+    LAST-UPDATED "201509011615Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB provides information for MACSEC configuration.
+        MACSEC presents secure communication method."
+    REVISION "201509011615Z"
+    DESCRIPTION
+        "Initial version."
+    ::= { unisCommon 163 }
+
+unisMACsecCFGObjects OBJECT IDENTIFIER ::= { unisMACsec 1 }
+
+-- ==========================================================================
+-- unisMACsecCFGPortTable OBJECT
+-- ==========================================================================
+unisMACsecCFGPortTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisMACsecCFGPortEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "The MACsec port table."
+::= { unisMACsecCFGObjects 1 }
+
+unisMACsecCFGPortEntry OBJECT-TYPE
+    SYNTAX UnisMACsecCFGPortEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "The MACsec port entry."
+    INDEX { unisMACsecCFGPortIndex }
+::= { unisMACsecCFGPortTable 1 }
+
+UnisMACsecCFGPortEntry ::= SEQUENCE {
+    unisMACsecCFGPortIndex         InterfaceIndex,
+    unisMACsecCFGPortPSKCKNName    OCTET STRING,
+    unisMACsecCFGPortPSKCAKValue   OCTET STRING }
+
+unisMACsecCFGPortIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+    "An interface index indicates the port number associated with this port."
+::= { unisMACsecCFGPortEntry 1 }
+
+unisMACsecCFGPortPSKCKNName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..128))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+    "The connectivity asociation key name."
+::= { unisMACsecCFGPortEntry 2 }
+
+unisMACsecCFGPortPSKCAKValue OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..128))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+    "The connectivity asociation key value."
+::= { unisMACsecCFGPortEntry 3 }
+
+END

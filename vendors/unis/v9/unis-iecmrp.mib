@@ -1,0 +1,80 @@
+-- =================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: International Electrotechnical Commission
+--              Media Redundancy Protocol (IECMRP) MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 created by zhengjun
+--     Initial version 2023-06-10
+-- =================================================================
+-- =================================================================
+--
+-- Import and definition
+--
+-- =================================================================
+UNIS-IECMRP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    MacAddress
+            FROM SNMPv2-TC;
+
+unisIecmrp MODULE-IDENTITY
+    LAST-UPDATED
+        "202306101131Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB defines objects for managing IECMRP.
+        IECMRP is a feature developed to address the slow convergence
+        issue with STP.
+        It provides link redundancy and fast convergence in
+        a ring network, allowing the backup link to take over quickly
+        when the primary link fails."
+
+    REVISION
+        "202306101131Z"
+    DESCRIPTION
+        "Initial revision of the IECMRP MIB module."
+    ::= { unisCommon  263 }
+
+unisIecmrpTrap            OBJECT IDENTIFIER ::= { unisIecmrp 1 }
+unisIecmrpTrapPrefix      OBJECT IDENTIFIER ::= { unisIecmrpTrap 0 }
+unisIecmrpMultiMangers NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIecmrpSrcMacInPdu,
+            unisIecmrpDomainID
+        }
+    STATUS      current
+    DESCRIPTION
+        "A trap message is generated when an IECMRP ring detect
+        multiple managers."
+    ::= { unisIecmrpTrapPrefix 1 }
+
+unisIecmrpTrapObjects OBJECT IDENTIFIER ::= { unisIecmrpTrap 1 }
+
+unisIecmrpSrcMacInPdu OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The source mac address in pdu."
+    ::= { unisIecmrpTrapObjects 1 }
+
+unisIecmrpDomainID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "Iecmrp domain ID."
+    ::= { unisIecmrpTrapObjects 2 }
+
+END

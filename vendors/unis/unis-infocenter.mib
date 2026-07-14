@@ -1,0 +1,528 @@
+-- ==========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Infomation center MIB
+-- Reference: RFC5424
+-- Version: V1.2
+-- History:
+--   V1.0 Initial version 2012-03-07 by shuaixiaojuan
+--        2012-11-03
+--        add unisICLogbufferContTable, unisICLogbufferContEntry,
+--        unisICLogbufferContIndex, unisICLogbufferContDescription by chenkaiping
+--   V1.1 2014-09-05 by SongHao
+--        Added isoWithTimezone(5) to ICTimeStampType.
+--        Modified description of unisICLogTimestampType.
+--   V1.2 2020-3-31 by liwenxiao
+--        Added dataWithMilliseconds(6), isoWithMilliseconds(7),
+--        isoWithMillisecondsAndTimezone(8) to unisICLoghostTimestampType.
+--        Modified description of unisICLoghostTimestampType.
+-- ==========================================================================
+UNIS-INFOCENTER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    DisplayString, TruthValue, RowStatus, TAddress, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    Counter32, Unsigned32, Integer32, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB
+    InterfaceIndexOrZero
+        FROM IF-MIB;
+
+unisInfoCenter MODULE-IDENTITY
+    LAST-UPDATED "202002070459Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "All the configuration of the info center can be managed
+        by info center MIB."
+    REVISION "202002070459Z"
+    DESCRIPTION
+        "Add dataWithMilliseconds(6), isoWithMilliseconds(7),
+        isoWithMillisecondsAndTimezone(8) to unisICLoghostTimestampType.
+        Modified description of unisICLoghostTimestampType."
+    REVISION "201409050325Z"
+    DESCRIPTION
+        "Added isoWithTimezone(5) to ICTimeStampType.
+        Modified description of unisICLogTimestampType."
+    REVISION "201211031900Z"
+    DESCRIPTION
+        "Add unisICLogbufferContTable, unisICLogbufferContEntry,
+        unisICLogbufferContIndex, unisICLogbufferContDescription."
+    REVISION "201203071900Z"        -- Mar 07, 2012 at 19:00 GMT
+    DESCRIPTION
+        "The initial version of this MIB module."
+     ::= { unisCommon 119 }
+
+--
+-- Textual conventions
+--
+
+ICMessageLevelType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Specify severity level of message."
+    SYNTAX INTEGER
+        {
+            emergency(0),
+            alert(1),
+            critical(2),
+            error(3),
+            warning(4),
+            notice(5),
+            informational(6),
+            debug(7),
+            invalid(8)
+        }
+
+ICFacilityType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Specify loghost facility which generates messages."
+    SYNTAX INTEGER
+        {
+            kernel(0),
+            userLevel(1),
+            mailSystem(2),
+            systemDaemons(3),
+            securityAuthorization(4),
+            internallyMessages(5),
+            linePrinter(6),
+            networkNews(7),
+            uucp(8),
+            clockDaemon(9),
+            securityAuthorization2(10),
+            ftpDaemon(11),
+            ntp(12),
+            logAudit(13),
+            logAlert(14),
+            clockDaemon2(15),
+            local0(16),
+            local1(17),
+            local2(18),
+            local3(19),
+            local4(20),
+            local5(21),
+            local6(22),
+            local7(23)
+        }
+
+ICTimeStampType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Specify operation types on time stamp of message.
+        date: the time stamp type of message is date.
+        boot: the time stamp type of message is the time from
+              uptime of system.
+        iso: the time stamp type of message is ISO date with
+             format YYYY-MM-ddThh:mm:ss.
+        dateWithoutYear: the time stamp type of message is date
+                         without year information.
+        none: no time stamp information in message.
+        isoWithTimezone: the time stamp type of message is ISO date
+                         with timezone offset.
+                         Example YYYY-MM-ddThh:mm:ss-04:00
+                                 or
+                                 YYYY-MM-ddThh:mm:ssZ
+        dataWithMilliseconds: the time stamp type of message is date with milliseconds.
+                              Example MM dd hh:mm:ss.ms
+        isoWithMilliseconds: the time stamp type of message is ISO date with milliseconds.
+                              Example YYYY-MM-ddThh:mm:ss.ms
+        isoWithMillisecondsAndTimezone: the time stamp type of message is ISO date with
+                                        milliseconds and timezone offset.
+                                        Example YYYY-MM-ddThh:mm:ss.ms-04:00
+                                                or
+                                                YYYY-MM-ddThh:mm:ss.msZ"
+    SYNTAX INTEGER
+        {
+            date(0),
+            boot(1),
+            iso(2),
+            dateWithoutYear(3),
+            none(4),
+            isoWithTimezone(5),
+            dataWithMilliseconds(6),
+            isoWithMilliseconds(7),
+            isoWithMillisecondsAndTimezone(8)
+        }
+
+--
+-- Node definitions
+--
+
+unisICLogbuffer OBJECT IDENTIFIER ::= { unisInfoCenter 1 }
+
+unisICLogbufferObjects OBJECT IDENTIFIER ::= { unisICLogbuffer 1 }
+
+unisICMaxLogbufferSize OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The maximum number of messages that can be stored
+         in logbuffer."
+    ::= { unisICLogbufferObjects 1 }
+
+unisICLogbufferSize OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The capacity of logbuffer which can be customized by users.
+         The valid range is from 0 to unisICMaxLogbufferSize."
+    DEFVAL { 512 }
+    ::= { unisICLogbufferObjects 2 }
+
+unisICLogbufferCurrentMessages OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of log messages stored in logbuffer."
+    ::= { unisICLogbufferObjects 3 }
+
+unisICLogbufferOverwrittenMessages OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of log messages overwritten in logbuffer."
+    ::= { unisICLogbufferObjects 4 }
+
+unisICLogbufferDroppedMessages OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of log messages dropped in logbuffer."
+    ::= { unisICLogbufferObjects 5 }
+
+unisICLogbufferContTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisICLogbufferContEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table of logbuffer contents."
+    ::= { unisICLogbuffer 2 }
+
+unisICLogbufferContEntry OBJECT-TYPE
+    SYNTAX UnisICLogbufferContEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The contents entry of logbuffer."
+    INDEX { unisICLogbufferContIndex }
+    ::= { unisICLogbufferContTable 1 }
+
+UnisICLogbufferContEntry ::=
+    SEQUENCE {
+        unisICLogbufferContIndex            Integer32,
+        unisICLogbufferContDescription      DisplayString
+        }
+
+unisICLogbufferContIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of this table."
+    ::= { unisICLogbufferContEntry 1 }
+
+unisICLogbufferContDescription OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..1600))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The contents of logbuffer."
+    ::= { unisICLogbufferContEntry 2 }
+
+unisICLoghost OBJECT IDENTIFIER ::= { unisInfoCenter 2 }
+
+unisICLoghostObjects OBJECT IDENTIFIER ::= { unisICLoghost 1 }
+
+unisICMaxLoghost OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The object shows the maximum number of rows in
+         unisLoghostTable."
+    ::= { unisICLoghostObjects 1 }
+
+unisICLoghostSourceInterface OBJECT-TYPE
+    SYNTAX InterfaceIndexOrZero
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The source interface which sends message to loghost.
+         All loghosts use the same source interface.
+         Zero is invalid."
+    ::= { unisICLoghostObjects 2 }
+
+unisICLoghostTimestampType OBJECT-TYPE
+    SYNTAX ICTimeStampType
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Time stamp type of message sent to loghost."
+    DEFVAL { date }
+    ::= { unisICLoghostObjects 3 }
+
+unisICLoghostTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisICLoghostEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table of loghost."
+    ::= { unisICLoghost 2 }
+
+unisICLoghostEntry OBJECT-TYPE
+    SYNTAX UnisICLoghostEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The loghost entry of syslog."
+    INDEX { unisICLoghostIndex }
+    ::= { unisICLoghostTable 1 }
+
+UnisICLoghostEntry ::=
+    SEQUENCE {
+        unisICLoghostIndex                   Unsigned32,
+        unisICLoghostIpaddressType           InetAddressType,
+        unisICLoghostIpaddress               InetAddress,
+        unisICLoghostVPNName                 DisplayString,
+        unisICLoghostFacility                ICFacilityType,
+        unisICLoghostOperateRowStatus        RowStatus,
+        unisICLoghostIpaddressPort           Unsigned32,
+        unisICLoghostTAddress                TAddress
+    }
+
+unisICLoghostIndex OBJECT-TYPE
+    SYNTAX Unsigned32(1..64)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of this table."
+    ::= { unisICLoghostEntry 1 }
+
+unisICLoghostIpaddressType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The address type of loghost."
+    DEFVAL { ipv4 }
+    ::= { unisICLoghostEntry 2 }
+
+unisICLoghostIpaddress OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The address of loghost."
+    ::= { unisICLoghostEntry 3 }
+
+unisICLoghostVPNName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The VPN instance of loghost."
+    DEFVAL { "" }
+    ::= { unisICLoghostEntry 4 }
+
+unisICLoghostFacility OBJECT-TYPE
+    SYNTAX ICFacilityType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The operations staff can selectively filter the messages
+         with priority which consists of facility that generates
+         the message and severity of the message.
+         "
+    DEFVAL { local7 }
+    ::= { unisICLoghostEntry 5 }
+
+unisICLoghostOperateRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisICLoghostEntry 6 }
+
+unisICLoghostIpaddressPort OBJECT-TYPE
+    SYNTAX Unsigned32(1..65535)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The loghost server port."
+    DEFVAL { 514 }
+    ::= { unisICLoghostEntry 7 }
+
+unisICLoghostTAddress OBJECT-TYPE
+    SYNTAX TAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The loghost server transport address.
+         Consist of unisICLoghostIpaddress(ipv4) and unisICLoghostIpaddressPort.
+         This node can't be bound with unisICLoghostIpaddress, unisICLoghostIpaddressPort
+         and unisICLoghostIpaddressType at the same time."
+    ::= { unisICLoghostEntry 8 }
+
+unisICDirection OBJECT IDENTIFIER ::= { unisInfoCenter 3 }
+
+unisICDirectionTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisICDirectionEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table of syslog output direction."
+    ::= { unisICDirection 1 }
+
+unisICDirectionEntry OBJECT-TYPE
+    SYNTAX UnisICDirectionEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The output direction entry of syslog."
+    INDEX { unisICDirectionIndex }
+    ::= { unisICDirectionTable 1 }
+
+UnisICDirectionEntry ::=
+    SEQUENCE {
+        unisICDirectionIndex       Unsigned32,
+        unisICDirectionName        DisplayString,
+        unisICDirectionState       TruthValue
+        }
+
+unisICDirectionIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of this table."
+    ::= { unisICDirectionEntry 1 }
+
+unisICDirectionName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..30))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The name of output direction."
+    ::= { unisICDirectionEntry 2 }
+
+unisICDirectionState OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The state of syslog: true(1):enable.
+                              false(2):disable."
+    ::= { unisICDirectionEntry 3 }
+
+
+unisICModule OBJECT IDENTIFIER ::= { unisInfoCenter 4 }
+
+unisICModuleTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisICModuleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table of syslog module."
+    ::= { unisICModule 1 }
+
+unisICModuleEntry OBJECT-TYPE
+    SYNTAX UnisICModuleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The module entry of syslog."
+    INDEX { IMPLIED unisICModuleName }
+    ::= { unisICModuleTable 1 }
+
+UnisICModuleEntry ::=
+    SEQUENCE {
+        unisICModuleName         DisplayString
+        }
+
+unisICModuleName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..8))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The name of module."
+    ::= { unisICModuleEntry 1 }
+
+unisICLog OBJECT IDENTIFIER ::= { unisInfoCenter 5 }
+
+unisICLogObjects OBJECT IDENTIFIER ::= { unisICLog 1 }
+
+unisICLogGlobalState OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The global state of syslog: true(1):enable.
+                              false(2):disable."
+    DEFVAL { true }
+    ::= { unisICLogObjects 1 }
+
+unisICLogTimestampType OBJECT-TYPE
+    SYNTAX ICTimeStampType
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Time stamp type of log message.
+        Note that isoWithTimezone is not supported."
+    DEFVAL { date }
+    ::= { unisICLogObjects 2 }
+
+unisICLogTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisICLogEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table of syslog module."
+    ::= { unisICLog 2 }
+
+unisICLogEntry OBJECT-TYPE
+    SYNTAX UnisICLogEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The log entry of syslog."
+    INDEX { unisICDirectionIndex,
+            IMPLIED unisICModuleName
+          }
+    ::= { unisICLogTable 1 }
+
+UnisICLogEntry ::=
+    SEQUENCE {
+        unisICLogLevel           ICMessageLevelType,
+        unisICLogRowStatus       RowStatus
+        }
+
+
+unisICLogLevel OBJECT-TYPE
+    SYNTAX ICMessageLevelType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The level of log message, invalid is for deny any log."
+    ::= { unisICLogEntry 1 }
+
+unisICLogRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisICLogEntry 2 }
+
+END

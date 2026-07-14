@@ -1,0 +1,124 @@
+-- =========================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB file is used for management of
+--              IP-SGT(IP address-Security Group Tag) information.
+-- Reference:
+-- Version: 1.0
+-- History:
+-- V1.0 Initial version, created by lizhaocheng.
+-- ==========================================================================
+UNIS-IPSGT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION
+        FROM SNMPv2-TC;
+
+unisIpsgt MODULE-IDENTITY
+    LAST-UPDATED "202208021020Z"        --Aug 02, 2022 at 00:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB contains objects to manage configuration and
+         monitor running state for IP-SGT feature.
+
+            *********************************
+                    MIB Tables
+            **********************************
+         This MIB consists of the following tables:
+            1 :  unisIpsgtNotifications
+            2 :  unisIpsgtObjects
+        "
+    REVISION "202208021020Z"        --Aug 02, 2022 at 00:00 GMT
+    DESCRIPTION
+        "Initial revision.
+         Add unisIpsgtNotifications.
+         Add unisIpsgtObjects."
+    ::= { unisCommon 247 }
+
+--
+-- Top level structure
+--
+
+unisIpsgtNotifications  OBJECT IDENTIFIER ::= { unisIpsgt 0 }
+unisIpsgtObjects        OBJECT IDENTIFIER ::= { unisIpsgt 1 }
+
+--
+-- type definitions
+--
+
+-- IP-SGT cloud server type
+UnisServerType ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The type of IP-SGT cloud server."
+    SYNTAX INTEGER
+    {
+        unknown(1),
+        master(2),
+        backup(3)
+    }
+
+--
+-- Notification Objects
+--
+unisIpsgtNotifyVarObjects OBJECT IDENTIFIER ::= { unisIpsgtObjects 1 }
+
+unisIpsgtNotifyDomain OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The domain of IP-SGT cloud server."
+    ::= { unisIpsgtNotifyVarObjects 1 }
+
+unisIpsgtNotifyPort OBJECT-TYPE
+    SYNTAX Integer32   (0..65534)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The L4 protocol port of IP-SGT cloud server."
+    ::= { unisIpsgtNotifyVarObjects 2 }
+
+unisIpsgtNotifyServerType OBJECT-TYPE
+    SYNTAX UnisServerType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The type of IP-SGT cloud server."
+    ::= { unisIpsgtNotifyVarObjects 3 }
+
+--
+-- IP-SGT notifications
+--
+unisIpsgtCloudConnectionUp NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisIpsgtNotifyDomain,
+        unisIpsgtNotifyPort,
+        unisIpsgtNotifyServerType
+    }
+    STATUS current
+    DESCRIPTION
+        "Generated when the channel to IP-SGT cloud server is connected."
+    ::= { unisIpsgtNotifications 1 }
+
+unisIpsgtCloudConnectionDown NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisIpsgtNotifyDomain,
+        unisIpsgtNotifyPort,
+        unisIpsgtNotifyServerType
+    }
+    STATUS current
+    DESCRIPTION
+        "Generated when a the channel to IP-SGT cloud server is disconnected."
+    ::= { unisIpsgtNotifications 2 }
+
+END

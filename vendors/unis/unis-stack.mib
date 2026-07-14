@@ -1,0 +1,619 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: stack mib
+-- Reference: STACK-MIB
+-- Version: V1.4
+-- History:
+--   V1.0 Created by ranbin
+--        Initial version 2008-04-30
+--   V1.1 2012-02-24 Modified by zhengwei
+--        Changed the range of link delay to 0 to 30000 ms
+--   V1.2 2013-08-16 Updated by wangpengju
+--        Added node unisStackPortForwardingPath to unisStackPortInfoTable
+--        2013-10-23 Updated by zhengwei
+--        Added notification nodes because MAD group work status changed:
+--        unisStackMadBfdChangeNormal
+--        unisStackMadBfdChangeFailure
+--        unisStackMadLacpChangeNormal
+--        unisStackMadLacpChangeFailure
+--   V1.3 2014-08-11 Updated by SongHao
+--        Added unisStackDomainId.
+--        2014-11-20 Updated by songhao
+--        Added unisStackPortConfigActivate in unisStackGlobalConfig.
+--        unisStackLinkDelayInterval was changed to in the range of 0 to 2147483647 ms.
+--   V1.4 2020-03-03 Updated by zhangwenbo
+--        Added notification node unisStackPhysicalIntfLinkUp.
+--        Added notification node unisStackPhysicalIntfLinkDown.
+--        Added unisStackPhysicalIntfName.
+-- =================================================================
+UNIS-STACK-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        entPhysicalIndex
+    FROM ENTITY-MIB
+        ifIndex, ifDescr
+    FROM IF-MIB
+        Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Unsigned32
+    FROM SNMPv2-SMI;
+
+unisStack MODULE-IDENTITY
+    LAST-UPDATED "201411200850Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB is used to manage STM (Stack Topology Management)
+         information for IRF (Intelligent Resilient Framework) device.
+         This MIB is applicable to IRF-capable products.  Some objects in
+         this MIB may be used only for some specific products, so users should
+         refer to the related documents to acquire more detailed information."
+    REVISION "201411200850Z"
+    DESCRIPTION
+        "Added unisStackPortConfigActivate in unisStackGlobalConfig.
+         unisStackLinkDelayInterval was changed to in the range of 0 to
+         2147483647 ms."
+    REVISION "201408110641Z"
+    DESCRIPTION
+        "Added unisStackDomainId."
+    REVISION "201310230000Z"
+    DESCRIPTION
+        "Added notification nodes because MAD group work status changed:
+        unisStackMadBfdChangeNormal
+        unisStackMadBfdChangeFailure
+        unisStackMadLacpChangeNormal
+        unisStackMadLacpChangeFailure"
+    REVISION "201308160000Z"
+    DESCRIPTION
+        "Added node unisStackPortForwardingPath to unisStackPortInfoTable."
+    REVISION "201202240000Z"
+    DESCRIPTION
+        "Changed the range of link delay to 0 to 30000 ms."
+    REVISION "200804301650Z"             -- 30th April, 2007 at 16:50 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 91 }
+
+
+-- Scalar MIB objects, which are considered as global variables
+-- Global Level Configuration
+
+unisStackGlobalConfig OBJECT IDENTIFIER ::= { unisStack 1 }
+
+unisStackMaxMember OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of members in a stack."
+    ::= { unisStackGlobalConfig 1 }
+
+unisStackMemberNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of members currently in a stack."
+    ::= { unisStackGlobalConfig 2 }
+
+unisStackMaxConfigPriority OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The highest priority that can be configured for a member in a stack."
+    ::= { unisStackGlobalConfig 3 }
+
+unisStackAutoUpdate OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            disabled(1),
+            enabled(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The function for automatically updating the image from the master to
+         a device that is attempting to join the stack.
+         When a new device tries to join a stack, STM verifies the image
+         consistency between the joining device and the master.
+         If the joining device uses a different image version than the master,
+         the function updates the joining device with the image of the master.
+         When this function is disabled, the new device can't join the stack
+         if it uses a different software version than the master.
+
+        disabled: disable auto update function
+        enabled: enable auto update function"
+    ::= { unisStackGlobalConfig 4 }
+
+unisStackMacPersistence OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            notPersist(1),
+            persistForSixMin(2),
+            persistForever(3)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The mode of bridge MAC address persistence.  When a stack starts,
+         the bridge MAC address of the master is used as that of the stack.
+         When the master leaves the stack, the bridge MAC address of the
+         stack changes depending on the mode of bridge MAC address persistence.
+
+        notPersist: The bridge MAC address of the new master is used
+         as that of the stack immediately.
+        persistForSixMin: The original bridge MAC address will be reserved for six
+         minutes.  In this period, if the master that has left rejoins the stack,
+         the bridge MAC address of the stack will not change.
+         If the old master doesn't rejoin the stack within this period, the
+         bridge MAC address of the new master will be used as that of the stack.
+        persistForever: Whether the master leaves or not, the bridge MAC address
+         of the stack will never change."
+    ::= { unisStackGlobalConfig 5 }
+
+unisStackLinkDelayInterval OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    UNITS       "millisecond"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Delay for stack ports to report a link down event.  If the link comes up
+         before the delay timer expires, the stack port will not report the link
+         down event.  If the link is not recovered before the delay timer expires,
+         the stack port will report the change.  If the delay is set to 0,
+         the stack ports will report a link down event without delay.
+
+        0: no delay
+        other value(ms): delay time"
+    ::= { unisStackGlobalConfig 6 }
+
+unisStackTopology OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            chainConn(1),
+            ringConn(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Stack topology.
+
+        chainConn: daisy-chain connection
+        ringConn: ring connection"
+    ::= { unisStackGlobalConfig 7 }
+
+unisStackDomainId OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..4294967295)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Domain ID of the IRF fabric that is used to uniquely identify an IRF fabric.
+        Domain IDs prevent IRF fabrics from interfering with one another."
+    ::= { unisStackGlobalConfig 8 }
+
+unisStackPortConfigActivate OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            none(1),
+            set(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "After connecting the physical interfaces between two devices and
+        binding them to the correct IRF ports, you must
+        activate the settings on the IRF ports.  This operation merges the two
+        devices into one IRF fabric.  The system activates the IRF port
+        settings automatically in the following situations:
+        1. The configuration file that the device starts with contains
+        IRF port bindings.
+        2. You are binding physical interfaces to an IRF port after an IRF fabric
+        is formed.
+
+        none: If the user sets this object to none, this object will return
+              a success without performing any operation.
+
+        set: Activates the settings on the IRF ports.
+             After the settings is activated, this object will return to
+             none at the next reading."
+    DEFVAL { none }
+    ::= { unisStackGlobalConfig 9 }
+
+-- Device Level Configuration
+unisStackDeviceConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisStackDeviceConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage device information in a stack."
+    ::= { unisStack 2 }
+
+unisStackDeviceConfigEntry OBJECT-TYPE
+    SYNTAX      UnisStackDeviceConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage device information in a stack."
+    INDEX
+        {
+            entPhysicalIndex
+        }
+    ::= { unisStackDeviceConfigTable 1 }
+
+UnisStackDeviceConfigEntry ::= SEQUENCE
+    {
+        unisStackMemberID          Integer32,
+        unisStackConfigMemberID    Integer32,
+        unisStackPriority          Integer32,
+        unisStackPortNum           Integer32,
+        unisStackPortMaxNum        Integer32
+    }
+
+unisStackMemberID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The member ID of the device in a stack."
+    ::= { unisStackDeviceConfigEntry 1 }
+
+unisStackConfigMemberID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The configured member ID of the device.  The valid value ranges from
+         1 to the value in unisStackMaxMember.  The configured member ID will
+         take effect at a reboot if it is unique within the stack."
+    ::= { unisStackDeviceConfigEntry 2 }
+
+unisStackPriority OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The priority of a device in the stack.  The valid value ranges from
+         1 to the value in unisStackMaxConfigPriority."
+    ::= { unisStackDeviceConfigEntry 3 }
+
+unisStackPortNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of stack ports enabled on a device."
+    ::= { unisStackDeviceConfigEntry 4 }
+
+unisStackPortMaxNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of stack ports on a device."
+    ::= { unisStackDeviceConfigEntry 5 }
+
+
+-- Board Level Configuration
+unisStackBoardConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisStackBoardConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage MPU information for a stack."
+    ::= { unisStack 3 }
+
+unisStackBoardConfigEntry OBJECT-TYPE
+    SYNTAX      UnisStackBoardConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage MPU information for a stack."
+    INDEX
+        {
+            entPhysicalIndex
+        }
+    ::= { unisStackBoardConfigTable 1 }
+
+UnisStackBoardConfigEntry ::= SEQUENCE
+    {
+        unisStackBoardRole              INTEGER,
+        unisStackBoardBelongtoMember    Integer32
+    }
+
+unisStackBoardRole OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            slave(1),
+            master(2),
+            loading(3),
+            other(4)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The role of the MPU in a stack.
+
+        slave: Standby MPU
+        master: Master MPU
+        loading: Standby MPU is loading the software image from the master.
+        other: other"
+    ::= { unisStackBoardConfigEntry 1 }
+
+unisStackBoardBelongtoMember OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Member ID of the device that holds the current board."
+    ::= { unisStackBoardConfigEntry 2 }
+
+
+-- stack port Information
+unisStackPortInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisStackPortInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage stack port information
+         for IRF stacked devices."
+    ::= { unisStack 4 }
+
+unisStackPortInfoEntry OBJECT-TYPE
+    SYNTAX      UnisStackPortInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage stack port information
+         for IRF stacked devices."
+    INDEX
+        {
+            unisStackMemberID,
+            unisStackPortIndex
+        }
+    ::= { unisStackPortInfoTable 1 }
+
+UnisStackPortInfoEntry ::= SEQUENCE
+    {
+        unisStackPortIndex     Integer32,
+        unisStackPortEnable    INTEGER,
+        unisStackPortStatus    INTEGER,
+        unisStackNeighbor      Integer32,
+        unisStackPortForwardingPath    OCTET STRING
+    }
+
+unisStackPortIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The index of a stack port of the device."
+    ::= { unisStackPortInfoEntry 1 }
+
+unisStackPortEnable OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            disabled(1),
+            enabled(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The status of a stack port of the device.  If no physical
+         interfaces are added to the stack port, its status is disabled.
+         If the stack port has physical interfaces, its status is enabled.
+
+        disabled: The stack port is disabled.
+        enabled: The stack port is enabled."
+    ::= { unisStackPortInfoEntry 2 }
+
+unisStackPortStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            up(1),
+            down(2),
+            silent(3),
+            disabled(4)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The link status of a stack port on the device.
+
+        up: A physical link is present on the stack port.
+        down: No physical link is present on the stack port.
+        silent: The link state of the stack port is up,
+                but the port can't transmit or receive traffic.
+        disabled: The stack port doesn't contain physical links."
+    ::= { unisStackPortInfoEntry 3 }
+
+unisStackNeighbor OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The member ID of the stack port's neighbor.  0 means no
+         neighbor exists."
+    ::= { unisStackPortInfoEntry 4 }
+
+unisStackPortForwardingPath OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..511))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "List of egress member IDs on a stack port.
+         Each member device uses the egress member ID lists to choose the outgoing
+         stack port for known unicast frames to be sent out of other member devices.
+         The egress member ID lists are comma separated.
+         A zero-length string means no egress members exist.
+
+         For example:
+           In a ring stack of 1-2-3-4-5-7-1,
+           if unisStackPortForwardingPath.1.1 returns '7,5,4',
+           IRF-port 1/1 will be the outgoing port for frames to reach members 7, 5,
+           and 4 from member 1."
+    ::= { unisStackPortInfoEntry 5 }
+
+-- Physical interface Information
+unisStackPhyPortInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisStackPhyPortInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage information about physical
+         interfaces that can be used for IRF stacking."
+    ::= { unisStack 5 }
+
+unisStackPhyPortInfoEntry OBJECT-TYPE
+    SYNTAX      UnisStackPhyPortInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to manage information about physical
+         interfaces that can be used for IRF stacking."
+    INDEX
+        {
+            entPhysicalIndex
+        }
+    ::= { unisStackPhyPortInfoTable 1 }
+
+UnisStackPhyPortInfoEntry ::= SEQUENCE
+    {
+        unisStackBelongtoPort    Integer32
+    }
+
+unisStackBelongtoPort OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The index of the stack port to which the physical interface is added.
+         0 means the physical interface is not added to any stack port.
+         The value will take effect when IRF is enabled on the device."
+    ::= { unisStackPhyPortInfoEntry 1 }
+
+--
+-- Notification definitions
+--
+-- =================================================================
+-- Traps are defined below.
+unisStackTrap OBJECT IDENTIFIER ::= { unisStack 6 }
+
+unisStackTrapOjbects OBJECT IDENTIFIER ::= { unisStackTrap 0 }
+-- All trap definitions should be placed under this object.
+
+unisStackPortLinkStatusChange  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisStackMemberID,
+            unisStackPortIndex,
+            unisStackPortStatus
+        }
+
+    STATUS      current
+    DESCRIPTION
+        "The unisStackPortLinkStatusChange trap indicates that the link status
+         of the stack port has changed."
+    ::= { unisStackTrapOjbects 1 }
+
+unisStackTopologyChange  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisStackTopology
+        }
+    STATUS      current
+    DESCRIPTION
+        "The unisStackTopologyChange trap indicates that the topology type of
+         the IRF stack has changed."
+    ::= { unisStackTrapOjbects 2 }
+
+unisStackMadBfdChangeNormal NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS      current
+    DESCRIPTION
+        "The unisStackMadBfdChangeNormal trap indicates that the BFD MAD function
+        changed to the normal state."
+    ::= { unisStackTrapOjbects 3 }
+
+unisStackMadBfdChangeFailure NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS      current
+    DESCRIPTION
+        "The unisStackMadBfdChangeFailure trap indicates that the BFD MAD function
+        changed to the failure state."
+    ::= { unisStackTrapOjbects 4 }
+
+unisStackMadLacpChangeNormal NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS      current
+    DESCRIPTION
+        "The unisStackMadLacpChangeNormal trap indicates that the LACP MAD function
+        changed to the normal state."
+    ::= { unisStackTrapOjbects 5 }
+
+unisStackMadLacpChangeFailure NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS      current
+    DESCRIPTION
+        "The unisStackMadLacpChangeFailure trap indicates that the LACP MAD function
+        changed to the failure state."
+    ::= { unisStackTrapOjbects 6 }
+
+unisStackPhysicalIntfLinkUp NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisStackMemberID,
+            unisStackPortIndex,
+            unisStackPhysicalIntfName
+        }
+    STATUS      current
+    DESCRIPTION
+        "The unisStackPhysicalIntfLinkUp trap indicates that the status
+         of the stack physical interface has changed to the up state."
+    ::= { unisStackTrapOjbects 7 }
+
+unisStackPhysicalIntfLinkDown NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisStackMemberID,
+            unisStackPortIndex,
+            unisStackPhysicalIntfName
+        }
+    STATUS      current
+    DESCRIPTION
+        "The unisStackPhysicalIntfLinkDown trap indicates that the status
+         of the stack physical interface has changed to the down state."
+    ::= { unisStackTrapOjbects 8 }
+
+unisStackTrapObjectDefinitions OBJECT IDENTIFIER ::= { unisStackTrap 1 }
+-- All objects used for TRAP only are defined here.
+
+unisStackPhysicalIntfName OBJECT-TYPE
+    SYNTAX         OCTET STRING (SIZE(1..255))
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "The textual name of the stack physical interface."
+    ::= { unisStackTrapObjectDefinitions 1 }
+
+END
+

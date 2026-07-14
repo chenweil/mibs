@@ -1,0 +1,138 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This MIB is used for configuration of OBJP(object policy).
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 created by gaoyu.
+-- ============================================================================
+UNIS-OBJP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM  UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY,
+    Unsigned32, Counter64
+        FROM SNMPv2-SMI;
+
+--
+-- Node definitions
+--
+
+unisObjp MODULE-IDENTITY
+    LAST-UPDATED "201403101536Z"        -- Mar 10, 2014 at 15:36 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Object-policy management information base for managing devices
+        that support object policy.
+        "
+    REVISION "201403101536Z"            -- Mar 10, 2014 at 15:36 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 155 }
+
+--
+-- Nodes of unisObjpZonePairObjects
+--
+unisObjpZonePairObjects OBJECT IDENTIFIER ::= { unisObjp 1 }
+
+--
+-- Nodes of unisObjpZonePairRunningInfoTable
+--
+unisObjpZonePairRunningInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisObjpZonePairRunningInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Object policy of zone pair running information base."
+    ::= { unisObjpZonePairObjects 1 }
+
+unisObjpZonePairRunningInfoEntry OBJECT-TYPE
+    SYNTAX UnisObjpZonePairRunningInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Object policy of zone pair running information entry."
+    INDEX
+    {
+        unisObjpZonePairSrcZone,
+        unisObjpZonePairDstZone,
+        unisObjpZonePairIPVersion,
+        unisObjpZonePairRuleID
+    }
+    ::= { unisObjpZonePairRunningInfoTable 1 }
+
+UnisObjpZonePairRunningInfoEntry ::=
+    SEQUENCE
+    {
+        unisObjpZonePairSrcZone
+            OCTET STRING,
+        unisObjpZonePairDstZone
+            OCTET STRING,
+        unisObjpZonePairIPVersion
+            INTEGER,
+        unisObjpZonePairRuleID
+            Unsigned32,
+        unisObjpZonePairMatchPacketCount
+            Counter64,
+        unisObjpZonePairLastMatchTime
+            Unsigned32
+    }
+
+unisObjpZonePairSrcZone OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(1..31))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Name of the source security zone."
+    ::= { unisObjpZonePairRunningInfoEntry 1 }
+
+unisObjpZonePairDstZone OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(1..31))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Name of the destination security zone."
+    ::= { unisObjpZonePairRunningInfoEntry 2 }
+
+unisObjpZonePairIPVersion OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        ipv4(1),
+        ipv6(2)
+    }
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "IP protocol version."
+    ::= { unisObjpZonePairRunningInfoEntry 3 }
+
+unisObjpZonePairRuleID OBJECT-TYPE
+    SYNTAX Unsigned32 (0..65534)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Rule ID of object policy."
+    ::= { unisObjpZonePairRunningInfoEntry 4 }
+
+unisObjpZonePairMatchPacketCount OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Number of packets matching the rule."
+    ::= { unisObjpZonePairRunningInfoEntry 5 }
+
+unisObjpZonePairLastMatchTime OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Interval in seconds between the last match and 1970/1/1 00:00:00."
+    ::= { unisObjpZonePairRunningInfoEntry 6 }
+
+END

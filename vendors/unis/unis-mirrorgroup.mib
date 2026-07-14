@@ -1,0 +1,529 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Mirror group MIB
+-- Reference:
+-- Version: V1.1
+-- History:
+--   2006-01-10 created by xialei
+--     Initial version V1.0
+-- V1.1 2012/04/28 modified by mouxuanli
+--  Modify the description of the object unisMGStatus.
+--  Modify the description of the object unisMGMirrorDirection.
+--  Add unisMGEgressIfTable, unisMGMirrorVlanTable and unisMGMirrorCpuTable.
+-- =================================================================
+-- =================================================================
+--
+-- Import and definition
+--
+-- =================================================================
+UNIS-MIRRORGROUP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+
+    unisCommon
+        FROM UNIS-OID-MIB
+    RowStatus
+        FROM SNMPv2-TC
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, Unsigned32
+        FROM SNMPv2-SMI;
+
+    unisMirrGroup MODULE-IDENTITY
+        LAST-UPDATED "200601131403Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "This MIB defines objects for managing mirror group."
+        REVISION "200601101903Z"
+        DESCRIPTION
+            "The initial revision of this MIB module."
+        ::= { unisCommon  68 }
+
+    unisMGInfoObjects OBJECT IDENTIFIER ::= {  unisMirrGroup 1  }
+
+    unisMGObjects OBJECT IDENTIFIER ::= {  unisMGInfoObjects 1  }
+
+    unisMGTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisMGEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of mirror group entries."
+        ::= { unisMGObjects 1 }
+
+    unisMGEntry OBJECT-TYPE
+        SYNTAX      UnisMGEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of parameters that describe a mirror group to be created."
+        INDEX
+        {
+            unisMGID
+        }
+      ::= { unisMGTable 1 }
+
+    UnisMGEntry ::=
+        SEQUENCE
+        {
+            unisMGID           Integer32,
+            unisMGType         INTEGER,
+            unisMGStatus       INTEGER,
+            unisMGRowStatus    RowStatus
+        }
+
+    unisMGID OBJECT-TYPE
+        SYNTAX      Integer32 (0..2147483647)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An index that uniquely identifies an entry in the mirror group table."
+        ::={ unisMGEntry 1 }
+
+    unisMGType OBJECT-TYPE
+        SYNTAX      INTEGER
+                    {
+                        local(1),
+                        remoteSource(2),
+                        remoteDestination(3)
+                    }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "GroupType."
+        ::={ unisMGEntry 2 }
+
+    unisMGStatus OBJECT-TYPE
+        SYNTAX      INTEGER
+                    {
+                        active(1),
+                        inactive(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The status of a mirror group.  A mirror group is inactive
+            when it was created.
+
+            The status of a mirror group can be changed automatically from inactive
+            to active when appropriate conditions were met.  Also, it can be changed
+            automatically from active to inactive when these conditions disappeared.
+
+            Followings are conditions for a mirror group to become active:
+              group type          conditions
+              ============================================================================
+              local               any source (mirroring-port, mirroring-VLAN, or mirroring-CPU),
+                                  monitor-port
+              remoteSource        If one of the three conditions is satisfied,
+                                  remoteSource group would be active.
+                                  1) any source (mirroring-port, mirroring-VLAN, or mirroring-CPU),
+                                     remote-probe VLAN,
+                                     configurable reflector-port (which is not supported on some devices)
+                                  2) any source (mirroring-port, mirroring-VLAN, or mirroring-CPU),
+                                     remote-probe VLAN,
+                                     egress-port (which is not supported on some devices)
+                                  3) any source (mirroring-port, mirroring-VLAN, or mirroring-CPU),
+                                     remote-probe VLAN,
+                                     fixed reflector-port(which is not supported on some devices)
+              remoteDestination   monitor-port, remote-probe VLAN
+            "
+        ::={ unisMGEntry 3 }
+
+    unisMGRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus"
+        ::={ unisMGEntry 4 }
+
+    unisMGMirrorIfObjects OBJECT IDENTIFIER ::= {  unisMGInfoObjects 2  }
+
+    unisMGMirrorIfTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisMGMirrorIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of mirror group mirroring-port entries."
+        ::= { unisMGMirrorIfObjects 1 }
+
+    unisMGMirrorIfEntry OBJECT-TYPE
+        SYNTAX      UnisMGMirrorIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of parameters that describe a mirroring-port to be added to
+            a mirror group."
+        INDEX
+        {
+            unisMGID,
+            unisMGMirrorIfIndex,
+            unisMGMirrorDirection
+        }
+        ::= { unisMGMirrorIfTable 1 }
+
+    UnisMGMirrorIfEntry ::=
+        SEQUENCE
+        {
+            unisMGMirrorIfIndex      Integer32,
+            unisMGMirrorDirection    INTEGER,
+            unisMGMirrorRowStatus    RowStatus
+        }
+
+    unisMGMirrorIfIndex OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "IfIndex of mirror group mirroring-port."
+        ::={ unisMGMirrorIfEntry 1 }
+
+    unisMGMirrorDirection OBJECT-TYPE
+        SYNTAX      INTEGER
+                    {
+                        inbound(1),
+                        outbound(2),
+                        both(3)
+                    }
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Mirror direction of mirroring-port."
+        ::={ unisMGMirrorIfEntry 2 }
+
+    unisMGMirrorRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus"
+        ::={ unisMGMirrorIfEntry 3 }
+
+    unisMGMonitorIfObjects OBJECT IDENTIFIER ::= {  unisMGInfoObjects 3  }
+
+    unisMGMonitorIfTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisMGMonitorIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of mirror group monitor-port entries."
+        ::= { unisMGMonitorIfObjects 1 }
+
+    unisMGMonitorIfEntry OBJECT-TYPE
+        SYNTAX      UnisMGMonitorIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of parameters that describe a monitor-port to be added to
+            a mirror group."
+        INDEX
+        {
+            unisMGID,
+            unisMGMonitorIfIndex
+        }
+        ::= { unisMGMonitorIfTable 1 }
+
+    UnisMGMonitorIfEntry ::=
+        SEQUENCE
+        {
+            unisMGMonitorIfIndex      Integer32,
+            unisMGMonitorRowStatus    RowStatus
+        }
+
+    unisMGMonitorIfIndex OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "IfIndex of mirror group monitor-port."
+        ::={ unisMGMonitorIfEntry 1 }
+
+    unisMGMonitorRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus"
+        ::={ unisMGMonitorIfEntry 2 }
+
+    unisMGReflectorIfObjects OBJECT IDENTIFIER ::= {  unisMGInfoObjects 4  }
+
+    unisMGReflectorIfTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisMGReflectorIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of mirror group reflector-port entries."
+        ::= { unisMGReflectorIfObjects 1 }
+
+    unisMGReflectorIfEntry OBJECT-TYPE
+        SYNTAX      UnisMGReflectorIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of parameters that describe a reflector-port to be added to
+            a mirror group."
+        INDEX
+        {
+            unisMGID,
+            unisMGReflectorIfIndex
+        }
+        ::= { unisMGReflectorIfTable 1 }
+
+    UnisMGReflectorIfEntry ::=
+        SEQUENCE
+        {
+            unisMGReflectorIfIndex      Integer32,
+            unisMGReflectorRowStatus    RowStatus
+        }
+
+    unisMGReflectorIfIndex OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "IfIndex of mirror group reflector-port."
+        ::={ unisMGReflectorIfEntry 1 }
+
+    unisMGReflectorRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus"
+        ::={ unisMGReflectorIfEntry 2 }
+
+    unisMGRprobeVlanObjects OBJECT IDENTIFIER ::= {  unisMGInfoObjects 5  }
+
+    unisMGRprobeVlanTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisMGRprobeVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of mirror group remote-probe vlan entries."
+        ::= { unisMGRprobeVlanObjects 1 }
+
+    unisMGRprobeVlanEntry OBJECT-TYPE
+        SYNTAX      UnisMGRprobeVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of parameters that describe a remote-probe vlan to be added
+            to a mirror group.  Details about remote-probe vlan please refer to
+            mirror group manual."
+        INDEX
+        {
+            unisMGID,
+            unisMGRprobeVlanID
+        }
+        ::= { unisMGRprobeVlanTable 1 }
+
+    UnisMGRprobeVlanEntry ::=
+        SEQUENCE
+        {
+            unisMGRprobeVlanID           Integer32,
+            unisMGRprobeVlanRowStatus    RowStatus
+        }
+
+    unisMGRprobeVlanID OBJECT-TYPE
+        SYNTAX      Integer32(1..4094)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An index that uniquely identifies an entry in the remote-probe vlan table."
+        ::={ unisMGRprobeVlanEntry 1 }
+
+    unisMGRprobeVlanRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus"
+        ::={ unisMGRprobeVlanEntry 2 }
+
+    unisMGEgressIfObjects OBJECT IDENTIFIER ::= {  unisMGInfoObjects 6  }
+
+    unisMGEgressIfTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisMGEgressIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of mirror group egress-port entries."
+        ::= { unisMGEgressIfObjects 1 }
+
+    unisMGEgressIfEntry OBJECT-TYPE
+        SYNTAX      UnisMGEgressIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of parameters that describe an egress-port to be added to
+            a mirror group."
+        INDEX
+        {
+            unisMGID,
+            unisMGEgressIfIndex
+        }
+        ::= { unisMGEgressIfTable 1 }
+
+    UnisMGEgressIfEntry ::=
+        SEQUENCE
+        {
+            unisMGEgressIfIndex      Integer32,
+            unisMGEgressRowStatus    RowStatus
+        }
+
+    unisMGEgressIfIndex OBJECT-TYPE
+        SYNTAX      Integer32 (0..2147483647)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "IfIndex of mirror group egress-port."
+        ::={ unisMGEgressIfEntry 1 }
+
+    unisMGEgressRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus"
+        ::={ unisMGEgressIfEntry 2 }
+
+    unisMGMirrorVlanObjects OBJECT IDENTIFIER ::= {  unisMGInfoObjects 7  }
+
+    unisMGMirrorVlanTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisMGMirrorVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of mirror group mirroring-VLAN entries."
+        ::= { unisMGMirrorVlanObjects 1 }
+
+    unisMGMirrorVlanEntry OBJECT-TYPE
+        SYNTAX      UnisMGMirrorVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of parameters that describe a mirroring-VLAN to be added to
+            a mirror group."
+        INDEX
+        {
+            unisMGID,
+            unisMGMirrorVlanID
+        }
+        ::= { unisMGMirrorVlanTable 1 }
+
+    UnisMGMirrorVlanEntry ::=
+        SEQUENCE
+        {
+            unisMGMirrorVlanID           Integer32,
+            unisMGMirrorVlanDirection    INTEGER,
+            unisMGMirrorVlanRowStatus    RowStatus
+        }
+
+    unisMGMirrorVlanID OBJECT-TYPE
+        SYNTAX      Integer32(1..4094)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Mirror group mirroring-VLAN ID."
+        ::={ unisMGMirrorVlanEntry 1 }
+
+    unisMGMirrorVlanDirection OBJECT-TYPE
+        SYNTAX      INTEGER
+                    {
+                        inbound(1),
+                        outbound(2),
+                        both(3)
+                    }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Mirror direction of mirroring-VLAN."
+        ::={ unisMGMirrorVlanEntry 2 }
+
+    unisMGMirrorVlanRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus"
+        ::={ unisMGMirrorVlanEntry 3 }
+
+    unisMGMirrorCpuObjects OBJECT IDENTIFIER ::= {  unisMGInfoObjects 8  }
+
+    unisMGMirrorCpuTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisMGMirrorCpuEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of mirror group mirroring-CPU entries."
+        ::= { unisMGMirrorCpuObjects 1 }
+
+    unisMGMirrorCpuEntry OBJECT-TYPE
+        SYNTAX      UnisMGMirrorCpuEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of parameters that describe a mirroring-CPU to be added to
+            a mirror group."
+        INDEX
+        {
+            unisMGID,
+            unisMGMirrorCpuChassis,
+            unisMGMirrorCpuSlot
+        }
+        ::= { unisMGMirrorCpuTable 1 }
+
+    UnisMGMirrorCpuEntry ::=
+        SEQUENCE
+        {
+            unisMGMirrorCpuChassis      Unsigned32,
+            unisMGMirrorCpuSlot         Unsigned32,
+            unisMGMirrorCpuDirection    INTEGER,
+            unisMGMirrorCpuRowStatus    RowStatus
+        }
+
+    unisMGMirrorCpuChassis OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Chassis ID of mirroring-CPU.  On a centralized device,
+             centralized IRF device, or distributed device in standalone mode,
+             the value for this node is always zero."
+        ::={ unisMGMirrorCpuEntry 1 }
+
+    unisMGMirrorCpuSlot OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Slot ID of mirroring-CPU.  On a centralized device, the value for
+             this node is always zero."
+        ::={ unisMGMirrorCpuEntry 2 }
+
+    unisMGMirrorCpuDirection OBJECT-TYPE
+        SYNTAX      INTEGER
+                    {
+                        inbound(1),
+                        outbound(2),
+                        both(3)
+                    }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Mirror direction of mirroring-CPU."
+        ::={ unisMGMirrorCpuEntry 3 }
+
+    unisMGMirrorCpuRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "RowStatus"
+        ::={ unisMGMirrorCpuEntry 4 }
+
+
+END

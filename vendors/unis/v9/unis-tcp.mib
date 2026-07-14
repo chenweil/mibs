@@ -1,0 +1,352 @@
+-- =================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: TCP MIB File
+-- Reference:
+-- Version: V1.2
+-- History:
+-- V1.0 2021-12-15 created by zhuqiuxue
+-- V1.1 2022-07-15 Modify by yuanyuchen
+--      Add unisTcpSynFloodFlowTraps, unisTcpSynFloodIfTraps
+-- V1.2 2023-04-20 Modify by yuanyuchen
+--      Add unisTcpNumExceedAlarm, unisTcpNumExceedResume,
+--      unisTcpExceptionClose, unisTcpNumExceedState,
+--      unisTcpRcvVrfName, unisTcpSndVrfName
+-- =================================================================
+UNIS-TCP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, Integer32, NOTIFICATION-TYPE, Unsigned32
+        FROM SNMPv2-SMI
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB
+    InterfaceIndex
+        FROM IF-MIB;
+
+unisTcp MODULE-IDENTITY
+    LAST-UPDATED
+        "202304200930Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file defines the Tcp trap warning feature only."
+    REVISION
+        "202304200930Z"
+    DESCRIPTION
+        "Add unisTcpNumExceedAlarm, unisTcpNumExceedResume, unisTcpExceptionClose,
+         unisTcpNumExceedState, unisTcpRcvVrfName and unisTcpSndVrfName."
+    REVISION
+        "202207151110Z"
+    DESCRIPTION
+        "Add unisTcpSynFloodFlowTraps and unisTcpSynFloodIfTraps."
+    REVISION
+        "202112152017Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 215 }
+
+
+unisTcpMIBTraps OBJECT IDENTIFIER ::= { unisTcp 1 }
+
+unisTcpMIBTrap            OBJECT IDENTIFIER ::= { unisTcpMIBTraps 0 }
+
+-- unisTcpMIBTrap
+unisTcpMD5AuthenFail NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTcpConnLocalAddressTCP,
+            unisTcpConnLocalPortTCP,
+            unisTcpConnRemAddressTCP,
+            unisTcpConnRemPortTCP,
+            unisTcpProtocol,
+            unisTcpVrfNameVRF
+        }
+    STATUS      current
+    DESCRIPTION
+        "The MD5 connected of TCP is failing to authenticate."
+    ::= { unisTcpMIBTrap 1 }
+
+unisTcpNumExceedAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTcpNumExceedState
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of TCP connections exceeds the maximum limit."
+    ::= { unisTcpMIBTrap 2 }
+
+unisTcpNumExceedResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTcpNumExceedState
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of TCP connections has returned to normal."
+    ::= { unisTcpMIBTrap 3 }
+
+unisTcpExceptionClose NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTcpConnLocalAddressTCP,
+            unisTcpConnLocalPortTCP,
+            unisTcpConnRemAddressTCP,
+            unisTcpConnRemPortTCP,
+            unisTcpRcvVrfName,
+            unisTcpSndVrfName
+        }
+    STATUS      current
+    DESCRIPTION
+        "The TCP connection is disconnected because a large number of
+        abnormal messages are received."
+    ::= { unisTcpMIBTrap 4 }
+
+unisTcpMIBTrapobjects            OBJECT IDENTIFIER ::= { unisTcpMIBTraps 1 }
+-- unisTcpMIBTrapobjects
+unisTcpConnLocalAddressTCP OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The local address of the TCP connection."
+    ::= { unisTcpMIBTrapobjects 1 }
+
+unisTcpConnLocalPortTCP OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The port number of the TCP connection."
+    ::= { unisTcpMIBTrapobjects 2 }
+
+unisTcpConnRemAddressTCP OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The destination address of the TCP connection."
+    ::= { unisTcpMIBTrapobjects 3 }
+
+unisTcpConnRemPortTCP OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The destination port number of the TCP connection."
+    ::= { unisTcpMIBTrapobjects 4 }
+
+unisTcpProtocol OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of Protocol, the TCP protocol value is six."
+    ::= { unisTcpMIBTrapobjects 5 }
+
+unisTcpVrfNameVRF OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of VrfName."
+    ::= { unisTcpMIBTrapobjects 6 }
+
+unisTcpNumExceedState OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            established(1),
+            finWait1(2),
+            closing(3),
+            lastAck(4),
+            finWait2(5)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "TCP connection status."
+    ::= { unisTcpMIBTrapobjects 7 }
+
+unisTcpRcvVrfName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The name of the VPN instance used for receiving."
+    ::= { unisTcpMIBTrapobjects 8 }
+
+unisTcpSndVrfName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The name of the VPN instance used for sending."
+    ::= { unisTcpMIBTrapobjects 9 }
+
+unisTcpSynFloodFlowTraps OBJECT IDENTIFIER ::= { unisTcp 2 }
+
+unisTcpSynFloodFlowTrap OBJECT IDENTIFIER ::= { unisTcpSynFloodFlowTraps 0 }
+
+-- unisTcpSynFloodFlowTrap
+unisTcpSynFloodFlow NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTcpSynFloodFlowChassis,
+            unisTcpSynFloodFlowSlot,
+            unisTcpSynFloodFlowIpType,
+            unisTcpSynFloodFlowIpAddress,
+            unisTcpSynFloodFlowPort,
+            unisTcpSynFloodFlowVrfName,
+            unisTcpSynFloodFlowPktType,
+            unisTcpSynFloodFlowRate
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of received SYN packets exceeds the threshold."
+    ::= { unisTcpSynFloodFlowTrap 1 }
+
+
+unisTcpSynFloodFlowTrapobjects OBJECT IDENTIFIER ::= { unisTcpSynFloodFlowTraps 1 }
+-- unisTcpSynFloodFlowTrapobjects
+unisTcpSynFloodFlowChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+        not a stacked device."
+    ::= { unisTcpSynFloodFlowTrapobjects 1 }
+
+unisTcpSynFloodFlowSlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of slot."
+    ::= { unisTcpSynFloodFlowTrapobjects 2 }
+
+unisTcpSynFloodFlowIpType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The type of address."
+    ::= { unisTcpSynFloodFlowTrapobjects 3 }
+
+unisTcpSynFloodFlowIpAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The source address of packet."
+    ::= { unisTcpSynFloodFlowTrapobjects 4 }
+
+unisTcpSynFloodFlowPort OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The destination port number of packet."
+    ::= { unisTcpSynFloodFlowTrapobjects 5 }
+
+unisTcpSynFloodFlowVrfName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of VrfName."
+    ::= { unisTcpSynFloodFlowTrapobjects 6 }
+
+unisTcpSynFloodFlowPktType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            ip(1),
+            mpls(2)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The type of packet."
+    ::= { unisTcpSynFloodFlowTrapobjects 7 }
+
+unisTcpSynFloodFlowRate OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The rate of syn flood."
+    ::= { unisTcpSynFloodFlowTrapobjects 8 }
+
+unisTcpSynFloodIfTraps OBJECT IDENTIFIER ::= { unisTcp 3 }
+
+unisTcpSynFloodIfTrap OBJECT IDENTIFIER ::= { unisTcpSynFloodIfTraps 0 }
+
+-- unisTcpSynFloodIfTrap
+unisTcpSynFloodIf NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTcpSynFloodIfChassis,
+            unisTcpSynFloodIfSlot,
+            unisTcpSynFloodIfIndex,
+            unisTcpSynFloodIfPktType,
+            unisTcpSynFloodIfRate
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of received SYN packets exceeds the threshold."
+    ::= { unisTcpSynFloodIfTrap 1 }
+
+
+unisTcpSynFloodIfTrapobjects OBJECT IDENTIFIER ::= { unisTcpSynFloodIfTraps 1 }
+-- unisTcpSynFloodIfTrapobjects
+unisTcpSynFloodIfChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+        not a stacked device."
+    ::= { unisTcpSynFloodIfTrapobjects 1 }
+
+unisTcpSynFloodIfSlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of slot."
+    ::= { unisTcpSynFloodIfTrapobjects 2 }
+
+unisTcpSynFloodIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The index value of the interface."
+    ::= { unisTcpSynFloodIfTrapobjects 3 }
+
+unisTcpSynFloodIfPktType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            ip(1),
+            mpls(2)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The type of packet."
+    ::= { unisTcpSynFloodIfTrapobjects 4 }
+
+unisTcpSynFloodIfRate OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The rate of syn flood."
+    ::= { unisTcpSynFloodIfTrapobjects 5 }
+
+END
+

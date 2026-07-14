@@ -1,0 +1,412 @@
+-- ====================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: MS(Media Switch Server) Configuration management MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 Initial version 2007-04-13 created by zhoujianming
+--- ===================================================================
+UNIS-MS-MAN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    PhysicalIndex
+        FROM ENTITY-MIB
+    unisSurveillanceMIB
+        FROM UNIS-OID-MIB;
+
+unisMSMan MODULE-IDENTITY
+    LAST-UPDATED "200708130000Z"  -- August 13, 2007  GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB is defined to manage MS components
+        according to specific capability."
+    ::= { unisSurveillanceMIB 3 }
+
+--
+-- Node definitions
+--
+
+unisMSManMIBObjects OBJECT IDENTIFIER ::= { unisMSMan 1 }
+--
+-- statistical period
+--
+unisMSStatisticalPeriod OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The statistical period of this entity, which unit is
+        second and default value is 300 seconds."
+    ::= { unisMSManMIBObjects 1 }
+
+unisMSManMIBTables OBJECT IDENTIFIER ::= { unisMSMan 2 }
+--
+-- forward table
+--
+unisMSForwardTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisMSForwardEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "MS Forward table, used to get the forwarding information
+         of the entity. "
+    ::= { unisMSManMIBTables 1 }
+
+unisMSForwardEntry OBJECT-TYPE
+    SYNTAX      UnisMSForwardEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "unisMSForward table entry."
+    INDEX { unisMSForwardIndex }
+    ::= { unisMSForwardTable 1 }
+
+UnisMSForwardEntry ::=
+    SEQUENCE {
+        unisMSForwardIndex                   PhysicalIndex,
+        unisMSForwardMaxConnection           Unsigned32,
+        unisMSForwardConnectionThreshold     Unsigned32,
+        unisMSCurrentForwardConnection       Unsigned32,
+        unisMSPeriodForwardConnection        Unsigned32,
+        unisMSForwardTotalTime               Unsigned32,
+        unisMSForwardTotalConn               Unsigned32
+     }
+unisMSForwardIndex OBJECT-TYPE
+    SYNTAX PhysicalIndex
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The value of this object is the entity index, which
+         depends on the implementation of ENTITY-MIB. "
+    ::= { unisMSForwardEntry 1 }
+
+
+unisMSForwardMaxConnection OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maxium number of forward connections the entity can
+        support."
+    ::= { unisMSForwardEntry 2 }
+
+unisMSForwardConnectionThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The threshold of forward connections."
+    ::= { unisMSForwardEntry 3 }
+
+unisMSCurrentForwardConnection OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of forward connections the entity provided
+        in this time."
+    ::= { unisMSForwardEntry 4 }
+
+unisMSPeriodForwardConnection OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maxium number of forward connections within the
+        last statistical period."
+    ::= { unisMSForwardEntry 5 }
+
+unisMSForwardTotalTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total forward connection time the entity has
+        serviced since its startup."
+    ::= { unisMSForwardEntry 6 }
+
+unisMSForwardTotalConn OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total forward connection numbers the entity has
+        serviced since its startup."
+    ::= { unisMSForwardEntry 7 }
+
+--
+-- VOD table
+--
+unisMSVODTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisMSVODEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "MS VOD(video on demand) table, used to get the VOD
+        information of the entity."
+    ::= { unisMSManMIBTables 2 }
+
+    unisMSVODEntry OBJECT-TYPE
+    SYNTAX      UnisMSVODEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "unisMSVOD table entry."
+    INDEX { unisMSVODIndex }
+    ::= { unisMSVODTable 1 }
+
+UnisMSVODEntry ::=
+    SEQUENCE {
+        unisMSVODIndex                   PhysicalIndex,
+        unisMSVODMaxConnection           Unsigned32,
+        unisMSVODConnectionThreshold     Unsigned32,
+        unisMSCurrentVODConnection       Unsigned32,
+        unisMSPeriodVODMaxConnection     Unsigned32,
+        unisMSVODTotalTime               Unsigned32,
+        unisMSVODTotalConn               Unsigned32
+     }
+unisMSVODIndex OBJECT-TYPE
+    SYNTAX      PhysicalIndex
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The value of this object is the entity index, which
+        depends on the implementation of ENTITY-MIB. "
+    ::= { unisMSVODEntry 1 }
+
+unisMSVODMaxConnection OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maxium number of VOD connections the entity
+        can support."
+    ::= { unisMSVODEntry 2 }
+
+unisMSVODConnectionThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The threshold of VOD connections."
+    ::= { unisMSVODEntry 3 }
+
+unisMSCurrentVODConnection OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of VOD connections the entity provided
+        in this time."
+    ::= { unisMSVODEntry 4 }
+
+unisMSPeriodVODMaxConnection OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maxium number of VOD connections within the last
+        statistical period."
+    ::= { unisMSVODEntry 5 }
+
+unisMSVODTotalTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total VOD connection time the entity has serviced
+        since its startup."
+    ::= { unisMSVODEntry 6 }
+
+unisMSVODTotalConn OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total VOD connection numbers the entity has serviced
+        since its startup."
+    ::= { unisMSVODEntry 7 }
+
+--
+-- Record table
+--
+unisMSRecordTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisMSRecordEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "MS Record table, used to get the record information of
+        the entity."
+    ::= { unisMSManMIBTables 3 }
+
+unisMSRecordEntry OBJECT-TYPE
+    SYNTAX      UnisMSRecordEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "unisMSRecord table entry."
+    INDEX { unisMSRecordIndex }
+    ::= { unisMSRecordTable 1 }
+
+UnisMSRecordEntry ::=
+    SEQUENCE {
+        unisMSRecordIndex                    PhysicalIndex,
+        unisMSRecordMaxConnection            Unsigned32,
+        unisMSRecordConnectionThreshold      Unsigned32,
+        unisMSCurrentRecordConnection        Unsigned32,
+        unisMSPeriodRecordMaxConnection      Unsigned32,
+        unisMSRecordTotalTime                Unsigned32,
+        unisMSRecordTotalConn                Unsigned32
+     }
+unisMSRecordIndex OBJECT-TYPE
+    SYNTAX      PhysicalIndex
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The value of this object is the entity index, which
+        depends on the implementation of ENTITY-MIB. "
+    ::= { unisMSRecordEntry 1 }
+
+unisMSRecordMaxConnection OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maxium number of record connections the entity can
+        support."
+    ::= { unisMSRecordEntry 2 }
+
+unisMSRecordConnectionThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The threshold of record connections ."
+    ::= { unisMSRecordEntry 3 }
+
+unisMSCurrentRecordConnection OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of record connections the entity provided in
+        this time."
+    ::= { unisMSRecordEntry 4 }
+
+unisMSPeriodRecordMaxConnection OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maxium number of record connections within the
+        last statistical period."
+    ::= { unisMSRecordEntry 5 }
+
+unisMSRecordTotalTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total record connection time the entity has
+        serviced since its startup."
+    ::= { unisMSRecordEntry 6 }
+
+unisMSRecordTotalConn OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total record connection numbers the entity
+        has serviced since its startup."
+    ::= { unisMSRecordEntry 7 }
+
+--
+-- Notification definitions
+--
+-- =================================================================
+-- Traps are defined below.
+unisMSManMIBTrap OBJECT IDENTIFIER ::= { unisMSMan 3 }
+
+-- All trap definitions should be placed under this object.
+unisMSManTrapPrex OBJECT IDENTIFIER ::= { unisMSManMIBTrap 0 }
+
+unisMSManVODConnectionThresholdTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSVODIndex,
+        unisMSCurrentVODConnection,
+        unisMSVODConnectionThreshold
+    }
+    STATUS     current
+    DESCRIPTION
+        "Current VOD connection exceeds the threshold."
+    ::= { unisMSManTrapPrex 1 }
+
+unisMSManVODConnectionRecoverTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSVODIndex,
+        unisMSCurrentVODConnection,
+        unisMSVODConnectionThreshold
+    }
+    STATUS    current
+    DESCRIPTION
+        "Current VOD connection recovers under the threshold."
+    ::= { unisMSManTrapPrex 2 }
+
+unisMSManForwardConnectionThresholdTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSForwardIndex,
+        unisMSCurrentForwardConnection,
+        unisMSForwardConnectionThreshold
+    }
+    STATUS     current
+    DESCRIPTION
+        "Current forward connection exceeds the threshold."
+    ::= { unisMSManTrapPrex 3 }
+
+unisMSManForwardConnectionRecoverTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSForwardIndex,
+        unisMSCurrentForwardConnection,
+        unisMSForwardConnectionThreshold
+    }
+    STATUS     current
+    DESCRIPTION
+        "Current forward connection recovers under the threshold."
+    ::= { unisMSManTrapPrex 4 }
+
+unisMSManRecordConnectionThresholdTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSRecordIndex,
+        unisMSCurrentRecordConnection,
+        unisMSRecordConnectionThreshold
+    }
+    STATUS     current
+    DESCRIPTION
+        "Current record connection exceeds the threshold."
+    ::= { unisMSManTrapPrex 5 }
+
+unisMSManRecordConnectionRecoverTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisMSRecordIndex,
+        unisMSCurrentRecordConnection,
+        unisMSRecordConnectionThreshold
+    }
+    STATUS     current
+    DESCRIPTION
+        "Current record connection recovers under the threshold."
+    ::= { unisMSManTrapPrex 6 }
+
+
+END

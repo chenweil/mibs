@@ -1,0 +1,277 @@
+-- =================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: L3VPN (Layer 3 Virtual Private Network) MIB
+-- Reference:
+-- Version: V1.1
+-- History:
+--   V1.0 2022-06-02 Created by zhangyao
+--     Initial version
+--   V1.1 2023-04-11 Updated by meihaitao
+--     Add the unisL3vpnStatisticsTable
+-- =================================================================
+UNIS-L3VPN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Unsigned32
+        FROM SNMPv2-SMI
+    CounterBasedGauge64
+        FROM HCNUM-TC
+    DisplayString, DateAndTime, TruthValue
+        FROM SNMPv2-TC
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisL3vpn MODULE-IDENTITY
+    LAST-UPDATED "202304101002Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file provides information about L3VPN."
+    REVISION "202304101002Z"
+    DESCRIPTION
+        "Add the unisL3vpnStatisticsTable."
+
+    REVISION "202205311002Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 228 }
+
+unisL3vpnNotifications        OBJECT IDENTIFIER ::= { unisL3vpn 0 }
+unisL3vpnNotificationObjects  OBJECT IDENTIFIER ::= { unisL3vpn 1 }
+unisL3vpnStatMibObjects       OBJECT IDENTIFIER ::= { unisL3vpn 2 }
+
+unisL3vpnVrfName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Name of the VRF (Virtual Routing and Forwarding)."
+    ::= { unisL3vpnNotificationObjects 1 }
+
+unisL3vpnIfName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Name of the interface associated with the VRF."
+    ::= { unisL3vpnNotificationObjects 2 }
+
+unisL3vpnVrfV6Up NOTIFICATION-TYPE
+    OBJECTS {
+        unisL3vpnVrfName,
+        unisL3vpnIfName
+    }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when:
+         a. No interface is associated with this VRF, and the first
+            (and only first) interface associated with it has its
+            IPv6 status change to up.
+         b. One interface is associated with this VRF, and the IPv6
+            status of this interface changes to up.
+         c. Multiple interfaces are associated with this VRF, and
+            the IPv6 status of all interfaces is down, and the first
+            of those interfaces has its IPv6 status change to up."
+    ::= { unisL3vpnNotifications 1 }
+
+unisL3vpnVrfV6Down NOTIFICATION-TYPE
+    OBJECTS {
+        unisL3vpnVrfName,
+        unisL3vpnIfName
+    }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when:
+         a. One interface is associated with this VRF, and the IPv6
+            status of this interface changes from up to down.
+         b. Multiple interfaces are associated with this VRF, and
+            the IPv6 status of all except one of these interfaces is
+            equal to up, and the IPv6 status of that interface
+            changes from up to down.
+         c. The last interface with IPv6 status equal to up is
+            disassociated from a VRF."
+    ::= { unisL3vpnNotifications 2 }
+
+
+-- The L3VPN Statistics Table
+--
+unisL3vpnStatisticsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisL3vpnStatisticsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains traffic statistics about a VRF."
+    ::= { unisL3vpnStatMibObjects 1 }
+
+unisL3vpnStatisticsEntry OBJECT-TYPE
+    SYNTAX UnisL3vpnStatisticsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Provides traffic statistics about a VRF."
+    INDEX { unisL3vpnStatVrfName }
+    ::= { unisL3vpnStatisticsTable 1 }
+
+UnisL3vpnStatisticsEntry ::=
+    SEQUENCE {
+        unisL3vpnStatVrfName
+            DisplayString,
+        unisL3vpnStatEnable
+            TruthValue,
+        unisL3vpnStatVrfIndex
+            Unsigned32,
+        unisL3vpnStatInBytes
+            CounterBasedGauge64,
+        unisL3vpnStatOutBytes
+            CounterBasedGauge64,
+        unisL3vpnStatInPackets
+            CounterBasedGauge64,
+        unisL3vpnStatOutPackets
+            CounterBasedGauge64,
+        unisL3vpnStatInUnicastPackets
+            CounterBasedGauge64,
+        unisL3vpnStatOutUnicastPackets
+            CounterBasedGauge64,
+        unisL3vpnStatInMulticastPackets
+            CounterBasedGauge64,
+        unisL3vpnStatOutMulticastPackets
+            CounterBasedGauge64,
+        unisL3vpnStatInBroadcastPackets
+            CounterBasedGauge64,
+        unisL3vpnStatOutBroadcastPackets
+            CounterBasedGauge64,
+        unisL3vpnStatResetTime
+            DateAndTime,
+        unisL3vpnStatResetStatistic
+            INTEGER
+     }
+
+unisL3vpnStatVrfName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..31))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "This object indicates the name of a VRF."
+    ::= { unisL3vpnStatisticsEntry 1 }
+
+unisL3vpnStatEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This object indicates the enable flag of the VRF's traffic statistics."
+    DEFVAL { false }
+    ::= { unisL3vpnStatisticsEntry 2 }
+
+unisL3vpnStatVrfIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "This object indicates the VRF's index."
+    ::= { unisL3vpnStatisticsEntry 3 }
+
+unisL3vpnStatInBytes OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of bytes received."
+    ::= { unisL3vpnStatisticsEntry 4 }
+
+unisL3vpnStatOutBytes OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of bytes transmitted."
+    ::= { unisL3vpnStatisticsEntry 5 }
+
+unisL3vpnStatInPackets OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of packets received."
+    ::= { unisL3vpnStatisticsEntry 6 }
+
+unisL3vpnStatOutPackets OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of packets transmitted."
+    ::= { unisL3vpnStatisticsEntry 7 }
+
+unisL3vpnStatInUnicastPackets OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of unicast packets received."
+    ::= { unisL3vpnStatisticsEntry 8 }
+
+unisL3vpnStatOutUnicastPackets OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of unicast packets transmitted."
+    ::= { unisL3vpnStatisticsEntry 9 }
+
+unisL3vpnStatInMulticastPackets OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of multicast packets received."
+    ::= { unisL3vpnStatisticsEntry 10 }
+
+unisL3vpnStatOutMulticastPackets OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of multicast packets transmitted."
+    ::= { unisL3vpnStatisticsEntry 11 }
+
+unisL3vpnStatInBroadcastPackets OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of broadcast packets received."
+    ::= { unisL3vpnStatisticsEntry 12 }
+
+unisL3vpnStatOutBroadcastPackets OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of broadcast packets transmitted."
+    ::= { unisL3vpnStatisticsEntry 13 }
+
+unisL3vpnStatResetTime OBJECT-TYPE
+    SYNTAX DateAndTime (SIZE (8))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Last time when the statistics were cleared."
+    ::= { unisL3vpnStatisticsEntry 14 }
+
+unisL3vpnStatResetStatistic OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        statistic(0),
+        resetStatistic(1)
+    }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Resets the VRF's traffic statistics."
+    ::= { unisL3vpnStatisticsEntry 15 }
+
+END

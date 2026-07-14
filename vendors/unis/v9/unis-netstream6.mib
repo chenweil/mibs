@@ -1,0 +1,94 @@
+-- ============================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The purpose of this MIB file is to provide the definition of
+--              the IPv6 netstream trap.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2022-11-16
+--   Initial version, created by wangyuqing
+-- ============================================================================
+UNIS-NETSTREAM6-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI;
+
+-- Node definitions
+unisNetstream6 MODULE-IDENTITY
+    LAST-UPDATED "202211231800Z"        -- Nov 23, 2022 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file is to provide the definition of the IPv6 netstream."
+    REVISION "202211231800Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 257}
+
+-- unisNetstream6TrapEntry
+unisNetstream6TrapEntry OBJECT IDENTIFIER ::= { unisNetstream6 1 }
+
+unisNetstream6TrapEntrys OBJECT IDENTIFIER  ::= { unisNetstream6TrapEntry 0 }
+
+unisNetstream6TrapEntryTHAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNetstream6TrapEntrySpec,
+            unisNetstream6TrapEntryChassis,
+            unisNetstream6TrapEntrySlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the number of netstream6 tables exceeds the maximum value of the board by 80%,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisNetstream6TrapEntrys 1 }
+
+unisNetstream6TrapEntryTHResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNetstream6TrapEntrySpec,
+            unisNetstream6TrapEntryChassis,
+            unisNetstream6TrapEntrySlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the number of Netstream6 tables drops below 70% of the board maximum,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisNetstream6TrapEntrys 2 }
+
+unisNetstream6TrapEntryObjects OBJECT IDENTIFIER  ::= { unisNetstream6TrapEntry 1 }
+
+-- unisNetstream6TrapEntryObjects
+
+unisNetstream6TrapEntrySpec OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The Maximum number of entries in the IPv6 netStream cache."
+    ::= { unisNetstream6TrapEntryObjects 1 }
+
+unisNetstream6TrapEntryChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+        not a stacked device ."
+    ::= { unisNetstream6TrapEntryObjects 2 }
+
+unisNetstream6TrapEntrySlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of slot."
+    ::= { unisNetstream6TrapEntryObjects 3 }
+
+END

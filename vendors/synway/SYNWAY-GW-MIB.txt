@@ -1,0 +1,2694 @@
+SYNWAY-GW-MIB DEFINITIONS::=BEGIN 
+--
+-- Top-level infrastructure of the SNMP project enterprise MIB tree
+--
+IMPORTS
+		enterprises,OBJECT-TYPE,Integer32 FROM SNMPv2-SMI 
+  	OBJECT-GROUP, NOTIFICATION-GROUP	FROM SNMPv2-CONF 
+ 		DisplayString 										FROM SNMPv2-TC; 
+            
+synway MODULE-IDENTITY
+    LAST-UPDATED "201507210000Z"
+    ORGANIZATION "www.synwayd.com"
+    CONTACT-INFO    
+								 "postal:Wes Martin P.O. Box 382 Shawn CA  95617
+							    email:shawn@sanhuid.com"
+    DESCRIPTION
+								"Top-level infrastructure of the Net-SNMP project enterprise MIB tree"
+    REVISION    "201507210000Z"
+    DESCRIPTION	"First draft"
+    ::= { enterprises 39871}
+
+-----------------------------------------------------------
+--  Node definitions
+-- 
+-- Top-level structure of the MIB
+-- 
+		-- 1.3.6.1.4.1.39871.1
+		tgStatus OBJECT IDENTIFIER ::= { synway 1 }
+		
+		-- 1.3.6.1.4.1.39871.2
+		tgNetwork OBJECT IDENTIFIER ::= { synway 2 }
+
+		-- 1.3.6.1.4.1.39871.3
+		tgMgmt OBJECT IDENTIFIER ::= { synway 3 }
+		
+		-- 1.3.6.1.4.1.39871.4
+		tgNotification OBJECT IDENTIFIER ::= { synway 4 }
+		
+		-- 1.3.6.1.4.1.39871.5
+		ftpTransferSchedule OBJECT IDENTIFIER ::= { synway 5 }
+		
+		synwaynotifs OBJECT IDENTIFIER ::= { synway 6 }
+		
+-----------------------------------------------------------
+
+-----------------------------------------------------------
+
+--notification
+
+networkAlarm NOTIFICATION-TYPE                                    
+	STATUS current                                          
+	--OBJECTS { connectstatus }                                 
+	DESCRIPTION "network alarm"                  
+	::= { synwaynotifs 1 }
+
+siptrunkAlarm NOTIFICATION-TYPE                                    
+	STATUS current                                          
+	--OBJECTS { sipTrunkStatus }                                 
+	DESCRIPTION "sip trunk alarm"                  
+	::= { synwaynotifs 2 }
+
+priAlarm NOTIFICATION-TYPE                                    
+	STATUS current                                          
+	--OBJECTS { sysInfomation }                                 
+	DESCRIPTION "pri alarm"                  
+	::= { synwaynotifs 3 }
+
+pcmAlarm NOTIFICATION-TYPE                                    
+	STATUS current                                          
+	--OBJECTS { pstnTrunkStatus }                                 
+	DESCRIPTION "pcm alarm"                  
+	::= { synwaynotifs 4 }
+	
+sipTrunkRegAlarm NOTIFICATION-TYPE                                    
+	STATUS current                                          
+	DESCRIPTION "sip trunk regist alarm 0~MAX_PCM_NUM"                  
+	::= { synwaynotifs 5 }
+	
+cpuTempratureAlarm NOTIFICATION-TYPE                                    
+	STATUS current                                          
+	DESCRIPTION "cpu temprature alarm"                  
+	::= { synwaynotifs 6 }
+	
+highRateCallAlarm NOTIFICATION-TYPE                                    
+	STATUS current                                          
+	DESCRIPTION "high rate of concurrent call alarm"                  
+	::= { synwaynotifs 7 }
+	
+memUsedAlarm NOTIFICATION-TYPE                                    
+	STATUS current                                          
+	DESCRIPTION "memory used alarm"                  
+	::= { synwaynotifs 8 }
+	
+cpuUsedAlarm NOTIFICATION-TYPE                                    
+	STATUS current                                          
+	DESCRIPTION "cpu used alarm"                  
+	::= { synwaynotifs 9 }
+
+lowConnectionRateAlarm NOTIFICATION-TYPE                                    
+	STATUS current                                          
+	DESCRIPTION "low connection rate alarm"                  
+	::= { synwaynotifs 10 }
+	
+svrRebootAlarm NOTIFICATION-TYPE                                    
+	STATUS current                                          
+	DESCRIPTION "smgsvr revoot alarm"                  
+	::= { synwaynotifs 11 }
+	
+sysRebootAlarm NOTIFICATION-TYPE                                    
+	STATUS current                                          
+	DESCRIPTION "system revoot alarm"                        
+	::= { synwaynotifs 12 }
+-----------------------------------------------------------
+
+-----------------------------------------------------------
+-- Status 
+-- 
+
+-- 
+--   system Information
+-- 
+		-- 1.3.6.1.4.1.39871.1.1 
+		sysInfomation OBJECT IDENTIFIER ::= {tgStatus 1 }
+		
+		-- 1.3.6.1.4.1.39871.1.1.1
+		deviceType OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"This device Type."
+			::= {sysInfomation 1 }
+			
+		-- 1.3.6.1.4.1.39871.1.1.2
+		deviceSN OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"This device SN."
+			::= {sysInfomation 2 }
+			
+		-- 1.3.6.1.4.1.39871.1.1.3
+		softVersion OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"soft version of device."
+			::= {sysInfomation 3 }
+			
+		-- 1.3.6.1.4.1.39871.1.1.4
+		ubootVersion OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"uboot version."
+			::= {sysInfomation 4 }
+			
+		-- 1.3.6.1.4.1.39871.1.1.5
+		kernelVersion OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"kernel version of device."
+			::= {sysInfomation 5 }
+			
+		-- 1.3.6.1.4.1.39871.1.1.6
+		cpldVersion OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"cpld version of this device."
+			::= {sysInfomation 6 }
+			
+   -- 1.3.6.1.4.1.39871.1.1.7
+		runTime OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"runtime of this device."
+			::= {sysInfomation 7 }   
+			
+	-- 1.3.6.1.4.1.39871.1.1.8
+		  cpuType OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"cpu type."
+			::= {sysInfomation 8 }
+			
+	-- 1.3.6.1.4.1.39871.1.1.9
+		  cpuRate OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"cpu rate"
+			::= {sysInfomation 9 }
+			
+	-- 1.3.6.1.4.1.39871.1.1.10
+		  portNum OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"port num"
+			::= {sysInfomation 10 }
+			
+	-- 1.3.6.1.4.1.39871.1.1.11
+		  sipnum OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"sip trunk num "
+			::= {sysInfomation 11}	 
+
+	-- 1.3.6.1.4.1.39871.1.1.12
+		  eth0rxspeed OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Eth0 Rx Speed "
+			::= {sysInfomation 12}
+			
+	-- 1.3.6.1.4.1.39871.1.1.13
+		  eth0txspeed OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Eth0 Tx Speed "
+			::= {sysInfomation 13}
+			
+	-- 1.3.6.1.4.1.39871.1.1.14
+		  eth1rxspeed OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Eth1 Rx Speed "
+			::= {sysInfomation 14}
+			
+	-- 1.3.6.1.4.1.39871.1.1.15
+		  eth1txspeed OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Eth1 Tx Speed "
+			::= {sysInfomation 15}
+			
+	-- 1.3.6.1.4.1.39871.1.1.16
+		  isdnlink0status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link0 Status "
+			::= {sysInfomation 16}
+			
+	-- 1.3.6.1.4.1.39871.1.1.17
+		  isdnlink1status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link1 Status "
+			::= {sysInfomation 17}
+			
+	-- 1.3.6.1.4.1.39871.1.1.18
+		  isdnlink2status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link2 Status "
+			::= {sysInfomation 18}
+			
+	-- 1.3.6.1.4.1.39871.1.1.19
+		  isdnlink3status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link3 Status "
+			::= {sysInfomation 19}
+			
+	-- 1.3.6.1.4.1.39871.1.1.20
+		  isdnlink4status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link4 Status "
+			::= {sysInfomation 20}
+			
+	-- 1.3.6.1.4.1.39871.1.1.21
+		  isdnlink5status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link5 Status "
+			::= {sysInfomation 21}
+			
+	-- 1.3.6.1.4.1.39871.1.1.22
+		  isdnlink6status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link6 Status "
+			::= {sysInfomation 22}
+			
+	-- 1.3.6.1.4.1.39871.1.1.23
+		  isdnlink7status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link7 Status "
+			::= {sysInfomation 23}
+			
+	-- 1.3.6.1.4.1.39871.1.1.24
+		  isdnlink8status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link8 Status "
+			::= {sysInfomation 24}
+			
+	-- 1.3.6.1.4.1.39871.1.1.25
+		  isdnlink9status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link9 Status "
+			::= {sysInfomation 25}
+			
+	-- 1.3.6.1.4.1.39871.1.1.26
+		  isdnlink10status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link10 Status "
+			::= {sysInfomation 26}
+			
+	-- 1.3.6.1.4.1.39871.1.1.27
+		  isdnlink11status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link11 Status "
+			::= {sysInfomation 27}
+			
+	-- 1.3.6.1.4.1.39871.1.1.28
+		  isdnlink12status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link12 Status "
+			::= {sysInfomation 28}
+			
+	-- 1.3.6.1.4.1.39871.1.1.29
+		  isdnlink13status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link13 Status "
+			::= {sysInfomation 29}
+			
+	-- 1.3.6.1.4.1.39871.1.1.30
+		  isdnlink14status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link14 Status "
+			::= {sysInfomation 30}
+			
+	-- 1.3.6.1.4.1.39871.1.1.31
+		  isdnlink15status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link15 Status "
+			::= {sysInfomation 31}
+			
+	-- 1.3.6.1.4.1.39871.1.1.32
+		  isdnlink16status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link16 Status "
+			::= {sysInfomation 32}
+			
+	-- 1.3.6.1.4.1.39871.1.1.33
+		  isdnlink17status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link17 Status "
+			::= {sysInfomation 33}
+			
+	-- 1.3.6.1.4.1.39871.1.1.34
+		  isdnlink18status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link18 Status "
+			::= {sysInfomation 34}
+			
+	-- 1.3.6.1.4.1.39871.1.1.35
+		  isdnlink19status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link19 Status "
+			::= {sysInfomation 35}
+			
+	-- 1.3.6.1.4.1.39871.1.1.36
+		  isdnlink20status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link20 Status "
+			::= {sysInfomation 36}
+			
+	-- 1.3.6.1.4.1.39871.1.1.37
+		  isdnlink21status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link22 Status "
+			::= {sysInfomation 37}
+			
+	-- 1.3.6.1.4.1.39871.1.1.38
+		  isdnlink22status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link22 Status "
+			::= {sysInfomation 38}
+			
+	-- 1.3.6.1.4.1.39871.1.1.39
+		  isdnlink23status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link23 Status "
+			::= {sysInfomation 39}
+			
+	-- 1.3.6.1.4.1.39871.1.1.40
+		  isdnlink24status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link24 Status "
+			::= {sysInfomation 40}
+			
+	-- 1.3.6.1.4.1.39871.1.1.41
+		  isdnlink25status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link25 Status "
+			::= {sysInfomation 41}
+			
+	-- 1.3.6.1.4.1.39871.1.1.42
+		  isdnlink26status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link26 Status "
+			::= {sysInfomation 42}
+			
+	-- 1.3.6.1.4.1.39871.1.1.43
+		  isdnlink27status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link27 Status "
+			::= {sysInfomation 43}
+			
+	-- 1.3.6.1.4.1.39871.1.1.44
+		  isdnlink28status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link28 Status "
+			::= {sysInfomation 44}
+			
+	-- 1.3.6.1.4.1.39871.1.1.45
+		  isdnlink29status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link29 Status "
+			::= {sysInfomation 45}
+			
+	-- 1.3.6.1.4.1.39871.1.1.46
+		  isdnlink30status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link30 Status "
+			::= {sysInfomation 46}
+			
+	-- 1.3.6.1.4.1.39871.1.1.47
+		  isdnlink31status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link31 Status "
+			::= {sysInfomation 47}
+			
+	-- 1.3.6.1.4.1.39871.1.1.48
+		  isdnlink32status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link32 Status "
+			::= {sysInfomation 48}
+			
+	-- 1.3.6.1.4.1.39871.1.1.49
+		  isdnlink33status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link33 Status "
+			::= {sysInfomation 49}
+			
+	-- 1.3.6.1.4.1.39871.1.1.50
+		  isdnlink34status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link34 Status "
+			::= {sysInfomation 50}
+			
+	-- 1.3.6.1.4.1.39871.1.1.51
+		  isdnlink35status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link35 Status "
+			::= {sysInfomation 51}
+			
+	-- 1.3.6.1.4.1.39871.1.1.52
+		  isdnlink36status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link36 Status "
+			::= {sysInfomation 52}
+			
+	-- 1.3.6.1.4.1.39871.1.1.53
+		  isdnlink37status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link37 Status "
+			::= {sysInfomation 53}
+			
+	-- 1.3.6.1.4.1.39871.1.1.54
+		  isdnlink38status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link38 Status "
+			::= {sysInfomation 54}
+			
+	-- 1.3.6.1.4.1.39871.1.1.55
+		  isdnlink39status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link39 Status "
+			::= {sysInfomation 55}
+			
+	-- 1.3.6.1.4.1.39871.1.1.56
+		  isdnlink40status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link40 Status "
+			::= {sysInfomation 56}
+			
+	-- 1.3.6.1.4.1.39871.1.1.57
+		  isdnlink41status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link41 Status "
+			::= {sysInfomation 57}
+			
+	-- 1.3.6.1.4.1.39871.1.1.58
+		  isdnlink42status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link42 Status "
+			::= {sysInfomation 58}
+			
+	-- 1.3.6.1.4.1.39871.1.1.59
+		  isdnlink43status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link43 Status "
+			::= {sysInfomation 59}
+			
+	-- 1.3.6.1.4.1.39871.1.1.60
+		  isdnlink44status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link44 Status "
+			::= {sysInfomation 60}
+			
+	-- 1.3.6.1.4.1.39871.1.1.61
+		  isdnlink45status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link45 Status "
+			::= {sysInfomation 61}
+			
+	-- 1.3.6.1.4.1.39871.1.1.62
+		  isdnlink46status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link46 Status "
+			::= {sysInfomation 62}
+			
+	-- 1.3.6.1.4.1.39871.1.1.63
+		  isdnlink47status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link47 Status "
+			::= {sysInfomation 63}
+			
+	-- 1.3.6.1.4.1.39871.1.1.64
+		  isdnlink48status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link48 Status "
+			::= {sysInfomation 64}
+			
+	-- 1.3.6.1.4.1.39871.1.1.65
+		  isdnlink49status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link49 Status "
+			::= {sysInfomation 65}
+			
+	-- 1.3.6.1.4.1.39871.1.1.66
+		  isdnlink50status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link50 Status "
+			::= {sysInfomation 66}
+			
+	-- 1.3.6.1.4.1.39871.1.1.67
+		  isdnlink51status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link51 Status "
+			::= {sysInfomation 67}
+			
+	-- 1.3.6.1.4.1.39871.1.1.68
+		  isdnlink52status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link52 Status "
+			::= {sysInfomation 68}
+			
+	-- 1.3.6.1.4.1.39871.1.1.69
+		  isdnlink53status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link53 Status "
+			::= {sysInfomation 69}
+			
+	-- 1.3.6.1.4.1.39871.1.1.70
+		  isdnlink54status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link54 Status "
+			::= {sysInfomation 70}
+			
+	-- 1.3.6.1.4.1.39871.1.1.71
+		  isdnlink55status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link55 Status "
+			::= {sysInfomation 71}
+			
+	-- 1.3.6.1.4.1.39871.1.1.72
+		  isdnlink56status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link56 Status "
+			::= {sysInfomation 72}
+			
+	-- 1.3.6.1.4.1.39871.1.1.73
+		  isdnlink57status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link57 Status "
+			::= {sysInfomation 73}
+			
+	-- 1.3.6.1.4.1.39871.1.1.74
+		  isdnlink58status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link58 Status "
+			::= {sysInfomation 74}
+			
+	-- 1.3.6.1.4.1.39871.1.1.75
+		  isdnlink59status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link59 Status "
+			::= {sysInfomation 75}
+			
+	-- 1.3.6.1.4.1.39871.1.1.76
+		  isdnlink60status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link60 Status "
+			::= {sysInfomation 76}
+			
+	-- 1.3.6.1.4.1.39871.1.1.77
+		  isdnlink61status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link61 Status "
+			::= {sysInfomation 77}
+			
+	-- 1.3.6.1.4.1.39871.1.1.78
+		  isdnlink62status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN Link62 Status "
+			::= {sysInfomation 78}
+	
+	-- 1.3.6.1.4.1.39871.1.1.79
+		  ss7link0status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link0 Status "
+			::= {sysInfomation 79}
+			
+	-- 1.3.6.1.4.1.39871.1.1.80
+		  ss7link1status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link1 Status "
+			::= {sysInfomation 80}
+			
+	-- 1.3.6.1.4.1.39871.1.1.81
+		  ss7link2status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link2 Status "
+			::= {sysInfomation 81}
+			
+	-- 1.3.6.1.4.1.39871.1.1.82
+		  ss7link3status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link3 Status "
+			::= {sysInfomation 82}
+			
+	-- 1.3.6.1.4.1.39871.1.1.83
+		  ss7link4status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link4 Status "
+			::= {sysInfomation 83}
+			
+	-- 1.3.6.1.4.1.39871.1.1.84
+		  ss7link5status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link5 Status "
+			::= {sysInfomation 84}
+			
+	-- 1.3.6.1.4.1.39871.1.1.85
+		  ss7link6status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link6 Status "
+			::= {sysInfomation 85}
+			
+	-- 1.3.6.1.4.1.39871.1.1.86
+		  ss7link7status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link7 Status "
+			::= {sysInfomation 86}
+			
+	-- 1.3.6.1.4.1.39871.1.1.87
+		  ss7link8status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link8 Status "
+			::= {sysInfomation 87}
+			
+	-- 1.3.6.1.4.1.39871.1.1.88
+		  ss7link9status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link9 Status "
+			::= {sysInfomation 88}
+			
+	-- 1.3.6.1.4.1.39871.1.1.89
+		  ss7link10status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link10 Status "
+			::= {sysInfomation 89}
+			
+	-- 1.3.6.1.4.1.39871.1.1.90
+		  ss7link11status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link11 Status "
+			::= {sysInfomation 90}
+			
+	-- 1.3.6.1.4.1.39871.1.1.91
+		  ss7link12status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link12 Status "
+			::= {sysInfomation 91}
+			
+	-- 1.3.6.1.4.1.39871.1.1.92
+		  ss7link13status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link13 Status "
+			::= {sysInfomation 92}
+			
+	-- 1.3.6.1.4.1.39871.1.1.93
+		  ss7link14status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link14 Status "
+			::= {sysInfomation 93}
+			
+	-- 1.3.6.1.4.1.39871.1.1.94
+		  ss7link15status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link15 Status "
+			::= {sysInfomation 94}
+			
+	-- 1.3.6.1.4.1.39871.1.1.95
+		  ss7link16status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link16 Status "
+			::= {sysInfomation 95}
+			
+	-- 1.3.6.1.4.1.39871.1.1.96
+		  ss7link17status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link17 Status "
+			::= {sysInfomation 96}
+			
+	-- 1.3.6.1.4.1.39871.1.1.97
+		  ss7link18status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link18 Status "
+			::= {sysInfomation 97}
+			
+	-- 1.3.6.1.4.1.39871.1.1.98
+		  ss7link19status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link19 Status "
+			::= {sysInfomation 98}
+			
+	-- 1.3.6.1.4.1.39871.1.1.99
+		  ss7link20status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link20 Status "
+			::= {sysInfomation 99}
+			
+	-- 1.3.6.1.4.1.39871.1.1.100
+		  ss7link21status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link21 Status "
+			::= {sysInfomation 100}
+			
+	-- 1.3.6.1.4.1.39871.1.1.101
+		  ss7link22status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link22 Status "
+			::= {sysInfomation 101}
+			
+	-- 1.3.6.1.4.1.39871.1.1.102
+		  ss7link23status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link23 Status "
+			::= {sysInfomation 102}
+			
+	-- 1.3.6.1.4.1.39871.1.1.103
+		  ss7link24status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link24 Status "
+			::= {sysInfomation 103}
+			
+	-- 1.3.6.1.4.1.39871.1.1.104
+		  ss7link25status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link25 Status "
+			::= {sysInfomation 104}
+			
+	-- 1.3.6.1.4.1.39871.1.1.105
+		  ss7link26status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link26 Status "
+			::= {sysInfomation 105}
+			
+	-- 1.3.6.1.4.1.39871.1.1.106
+		  ss7link27status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link27 Status "
+			::= {sysInfomation 106}
+			
+	-- 1.3.6.1.4.1.39871.1.1.107
+		  ss7link28status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link28 Status "
+			::= {sysInfomation 107}
+			
+	-- 1.3.6.1.4.1.39871.1.1.108
+		  ss7link29status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link29 Status "
+			::= {sysInfomation 108}
+			
+	-- 1.3.6.1.4.1.39871.1.1.109
+		  ss7link30status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link30 Status "
+			::= {sysInfomation 109}
+			
+	-- 1.3.6.1.4.1.39871.1.1.110
+		  ss7link31status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link31 Status "
+			::= {sysInfomation 110}
+			
+	-- 1.3.6.1.4.1.39871.1.1.111
+		  ss7link32status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link32 Status "
+			::= {sysInfomation 111}
+			
+	-- 1.3.6.1.4.1.39871.1.1.112
+		  ss7link33status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link33 Status "
+			::= {sysInfomation 112}
+			
+	-- 1.3.6.1.4.1.39871.1.1.113
+		  ss7link34status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link34 Status "
+			::= {sysInfomation 113}
+			
+	-- 1.3.6.1.4.1.39871.1.1.114
+		  ss7link35status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link35 Status "
+			::= {sysInfomation 114}
+			
+	-- 1.3.6.1.4.1.39871.1.1.115
+		  ss7link36status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link36 Status "
+			::= {sysInfomation 115}
+			
+	-- 1.3.6.1.4.1.39871.1.1.116
+		  ss7link37status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link37 Status "
+			::= {sysInfomation 116}
+			
+	-- 1.3.6.1.4.1.39871.1.1.117
+		  ss7link38status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link38 Status "
+			::= {sysInfomation 117}
+			
+	-- 1.3.6.1.4.1.39871.1.1.118
+		  ss7link39status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link39 Status "
+			::= {sysInfomation 118}
+			
+	-- 1.3.6.1.4.1.39871.1.1.119
+		  ss7link40status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link40 Status "
+			::= {sysInfomation 119}
+			
+	-- 1.3.6.1.4.1.39871.1.1.120
+		  ss7link41status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link41 Status "
+			::= {sysInfomation 120}
+			
+	-- 1.3.6.1.4.1.39871.1.1.121
+		  ss7link42status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link42 Status "
+			::= {sysInfomation 121}
+			
+	-- 1.3.6.1.4.1.39871.1.1.122
+		  ss7link43status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link43 Status "
+			::= {sysInfomation 122}
+			
+	-- 1.3.6.1.4.1.39871.1.1.123
+		  ss7link44status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link44 Status "
+			::= {sysInfomation 123}
+			
+	-- 1.3.6.1.4.1.39871.1.1.124
+		  ss7link45status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link45 Status "
+			::= {sysInfomation 124}
+			
+	-- 1.3.6.1.4.1.39871.1.1.125
+		  ss7link46status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link46 Status "
+			::= {sysInfomation 125}
+			
+	-- 1.3.6.1.4.1.39871.1.1.126
+		  ss7link47status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link47 Status "
+			::= {sysInfomation 126}
+			
+	-- 1.3.6.1.4.1.39871.1.1.127
+		  ss7link48status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link48 Status "
+			::= {sysInfomation 127}
+			
+	-- 1.3.6.1.4.1.39871.1.1.128
+		  ss7link49status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link49 Status "
+			::= {sysInfomation 128}
+			
+	-- 1.3.6.1.4.1.39871.1.1.129
+		  ss7link50status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link50 Status "
+			::= {sysInfomation 129}
+			
+	-- 1.3.6.1.4.1.39871.1.1.130
+		  ss7link51status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link51 Status "
+			::= {sysInfomation 130}
+			
+	-- 1.3.6.1.4.1.39871.1.1.131
+		  ss7link52status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link52 Status "
+			::= {sysInfomation 131}
+			
+	-- 1.3.6.1.4.1.39871.1.1.132
+		  ss7link53status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link53 Status "
+			::= {sysInfomation 132}
+			
+	-- 1.3.6.1.4.1.39871.1.1.133
+		  ss7link54status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link54 Status "
+			::= {sysInfomation 133}
+			
+	-- 1.3.6.1.4.1.39871.1.1.134
+		  ss7link55status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link55 Status "
+			::= {sysInfomation 134}
+			
+	-- 1.3.6.1.4.1.39871.1.1.135
+		  ss7link56status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link56 Status "
+			::= {sysInfomation 135}
+			
+	-- 1.3.6.1.4.1.39871.1.1.136
+		  ss7link57status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link57 Status "
+			::= {sysInfomation 136}
+			
+	-- 1.3.6.1.4.1.39871.1.1.137
+		  ss7link58status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link58 Status "
+			::= {sysInfomation 137}
+			
+	-- 1.3.6.1.4.1.39871.1.1.138
+		  ss7link59status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link59 Status "
+			::= {sysInfomation 138}
+			
+	-- 1.3.6.1.4.1.39871.1.1.139
+		  ss7link60status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link60 Status "
+			::= {sysInfomation 139}
+			
+	-- 1.3.6.1.4.1.39871.1.1.140
+		  ss7link61status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link61 Status "
+			::= {sysInfomation 140}
+			
+	-- 1.3.6.1.4.1.39871.1.1.141
+		  ss7link62status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"SS7 Link62 Status "
+			::= {sysInfomation 141}
+	
+	-- 1.3.6.1.4.1.39871.1.1.142
+		  trunk0status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk0 Status "
+			::= {sysInfomation 142}
+			
+	-- 1.3.6.1.4.1.39871.1.1.143
+		  trunk1status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk1 Status "
+			::= {sysInfomation 143}
+			
+	-- 1.3.6.1.4.1.39871.1.1.144
+		  trunk2status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk2 Status "
+			::= {sysInfomation 144}
+			
+	-- 1.3.6.1.4.1.39871.1.1.145
+		  trunk3status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk3 Status "
+			::= {sysInfomation 145}
+			
+	-- 1.3.6.1.4.1.39871.1.1.146
+		  trunk4status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk4 Status "
+			::= {sysInfomation 146}
+			
+	-- 1.3.6.1.4.1.39871.1.1.147
+		  trunk5status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk5 Status "
+			::= {sysInfomation 147}
+			
+	-- 1.3.6.1.4.1.39871.1.1.148
+		  trunk6status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk6 Status "
+			::= {sysInfomation 148}
+			
+	-- 1.3.6.1.4.1.39871.1.1.149
+		  trunk7status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk7 Status "
+			::= {sysInfomation 149}
+			
+	-- 1.3.6.1.4.1.39871.1.1.150
+		  trunk8status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk8 Status "
+			::= {sysInfomation 150}
+			
+	-- 1.3.6.1.4.1.39871.1.1.151
+		  trunk9status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk9 Status "
+			::= {sysInfomation 151}
+			
+	-- 1.3.6.1.4.1.39871.1.1.152
+		  trunk10status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk10 Status "
+			::= {sysInfomation 152}
+			
+	-- 1.3.6.1.4.1.39871.1.1.153
+		  trunk11status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk11 Status "
+			::= {sysInfomation 153}
+			
+	-- 1.3.6.1.4.1.39871.1.1.154
+		  trunk12status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk12 Status "
+			::= {sysInfomation 154}
+			
+	-- 1.3.6.1.4.1.39871.1.1.155
+		  trunk13status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk13 Status "
+			::= {sysInfomation 155}
+			
+	-- 1.3.6.1.4.1.39871.1.1.156
+		  trunk14status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk14 Status "
+			::= {sysInfomation 156}
+			
+	-- 1.3.6.1.4.1.39871.1.1.157
+		  trunk15status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk15 Status "
+			::= {sysInfomation 157}
+			
+	-- 1.3.6.1.4.1.39871.1.1.158
+		  trunk16status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk16 Status "
+			::= {sysInfomation 158}
+			
+	-- 1.3.6.1.4.1.39871.1.1.159
+		  trunk17status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk17 Status "
+			::= {sysInfomation 159}
+			
+	-- 1.3.6.1.4.1.39871.1.1.160
+		  trunk18status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk18 Status "
+			::= {sysInfomation 160}
+			
+	-- 1.3.6.1.4.1.39871.1.1.161
+		  trunk19status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk19 Status "
+			::= {sysInfomation 161}
+			
+	-- 1.3.6.1.4.1.39871.1.1.162
+		  trunk20status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk20 Status "
+			::= {sysInfomation 162}
+			
+	-- 1.3.6.1.4.1.39871.1.1.163
+		  trunk21status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk21 Status "
+			::= {sysInfomation 163}
+			
+	-- 1.3.6.1.4.1.39871.1.1.164
+		  trunk22status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk22 Status "
+			::= {sysInfomation 164}
+			
+	-- 1.3.6.1.4.1.39871.1.1.165
+		  trunk23status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk23 Status "
+			::= {sysInfomation 165}
+			
+	-- 1.3.6.1.4.1.39871.1.1.166
+		  trunk24status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk24 Status "
+			::= {sysInfomation 166}
+			
+	-- 1.3.6.1.4.1.39871.1.1.167
+		  trunk25status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk25 Status "
+			::= {sysInfomation 167}
+			
+	-- 1.3.6.1.4.1.39871.1.1.168
+		  trunk26status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk26 Status "
+			::= {sysInfomation 168}
+			
+	-- 1.3.6.1.4.1.39871.1.1.169
+		  trunk27status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk27 Status "
+			::= {sysInfomation 169}
+			
+	-- 1.3.6.1.4.1.39871.1.1.170
+		  trunk28status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk28 Status "
+			::= {sysInfomation 170}
+			
+	-- 1.3.6.1.4.1.39871.1.1.171
+		  trunk29status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk29 Status "
+			::= {sysInfomation 171}
+			
+	-- 1.3.6.1.4.1.39871.1.1.172
+		  trunk30status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk30 Status "
+			::= {sysInfomation 172}
+			
+	-- 1.3.6.1.4.1.39871.1.1.173
+		  trunk31status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk31 Status "
+			::= {sysInfomation 173}
+			
+	-- 1.3.6.1.4.1.39871.1.1.174
+		  trunk32status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk32 Status "
+			::= {sysInfomation 174}
+			
+	-- 1.3.6.1.4.1.39871.1.1.175
+		  trunk33status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk33 Status "
+			::= {sysInfomation 175}
+			
+	-- 1.3.6.1.4.1.39871.1.1.176
+		  trunk34status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk34 Status "
+			::= {sysInfomation 176}
+			
+	-- 1.3.6.1.4.1.39871.1.1.177
+		  trunk35status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk35 Status "
+			::= {sysInfomation 177}
+			
+	-- 1.3.6.1.4.1.39871.1.1.178
+		  trunk36status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk36 Status "
+			::= {sysInfomation 178}
+			
+	-- 1.3.6.1.4.1.39871.1.1.179
+		  trunk37status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk37 Status "
+			::= {sysInfomation 179}
+			
+	-- 1.3.6.1.4.1.39871.1.1.180
+		  trunk38status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk38 Status "
+			::= {sysInfomation 180}
+			
+	-- 1.3.6.1.4.1.39871.1.1.181
+		  trunk39status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk39 Status "
+			::= {sysInfomation 181}
+			
+	-- 1.3.6.1.4.1.39871.1.1.182
+		  trunk40status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk40 Status "
+			::= {sysInfomation 182}
+			
+	-- 1.3.6.1.4.1.39871.1.1.183
+		  trunk41status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk41 Status "
+			::= {sysInfomation 183}
+			
+	-- 1.3.6.1.4.1.39871.1.1.184
+		  trunk42status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk42 Status "
+			::= {sysInfomation 184}
+			
+	-- 1.3.6.1.4.1.39871.1.1.185
+		  trunk43status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk43 Status "
+			::= {sysInfomation 185}
+	
+	-- 1.3.6.1.4.1.39871.1.1.186
+		  trunk44status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk44 Status "
+			::= {sysInfomation 186}
+			
+	-- 1.3.6.1.4.1.39871.1.1.187
+		  trunk45status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk45 Status "
+			::= {sysInfomation 187}
+			
+	-- 1.3.6.1.4.1.39871.1.1.188
+		  trunk46status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk46 Status "
+			::= {sysInfomation 188}
+			
+	-- 1.3.6.1.4.1.39871.1.1.189
+		  trunk47status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk47 Status "
+			::= {sysInfomation 189}
+			
+	-- 1.3.6.1.4.1.39871.1.1.190
+		  trunk48status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk48 Status "
+			::= {sysInfomation 190}
+			
+	-- 1.3.6.1.4.1.39871.1.1.191
+		  trunk49status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk49 Status "
+			::= {sysInfomation 191}
+			
+	-- 1.3.6.1.4.1.39871.1.1.192
+		  trunk50status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk50 Status "
+			::= {sysInfomation 192}
+			
+	-- 1.3.6.1.4.1.39871.1.1.193
+		  trunk51status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk Status "
+			::= {sysInfomation 193}
+			
+	-- 1.3.6.1.4.1.39871.1.1.194
+		  trunk52status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk52 Status "
+			::= {sysInfomation 194}
+			
+	-- 1.3.6.1.4.1.39871.1.1.195
+		  trunk53status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk53 Status "
+			::= {sysInfomation 195}
+			
+	-- 1.3.6.1.4.1.39871.1.1.196
+		  trunk54status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk54 Status "
+			::= {sysInfomation 196}
+			
+	-- 1.3.6.1.4.1.39871.1.1.197
+		  trunk55status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk55 Status "
+			::= {sysInfomation 197}
+			
+	-- 1.3.6.1.4.1.39871.1.1.198
+		  trunk56status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk56 Status "
+			::= {sysInfomation 198}
+			
+	-- 1.3.6.1.4.1.39871.1.1.199
+		  trunk57status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk57 Status "
+			::= {sysInfomation 199}
+			
+	-- 1.3.6.1.4.1.39871.1.1.200
+		  trunk58status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk58 Status "
+			::= {sysInfomation 200}
+			
+	-- 1.3.6.1.4.1.39871.1.1.201
+		  trunk59status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk59 Status "
+			::= {sysInfomation 201}
+			
+	-- 1.3.6.1.4.1.39871.1.1.202
+		  trunk60status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk60 Status "
+			::= {sysInfomation 202}
+			
+	-- 1.3.6.1.4.1.39871.1.1.203
+		  trunk61status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk61 Status "
+			::= {sysInfomation 203}
+			
+	-- 1.3.6.1.4.1.39871.1.1.204
+		  trunk62status OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Trunk62 Status "
+			::= {sysInfomation 204}
+	
+	-- 1.3.6.1.4.1.39871.1.1.12
+		  channelinfo OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"channel info"
+			::= {sysInfomation 205}	 
+			
+		--   PSTN Trunk Status
+		--
+		-- 1.3.6.1.4.1.39871.1.2
+		pstnTrunkStatus OBJECT IDENTIFIER ::= {tgStatus  2 }
+		
+		
+   -- pstn trunk 39871 table
+   --
+		-- 1.3.6.1.4.1.39871.1.2.1
+		pstnStatusTable  OBJECT-TYPE
+			SYNTAX SEQUENCE OF PstnStatusEntry
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"A pstn Status table which contains several information 
+				 about pstn trunk Status."
+			::= {pstnTrunkStatus  1 }
+			
+		-- 1.3.6.1.4.1.39871.1.2.1.1
+		pstnStatusEntry OBJECT-TYPE
+			SYNTAX PstnStatusEntry
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"An entry of pstn Status table."
+			INDEX { nPstnIndex}
+			::= { pstnStatusTable 1 }
+				
+			PstnStatusEntry ::= SEQUENCE {
+			    nPstnIndex INTEGER,
+			    portType   INTEGER,
+			    workStatus INTEGER,
+			    pcmSsx		 INTEGER,
+		      regStatus  INTEGER,
+		      chTotalNum INTEGER,
+		      chTalkNum  INTEGER,
+		      chIdleNum  INTEGER,
+		      chUsingNum INTEGER,
+		      pstnCharge INTEGER
+    		}
+    		
+		    nPstnIndex OBJECT-TYPE
+		    SYNTAX     Unsigned32(0..256)
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "pstn port index of this table."
+		    ::= { pstnStatusEntry 1 }
+		    
+		    portType OBJECT-TYPE
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "port type."
+		    ::= { pstnStatusEntry 2 }
+		    
+		    workStatus OBJECT-TYPE
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "work status of this port."
+		    ::= { pstnStatusEntry 3 }
+	    
+		    pcmSsx OBJECT-TYPE
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "the signal type of this port."
+		    ::= { pstnStatusEntry 4 }
+		    
+		    regStatus OBJECT-TYPE 
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "reg status of this port."
+		    ::= { pstnStatusEntry 5 }
+		    
+		    chTotalNum OBJECT-TYPE 
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "the total ch num of this port."
+		    ::= { pstnStatusEntry 6 }
+		    
+		    chTalkNum OBJECT-TYPE 
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "the talking ch num of this port."
+		    ::= { pstnStatusEntry 7 }
+		    
+		    chIdleNum OBJECT-TYPE 
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "the idle ch num of this port."
+		    ::= { pstnStatusEntry 8 }
+		    
+		    chUsingNum OBJECT-TYPE 
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "the using ch num of this port."
+		    ::= { pstnStatusEntry 9 }
+		    
+		    pstnCharge OBJECT-TYPE
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "the charge of this port."
+		    ::= { pstnStatusEntry 10 }
+		    
+           
+    --   SIP trunk Status
+		--
+		-- 1.3.6.1.4.1.39871.1.3
+		sipTrunkStatus OBJECT IDENTIFIER ::= {tgStatus  3 }
+		-- sip trunks status table
+    -- 	
+      sipTrunkStatusTable  OBJECT-TYPE  
+			SYNTAX SEQUENCE OF SipTrunkStatusEntry
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"A sip trunk table."
+			::= {sipTrunkStatus  1 }
+
+		-- 1.3.6.1.4.1.39871.1.3.1
+      sipTrunkStatusEntry OBJECT-TYPE
+			SYNTAX SipTrunkStatusEntry
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"An entry of pstn callstatics table."
+			INDEX { nSipIndex}
+			::= { sipTrunkStatusTable 1 }
+				
+			SipTrunkStatusEntry ::= SEQUENCE {
+			    nSipIndex  INTEGER,
+			    remoteIP   OCTET STRING,
+		      remotePort INTEGER,
+		      regStatus  INTEGER,
+		      chTotalInNum  INTEGER,
+		      chTotalOutNum INTEGER,
+		      chIP2PSTNNum  INTEGER,
+		      chPSTN2IPNum  INTEGER,
+		      sipCharge INTEGER
+		     }
+    		
+		    nSipIndex OBJECT-TYPE
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "sip index of this table."
+		    ::= { sipTrunkStatusEntry 1 }
+		    
+		    remoteIP 	 OBJECT-TYPE
+		    SYNTAX     OCTET STRING
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "remote ip "
+		    ::= { sipTrunkStatusEntry 2 }
+	    
+		    remotePort OBJECT-TYPE
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "remote port"
+		    ::= { sipTrunkStatusEntry 3 }
+		    
+		    regStatus OBJECT-TYPE 
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "reg status of this trunk."
+		    ::= { sipTrunkStatusEntry 4 }   
+		    
+		    chTotalInNum OBJECT-TYPE 
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "the total call in ch num of this trunk."
+		    ::= { sipTrunkStatusEntry 5 }   
+		    
+		    chTotalOutNum OBJECT-TYPE 
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "the total call out ch num of this trunk."
+		    ::= { sipTrunkStatusEntry 6 }   
+		    
+		    chIP2PSTNNum OBJECT-TYPE 
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "the ip to pstn talking num  of this trunk."
+		    ::= { sipTrunkStatusEntry 7 }   
+		    
+		    chPSTN2IPNum OBJECT-TYPE 
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "the pstn to ip talking num of this trunk."
+		    ::= { sipTrunkStatusEntry 8 }   
+		    
+		    sipCharge OBJECT-TYPE 
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "the charge of this sip trunk."
+		    ::= { sipTrunkStatusEntry 9 }
+
+-- 
+--   channel status
+-- 
+		-- 1.3.6.1.4.1.39871.1.4 
+		channelStatus OBJECT IDENTIFIER ::= {tgStatus 4 }
+		
+		-- 1.3.6.1.4.1.39871.1.4.1
+			idelNum OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"the idel channel num of this device"
+			::= {channelStatus 1 }
+			
+			-- 1.3.6.1.4.1.39871.1.4.2
+			usingNum OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"the using channel num of this device"
+			::= {channelStatus 2 }
+			
+-- 
+--   call statis
+-- 
+		-- 1.3.6.1.4.1.39871.1.5
+		callStatis OBJECT IDENTIFIER ::= {tgStatus 5 }
+		
+		-- 1.3.6.1.4.1.39871.1.5.1
+			callCount OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"statics call count"
+			::= {callStatis 1 }
+			
+		-- 1.3.6.1.4.1.39871.1.5.2
+			callSuccessCount OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"statics call success count"
+			::= {callStatis 2 }
+			
+		-- 1.3.6.1.4.1.39871.1.5.3
+			callTime OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"statics call time(minute)"
+			::= {callStatis 3 }
+				
+		-- 1.3.6.1.4.1.39871.1.5.4
+			callinrate OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"call in rate"
+			::= {callStatis 4 }
+			
+		-- 1.3.6.1.4.1.39871.1.5.5
+			calloutrate OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"call out rate"
+			::= {callStatis 5 }
+			
+		-- 1.3.6.1.4.1.39871.1.5.6
+			callinrateack OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"call in rateA"
+			::= {callStatis 6 }
+			
+		-- 1.3.6.1.4.1.39871.1.5.7
+			calloutrateack OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"call out rateA"
+			::= {callStatis 7 }
+			
+		-- 1.3.6.1.4.1.39871.1.5.8
+			callinratexmin OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"call in rate within x min only 3064"
+			::= {callStatis 8 }
+			
+		-- 1.3.6.1.4.1.39871.1.5.9
+			calloutratexmin OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"call out rate within x min only 3064"
+			::= {callStatis 9 }
+			
+		-- 1.3.6.1.4.1.39871.1.5.10
+			callinrateackxmin OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"call in rateA within x min only 3064"
+			::= {callStatis 10 }
+			
+		-- 1.3.6.1.4.1.39871.1.5.11
+			calloutrateackxmin OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"call out rateA within x min only 3064"
+			::= {callStatis 11 }
+			
+		-- 1.3.6.1.4.1.39871.1.5.12
+			curcallinnum OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"number of current call in"
+			::= {callStatis 12 }
+			
+		-- 1.3.6.1.4.1.39871.1.5.13
+			curcalloutnum OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"number of current call out"
+			::= {callStatis 13 }
+-- 
+--   cpu and memory useage
+-- 
+		-- 1.3.6.1.4.1.39871.1.6
+		cpuAndmemory OBJECT IDENTIFIER ::= {tgStatus 6 }
+		
+		-- 1.3.6.1.4.1.39871.1.6.1
+			cpuuse OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"the cpu useage of this device"
+			::= {cpuAndmemory 1 }
+			
+		-- 1.3.6.1.4.1.39871.1.6.2
+			memorysize OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"the memory size of this device"
+			::= {cpuAndmemory 2 }		
+			
+		-- 1.3.6.1.4.1.39871.1.6.3
+			memoryuse OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"the use memory size of this device"
+			::= {cpuAndmemory 3 }		
+			
+		-- 1.3.6.1.4.1.39871.1.6.4
+			flashsize OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"the flash size of this device"
+			::= {cpuAndmemory 4 }	
+			
+		-- 1.3.6.1.4.1.39871.1.6.5
+			flashuse OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"the use flash size of this device"
+			::= {cpuAndmemory 5 }	
+            
+		-- 1.3.6.1.4.1.39871.1.6.6
+		  rtplosspacketrate OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"rtp packet loss rate"
+			::= {cpuAndmemory 6}
+			
+	
+		-- 1.3.6.1.4.1.39871.1.6.8
+		  rtplosspacketcnt OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"rtp packet loss count"
+			::= {cpuAndmemory 8}
+			
+		-- 1.3.6.1.4.1.39871.1.6.9
+		  rtpsendpacketcnt OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"rtp packet send count"
+			::= {cpuAndmemory 9}
+			
+-- 
+--   lockstatus
+-- 
+		-- 1.3.6.1.4.1.39871.1.7
+		lockStatus OBJECT IDENTIFIER ::= {tgStatus 7 }
+		
+		-- 1.3.6.1.4.1.39871.1.7.1
+			lockEnable OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"lock or not with this device"
+			::= {lockStatus 1 }
+			
+		-- 1.3.6.1.4.1.39871.1.7.2
+			lockState OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"this device have locked or not"
+			::= {lockStatus 2 }		
+			
+						
+    -- gwNetwork info
+		-- 1.3.6.1.4.1.39871.2.1
+		-- eth table
+       	-- 	
+      ethTable  OBJECT-TYPE
+			SYNTAX SEQUENCE OF EthEntry
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"A eth table."
+			::= {tgNetwork  1 }
+
+      -- 1.3.6.1.4.1.39871.2.1.1
+		  ethEntry OBJECT-TYPE
+			SYNTAX EthEntry
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"An entry of eth table."
+			INDEX { ethIndex}
+			::= { ethTable 1 }
+				
+			EthEntry ::= SEQUENCE {
+			    ethIndex INTEGER,
+			    mac OCTET STRING,
+		      ip OCTET STRING,
+		      mask OCTET STRING,
+		      gateway OCTET STRING,
+		      dns OCTET STRING,
+		      netmode INTEGER,
+		      netinfo OCTET STRING,
+		      connectstatus INTEGER
+		     }
+		     
+	-- 1.3.6.1.4.1.39871.2.1.1
+         	ethEntry OBJECT-TYPE
+			SYNTAX EthEntry
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"An entry of eth table."
+			INDEX { ethIndex}
+			::= { ethTable 1 }
+
+   			ethIndex OBJECT-TYPE
+		    SYNTAX     Unsigned32(0..16)
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "index of this table."
+		    ::= { ethEntry 1 }
+		    
+		    mac OBJECT-TYPE
+		    SYNTAX     OCTET STRING
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "mac address of this eth."
+		    ::= { ethEntry 2 }
+	    
+		    ip OBJECT-TYPE
+		    SYNTAX     OCTET STRING
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "ip address of this eth."
+		    ::= { ethEntry 3 }
+		    
+		    mask OBJECT-TYPE 
+		    SYNTAX     OCTET STRING
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "mask address of this eth."
+		    ::= { ethEntry 4 }
+		    
+		    gateway OBJECT-TYPE
+		    SYNTAX     OCTET STRING
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "work mode set of this eth."
+		    ::= { ethEntry 5 }
+		    
+		    dns OBJECT-TYPE
+		    SYNTAX     OCTET STRING
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "DNS  of this eth."
+		    ::= { ethEntry 6 }
+		    
+		    
+		    netmode OBJECT-TYPE 
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "net mode of this eth."
+		    ::= { ethEntry 7 } 
+		    
+		    netinfo OBJECT-TYPE
+		    SYNTAX     OCTET STRING
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "net receive and send packets info of this eth."
+		    ::= { ethEntry 8 }
+		    
+		    connectstatus OBJECT-TYPE
+		    SYNTAX     Integer32
+		    MAX-ACCESS read-only
+		    STATUS     current
+		    DESCRIPTION
+		    "net status of this eth."
+		    ::= { ethEntry 9 }
+			
+-- 
+-- tgMgmt
+-- 	
+		-- 1.3.6.1.4.1.39871.3.1
+			downloadConfig OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"download the config file  with the ftp path."
+			::= { tgMgmt  1 }
+			
+		-- 1.3.6.1.4.1.39871.3.2
+			downloadUpgradePacket OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"download the upgrade packet with the ftp path."
+			::= { tgMgmt  2 }
+			
+		
+		-- 1.3.6.1.4.1.39871.3.3
+			cmd OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"send cmd to device."
+			::= { tgMgmt  3}
+			
+		-- 1.3.6.1.4.1.39871.3.4
+			tranferManager OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"set the new Manager address"
+			::= { tgMgmt  4}
+						
+		-- 1.3.6.1.4.1.39871.3.5
+			uploadConfig OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"upload the config file  with the ftp path."
+			::= { tgMgmt 5}
+			
+		-- 1.3.6.1.4.1.39871.3.6
+			lock OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"lock setting."
+			::= { tgMgmt 6}
+			
+		-- 1.3.6.1.4.1.39871.3.7
+			rebootSet OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"reboot setting."
+			::= { tgMgmt 7}
+			
+-- 
+-- tgNotification
+-- 			
+		-- 1.3.6.1.4.1.39871.4.1
+			devUpNotification OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"dev up send response with dev base info."
+			::= { tgNotification  1 }
+		
+		-- 1.3.6.1.4.1.39871.4.2
+			devNatNotification OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"dev send response for nat."
+			::= { tgNotification  2 }
+			
+		-- 1.3.6.1.4.1.39871.4.3
+			devDownNotification OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"dev send shutdown."
+			::= { tgNotification  3 }
+			
+
+-- 
+-- ftpTransferSchedule
+-- 		
+		-- 1.3.6.1.4.1.39871.5.1
+			upgradeSchedule OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"the schedule of transfer upgradepacket."
+			::= { ftpTransferSchedule  1 }
+		
+		-- 1.3.6.1.4.1.39871.5.2
+			dwonloadConfigSchedule OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"the schedule of download config file."
+			::= { ftpTransferSchedule  2 }
+		-- 1.3.6.1.4.1.39871.5.3
+			uploadConfigSchedule OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"the schedule of upload config file."
+			::= { ftpTransferSchedule  3 }
+
+END  

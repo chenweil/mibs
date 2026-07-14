@@ -1,0 +1,1112 @@
+-- ==================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: ACFP MIB
+-- Reference:
+-- Version: V1.5
+-- History:
+--   V1.0 2006-07-04 Created by Wang Haidong
+--   V1.1 2007-03-23 Modified by Hao Chunbo
+--        Delete the default value of unisAcfpPolicyAdminStatus.
+--   V1.2 2007-07-03 Modified by Hao Chunbo
+--        Add a new trap node for unisAcfpPolicyLifetime.
+--   V1.3 2007-11-07 Modified by Li Yugang
+--        Modify the value of unisAcfpServerCurContextType.
+--        Destroy the node of unisAcfpRuleEstablish.
+--        Add a new node for UnisAcfpPolicyDestIfFailAction.
+--        Add a new node for UnisAcfpPolicyPriority.
+--        Add a new node for unisAcfpRuleTCPFlag.
+--   V1.4 2007-12-19 Modified by Li Yugang
+--        Modify the description of unisAcfpPolicyRowStatus.
+--        Modify the description of unisAcfpRuleRowStatus.
+--        Modify the status of unisAcfpRuleEstablish.
+--        Modify the value of unisAcfpRuleTCPFlag.
+--   V1.5 2009-11-30 Modified by Zhu Dengfeng
+--        Add a new node for unisAcfpRuleSrcIPV6Address
+--        Add a new node for unisAcfpRuleSrcPrefixLen
+--        Add a new node for unisAcfpRuleDstIPV6Address
+--        Add a new node for unisAcfpRuleDstPrefixLen
+--        Add a new node for unisAcfpRuleTrafficType
+--        Add a new node for unisAcfpRuleTypeOrLen
+-- ==================================================================
+UNIS-ACFP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    IpAddress, Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    RowStatus, TruthValue, MacAddress, DisplayString
+        FROM SNMPv2-TC
+    Ipv6Address
+        FROM IPV6-TC
+    InetAddressPrefixLength
+        FROM INET-ADDRESS-MIB
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+--
+-- Node definitions
+--
+
+unisAcfp MODULE-IDENTITY
+    LAST-UPDATED "200607041936Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB module defines a set of basic objects for
+        configuring switches and routers to enable ACFP."
+    REVISION    "200607041936Z"
+    DESCRIPTION
+        "Initial version"
+    ::= { unisCommon 74 }
+
+unisAcfpObjects OBJECT IDENTIFIER  ::= { unisAcfp 1 }
+
+unisAcfpOAP  OBJECT IDENTIFIER ::= { unisAcfpObjects 1 }
+
+--  ACFP server information
+--      ACFP server should create this object and
+--      advertise its capability
+
+unisAcfpServer OBJECT IDENTIFIER ::= { unisAcfpOAP 1 }
+
+unisAcfpServerInfo OBJECT-TYPE
+    SYNTAX      BITS
+        {
+            ipserver(0),
+            redirect(1),
+            mirror(2),
+            passThrough(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "When retrieved, this object returns a set of bits
+        indicating the capabilities (or configuration) of the
+        switch or router.  The set bit is indication that a
+        router or switch can support the action for
+        security rule."
+    ::= { unisAcfpServer 1 }
+
+unisAcfpServerMaxLifetime OBJECT-TYPE
+    SYNTAX      Integer32(0..2147483647)
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "When retrieved, this object returns the maximum
+        lifetime in seconds, that this router or switch allows
+        policy rules to have."
+    ::= { unisAcfpServer 2 }
+
+unisAcfpServerPersistentRules OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "When retrieved, this object returns true(1) if the
+        ACFP MIB implementation can store policy rules
+        persistently.  Otherwise, it returns false(2)."
+    ::= { unisAcfpServer 3 }
+
+unisAcfpServerCurContextType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            no-context(1),
+            context-VLANID(2),
+            context-HG(3),
+            context-FlowID(4),
+            context-HGPlus(5)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "In some circumstances, it's necessary that packets go to
+        ACFP client with context from ACFP server.  However, the context
+        perhaps is different.  unisAcfpServerCurContextType is
+        used to distinguish this difference, ACFP client may
+        process distinctively."
+    ::= { unisAcfpServer 4 }
+
+-- ACFP client Information.
+--     This object is used for network management purpose.
+
+unisAcfpClientInfo OBJECT IDENTIFIER ::= { unisAcfpOAP 2 }
+
+unisAcfpClientInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisAcfpClientInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains the basic information about ACFP client."
+    ::= { unisAcfpClientInfo 1 }
+
+unisAcfpClientInfoEntry OBJECT-TYPE
+    SYNTAX      UnisAcfpClientInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This list contains the basic information about ACFP client."
+    INDEX
+        {
+            unisAcfpClientID
+        }
+    ::= { unisAcfpClientInfoTable 1 }
+
+UnisAcfpClientInfoEntry ::= SEQUENCE
+    {
+        unisAcfpClientID             Integer32,
+        unisAcfpClientDescription    DisplayString,
+        unisAcfpClientHwVersion      DisplayString,
+        unisAcfpClientOSVersion      DisplayString,
+        unisAcfpClientAppVersion     DisplayString,
+        unisAcfpClientIP             IpAddress,
+        unisAcfpClientMode           BITS,
+        unisAcfpClientRowStatus      RowStatus
+    }
+
+unisAcfpClientID OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The identifier of ACFP client."
+    ::= { unisAcfpClientInfoEntry 1 }
+
+unisAcfpClientDescription OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..64))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Description of the application that is running on ACFP
+        client, eg. IPS, VCX."
+    ::= { unisAcfpClientInfoEntry 2 }
+
+unisAcfpClientHwVersion OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..64))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The hardware revision of ACFP client."
+    ::= { unisAcfpClientInfoEntry 3 }
+
+unisAcfpClientOSVersion OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..64))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The operating system version running ACFP client."
+    ::= { unisAcfpClientInfoEntry 4 }
+
+unisAcfpClientAppVersion OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..64))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The application version running on ACFP client"
+    ::= { unisAcfpClientInfoEntry 5 }
+
+unisAcfpClientIP OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "IP address of ACFP client."
+    ::= { unisAcfpClientInfoEntry 6 }
+
+unisAcfpClientMode OBJECT-TYPE
+    SYNTAX      BITS
+        {
+            ipserver(0),
+            redirect(1),
+            mirror(2),
+            passThrough(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "ACFP client informs Router or switch which mode it is operating.
+        Router or switch checks unisAcfpServerInfo to see whether it is
+        capable of fulfilling this function.  If not, router or switch
+        generates a trap informing ACFP client such OAP mode is not
+        supported."
+    DEFVAL { 0 }
+    ::= { unisAcfpClientInfoEntry 7 }
+
+unisAcfpClientRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus, supports three states: createAndGo, active, destroy.
+        Creation Operation Restriction:
+        Node unisAcfpClientMode must be bound while creating a row. It is
+        optional for other nodes.
+        ACFP module must be enabled for the server while creating a row.
+        The number of rows created must not exceed upper limit.
+
+        Modification Operation Restriction:
+        Nodes that do not support modification: unisAcfpClientMode.
+        Nodes that support modification: unisAcfpClientDescription,
+        unisAcfpClientHwVersion, unisAcfpClientOSVersion,
+        unisAcfpClientAppVersion and unisAcfpClientIP.
+        If the row to be modified does not exist, error returns directly.
+
+        Deletion Operation Restriction:
+        If the row to be deleted does not exist, success returns directly.
+        "
+    ::= { unisAcfpClientInfoEntry 8 }
+
+-- Policy Information applied to Router or switch
+
+unisAcfpPolicy OBJECT IDENTIFIER ::= { unisAcfpOAP 3 }
+
+unisAcfpPolicyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisAcfpPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists all current policies for ACFP
+        client(s).  Entries in this table are created or removed
+        implicitly when entries in the unisAcfpRuleTable are
+        created or removed, respectively.  A policy entry in this
+        table only exists as long as there is rule of this policy
+        in the unisAcfpRuleTable.  The table serves for listing the
+        existing policies and their remaining lifetimes and for
+        changing lifetimes of policies and implicitly of all policy
+        members and all their member policy rules can be
+        deleted by setting unisAcfpPolicyLifetime to 0."
+    ::= { unisAcfpPolicy 1 }
+
+unisAcfpPolicyEntry OBJECT-TYPE
+    SYNTAX      UnisAcfpPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The list contains basic information of ACFP Policy."
+    INDEX
+        {
+            unisAcfpClientID,
+            unisAcfpPolicyIndex
+        }
+    ::= { unisAcfpPolicyTable 1 }
+
+UnisAcfpPolicyEntry ::= SEQUENCE
+    {
+        unisAcfpPolicyIndex              Integer32,
+        unisAcfpPolicyInIfIndex          Integer32,
+        unisAcfpPolicyOutIfIndex         Integer32,
+        unisAcfpPolicyDestIfIndex        Integer32,
+        unisAcfpPolicyContextID          Integer32,
+        unisAcfpPolicyAdminStatus        INTEGER,
+        unisAcfpPolicyLifetime           Integer32,
+        unisAcfpPolicyTimeStart          OCTET STRING,
+        unisAcfpPolicyTimeEnd            OCTET STRING,
+        unisAcfpPolicyRowStatus          RowStatus,
+        unisAcfpPolicyDestIfFailAction   INTEGER,
+        unisAcfpPolicyPriority           INTEGER
+    }
+
+unisAcfpPolicyIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The identifier of the Policy of ACFP client"
+    ::= { unisAcfpPolicyEntry 1 }
+
+unisAcfpPolicyInIfIndex OBJECT-TYPE
+    SYNTAX      Integer32(0..2147483647)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Packet is received from this interface.  The value of this object
+        contains the same value of ifIndex of ifTable."
+    DEFVAL {0}
+    ::= { unisAcfpPolicyEntry 2}
+
+
+unisAcfpPolicyOutIfIndex OBJECT-TYPE
+    SYNTAX      Integer32(0..2147483647)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Packet is sent to this interface.  The value of this object
+        contains the same value of ifIndex of ifTable."
+    DEFVAL {0}
+    ::= { unisAcfpPolicyEntry 3 }
+
+unisAcfpPolicyDestIfIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Through this interface, packet go to ACFP client from
+        ACFP server.  The value of this object contains the same
+        value of ifIndex of ifTable."
+    DEFVAL {0}
+    ::= { unisAcfpPolicyEntry 4 }
+
+unisAcfpPolicyContextID OBJECT-TYPE
+    SYNTAX      Integer32(0..2147483647)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Internal id ACFP server allocated used to map to the interface.
+        ACFP server may send packet with this unisAcfpPolicyContextID to
+        ACFP client, ACFP client can make use of this unisAcfpPolicyContextID
+        and find the policy. "
+    ::= { unisAcfpPolicyEntry 5 }
+
+unisAcfpPolicyAdminStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            enable(1), -- policy is applied
+            disable(2)   -- policy is not applied
+
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of this object indicates the desired status of the
+        policy."
+    ::= { unisAcfpPolicyEntry 6 }
+
+unisAcfpPolicyLifetime OBJECT-TYPE
+    SYNTAX      Integer32(0..2147483647)
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "When retrieved, this object delivers the maximum lifetime (seconds)
+        of all the rules of this, i.e., of all the rows in unisAcfpRuleTable
+        that have the same values of unisAcfpRulePolicyIndex and
+        unisAcfpClientID.  Successfully writing to this object modifies the
+        lifetime of all the rules of this.  Successfully writing a value
+        of 0 terminates all the rules and implicitly deletes this as soon as
+        all member entries are removed from the unisAcfpRuleTable. Note that
+        after a lifetime expired, all the corresponding entry in the
+        unisAcfpRuleTable will be removed and this will be deleted
+        implicitly.  Writing to this object is processed by the ACFP MIB
+        implementation by choosing a lifetime value that is greater than
+        or equal to zero and less than or equal to the minimum of the requested
+        value and the value specified by object unisAcfpServerMaxLifetime:
+
+            0 <= lt_granted <= MINIMUM(lt_requested, lt_maximum)
+
+        whereas:
+        lt_granted is the actually granted lifetime by the ACFP MIB
+        implementation.
+        lt_requested is the requested lifetime of the ACFP client.
+        lt_maximum is the value of object unisAcfpServerMaxLifetime.
+        SNMP set requests to this object may be rejected or the value of
+        the object after an accepted set operation may be less than the
+        value that was contained in the SNMP set request."
+    DEFVAL{ unisAcfpServerMaxLifetime }
+    ::= { unisAcfpPolicyEntry 7 }
+
+unisAcfpPolicyTimeStart OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(8))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Beginning time of this policy every day.  Eg. HH:MM:SS"
+    ::= { unisAcfpPolicyEntry 8 }
+
+unisAcfpPolicyTimeEnd OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(8))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Ending time of this policy every day.  Eg. HH:MM:SS"
+    ::= { unisAcfpPolicyEntry 9 }
+
+unisAcfpPolicyRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus, supports three states: createAndGo, active, destroy.
+        Creation Operation Restriction:
+        The client corresponding to the index unisAcfpClientID must exist
+        while creating a row.
+        Nodes unisAcfpPolicyTimeStart and unisAcfpPolicyTimeEnd are
+        bound together, and unisAcfpPolicyTimeEnd must be greater than
+        unisAcfpPolicyTimeStart.
+        The number of rows created on an incoming/outgoing interface
+        cannot exceed the upper limit.
+        The number of rows created cannot exceed the upper limit for each client.
+        A packet matches a policy in the following order:
+        - It first matches the policy with the highest priority.
+        - For two policies with the same priority,
+          it matches the one with the smallest client index.
+        - For two policies with the same client index,
+          it matches the one with the smallest policy index.
+
+        Modification Operation Restriction:
+        Nodes that do not support modification: unisAcfpPolicyInIfIndex,
+        unisAcfpPolicyOutIfIndex, unisAcfpPolicyDestIfIndex,
+        unisAcfpPolicyDestIfFailAction, unisAcfpPolicyPriority.
+        Nodes that support modification: unisAcfpPolicyAdminStatus,
+        unisAcfpPolicyLifetime, unisAcfpPolicyTimeStart and unisAcfpPolicyTimeEnd.
+        While modifying a row, if the row corresponding to the index configured
+        does not exist, error returns directly.
+        While modifying a node, the restriction over unisAcfpPolicyTimeStart
+        and unisAcfpPolicyTimeEnd is the same as creating a node.
+
+        Deletion Operation Restriction:
+        If the row to be deleted does not exist, success returns directly.
+        "
+    ::= { unisAcfpPolicyEntry 10 }
+
+unisAcfpPolicyDestIfFailAction OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            delete(1),   -- delete all rules of the policy from driver
+            reserve(2)   -- reserve all rules of the policy in driver
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of this object indicates the action of the
+        policy when the destination interface failed."
+    DEFVAL { 1 }
+    ::= { unisAcfpPolicyEntry 11 }
+
+unisAcfpPolicyPriority OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            priority1(1), -- Priority 1 (MIN)
+            priority2(2), -- Priority 2
+            priority3(3), -- Priority 3
+            priority4(4), -- Priority 4
+            priority5(5), -- Priority 5
+            priority6(6), -- Priority 6
+            priority7(7), -- Priority 7
+            priority8(8)  -- Priority 8 (MAX)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of this object indicates the priority of the
+        policy.
+        Priority8 is maximal priority.
+        Priority1 is minimal priority."
+    DEFVAL { 4 }
+    ::= { unisAcfpPolicyEntry 12 }
+
+-- Individual Rule policy Information applied to Router or switch
+
+unisAcfpRule OBJECT IDENTIFIER ::= { unisAcfpOAP 4 }
+
+unisAcfpRuleTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisAcfpRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists all the rules.  It is indexed by
+        unisAcfpClientID, unisAcfpRulePolicyIndex and unisAcfpRuleIndex.
+        Entries can be deleted by writing unisAcfpPolicyLifetime to 0."
+    ::= { unisAcfpRule 1 }
+
+unisAcfpRuleEntry OBJECT-TYPE
+    SYNTAX      UnisAcfpRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The list contains basic information of the rule."
+    INDEX
+        {
+            unisAcfpClientID,
+            unisAcfpPolicyIndex,
+            unisAcfpRuleIndex
+        }
+    ::= { unisAcfpRuleTable 1 }
+
+UnisAcfpRuleEntry ::= SEQUENCE
+    {
+        unisAcfpRuleIndex           Integer32,
+        unisAcfpRuleOperStatus      INTEGER,
+        unisAcfpRuleAction          INTEGER,
+        unisAcfpRuleAll             TruthValue,
+        unisAcfpRuleSrcMAC          MacAddress,
+        unisAcfpRuleDstMAC          MacAddress,
+        unisAcfpRuleVlanStart       Integer32,
+        unisAcfpRuleVlanEnd         Integer32,
+        unisAcfpRuleProtocol        Integer32,
+        unisAcfpRuleSrcIP           IpAddress,
+        unisAcfpRuleSrcIPMask       IpAddress,
+        unisAcfpRuleSrcOp           INTEGER,
+        unisAcfpRuleSrcStartPort    Integer32,
+        unisAcfpRuleSrcEndPort      Integer32,
+        unisAcfpRuleDstIP           IpAddress,
+        unisAcfpRuleDstIPMask       IpAddress,
+        unisAcfpRuleDstOp           INTEGER,
+        unisAcfpRuleDstStartPort    Integer32,
+        unisAcfpRuleDstEndPort      Integer32,
+        unisAcfpRulePrecedence      Integer32,
+        unisAcfpRuleTos             Integer32,
+        unisAcfpRuleDscp            Integer32,
+        unisAcfpRuleEstablish       TruthValue,
+        unisAcfpRuleFragment        TruthValue,
+        unisAcfpRulePacketRate      Integer32,
+        unisAcfpRuleRowStatus       RowStatus,
+        unisAcfpRuleTCPFlag         Integer32,
+        unisAcfpRuleSrcIPV6Address  Ipv6Address,
+        unisAcfpRuleSrcPrefixLen    InetAddressPrefixLength,
+        unisAcfpRuleDstIPV6Address  Ipv6Address,
+        unisAcfpRuleDstPrefixLen    InetAddressPrefixLength,
+        unisAcfpRuleTrafficType     BITS,
+        unisAcfpRuleTypeOrLen       Integer32
+    }
+
+unisAcfpRuleIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The identifier of the rules which have the same unisAcfpPolicyIndex
+        and unisAcfpClientID.unisAcfpRuleIndex indicates rule sequence in the
+        same policy."
+    ::= { unisAcfpRuleEntry 1 }
+
+unisAcfpRuleOperStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            success(1), -- rule applied successfully to interface
+            fail(2)     -- rule failed to apply to interface
+
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object indicates the status of a rule.
+        success : Applied rule to interface successfully.
+        fail : Failed to apply rule to interface.
+        "
+    DEFVAL { fail }
+    ::= { unisAcfpRuleEntry 2 }
+
+unisAcfpRuleAction OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            permit(1),
+            deny(2),
+            redirect(3),
+            mirror(4),
+            rate(5)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The action of this rule."
+    ::= { unisAcfpRuleEntry 3 }
+
+unisAcfpRuleAll OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The rule match all packet or does not.
+        true : all
+        false : not all
+        "
+    DEFVAL { false }
+    ::= { unisAcfpRuleEntry 4 }
+
+unisAcfpRuleSrcMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Source MAC of this rule."
+    ::= { unisAcfpRuleEntry 5 }
+
+unisAcfpRuleDstMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Destination MAC of this rule."
+    ::= { unisAcfpRuleEntry 6 }
+
+unisAcfpRuleVlanStart OBJECT-TYPE
+    SYNTAX      Integer32(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Starting VLAN id of this rule.
+        0 : Invalid value"
+    DEFVAL { 0 }
+    ::= { unisAcfpRuleEntry 7 }
+
+unisAcfpRuleVlanEnd OBJECT-TYPE
+    SYNTAX      Integer32(0..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Ending VLAN id of this rule.
+        0 : Invalid value"
+    DEFVAL { 0 }
+    ::= { unisAcfpRuleEntry 8 }
+
+unisAcfpRuleProtocol OBJECT-TYPE
+    SYNTAX      Integer32(0..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The protocol-type of this rule.
+        <0-255>  Protocol number
+        gre      GRE tunneling(47)
+        icmp     Internet Control Message Protocol(1)
+        igmp     Internet Management Protocol(2)
+        ip       Any IP protocol(0)
+        ipinip   IP in IP tunneling(4)
+        ospf     OSPF routing protocol(89)
+        tcp      Transmission Control Protocol (6)
+        udp      User Datagram Protocol (17)
+        "
+    DEFVAL { 0 }
+    ::= { unisAcfpRuleEntry 9 }
+
+unisAcfpRuleSrcIP OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Source IP address of this rule."
+    ::= { unisAcfpRuleEntry 10 }
+
+unisAcfpRuleSrcIPMask OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Source IP-address wild of this rule.  Eg. 0.0.0.255."
+    ::= { unisAcfpRuleEntry 11 }
+
+unisAcfpRuleSrcOp OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            equal(1),
+            notEqual(2),
+            lessThan(3),
+            greaterThan(4),
+            range(5),
+            invalid(6)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Source Port operation for this rule"
+    DEFVAL { invalid }
+    ::= { unisAcfpRuleEntry 12 }
+
+unisAcfpRuleSrcStartPort OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Starting UDP/TCP Source Port number of this rule."
+    ::= { unisAcfpRuleEntry 13 }
+
+unisAcfpRuleSrcEndPort OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Ending UDP/TCP Source Port of this rule."
+    ::= { unisAcfpRuleEntry 14 }
+
+unisAcfpRuleDstIP OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Destination IP address of this rule."
+    ::= { unisAcfpRuleEntry 15 }
+
+unisAcfpRuleDstIPMask OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Destination IP-address wild of this rule.  Eg. 0.0.0.255"
+    ::= { unisAcfpRuleEntry 16 }
+
+unisAcfpRuleDstOp OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            equal(1),
+            nonEqual(2),
+            lessThan(3),
+            greaterThan(4),
+            range(5),
+            invalid(6)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Destination Port operation for this rule"
+    DEFVAL { invalid }
+    ::= { unisAcfpRuleEntry 17 }
+
+unisAcfpRuleDstStartPort OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Starting UDP/TCP Destination Port number of this rule."
+    ::= { unisAcfpRuleEntry 18 }
+
+unisAcfpRuleDstEndPort OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Ending UDP/TCP Destination Port of this rule."
+    ::= { unisAcfpRuleEntry 19 }
+
+unisAcfpRulePrecedence OBJECT-TYPE
+    SYNTAX      Integer32(0..7|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of precedence field in IP header.
+        <255>                  Invalid value
+        <0-7>                  value of precedence
+        routine(0)             Routine precedence
+        priority(1)            Priority precedence
+        immediate(2)           Immediate precedence
+        flash(3)               Flash precedence
+        flash-override(4)      Flash Override precedence
+        critical(5)            Critical precedence
+        internet(6)            Network Control precedence
+        network(7)             Internetwork Control precedence
+        "
+    DEFVAL { 255 }
+    ::= { unisAcfpRuleEntry 20 }
+
+unisAcfpRuleTos OBJECT-TYPE
+    SYNTAX      Integer32(0..15|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of TOS field in IP header.
+        <255>                  Invalid value
+        <0-15>                 value of ToS (Type of Service)
+        Normal(0)              normal service
+        min-monetary-cost(1)   minimum monetary cost
+        max-reliability(2)     maximum reliability
+        max-throughput(4)      maximum throughput
+        min-delay(8)           minimum delay
+        "
+    DEFVAL { 255 }
+    ::= { unisAcfpRuleEntry 21 }
+
+unisAcfpRuleDscp OBJECT-TYPE
+    SYNTAX      Integer32(0..63|255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of DSCP.
+        <255>                  Invalid value
+        <0-63>                 value of DSCP
+        Be(0)                  best effort
+        af11(10)               assured forwarding 11 service
+        af12(12)               assured forwarding 12 service
+        af13(14)               assured forwarding 13 service
+        af21(18)               assured forwarding 18 service
+        af22(20)               assured forwarding 20 service
+        af23(22)               assured forwarding 22 service
+        af31(26)               assured forwarding 31 service
+        af32(28)               assured forwarding 32 service
+        af33(30)               assured forwarding 33 service
+        af41(34)               assured forwarding 41 service
+        af42(36)               assured forwarding 42 service
+        af43(38)               assured forwarding 43 service
+        cs1(8)                 class selector 1 service
+        cs2(16)                class selector 2 service
+        cs3(24)                class selector 3 service
+        cs4(32)                class selector 4 service
+        cs5(40)                class selector 5 service
+        cs6(48)                class selector 6 service
+        cs7(56)                class selector 7 service
+        ef(46)                 expedited forwarding service
+        "
+    DEFVAL { 255 }
+    ::= { unisAcfpRuleEntry 22 }
+
+unisAcfpRuleEstablish OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      deprecated
+    DESCRIPTION
+        "Establish Flag.  Matches the TCP packets with the ACK
+        and/or RST flag, including the TCP packets of these
+        types: SYN+ACK, ACK, FIN+ACK, RST, RST+ACK."
+    DEFVAL { false }
+    ::= { unisAcfpRuleEntry 23 }
+
+unisAcfpRuleFragment OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The flag of matching fragmented packet."
+    DEFVAL { false }
+    ::= { unisAcfpRuleEntry 24 }
+
+unisAcfpRulePacketRate OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Packet rate (Kbps) of this rule."
+    ::= { unisAcfpRuleEntry 25 }
+
+unisAcfpRuleRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "RowStatus, supports three states: createAndGo, active, destroy.
+        Creation Operation Restriction:
+        Node unisAcfpRuleAction must be bound while creating a line.
+        Nodes unisAcfpRuleAll and unisAcfpRuleProtocol, unisAcfpRuleSrcIP,
+        unisAcfpRuleSrcIPMask, unisAcfpRuleDstIP, unisAcfpRuleSrcOp,
+        unisAcfpRuleSrcStartPort, unisAcfpRuleSrcEndPort, unisAcfpRuleDstIP,
+        unisAcfpRuleDstIPMask, unisAcfpRuleDstOp, unisAcfpRuleDstStartPort,
+        unisAcfpRuleDstEndPort, unisAcfpRulePrecedence, unisAcfpRuleTos,
+        unisAcfpRuleDscp, unisAcfpRuleTCPFlag, unisAcfpRuleFragment are
+        mutually exclusive.
+        Nodes unisAcfpRuleSrcIP and unisAcfpRuleSrcIPMask are bound together,
+        otherwise, the source IP address is neglected.
+        The restriction over unisAcfpRuleDstIP and unisAcfpRuleDstIPMask is the
+        same as unisAcfpRuleSrcIP and unisAcfpRuleSrcIPMask.
+        Nodes unisAcfpRuleDscp and unisAcfpRulePrecedence, unisAcfpRuleTos are
+        mutually exclusive.
+        If the node unisAcfpRuleSrcOp is bound to range(5),
+        unisAcfpRuleSrcStartPort and unisAcfpRuleSrcEndPort must be bound together,
+        and unisAcfpRuleSrcEndPort must be greater than unisAcfpRuleSrcStartPort.
+        If the node unisAcfpRuleSrcOp is bound to equal(1), notEqual(2),
+        lessThan(3) or greaterThan(4), unisAcfpRuleSrcStartPort must be bound
+        together, and unisAcfpRuleSrcEndPort is neglected.
+        The restriction over unisAcfpRuleDstOp, unisAcfpRuleDstStartPort and
+        unisAcfpRuleDstEndPort is the same as unisAcfpRuleSrcOp,
+        unisAcfpRuleSrcStartPort and unisAcfpRuleSrcEndPort.
+        If the node unisAcfpRuleAction is bound to redirect(3) or mirror(4),
+        the destination interfaces of the policy the rule belonging to must exist;
+        The number of rows created cannot exceed the upper limit for each policy,
+        each inbound interface and each outbound interface.
+
+        Modification Operation Restriction:
+        The row does not support modification.
+
+        Deletion Operation Restriction
+        If the row to be deleted does not exist, success returns directly.
+        "
+    ::= { unisAcfpRuleEntry 26 }
+
+unisAcfpRuleTCPFlag OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "TCP Flag.
+        <0>       don't care for TCP flag to match packets
+        <1-65535> care for TCP flag to match packets,
+                  the value is combination of next list.
+                  URG_VALID (1 << 13)
+                  URG_SET   (1 << 5)
+                  ACK_VALID (1 << 12)
+                  ACK_SET   (1 << 4)
+                  PSH_VALID (1 << 11)
+                  PSH_SET   (1 << 3)
+                  RST_VALID (1 << 10)
+                  RST_SET   (1 << 2)
+                  SYN_VALID (1 << 9)
+                  SYN_SET   (1 << 1)
+                  FIN_VALID (1 << 8)
+                  FIN_SET   1
+
+        Matches the TCP packets with the URG and/or
+        ACK and/or PSH and/or RST and/or SYN and/or FIN flag,
+        including the TCP packets of these
+        types: SYN+ACK, ACK, FIN+ACK, RST, RST+ACK."
+    DEFVAL { 0 }
+    ::= { unisAcfpRuleEntry 27 }
+
+unisAcfpRuleSrcIPV6Address OBJECT-TYPE
+    SYNTAX      Ipv6Address
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Source IPv6 address of this rule."
+    ::= { unisAcfpRuleEntry 28 }
+
+unisAcfpRuleSrcPrefixLen OBJECT-TYPE
+    SYNTAX      InetAddressPrefixLength
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Source IPv6 address prefix length of this rule. Eg. 64."
+    ::= { unisAcfpRuleEntry 29 }
+
+unisAcfpRuleDstIPV6Address OBJECT-TYPE
+    SYNTAX      Ipv6Address
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Destination IPv6 address of this rule."
+    ::= { unisAcfpRuleEntry 30 }
+
+unisAcfpRuleDstPrefixLen OBJECT-TYPE
+    SYNTAX      InetAddressPrefixLength
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Destination IPv6 address prefix length of this rule. Eg. 64."
+    ::= { unisAcfpRuleEntry 31 }
+
+unisAcfpRuleTrafficType OBJECT-TYPE
+    SYNTAX      BITS
+        {
+            unicast(0),
+            multicast(1),
+            broadcast(2)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Traffic type of this rule. When retrieved, this object
+        returns a set of bits indicating the traffic type."
+    ::= { unisAcfpRuleEntry 32 }
+
+unisAcfpRuleTypeOrLen OBJECT-TYPE
+    SYNTAX      Integer32(0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type or length of ethernet packet.
+        For Ethernet II encapsulation, it stands for packet type.
+        For 802.3 encapsulation, it stands for packet length."
+    ::= { unisAcfpRuleEntry 33 }
+
+-- Notifications.  The definition of unisAcfpNotifications makes notification
+-- registrations reversible (see STD 58, RFC 2578, section 8.5).
+
+unisAcfpNotifications OBJECT IDENTIFIER  ::= { unisAcfpOAP 5 }
+
+unisAcfpCurContextChanged NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisAcfpServerCurContextType
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent when router or switch changed
+        unisAcfpServerCurContextType."
+    ::= { unisAcfpNotifications 1 }
+
+unisAcfpClientRegister NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisAcfpClientID
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent when the ACFP client is registered."
+    ::= { unisAcfpNotifications 2 }
+
+unisAcfpClientUnRegister NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisAcfpClientID
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent when the ACFP client is unregistered."
+    ::= { unisAcfpNotifications 3 }
+
+unisAcfpClientDead NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisAcfpClientID
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent when the ACFP client is not responding."
+    ::= { unisAcfpNotifications 4 }
+
+unisAcfpNotSupportedOAPMode NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisAcfpClientID,
+            unisAcfpClientMode,
+            unisAcfpServerInfo
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent when router or switch cannot support OAP
+        mode that ACFP client wants to operate on."
+    ::= { unisAcfpNotifications 5 }
+
+unisAcfpLifetimeChangeEvent NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisAcfpPolicyLifetime
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification can be generated for indicating that
+        The lifetime of all member rules of the was
+        changed by successfully writing to object
+        unisAcfpPolicyLifetime.  Note that this notification
+        is only sent if the lifetime of a policy was changed by
+        successfully writing to object unisAcfpPolicyLifetime."
+    ::= { unisAcfpNotifications 6 }
+
+unisAcfpRuleCreatedEvent NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisAcfpRuleIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent when a new rule is created."
+    ::= { unisAcfpNotifications 7 }
+
+unisAcfpRuleDeletedEvent NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisAcfpRuleIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent when a rule is deleted."
+    ::= { unisAcfpNotifications 8 }
+
+unisAcfpRuleErrorEvent NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisAcfpRuleIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent when rule cannot be applied."
+    ::= { unisAcfpNotifications 9 }
+
+unisAcfpLifetimeExpireEvent NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisAcfpPolicyLifetime
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent
+         when the time of the policy existed exceeds its lifetime."
+    ::= { unisAcfpNotifications 10 }
+
+END

@@ -1,0 +1,701 @@
+-- ==================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Device Management MIB
+-- Reference:
+-- Version: V2.7
+-- History:
+--      V1.0 (1) Created by Hou Qiang, 2001.06.29
+--           (2) Revised by Qi Zhenglin, 2001.12.30 ----r003 revision
+--      V1.1 2004/7/20 import unisLswFrameIndex, unisLswSlotIndex
+--           FROM UNIS-LSW-DEV-ADM-MIB
+--      V1.2 2004/09/10
+--           1) change all MIB objects' STATUS from mandatory to current.
+--           2) remove statement before unisLswdevMMib
+--           3) adjust file format, change tab to space and some small
+--              changes.
+--           4) change STATUS of unisCfmWriteFlash and unisCfmEraseFlash
+--              from write-only to read-write.
+--      V2.0 2004-10-12 updated by gaolong
+--           Import Gauge32, OBJECT-IDENTITY.
+--           Relocate unisLswdevMMib MODULE-IDENTITY clause.
+--           Change ACCESS to MAX-ACCESS
+--           Change Gauge to Gauge32.
+--           Change value of unisDevMFanStatus and unisDevMPowerStatus from underscores to hyphens.
+--      V2.1  2005-01-12
+--           Change the description of unisFlhTotalSize and unisFlhTotalFree by sunqiang
+--      V2.2  2005-06-10 updated by Chen Xi
+--           Modify the SYNTAX and DESCRIPTION of unisLinkUpDownTrapEnable
+--           and adjust file format.
+--      V2.3  2011-11-26 updated by duyanbing
+--           Add unisDevMFirstTrapTime.
+--      V2.4  2012-04-26
+--           Added unisdevMExternalAlarmStatus for reserving by wangcong.
+--      V2.5  2014-09-26
+--           Added unisDevMFanPosFrame, unisDevMFanPosSlot, unisDevMFanPosIndex, unisDevMFanMaxSpeed
+--           and unisDevMFanCurrentSpeed by fangliwen.
+--      V2.6  2017-07-17
+--           Added unisDevMPowerEntIndex by fangliwen.
+--      V2.7  2020-05-11
+--           Added unisDevMPowerRatedVoltage, unisDevMPowerRatedCurrent, unisDevMPowerLoadFactor,
+--           unisDevMPowerUsedPower and unisDevMPowerRemainingPower by meishenhe.
+-- ==================================================================
+-- ==================================================================
+--
+-- Varibles and types be imported
+--
+-- ==================================================================
+UNIS-LswDEVM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, TimeTicks, Gauge32, Integer32, OBJECT-IDENTITY
+        FROM SNMPv2-SMI
+
+    unislswCommon, unisRhw
+        FROM UNIS-OID-MIB
+    unisLswFrameIndex, unisLswSlotIndex
+        FROM UNIS-LSW-DEV-ADM-MIB
+        ;
+
+unisLswdevMMib MODULE-IDENTITY
+        LAST-UPDATED "202005110000Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+        "Added unisDevMPowerRatedVoltage, unisDevMPowerRatedCurrent, unisDevMPowerLoadFactor,
+        unisDevMPowerUsedPower and unisDevMPowerRemainingPower."
+        REVISION "202005110000Z"
+        DESCRIPTION
+        "The objects in this MIB module are used to display
+        information about physical resource."
+        REVISION "201707170000Z"
+        DESCRIPTION
+        "Added unisDevMPowerEntIndex."
+        REVISION "200106290000Z"
+        DESCRIPTION
+        "The initial version of this MIB module."
+        ::= { unislswCommon  9 }
+
+unisDevice OBJECT IDENTIFIER ::= { unisRhw 8 }
+
+-- ==================================================================
+--
+-- ======================= definition begin =========================
+--
+-- ==================================================================
+
+unisCpuTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF UnisCpuEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table of CPU statistics."
+    ::= { unisDevice 1 }
+
+unisCpuEntry  OBJECT-TYPE
+    SYNTAX  UnisCpuEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The Entries of unisCpuTable."
+    INDEX   { unisCpuIndex }
+    ::= { unisCpuTable  1 }
+
+UnisCpuEntry ::=
+   SEQUENCE {
+            unisCpuIndex          Integer32,
+            unisCpuCostRate       Gauge32,
+            unisCpuCostRatePer1Min       Gauge32,
+            unisCpuCostRatePer5Min       Gauge32
+           }
+
+unisCpuIndex  OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Index of unisCpuTable. This integer is a unique number to
+             identify the CPU(s). We recommend two Number Plans in this
+             paper, Logical Number or Physical Number. For the first
+             case, unisCpuIndex is a integer, range from 1 to the Maximum
+             number, for example 1,2,3,4,5 ..., where 1 represents
+             the first CPU, 2 represents the second CPU, etc.  For the
+             second case unisCpuIndex represents physical card position
+             (Shelf Number, Frame Number, Slot Number, SubSlotNumber)
+             where the CPU residing, for example, 0x01020304 represent
+             the CPU on the 4th subslot of the 3th slot of the 2nd frame
+             of the 1st Shelf. In the condition of multiple CPU system
+             where CPU group coordinately  process on one board, we see
+             the CPUs as one CPU"
+    ::= { unisCpuEntry 1 }
+
+unisCpuCostRate  OBJECT-TYPE
+   SYNTAX  Gauge32
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+           "The overall CPU busy percentage in the last 5 second period. "
+   ::= { unisCpuEntry 2 }
+
+unisCpuCostRatePer1Min OBJECT-TYPE
+   SYNTAX  Gauge32
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+           "The overall CPU cost percentage in the last 1 minute period. "
+   ::= { unisCpuEntry 3 }
+
+unisCpuCostRatePer5Min OBJECT-TYPE
+   SYNTAX  Gauge32
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+           "The overall CPU cost percentage in the last 5 minutes period. "
+   ::= { unisCpuEntry 4 }
+
+unisMem   OBJECT IDENTIFIER ::= { unisDevice 2 }
+
+unisMemTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF UnisMemEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "This table contains memory information.  "
+    ::= { unisMem 1 }
+
+unisMemEntry  OBJECT-TYPE
+    SYNTAX  UnisMemEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The Entries of unisMemTable"
+    INDEX   { unisMemModuleIndex }
+            ::= { unisMemTable  1 }
+
+UnisMemEntry ::=
+   SEQUENCE {
+            unisMemModuleIndex     Integer32,
+            unisMemSize            Gauge32,
+            unisMemFree            Gauge32,
+            unisMemRawSliceUsed    Gauge32,
+            unisMemLgFree          Gauge32,
+            unisMemFail            Gauge32,
+            unisMemFailNoMem       Gauge32
+            }
+
+unisMemModuleIndex   OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Index of unisMemTable. This integer is a unique number to
+             identify the memory module. We recommend two Number Plans
+             in this paper, Logical Number or Physical Number. For the
+             first case, unisMemModuleIndex is a integer, range from 1 to
+             the Maximum number, for example 1,2,3,4,5 ..., where 1
+             represents the first memory module, 2 represents the second
+             memory module, etc.  For the second case unisMemModuleIndex
+             represents physical card position (Shelf Number, Frame Number,
+             Slot Number, SubSlotNumber) where the memory module residing,
+             for example, 0x01020304 represent the memory module on the 4th
+             subslot of the 3th slot of the 2nd frame of the 1st Shelf. "
+    ::= { unisMemEntry  1 }
+
+unisMemSize OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+           "Indicates the total size of the memory module
+            which is on the managed object."
+    ::= { unisMemEntry  2 }
+
+unisMemFree OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+           "Indicates the free size of the memory"
+    ::= { unisMemEntry  3 }
+
+unisMemRawSliceUsed OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+           "Indicates the used size of the raw slice memory"
+    ::= { unisMemEntry  4 }
+
+unisMemLgFree OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+           "The largest free size of the contiguous area in the memory.
+           The unit is byte."
+    ::= { unisMemEntry  5 }
+
+unisMemFail OBJECT-TYPE
+     SYNTAX  Gauge32
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The times of memory allocation failures"
+     ::= { unisMemEntry 6 }
+
+unisMemFailNoMem OBJECT-TYPE
+     SYNTAX  Gauge32
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The times of memory allocation failures due to no free memory."
+     ::= { unisMemEntry 7 }
+
+unisBufTable    OBJECT-TYPE
+    SYNTAX  SEQUENCE OF UnisBufEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "This table contains buffer information.  "
+    ::= { unisMem 2 }
+
+unisBufEntry   OBJECT-TYPE
+    SYNTAX  UnisBufEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The Entries of unisBufferTable"
+    INDEX   { unisBufModuleIndex , unisBufSize }
+    ::= { unisBufTable  1 }
+
+UnisBufEntry ::=
+   SEQUENCE {
+            unisBufModuleIndex     Integer32,
+            unisBufSize            Integer32,
+            unisBufCurrentTotal    Gauge32,
+            unisBufCurrentUsed     Gauge32
+           }
+
+unisBufModuleIndex   OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Index of unisBufferTable. This integer is a unique number to
+             identify the buffer module. We recommend two Number Plans
+             in this paper, Logical Number or Physical Number. For the
+             first case, unisBufferModuleIndex is a integer, range from 1 to
+             the Maximum number, for example 1,2,3,4,5 ..., where 1
+             represents the first buffer module, 2 represents the second
+             buffer module, etc.  For the second case unisBufferModuleIndex
+             represents physical card position (Shelf Number, Frame Number,
+             Slot Number, SubSlotNumber) where the buffer module residing,
+             for example, 0x01020304 represent the buffer module on the 4th
+             subslot of the 3th slot of the 2nd frame of the 1st Shelf. "
+    ::= { unisBufEntry  1 }
+
+unisBufSize OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The size of buffer,unit is byte."
+    ::= { unisBufEntry 2 }
+
+unisBufCurrentTotal OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The total number of buffer currently."
+    ::= { unisBufEntry 3 }
+
+unisBufCurrentUsed OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of used buffer currently."
+    ::= { unisBufEntry 4 }
+
+unisFlh   OBJECT IDENTIFIER ::= { unisDevice 3 }
+
+-- Local Flash Group
+-- This group is present in all products which contain flash"
+
+unisFlhTotalSize OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+           "The flash memory's total size, in kilobyte"
+    ::= { unisFlh 1 }
+
+unisFlhTotalFree OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+           "The free space in internal flash memory, in kilobyte"
+    ::= { unisFlh 2 }
+
+unisFlhLastDelTime OBJECT-TYPE
+    SYNTAX  TimeTicks
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+           "The time since system up of the latest deleting operation of
+            flash memory. The value of Zero indicates there is no erasing operation
+            since system up"
+    DEFVAL { 0 }
+    ::= { unisFlh 3 }
+
+unisFlhDelState OBJECT-TYPE
+    SYNTAX  INTEGER {
+        executing(1),
+        ok(2),
+        error(3),
+        readOnly(4),
+        failtoopen(5),
+        blockMallocFail(6),
+        noneDelOperationSinceStart(7)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+           "The state indicates the result of current or
+            latest flash memory deleting operation"
+    ::= { unisFlh 4 }
+
+unisFlhState OBJECT-TYPE
+    SYNTAX  INTEGER {
+        busy(1),
+        free(2)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+           "Busy indicates the flash memory is unavailable due to others may be using it,
+            and free indicates the flash memory is available now"
+    ::= { unisFlh 5 }
+
+-- ==================================================================
+
+unisLswdevMMibObject OBJECT-IDENTITY
+    STATUS current
+    DESCRIPTION
+        "Description."
+    ::= { unisLswdevMMib 1 }
+
+unisdevMFanStatusTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisDevMFanStatusEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " Fan status description table "
+        ::= { unisLswdevMMibObject  1 }
+
+unisdevMFanStatusEntry OBJECT-TYPE
+        SYNTAX UnisDevMFanStatusEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " Fan status description table entry "
+        INDEX   { unisDevMFanNum }
+        ::= { unisdevMFanStatusTable 1}
+
+UnisDevMFanStatusEntry ::=
+   SEQUENCE {
+                unisDevMFanNum           Integer32,
+                unisDevMFanStatus        INTEGER,
+                unisDevMFanPosFrame      Integer32,
+                unisDevMFanPosSlot       Integer32,
+                unisDevMFanPosIndex      Integer32,
+                unisDevMFanMaxSpeed      Integer32,
+                unisDevMFanCurrentSpeed  Integer32
+            }
+
+unisDevMFanNum  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Fan number "
+        ::= { unisdevMFanStatusEntry 1 }
+
+unisDevMFanStatus  OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+        active     (1),
+        deactive   (2),
+        not-install  (3),
+        unsupport    (4)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Fan status: active (1), deactive (2) not installed (3) and unsupported (4)"
+        ::= { unisdevMFanStatusEntry 2 }
+
+unisDevMFanPosFrame  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Frame number of the fan"
+        ::= { unisdevMFanStatusEntry 3 }
+
+unisDevMFanPosSlot  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Slot number of the fan"
+        ::= { unisdevMFanStatusEntry 4 }
+
+unisDevMFanPosIndex  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " ID of the fan"
+        ::= { unisdevMFanStatusEntry 5 }
+
+unisDevMFanMaxSpeed  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Maximum speed of the fan, in RPM"
+        ::= { unisdevMFanStatusEntry 6 }
+
+unisDevMFanCurrentSpeed  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Current speed of the fan, in RPM"
+        ::= { unisdevMFanStatusEntry 7 }
+
+unisdevMPowerStatusTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisDevMPowerStatusEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " Power status description table  "
+        ::= { unisLswdevMMibObject  2 }
+
+unisdevMPowerStatusEntry OBJECT-TYPE
+        SYNTAX UnisDevMPowerStatusEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " Power status description table entry   "
+        INDEX   { unisDevMPowerNum }
+        ::= { unisdevMPowerStatusTable 1}
+
+UnisDevMPowerStatusEntry ::=
+   SEQUENCE {
+                unisDevMPowerNum            Integer32,
+                unisDevMPowerStatus         INTEGER,
+                unisDevMPowerEntIndex       Integer32,
+                unisDevMPowerRatedVoltage   Integer32,
+                unisDevMPowerRatedCurrent   Integer32,
+                unisDevMPowerLoadFactor     Integer32,
+                unisDevMPowerUsedPower      Integer32,
+                unisDevMPowerRemainingPower Integer32
+            }
+
+unisDevMPowerNum  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION "Power number "
+        ::= { unisdevMPowerStatusEntry 1 }
+
+unisDevMPowerStatus OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+        active     (1),
+        deactive   (2),
+        not-install (3),
+        unsupport    (4)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Power status: active (1), deactive (2) not installed (3) and unsupported    "
+        ::= { unisdevMPowerStatusEntry 2 }
+
+unisDevMPowerEntIndex  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION "Power entity index "
+        ::= { unisdevMPowerStatusEntry 3 }
+
+unisDevMPowerRatedVoltage  OBJECT-TYPE
+        SYNTAX  Integer32
+        UNITS      "mV"
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION "Power rated voltage "
+        ::= { unisdevMPowerStatusEntry 4 }
+
+unisDevMPowerRatedCurrent  OBJECT-TYPE
+        SYNTAX  Integer32
+        UNITS      "mA"
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION "Power rated current "
+        ::= { unisdevMPowerStatusEntry 5 }
+
+unisDevMPowerLoadFactor  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION "Power load factor "
+        ::= { unisdevMPowerStatusEntry 6 }
+
+unisDevMPowerUsedPower  OBJECT-TYPE
+        SYNTAX  Integer32
+        UNITS      "mW"
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION "Power usage "
+        ::= { unisdevMPowerStatusEntry 7 }
+
+unisDevMPowerRemainingPower  OBJECT-TYPE
+        SYNTAX  Integer32
+        UNITS      "mW"
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION "Remaining of power "
+        ::= { unisdevMPowerStatusEntry 8 }
+
+unisdevMSlotEnvironmentTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisdevMSlotEnvironmentEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " environment description table  "
+        ::= { unisLswdevMMibObject  3 }
+
+unisdevMSlotEnvironmentEntry OBJECT-TYPE
+        SYNTAX UnisdevMSlotEnvironmentEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " environment description table entry   "
+        INDEX   { unisLswFrameIndex, unisLswSlotIndex, unisdevMSlotEnvironmentType }
+        ::= { unisdevMSlotEnvironmentTable 1 }
+
+UnisdevMSlotEnvironmentEntry ::=
+   SEQUENCE {
+                unisdevMSlotEnvironmentType               INTEGER,
+                unisDevMSlotEnvironmentStatus             INTEGER,
+                unisDevMSlotEnvironmentValue              Integer32,
+                unisDevMSlotEnvironmentUpperLimit         Integer32,
+                unisDevMSlotEnvironmentLowerLimit         Integer32
+           }
+
+unisdevMSlotEnvironmentType  OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+        temperature(1),
+        humidity(2),
+        fog(3)
+        }
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION "Environment type "
+        ::= { unisdevMSlotEnvironmentEntry 1 }
+
+unisDevMSlotEnvironmentStatus OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+        normal(1),
+        upper(2),
+        lower(3)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Environment status"
+        ::= { unisdevMSlotEnvironmentEntry 2 }
+
+unisDevMSlotEnvironmentValue OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Environment value"
+        ::= { unisdevMSlotEnvironmentEntry 3 }
+
+unisDevMSlotEnvironmentUpperLimit  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION "Environment upper limit "
+        ::= { unisdevMSlotEnvironmentEntry 4 }
+
+unisDevMSlotEnvironmentLowerLimit OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Environment Lower limit"
+        ::= { unisdevMSlotEnvironmentEntry 5 }
+
+unisLinkUpDownTrapEnable  OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+        enableBoth(1) ,
+        disableBoth(2) ,
+        enableLinkUpTrapOnly(3) ,
+        enableLinkDownTrapOnly(4)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+        "Enable/Disable linkUp/linkDown traps of the device, determining whether
+         to enable linkUp/linkDown traps with that of the interface.
+         When the value is enableBoth(1), the linkUp/linkDown traps are both
+         enabled.
+         When the value is disableBoth(2), the linkUp/linkDown traps are both
+         disabled.
+         When the value is enableLinkUpTrapOnly(3), the linkUp traps is enabled
+         and the linkDown traps is disabled.
+         When the value is enableLinkDownTrapOnly(4), the linkUp traps is
+         disabled and the linkDown traps is enabled. "
+        ::= { unisLswdevMMibObject  9 }
+
+unisdot1qTpFdbLearnStatus OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+                enabled(1),
+                disabled(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Enable/Disable the address learning."
+        ::= { unisLswdevMMibObject  10 }
+
+unisCfmWriteFlash OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+                write(1)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Write the current effective configuration into the Flash memory.
+                      This object does not support read operation."
+        ::= { unisLswdevMMibObject  11 }
+
+unisCfmEraseFlash OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+                erase(1)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Delete the configuration from the Flash memory.
+                      This object does not support read operation."
+        ::= { unisLswdevMMibObject  12 }
+
+unisDevMFirstTrapTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the first trap time."
+    ::= { unisLswdevMMibObject 13 }
+
+unisdevMExternalAlarmStatus OBJECT IDENTIFIER ::= { unisLswdevMMibObject 14 }
+
+END

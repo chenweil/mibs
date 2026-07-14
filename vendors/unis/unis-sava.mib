@@ -1,0 +1,355 @@
+-- =====================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: SAVA MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2020-06-30
+--     Initial version
+-- =====================================================================
+UNIS-SAVA-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, Unsigned32, Counter64
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, TruthValue
+        FROM SNMPv2-TC
+    InterfaceIndex
+        FROM IF-MIB                         --RFC2863
+    InetVersion,InetAddressType
+        FROM INET-ADDRESS-MIB               --RFC4001
+    Ipv6AddressPrefix
+        FROM IPV6-TC                         --RFC2465
+        ;
+
+
+unisSava MODULE-IDENTITY
+    LAST-UPDATED "202006300000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module for support configuration and monitoring of SAVA Module."
+    REVISION "202006300000Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 191 }
+
+    UnisSavaOwnerString ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "255a"
+        STATUS       current
+        DESCRIPTION
+           "This data type is used to indicate the subnet. "
+        SYNTAX       OCTET STRING (SIZE(0..255))
+--
+-- Node definitions
+--
+unisSavaObjects OBJECT IDENTIFIER ::= { unisSava 1 }
+
+-- System parameters for SAVA protocol
+
+unisSavaSystemTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UnisSavaSystemEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The table containing SAVA system-wide parameters."
+    ::= { unisSavaObjects 1 }
+
+
+unisSavaSystemEntry OBJECT-TYPE
+    SYNTAX     UnisSavaSystemEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry containing SAVA system-wide parameters for a
+            particular IP version.
+           "
+    INDEX { unisSavaSystemIPVersion  }
+    ::=   { unisSavaSystemTable 1 }
+
+UnisSavaSystemEntry ::=
+    SEQUENCE {
+        unisSavaSystemIPVersion              InetVersion,
+        unisSavaSystemNotify                 TruthValue,
+        unisSavaSystemNotifyInterval         Unsigned32,
+        unisSavaSystemNotifyNumber           Unsigned32
+    }
+
+unisSavaSystemIPVersion OBJECT-TYPE
+    SYNTAX     InetVersion
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The IP version. "
+    ::= { unisSavaSystemEntry 1 }
+
+
+unisSavaSystemNotify OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+          "An log switch for spoofing Notify.
+            true, the attribute is set.
+            false, the attribute is not set.
+          "
+    ::= { unisSavaSystemEntry 2 }
+
+unisSavaSystemNotifyInterval OBJECT-TYPE
+    SYNTAX     Unsigned32 (0|5..3600)
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+          "Interval for log.0, 5 to 3600s.
+          "
+    ::= { unisSavaSystemEntry 3 }
+
+
+unisSavaSystemNotifyNumber OBJECT-TYPE
+    SYNTAX     Unsigned32 (1..128)
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+          "Number of spoofing notify: 1~128.
+          "
+    ::= { unisSavaSystemEntry 4 }
+
+-- interface parameters for SAVA
+
+unisSavaIfTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UnisSavaIfEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The table containing SAVA parameters of each interface."
+    ::= { unisSavaObjects 2 }
+
+unisSavaIfEntry OBJECT-TYPE
+    SYNTAX     UnisSavaIfEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry containing SAVA running parameters of an interface."
+    INDEX {
+            unisSavaIfIPVersion,
+            unisSavaIfIndex
+          }
+    ::= { unisSavaIfTable 1 }
+
+
+UnisSavaIfEntry ::=
+    SEQUENCE {
+        unisSavaIfIPVersion          InetVersion,
+        unisSavaIfIndex              InterfaceIndex,
+        unisSavaIfEnable             TruthValue,
+        unisSavaIfRemoteRoutetag     Unsigned32,
+        unisSavaIfAccessSubnet       UnisSavaOwnerString
+    }
+
+unisSavaIfIPVersion      OBJECT-TYPE
+    SYNTAX     InetVersion
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The IP version. "
+    ::= { unisSavaIfEntry 1 }
+
+unisSavaIfIndex  OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The index value that uniquely identifies the interface to
+            which this entry is applicable.  The interface identified by
+            a particular value of this index is the same interface as
+            identified by the same value of the IF-MIB's ifIndex.
+           "
+    ::= { unisSavaIfEntry 2 }
+
+unisSavaIfEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+           "An attribute defined in SAVA protocol.
+            true, the attribute is set.
+            false, the attribute is not set.
+           "
+    ::= { unisSavaIfEntry 3 }
+
+unisSavaIfRemoteRoutetag OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+           "The number of route tag."
+    ::= { unisSavaIfEntry 4 }
+
+
+unisSavaIfAccessSubnet OBJECT-TYPE
+    SYNTAX     UnisSavaOwnerString
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+          "An access-net which the interface connect to.
+          "
+    ::= { unisSavaIfEntry 5 }
+
+
+
+-- prefix Table for SAVA
+
+unisSavaPrefixTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UnisSavaPrefixEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The table containing the prefix for SAVA.
+           "
+    ::= { unisSavaObjects 3 }
+
+unisSavaPrefixEntry OBJECT-TYPE
+    SYNTAX     UnisSavaPrefixEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry containing the prefix for SAVA.
+            Entries are keyed on the source IP address type,
+            binding type, anchor, and source IP address.
+           "
+    INDEX {
+            unisSavaPrefixAddressType,
+            unisSavaPrefixIfIndex,
+            unisSavaPrefixAddress,
+            unisSavaPrefixLength
+          }
+    ::= { unisSavaPrefixTable 1 }
+
+UnisSavaPrefixEntry ::=
+    SEQUENCE {
+        unisSavaPrefixAddressType  InetAddressType,
+        unisSavaPrefixIfIndex      InterfaceIndex,
+        unisSavaPrefixAddress      Ipv6AddressPrefix,
+        unisSavaPrefixLength       Unsigned32,
+        unisSavaPrefixSource       INTEGER
+     }
+
+unisSavaPrefixAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "IP address type of the  prefix ."
+    ::= { unisSavaPrefixEntry 1 }
+
+unisSavaPrefixIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The index value that uniquely identifies the interface to
+            which this entry is applicable.  The interface identified by
+            a particular value of this index is the same interface as
+            identified by the same value of the IF-MIB's ifIndex.
+           "
+    ::= { unisSavaPrefixEntry 2 }
+
+unisSavaPrefixAddress OBJECT-TYPE
+    SYNTAX     Ipv6AddressPrefix
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The prefix's IP address"
+    ::= { unisSavaPrefixEntry 3 }
+
+
+unisSavaPrefixLength OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "mask length of prefix."
+    ::= { unisSavaPrefixEntry 4 }
+
+unisSavaPrefixSource OBJECT-TYPE
+    SYNTAX     INTEGER  {
+                   localroute(1),
+                   remoteroute(2),
+                   otherif(3)
+              }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "The origin of the prefix. "
+    ::= { unisSavaPrefixEntry 5 }
+
+
+
+-- Count of packets dropped because of validation failure for each interface.
+
+unisSavaCountTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UnisSavaCountEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The table containing count of packets dropped because of validation failure."
+    ::= { unisSavaObjects 4 }
+
+unisSavaCountEntry OBJECT-TYPE
+    SYNTAX     UnisSavaCountEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry containing count of packets dropped because of validation failure for each interface."
+    INDEX { unisSavaCountIPVersion,
+            unisSavaCountIfIndex
+          }
+    ::= { unisSavaCountTable 1 }
+
+UnisSavaCountEntry ::=
+    SEQUENCE {
+        unisSavaCountIPVersion          InetVersion,
+        unisSavaCountIfIndex            InterfaceIndex,
+        unisSavaCountFilterPkt          Counter64,
+        unisSavaCountFilterOctets       Counter64
+    }
+
+unisSavaCountIPVersion      OBJECT-TYPE
+    SYNTAX     InetVersion
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The IP version."
+    ::= { unisSavaCountEntry 1 }
+
+unisSavaCountIfIndex            OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "The Interface."
+    ::= { unisSavaCountEntry 2 }
+
+
+unisSavaCountFilterPkt OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "The count of packets dropped."
+    ::= { unisSavaCountEntry 3 }
+
+
+unisSavaCountFilterOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "The octets of packets dropped."
+    ::= { unisSavaCountEntry 4 }
+END

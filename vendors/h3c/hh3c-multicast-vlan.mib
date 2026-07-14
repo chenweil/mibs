@@ -1,0 +1,151 @@
+-- ==================================================================
+-- Copyright (c) 2004-2024 New H3C Tech. Co., Ltd. All rights reserved.
+--
+-- Description: Multicast VLAN MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2024-10-21 Created by Fu Huiquan
+-- ==================================================================
+--
+-- Variables and types be imported
+--
+-- ==================================================================
+HH3C-MULTICAST-VLAN-MIB DEFINITIONS ::= BEGIN
+
+
+IMPORTS
+
+    MODULE-IDENTITY,OBJECT-TYPE,Unsigned32
+        FROM SNMPv2-SMI
+
+    RowStatus
+        FROM SNMPv2-TC
+
+    hh3cCommon
+        FROM HH3C-OID-MIB
+
+    InetAddressType
+        FROM INET-ADDRESS-MIB;
+
+hh3cMcastVlan MODULE-IDENTITY
+    LAST-UPDATED "202410211110Z"
+    ORGANIZATION
+        "New H3C Technologies Co., Ltd."
+    CONTACT-INFO
+        "No.466 Changhe Road, Binjiang District, Hangzhou, Zhejiang
+         http://www.h3c.com
+         Zip: 310052"
+    DESCRIPTION
+        "Multicast VLAN MIB"
+    -- Revision history.
+    REVISION "202410211110Z"
+    DESCRIPTION
+        "The initial version of this MIB file,
+         and add hh3cMcastVlanSubVlanConfigTable."
+    ::= { hh3cCommon 271 }
+-- ==================================================================
+--
+-- ======================= definition begin =========================
+--
+-- ==================================================================
+hh3cMcastVlanObject OBJECT IDENTIFIER ::= {   hh3cMcastVlan 1  }
+
+hh3cMcastVlanSubVlanConfigTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF Hh3cMcastVlanSubVlanConfigEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Table for configuring multicast VLANs and sub-VLANs."
+    ::= { hh3cMcastVlanObject  1 }
+
+hh3cMcastVlanSubVlanConfigEntry OBJECT-TYPE
+    SYNTAX     Hh3cMcastVlanSubVlanConfigEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Entry containing information about multicast VLANs and sub-VLANs."
+    INDEX
+    {
+        hh3cMcastVlanSubVlanMVlanID ,
+        hh3cMcastVlanSubVlanAddressType
+    }
+    ::= { hh3cMcastVlanSubVlanConfigTable 1 }
+
+Hh3cMcastVlanSubVlanConfigEntry ::=
+    SEQUENCE
+    {
+        hh3cMcastVlanSubVlanMVlanID               Unsigned32,
+        hh3cMcastVlanSubVlanAddressType           InetAddressType,
+        hh3cMcastVlanSubVlanRowStatus             RowStatus,
+        hh3cMcastVlanSubVlanSVlanListLow          OCTET STRING,
+        hh3cMcastVlanSubVlanSVlanListHigh         OCTET STRING
+    }
+
+hh3cMcastVlanSubVlanMVlanID OBJECT-TYPE
+    SYNTAX     Unsigned32(1..4094)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The multicast VLAN ID."
+    ::= { hh3cMcastVlanSubVlanConfigEntry 1 }
+
+hh3cMcastVlanSubVlanAddressType  OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Type of the configuration.  IPv4 means multicast-vlan configuration,
+        and IPv6 means ipv6 multicast-vlan configuration."
+    ::= { hh3cMcastVlanSubVlanConfigEntry 2 }
+
+hh3cMcastVlanSubVlanRowStatus  OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this entry.
+        Create multicast VLAN by set value createAndGo(4).
+        Destroy multicast VLAN by set value destroy(6).
+        Value active(1) means multicast VLAN is configured."
+    ::= { hh3cMcastVlanSubVlanConfigEntry 3 }
+
+hh3cMcastVlanSubVlanSVlanListLow  OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE(0..256))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The lower part of multicast sub-VLANs.
+        Each octet within this value specifies a set of eight
+        VLANs, with the first octet specifying VLANs 1 through
+        8, the second octet specifying VLANs 9 through 16, etc.
+        Within each octet, the most significant bit represents
+        the highest numbered VLAN, and the least significant bit
+        represents the lowest numbered VLAN. Thus, each sub
+        VLAN of the multicast VLAN is represented by a single bit
+        within the value of this object. If that bit has a value
+        of '1' then that VLAN is a sub VLAN of the multicast VLAN; the
+        VLAN is not a sub VLAN of the multicast VLAN if its bit has
+        a value of '0'."
+    ::= { hh3cMcastVlanSubVlanConfigEntry 4 }
+
+hh3cMcastVlanSubVlanSVlanListHigh OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE(0..256))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The higher part of multicast sub-VLANs.
+        Each octet within this value specifies a set of eight
+        VLANs, with the first octet specifying VLANs 2049 through
+        2056, the second octet specifying VLANs 2057 through 2064,
+        etc. Within each octet, the most significant bit represents
+        the highest numbered VLAN, and the least significant bit
+        represents the lowest numbered VLAN. Thus, each sub
+        VLAN of the multicast VLAN is represented by a single bit
+        within the value of this object. If that bit has a value of
+        '1' then that VLAN is a sub VLAN of the multicast VLAN; the
+        VLAN is not a sub VLAN of the multicast VLAN if its bit has
+        a value of '0'."
+    ::= { hh3cMcastVlanSubVlanConfigEntry 5 }
+
+END

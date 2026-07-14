@@ -1,0 +1,610 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- 
+-- Description:This MIB file is used for management of Class Based 
+--             FR QoS information. 
+-- Reference:
+-- Version: V1.1
+-- History:      
+-- 			V1.0 caolei,2004.7.12,publish 
+--          V1.1 2004-10-12 updated by gaolong
+--               Relocate unisFrQoSMib MODULE-IDENTITY.
+-- =================================================================
+
+	UNIS-FR-QOS-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			unisQoS
+				FROM UNIS-OID-MIB
+		
+			ifIndex			
+				FROM RFC1213-MIB
+			
+			OBJECT-GROUP, MODULE-COMPLIANCE                 
+				FROM SNMPv2-CONF
+			
+			Integer32, Counter32, OBJECT-TYPE, MODULE-IDENTITY                   
+				FROM SNMPv2-SMI
+			
+			TEXTUAL-CONVENTION, RowStatus
+				FROM SNMPv2-TC;        
+
+            unisFrQoSMib MODULE-IDENTITY 
+                    LAST-UPDATED "200407120000Z"            -- JULY 12, 2004 at 00:00 GMT
+                    ORGANIZATION
+                        "Unisyue Technologies Co., Ltd."
+                    CONTACT-INFO
+                        ""
+                    DESCRIPTION 
+                            "This MIB contains objects to 
+                            Manage configuration and Monitor running state 
+                            for Class Based FR QoS feature.
+                            
+                           	    *********************************
+                        			MIB Tables
+                           	    **********************************
+                        	This MIB consists of the following tables:
+                        	     1 :  unisFrClassCfgInfoTable
+                        	     2 :  unisCirCfgInfoTable
+                        	     3 :  unisIfApplyFrClassTable
+                        	     4 :  unisPvcApplyFrClassTable
+                        	     5 :  unisFrPvcBandwidthTable
+                        	     5 :  unisRTPFrClassApplyTable
+                        	     6 :  unisRTPFrPvcQueueRunInfoTable  	             	 
+                            "
+                    ::= { unisQoS 3 } -- need modification later
+
+--            
+--type definitions in the policy 
+--
+				
+--Direction         
+				
+			UnisCirAllowDirection ::= TEXTUAL-CONVENTION
+			        STATUS  current  
+			        DESCRIPTION
+			              "The Packet Direction apply on."				 
+					SYNTAX  INTEGER { 
+						inbound (1),
+						outbound (2),
+						inboundAndOutbound (3)
+					}                  
+	
+--            
+--end of type definitions in policy 
+--				 
+
+--
+-- Node definitions
+--     
+	unisFrQoSObjects OBJECT IDENTIFIER ::= { unisFrQoSMib 1 } 
+                                                                                                           
+--unisFrClassObjects 
+		
+	unisFrClassObjects OBJECT IDENTIFIER ::= { unisFrQoSObjects 1 } 
+		
+-- Fr Class Next Index 
+	unisFrClassIndexNext OBJECT-TYPE
+		SYNTAX Integer32 
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"This object contains an appropriate value to be used for 
+			unisFrClassIndex when creating rows in the 
+			unisFrClassCfgInfoTable. Begin with 0.
+			"                                
+		::= { unisFrClassObjects 1 }
+		                                                                                         
+-- Fr Class               
+	unisFrClassCfgInfoTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF UnisFrClassCfgInfoEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A table of Fr Class configuration information."
+		::= { unisFrClassObjects 2 }
+
+	unisFrClassCfgInfoEntry OBJECT-TYPE
+		SYNTAX UnisFrClassCfgInfoEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Fr Class Configuration Information Entry."
+		INDEX { unisFrClassIndex }
+		::= { unisFrClassCfgInfoTable 1 }
+		
+	UnisFrClassCfgInfoEntry ::=
+		SEQUENCE { 
+			unisFrClassIndex
+				Integer32,
+			unisFrClassName
+				OCTET STRING,
+			unisFrClassRowStatus
+				RowStatus
+		} 	
+
+		
+	unisFrClassIndex OBJECT-TYPE
+		SYNTAX Integer32 
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Index of Fr Class. Begin with 0."
+		::= { unisFrClassCfgInfoEntry 1 }
+		        
+	unisFrClassName OBJECT-TYPE
+		SYNTAX OCTET STRING (SIZE (1..31))
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"Name of Fr Class."
+		::= { unisFrClassCfgInfoEntry 2 }                                  
+		
+	unisFrClassRowStatus OBJECT-TYPE
+		SYNTAX RowStatus
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"RowStatus. Three actions are used: active,
+			createAndGo, destroy"
+		::= { unisFrClassCfgInfoEntry 3 }
+
+-- Cir Allow on the Fr Class               
+	unisCirAllowCfgInfoTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF UnisCirAllowCfgInfoEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A table of DCE allowed rate Configuration information."
+		::= { unisFrClassObjects 3 }
+		
+	unisCirAllowCfgInfoEntry OBJECT-TYPE
+		SYNTAX UnisCirAllowCfgInfoEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"DCE allowed ratee Configuration Information Entry."
+		INDEX { unisCirAllowFrClassIndex,
+				unisCirAllowDirection}
+		::= { unisCirAllowCfgInfoTable 1 }
+		
+	UnisCirAllowCfgInfoEntry ::=
+		SEQUENCE { 
+			unisCirAllowFrClassIndex
+				Integer32,  
+			unisCirAllowDirection 
+				UnisCirAllowDirection,                                        
+			unisCirAllowValue
+				Integer32, 
+			unisCirAllowRowStatus
+				RowStatus
+		} 
+		
+	unisCirAllowFrClassIndex OBJECT-TYPE
+		SYNTAX Integer32 
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Index of Fr Class. Begin with 0.Equal to unisFrClassIndex"
+		::= { unisCirAllowCfgInfoEntry 1 }
+		        
+	unisCirAllowDirection OBJECT-TYPE
+		SYNTAX UnisCirAllowDirection     
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Packet Direction. 		
+			inbound (1)
+			outbound (2)
+			inbound and outbound (3)  
+			"
+		::= { unisCirAllowCfgInfoEntry 2 }                                  
+		
+	unisCirAllowValue OBJECT-TYPE
+		SYNTAX Integer32(1..45000000) 
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"DCE allowed rate (value greater than CIR) 
+			Unit : Bits per second. 
+			Value : <1-45000000> ."
+		::= { unisCirAllowCfgInfoEntry 3 } 
+		
+	unisCirAllowRowStatus OBJECT-TYPE
+		SYNTAX RowStatus
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"RowStatus. Three actions are used: active,
+			createAndGo, destroy"
+		::= { unisCirAllowCfgInfoEntry 4 }
+		                                    
+-- Cir on the Fr Class               
+	unisCirCfgInfoTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF UnisCirCfgInfoEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A table of Committed Information Rate Configuration information."
+		::= { unisFrClassObjects 4 }
+		
+	unisCirCfgInfoEntry OBJECT-TYPE
+		SYNTAX UnisCirCfgInfoEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Committed Information Rate Configuration Information Entry."
+		INDEX { unisCirFrClassIndex }
+		::= { unisCirCfgInfoTable 1 }
+		
+	UnisCirCfgInfoEntry ::=
+		SEQUENCE { 
+			unisCirFrClassIndex
+				Integer32,  
+			unisCirValue
+				Integer32,		
+			unisCirRowStatus
+				RowStatus
+		} 
+		
+	unisCirFrClassIndex OBJECT-TYPE
+		SYNTAX Integer32 
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Index of Fr Class. Begin with 0.Equal to unisFrClassIndex"
+		::= { unisCirCfgInfoEntry 1 }
+		        
+	unisCirValue OBJECT-TYPE
+		SYNTAX Integer32(1000..45000000)
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			" CIR in packet output direction ,bps. 
+			Value : <1000-45000000>."
+		::= { unisCirCfgInfoEntry 2 } 
+		                               
+	unisCirRowStatus OBJECT-TYPE
+		SYNTAX RowStatus
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"RowStatus. Three actions are used: active,
+			createAndGo, destroy"
+		::= { unisCirCfgInfoEntry 3 }
+		
+		                                  
+-- Fr Class Instance on interface Table
+	unisIfApplyFrClassTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF UnisIfApplyFrClassEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A table of QoS Fr Class instance."
+		::= { unisFrClassObjects 5 }
+		
+	unisIfApplyFrClassEntry OBJECT-TYPE
+		SYNTAX UnisIfApplyFrClassEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"FrClass applied on interface Configuration Information Entry."
+		INDEX { unisIfApplyFrClassIfIndex }
+		::= { unisIfApplyFrClassTable 1 }
+		
+	UnisIfApplyFrClassEntry ::=
+			SEQUENCE {        
+				unisIfApplyFrClassIfIndex
+			Integer32,                                                                                                                                              
+				unisIfApplyFrClassIndex
+			Integer32,    
+				unisIfApplyFrClassRowStatus
+			RowStatus                            	                                            
+		}    
+			                                 
+	unisIfApplyFrClassIfIndex OBJECT-TYPE
+		SYNTAX Integer32
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Interface Index, equal to ifIndex."
+		::= { unisIfApplyFrClassEntry 1 }    
+		
+	unisIfApplyFrClassIndex OBJECT-TYPE
+		SYNTAX Integer32
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"Index of Fr Class, equal to unisFrClassIndex"
+		::= { unisIfApplyFrClassEntry 2 }    
+		
+	unisIfApplyFrClassRowStatus OBJECT-TYPE
+		SYNTAX RowStatus
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"RowStatus. Three actions are used: active,
+			createAndGo, destroy"
+		::= { unisIfApplyFrClassEntry 3 }
+		         
+-- Fr Class Instance on fr pvc Table                        
+	unisPvcApplyFrClassTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF UnisPvcApplyFrClassEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A table of QoS Fr Class instance."
+		::= { unisFrClassObjects 6 }
+		
+	unisPvcApplyFrClassEntry OBJECT-TYPE
+		SYNTAX UnisPvcApplyFrClassEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Fr Class applied on FR Pvc Configuration Information Entry."
+		INDEX { unisPvcApplyFrClassIfIndex, 
+			unisPvcApplyFrClassDlciNum 
+		}
+		::= { unisPvcApplyFrClassTable 1 }
+		
+	UnisPvcApplyFrClassEntry ::=
+		SEQUENCE {            
+			unisPvcApplyFrClassIfIndex
+				Integer32,
+			unisPvcApplyFrClassDlciNum
+				Integer32,                                                                                                                                        
+			unisPvcApplyFrClassIndex
+				Integer32,
+			unisPvcApplyFrClassRowStatus
+				RowStatus                           		                              	                                            
+		}    
+			                                 
+	unisPvcApplyFrClassIfIndex OBJECT-TYPE
+		SYNTAX Integer32
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Fr Interface Index, equal to ifIndex."
+		::= { unisPvcApplyFrClassEntry 1 }
+		
+	unisPvcApplyFrClassDlciNum OBJECT-TYPE
+		SYNTAX Integer32 (16..1007)
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Fr DLCI number."
+		::= { unisPvcApplyFrClassEntry 2 }                            
+		
+	unisPvcApplyFrClassIndex OBJECT-TYPE
+		SYNTAX Integer32
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"Index of Fr Class, equal to unisFrClassIndex"
+		::= { unisPvcApplyFrClassEntry 3 }    
+		
+	unisPvcApplyFrClassRowStatus OBJECT-TYPE
+		SYNTAX RowStatus
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"RowStatus. Three actions are used: active,
+			createAndGo, destroy"
+		::= { unisPvcApplyFrClassEntry 4 }
+
+
+-- bandwidth parameter on interface                        
+                       
+	unisFrPvcBandwidthTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF UnisFrPvcBandwidthEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A table of Running statistics for bandwidth.
+			"
+		::= { unisFrClassObjects 7 }
+		
+	unisFrPvcBandwidthEntry OBJECT-TYPE
+		SYNTAX UnisFrPvcBandwidthEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Bandwidth Running statistics"
+		INDEX { unisPvcApplyFrClassIfIndex, 
+			unisPvcApplyFrClassDlciNum 
+		}
+
+		::= { unisFrPvcBandwidthTable 1 }
+		
+	UnisFrPvcBandwidthEntry ::=
+			SEQUENCE {                                                                                                                                                                          
+				unisFrPvcBandwidthMaxReservedBW
+					Integer32,
+				unisFrPvcBandwidthAvailable
+					Integer32					                                	                                            
+				}    		 		                                                       
+					
+	unisFrPvcBandwidthMaxReservedBW OBJECT-TYPE
+		SYNTAX Integer32
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"Max reserved bandWidth. Unit : Kbps"
+		::= { unisFrPvcBandwidthEntry 1 }	
+		
+	unisFrPvcBandwidthAvailable OBJECT-TYPE
+		SYNTAX Integer32
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"Available bandWidth. Unit : Kbps"
+		::= { unisFrPvcBandwidthEntry 2 }  			
+		
+                                                                                                       
+--unisRTPQoSObjects 
+		
+	unisRTPQoSObjects OBJECT IDENTIFIER ::= { unisFrQoSObjects 2 } 
+		
+-- Rtpq applied on the Fr Class 
+		
+	unisRTPFrClassApplyTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF UnisRTPFrClassApplyEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A table of RTP(Realtime Transport Protocol) Queue instance."
+		::= { unisRTPQoSObjects 1 }
+		
+	unisRTPFrClassApplyEntry OBJECT-TYPE
+		SYNTAX UnisRTPFrClassApplyEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"RTP(Realtime Transport Protocol) Queue Configuration Information Entry."
+		INDEX { unisRTPFrClassApplyFrClassIndex }
+		::= { unisRTPFrClassApplyTable 1 }
+		
+	UnisRTPFrClassApplyEntry ::=
+		SEQUENCE { 
+			unisRTPFrClassApplyFrClassIndex
+				Integer32,
+			unisRTPFrClassApplyStartPort
+				Integer32,
+			unisRTPFrClassApplyEndPort 
+				Integer32,
+			unisRTPFrClassApplyBandWidth 
+				Integer32,
+			unisRTPFrClassApplyCbs 
+				Integer32,				
+			unisRTPFrClassApplyRowStatus 
+				RowStatus                               		 
+		}  
+		
+	unisRTPFrClassApplyFrClassIndex OBJECT-TYPE
+		SYNTAX Integer32
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Fr Class Index, equal to UnisFrClassIndex."
+		::= { unisRTPFrClassApplyEntry 1 }    
+		
+	unisRTPFrClassApplyStartPort OBJECT-TYPE
+		SYNTAX Integer32(2000..65535)
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"                                                                                        
+			RTP-PORT(3): start-port: 2000~65535   
+			"                         
+		::= { unisRTPFrClassApplyEntry 2 }
+		
+	unisRTPFrClassApplyEndPort OBJECT-TYPE
+		SYNTAX Integer32(2000..65535)
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"                         
+			RTP-PORT(3): end-port: 2000~65535
+			"                         
+		::= { unisRTPFrClassApplyEntry 3 }
+		
+	unisRTPFrClassApplyBandWidth OBJECT-TYPE
+		SYNTAX Integer32 (8..1000000)
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"Max bandWidth Value:
+			Absolute value: 8~1000000. Unit: Kbps             
+			"                
+		::= { unisRTPFrClassApplyEntry 4 }  
+		
+	unisRTPFrClassApplyCbs OBJECT-TYPE
+		SYNTAX Integer32 (1500..2000000)
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"
+			Committed Burst Size: 1500~2000000. Unit: byte             
+			"                
+		::= { unisRTPFrClassApplyEntry 5 }  		
+		
+	unisRTPFrClassApplyRowStatus OBJECT-TYPE
+		SYNTAX RowStatus
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"RowStatus for RTPFrClassApply Table. 
+			Three actions are used: active, createAndGo, destroy"
+		::= { unisRTPFrClassApplyEntry 6 } 
+
+-- RTPQ statistics on the Fr Pvc 
+		                 
+	unisRTPFrPvcQueueRunInfoTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF UnisRTPFrPvcQueueRunInfoEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"A table of Running statistics for RTP(Realtime Transport Protocol) Queue
+			applied on the FR PVC"
+		::= { unisRTPQoSObjects 2 }
+		
+	unisRTPFrPvcQueueRunInfoEntry OBJECT-TYPE
+		SYNTAX UnisRTPFrPvcQueueRunInfoEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"RTP(Realtime Transport Protocol) Queue statistics entry."
+		INDEX { unisPvcApplyFrClassIfIndex,                        		
+			unisPvcApplyFrClassDlciNum                      	    
+		}
+		::= { unisRTPFrPvcQueueRunInfoTable 1 }
+		
+	UnisRTPFrPvcQueueRunInfoEntry ::=
+		SEQUENCE {
+			unisRTPFrPvcQueueSize
+				Integer32,
+			unisRTPFrPvcQueueMaxSize
+				Integer32, 
+			unisRTPFrPvcQueueOutputs
+				Counter32,
+			unisRTPFrPvcQueueDiscards
+				Counter32                                                                                                                                                                                                                                    
+		}  
+		    
+	unisRTPFrPvcQueueSize OBJECT-TYPE
+		SYNTAX Integer32
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"the packet number of RTP(Realtime Transport Protocol) Queue now."
+		::= { unisRTPFrPvcQueueRunInfoEntry 1 }    
+		    		         
+	unisRTPFrPvcQueueMaxSize OBJECT-TYPE
+		SYNTAX Integer32
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"the Max packet number of RTP(Realtime Transport Protocol) Queue."
+		::= { unisRTPFrPvcQueueRunInfoEntry 2 }
+		
+	unisRTPFrPvcQueueOutputs OBJECT-TYPE
+		SYNTAX Counter32
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"the Output packet number of RTP(Realtime Transport Protocol) Queue."
+		::= { unisRTPFrPvcQueueRunInfoEntry 3 } 
+		         
+	unisRTPFrPvcQueueDiscards OBJECT-TYPE
+		SYNTAX Counter32
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"the Discarded packet number of RTP(Realtime Transport Protocol) Queue."
+		::= { unisRTPFrPvcQueueRunInfoEntry 4 }
+											        
+END
+
+       
+                             
+                                                                                                       

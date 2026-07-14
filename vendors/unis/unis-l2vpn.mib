@@ -1,0 +1,924 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Layer 2 Virtual Private Network (L2VPN) MIB
+-- Reference:
+-- Version: V1.2
+-- History:
+-- V1.0 2015-01-16 Created by Yanneng
+-- V1.1 2018-01-17 Modified by Chenjuxi
+-- Add node unisL2vpnPwcFlowLabel
+--      2017-11-21 Modified by Chenjian
+-- Add unisL2vpnLinkTable
+--      2016-09-30 Modified by Liyun
+-- Add unisL2vpnAcCfgTable and unisL2vpnPwCfgTable
+-- V1.2 2018-09-03 Modified by WangShuji
+-- Modified the value range of the unisL2vpnLinkIfIndex
+--      2018-04-27 Modified by fuzhihua
+-- Added nodes unisL2vpnXcgConnRedundancy and unisL2vpnXcgPwIgnoreStandby
+
+-- =============================================================================
+UNIS-L2VPN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        RowStatus, TruthValue, DisplayString
+    FROM SNMPv2-TC
+        InterfaceIndexOrZero
+    FROM IF-MIB
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Unsigned32,
+        IpAddress,
+        NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        InterfaceIndex
+    FROM IF-MIB
+        unisCommon
+    FROM UNIS-OID-MIB;
+
+-- =============================================================================
+-- module identity part
+-- =============================================================================
+unisL2vpn MODULE-IDENTITY
+    LAST-UPDATED "201804271800Z"       -- Apr 27, 2018 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Added unisL2vpnXcgConnRedundancy and unisL2vpnXcgPwIgnoreStandby."
+    REVISION
+        "201804271800Z"   -- Apr 27, 2018 at 18:00 GMT
+    DESCRIPTION
+        "Added node unisL2vpnPwcFlowLabel."
+    REVISION
+        "201801171500Z"   -- Jan 17, 2018 at 15:00 GMT
+    DESCRIPTION
+        "Added unisL2vpnLinkTable."
+    REVISION
+        "201711211500Z"   -- Nov 21, 2017 at 15:00 GMT
+    DESCRIPTION
+        "Added unisL2vpnAcCfgTable and unisL2vpnPwCfgTable."
+    REVISION
+        "201609301800Z"   -- Sept 30, 2016 at 18:00 GMT
+    DESCRIPTION
+        "This MIB contains objects to manage L2VPN."
+    REVISION
+        "201501160000Z"   -- Jan 16, 2015 at 00:00 GMT
+    DESCRIPTION
+        "Initial version."
+    ::= { unisCommon 162 }
+
+-- ==================================================================
+-- =================== unisL2VpnPwNotifications definition ==========
+-- ==================================================================
+
+unisL2vpnPwNotifications OBJECT IDENTIFIER ::= { unisL2vpn 0 }
+
+-- ==================================================================
+-- ======================= unisL2vpnGlobalTable definition ==========
+-- ==================================================================
+
+unisL2vpnGlobalTable OBJECT IDENTIFIER ::= { unisL2vpn 2 }
+
+unisL2vpnPwcTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisL2vpnPwcEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains pseudowire (PW) class information."
+    ::= { unisL2vpnGlobalTable 1 }
+
+unisL2vpnPwcEntry OBJECT-TYPE
+    SYNTAX      UnisL2vpnPwcEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Provides information about a PW class entry."
+    INDEX
+        {
+            unisL2vpnPwcName
+        }
+    ::= { unisL2vpnPwcTable 1 }
+
+UnisL2vpnPwcEntry ::= SEQUENCE
+    {
+        unisL2vpnPwcName             OCTET STRING,
+        unisL2vpnPwcCvType           INTEGER,
+        unisL2vpnPwcCcType           INTEGER,
+        unisL2vpnPwcControlWord      TruthValue,
+        unisL2vpnPwcPwType           INTEGER,
+        unisL2vpnPwcRowStatus        RowStatus,
+        unisL2vpnPwcFlowLabel        INTEGER
+    }
+
+unisL2vpnPwcName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..19))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "PW class name."
+    ::= { unisL2vpnPwcEntry 1 }
+
+unisL2vpnPwcCvType OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        unknown(1),
+        bfd(2),
+        rawBFD(3)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Virtual Circuit Connectivity Verification (VCCV) Bidirectional
+         Forwarding Detection (BFD) type."
+    ::= { unisL2vpnPwcEntry 2 }
+
+unisL2vpnPwcCcType OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        unknown(1),
+        controlWord(2),
+        routerAlert(3),
+        ttl(4)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Virtual Circuit Connectivity Verification (VCCV) Control Channel
+        (CC) type."
+    ::= { unisL2vpnPwcEntry 3 }
+
+unisL2vpnPwcControlWord OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Whether control word is enabled."
+    DEFVAL { false }
+    ::= { unisL2vpnPwcEntry 4 }
+
+unisL2vpnPwcPwType OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        vlan(4),
+        ethernet(5)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "PW encapsulation type."
+    DEFVAL { vlan }
+    ::= { unisL2vpnPwcEntry 5 }
+
+unisL2vpnPwcRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry.  A row entry cannot be modified
+         when the value of this object is 'active'."
+    ::= { unisL2vpnPwcEntry 6 }
+
+unisL2vpnPwcFlowLabel OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        unknown(1),
+        send(2),
+        receive(3),
+        both(4)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Flow label capability."
+    DEFVAL { unknown }
+    ::= { unisL2vpnPwcEntry 7 }
+
+-- ==================================================================
+-- ======================= unisL2vpnLinkTable definition ==========
+-- ==================================================================
+
+unisL2vpnLinkTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisL2vpnLinkEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains L2VPN link information."
+    ::= { unisL2vpnGlobalTable 2 }
+
+unisL2vpnLinkEntry OBJECT-TYPE
+    SYNTAX      UnisL2vpnLinkEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Provides information about an L2VPN link entry."
+    INDEX
+        {
+            unisL2vpnLinkVsiIndex,
+            unisL2vpnLinkLinkID
+        }
+    ::= { unisL2vpnLinkTable 1 }
+
+UnisL2vpnLinkEntry ::= SEQUENCE
+    {
+        unisL2vpnLinkVsiIndex        Unsigned32,
+        unisL2vpnLinkLinkID          Unsigned32,
+        unisL2vpnLinkType            INTEGER,
+        unisL2vpnLinkIfIndex         InterfaceIndexOrZero,
+        unisL2vpnLinkSrvID           Unsigned32,
+        unisL2vpnLinkTunnelID        Unsigned32
+    }
+
+unisL2vpnLinkVsiIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Virtual Switch Instance (VSI) index of the l2vpn link.  The maximum
+         value of unsigned32 means that the VSI index is invalid."
+    ::= { unisL2vpnLinkEntry 1 }
+
+unisL2vpnLinkLinkID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "VSI link Identifier (ID) of the l2vpn link.  The maximum value of
+         unsigned32 means that the VSI link ID is invalid."
+    ::= { unisL2vpnLinkEntry 2 }
+
+unisL2vpnLinkType OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        unknown(1),
+        ac(2),
+        tunnel(3)
+    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Link type of the l2vpn link.  If the link type is neither Attachment
+         Circuit (AC) nor tunnel, it returns 1."
+    ::= { unisL2vpnLinkEntry 3 }
+
+unisL2vpnLinkIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Interface index of the L2VPN link.  Value zero means that the interface
+         index is invalid."
+    ::= { unisL2vpnLinkEntry 4 }
+
+unisL2vpnLinkSrvID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Service instance ID of the L2VPN link.  Value zero means that the
+         service instance ID is invalid."
+    ::= { unisL2vpnLinkEntry 5 }
+
+unisL2vpnLinkTunnelID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The tunnel ID of the L2VPN link.  The maximum value of unsigned32 means
+         that the tunnel ID is invalid."
+    ::= { unisL2vpnLinkEntry 6 }
+
+-- ==================================================================
+-- =======================unisL2vpnVpwsTable definition  ============
+-- ==================================================================
+
+unisL2vpnVpwsTable OBJECT IDENTIFIER ::= { unisL2vpn 3 }
+
+-- ==================================================================
+-- =======================unisL2vpnXcgTable definition  ============
+-- ==================================================================
+unisL2vpnXcgTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisL2vpnXcgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains cross-connect group information."
+    ::= { unisL2vpnVpwsTable 1 }
+
+unisL2vpnXcgEntry OBJECT-TYPE
+    SYNTAX      UnisL2vpnXcgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Provides information about a cross-connect group entry."
+    INDEX
+        {
+            unisL2vpnXcgName
+        }
+    ::= { unisL2vpnXcgTable 1 }
+
+UnisL2vpnXcgEntry ::= SEQUENCE
+    {
+        unisL2vpnXcgName            OCTET STRING,
+        unisL2vpnXcgAdminState      INTEGER,
+        unisL2vpnXcgRowStatus       RowStatus
+    }
+
+unisL2vpnXcgName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..31))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Cross-connect group name."
+    ::= { unisL2vpnXcgEntry 1 }
+
+unisL2vpnXcgAdminState OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        adminUp(1),
+        adminDown(2)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The desired state of the cross-connect group.  The column doesn't exist
+         when this group hasn't any connection."
+    ::= { unisL2vpnXcgEntry 2 }
+
+unisL2vpnXcgRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisL2vpnXcgEntry 3 }
+-- ==================================================================
+-- ====================unisL2vpnXcgConnTable definition  ============
+-- ==================================================================
+unisL2vpnXcgConnTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisL2vpnXcgConnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains cross-connect information."
+    ::= { unisL2vpnVpwsTable 2 }
+
+unisL2vpnXcgConnEntry OBJECT-TYPE
+    SYNTAX      UnisL2vpnXcgConnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Provides information about a cross-connect entry."
+    INDEX
+        {
+            unisL2vpnXcgName,
+            unisL2vpnXcgConnName
+        }
+    ::= { unisL2vpnXcgConnTable 1 }
+
+UnisL2vpnXcgConnEntry ::= SEQUENCE
+    {
+        unisL2vpnXcgConnName         OCTET STRING,
+        unisL2vpnXcgConnRowStatus    RowStatus,
+        unisL2vpnXcgConnRedundancy   INTEGER
+    }
+
+unisL2vpnXcgConnName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..20))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Cross-connect name."
+    ::= { unisL2vpnXcgConnEntry 1 }
+
+unisL2vpnXcgConnRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry."
+    ::= { unisL2vpnXcgConnEntry 2 }
+
+unisL2vpnXcgConnRedundancy OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        slave(1),
+        master(2),
+        independent(3)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "PW redundancy mode."
+    DEFVAL { slave }
+    ::= { unisL2vpnXcgConnEntry 3 }
+-- ==================================================================
+-- ====================unisL2vpnXcgAcTable definition  ==============
+-- ==================================================================
+unisL2vpnXcgAcTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisL2vpnXcgAcEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains information about attachment circuits (ACs)
+         bound to cross-connects"
+    ::= { unisL2vpnVpwsTable 3 }
+
+unisL2vpnXcgAcEntry OBJECT-TYPE
+    SYNTAX      UnisL2vpnXcgAcEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Provides information about an attachment circuit entry."
+    INDEX
+        {
+            unisL2vpnXcgName,
+            unisL2vpnXcgConnName,
+            unisL2vpnXcgAcIfIndex,
+            unisL2vpnXcgAcEvcSrvInstId
+        }
+    ::= { unisL2vpnXcgAcTable 1 }
+
+UnisL2vpnXcgAcEntry ::= SEQUENCE
+    {
+        unisL2vpnXcgAcIfIndex            InterfaceIndex,
+        unisL2vpnXcgAcEvcSrvInstId       Unsigned32,
+        unisL2vpnXcgAcAccessMode         INTEGER,
+        unisL2vpnXcgAcRowStatus          RowStatus
+    }
+
+unisL2vpnXcgAcIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Index of the interface."
+    ::= { unisL2vpnXcgAcEntry 1 }
+
+unisL2vpnXcgAcEvcSrvInstId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Index of the service instance.  The value is always 0 when the
+         interface isn't a layer 2 Ethernet interface."
+    ::= { unisL2vpnXcgAcEntry 2 }
+
+unisL2vpnXcgAcAccessMode OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        vlan(1),
+        ethernet(2)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Access mode of the AC.  The value is meaningless when the
+         interface isn't a layer 2 Ethernet interface."
+    ::= { unisL2vpnXcgAcEntry 3 }
+
+unisL2vpnXcgAcRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry.  A row entry cannot be modified
+         when the value of this object is 'active'."
+    ::= { unisL2vpnXcgAcEntry 4 }
+-- ==================================================================
+-- ====================unisL2vpnXcgPwTable definition  ==============
+-- ==================================================================
+unisL2vpnXcgPwTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisL2vpnXcgPwEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains PW information."
+    ::= { unisL2vpnVpwsTable 4 }
+
+unisL2vpnXcgPwEntry OBJECT-TYPE
+    SYNTAX      UnisL2vpnXcgPwEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Provides information about a PW entry."
+    INDEX
+        {
+            unisL2vpnXcgName,
+            unisL2vpnXcgConnName,
+            unisL2vpnXcgPwIndex
+        }
+    ::= { unisL2vpnXcgPwTable 1 }
+
+UnisL2vpnXcgPwEntry ::= SEQUENCE
+    {
+        unisL2vpnXcgPwIndex            Unsigned32,
+        unisL2vpnXcgPwCfgType          INTEGER,
+        unisL2vpnXcgPwClassName        OCTET STRING,
+        unisL2vpnXcgPwTunnelPolicy     OCTET STRING,
+        unisL2vpnXcgPwPeerIp           IpAddress,
+        unisL2vpnXcgPwPwID             Unsigned32,
+        unisL2vpnXcgPwRowStatus        RowStatus,
+        unisL2vpnXcgPwIgnoreStandby    TruthValue
+    }
+
+unisL2vpnXcgPwIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "A unique index for a PW."
+    ::= { unisL2vpnXcgPwEntry 1 }
+
+unisL2vpnXcgPwCfgType OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        primary(1),
+        backup(2)
+    }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "PW attribute."
+    ::= { unisL2vpnXcgPwEntry 2 }
+
+unisL2vpnXcgPwClassName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..19))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "PW class name."
+    ::= { unisL2vpnXcgPwEntry 3 }
+
+unisL2vpnXcgPwTunnelPolicy OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..19))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Tunnel policy name."
+    ::= { unisL2vpnXcgPwEntry 4 }
+
+unisL2vpnXcgPwPeerIp OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Peer IP address."
+    ::= { unisL2vpnXcgPwEntry 5 }
+
+unisL2vpnXcgPwPwID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "PW identifier(ID)."
+    ::= { unisL2vpnXcgPwEntry 6 }
+
+unisL2vpnXcgPwRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Operation status of this table entry.  A row entry cannot be modified
+         when the value of this object is 'active'."
+    ::= { unisL2vpnXcgPwEntry 7 }
+
+unisL2vpnXcgPwIgnoreStandby OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Ignores the PW standby state advertised by the remote PE."
+    DEFVAL { false }
+    ::= { unisL2vpnXcgPwEntry 8 }
+-- ==================================================================
+-- ===============unisL2vpnPwNotifications definition  ==============
+-- ==================================================================
+unisL2vpnPwSwitchPtoB NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisL2vpnXcgPwIndex,
+            unisL2vpnXcgPwPeerIp,
+            unisL2vpnXcgPwPwID,
+            unisL2vpnXcgPwIndex,
+            unisL2vpnXcgPwPeerIp,
+            unisL2vpnXcgPwPwID
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when a primary-to-backup PW switching
+         happens.  The first three elements show the primary PW,
+         and the second three elements show the backup PW."
+    ::= { unisL2vpnPwNotifications 1 }
+
+unisL2vpnPwSwitchBtoP NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisL2vpnXcgPwIndex,
+            unisL2vpnXcgPwPeerIp,
+            unisL2vpnXcgPwPwID,
+            unisL2vpnXcgPwIndex,
+            unisL2vpnXcgPwPeerIp,
+            unisL2vpnXcgPwPwID
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated when a backup-to-primary PW switching
+         happens.  The first three elements show the backup PW,
+         and the second three elements show the primary PW."
+    ::= { unisL2vpnPwNotifications 2 }
+-- ==================================================================
+
+
+-- ==================================================================
+-- =======================unisL2vpnAcTable definition  ============
+-- ==================================================================
+
+unisL2vpnAcTable OBJECT IDENTIFIER ::= { unisL2vpn 4 }
+
+-- ==================================================================
+-- ======================= unisL2vpnAcCfgTable definition ==========
+-- ==================================================================
+unisL2vpnAcCfgTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisL2vpnAcCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains interface configurations and AC configurations."
+    ::= { unisL2vpnAcTable 1 }
+
+unisL2vpnAcCfgEntry OBJECT-TYPE
+    SYNTAX      UnisL2vpnAcCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This entry describes information about interface configurations
+        and AC configurations."
+    INDEX
+        {
+            unisL2vpnAcIfIndex,unisL2vpnAcSrvId
+        }
+    ::= { unisL2vpnAcCfgTable 1 }
+
+UnisL2vpnAcCfgEntry ::= SEQUENCE
+    {
+        unisL2vpnAcIfIndex            InterfaceIndex,
+        unisL2vpnAcSrvId              Unsigned32,
+        unisL2vpnAcIfName             DisplayString,
+        unisL2vpnAcVsiName            DisplayString,
+        unisL2vpnAcXcgName            DisplayString,
+        unisL2vpnAcXcgConnName        DisplayString,
+        unisL2vpnAcDot1qType          INTEGER,
+        unisL2vpnAcVLANID             Unsigned32
+    }
+
+unisL2vpnAcIfIndex   OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Index of the interface."
+    ::= { unisL2vpnAcCfgEntry 1 }
+
+unisL2vpnAcSrvId   OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Index of the service instance.  The value is always 0 when the
+        interface isn't a layer 2 Ethernet interface."
+    ::= { unisL2vpnAcCfgEntry 2 }
+
+unisL2vpnAcIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the interface."
+    ::= { unisL2vpnAcCfgEntry 3 }
+
+unisL2vpnAcVsiName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the VSI."
+    ::= { unisL2vpnAcCfgEntry 4 }
+
+unisL2vpnAcXcgName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Cross-connect group name."
+    ::= { unisL2vpnAcCfgEntry 5 }
+
+unisL2vpnAcXcgConnName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Cross-connect name."
+    ::= { unisL2vpnAcCfgEntry 6 }
+
+unisL2vpnAcDot1qType OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        other(1),
+        default(2),
+        singletag(3)
+    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the configuration of VLAN IDs."
+    ::= { unisL2vpnAcCfgEntry 7 }
+
+unisL2vpnAcVLANID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "When the interface is a layer 2 Ethernet interface, this
+        object indicates the VLAN IDs assigned to this service instance.
+        When the interface is a subinterface, this object indicates
+        the outermost VLAN IDs in the VLAN-tagged packets."
+    ::= { unisL2vpnAcCfgEntry 8 }
+
+-- ==================================================================
+-- =======================unisL2vpnPwTable definition  ============
+-- ==================================================================
+
+unisL2vpnPwTable OBJECT IDENTIFIER ::= { unisL2vpn 5 }
+
+-- ==================================================================
+-- ======================= unisL2vpnPwCfgTable definition ==========
+-- ==================================================================
+unisL2vpnPwCfgTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisL2vpnPwCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains PW configuration."
+    ::= { unisL2vpnPwTable 1 }
+
+
+unisL2vpnPwCfgEntry OBJECT-TYPE
+    SYNTAX      UnisL2vpnPwCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This entry describes configurations about a PW."
+        INDEX
+        {
+            unisL2vpnPwPeerIp, unisL2vpnPwId
+        }
+    ::= { unisL2vpnPwCfgTable 1 }
+
+UnisL2vpnPwCfgEntry ::= SEQUENCE
+    {
+        unisL2vpnPwPeerIp                IpAddress,
+        unisL2vpnPwId                    Unsigned32,
+        unisL2vpnPwAcIfIndex             InterfaceIndexOrZero,
+        unisL2vpnPwAcIfName              DisplayString,
+        unisL2vpnPwAcSrvId               Unsigned32,
+        unisL2vpnPwVsiName               DisplayString,
+        unisL2vpnPwXcgName               DisplayString,
+        unisL2vpnPwXcgConnName           DisplayString,
+        unisL2vpnPwQosDirection          INTEGER,
+        unisL2vpnPwInboundQosCir         Unsigned32,
+        unisL2vpnPwInboundQosCbs         Unsigned32,
+        unisL2vpnPwInboundQosEbs         Unsigned32,
+        unisL2vpnPwOutboundQosCir        Unsigned32,
+        unisL2vpnPwOutboundQosCbs        Unsigned32,
+        unisL2vpnPwOutboundQosEbs        Unsigned32
+    }
+
+unisL2vpnPwPeerIp OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Peer IP address."
+    ::= { unisL2vpnPwCfgEntry 1 }
+
+unisL2vpnPwId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "PW identifier (ID)."
+    ::= { unisL2vpnPwCfgEntry 2 }
+
+unisL2vpnPwAcIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Index of the AC interface."
+    ::= { unisL2vpnPwCfgEntry 3 }
+
+unisL2vpnPwAcIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the AC interface."
+    ::= { unisL2vpnPwCfgEntry 4 }
+
+unisL2vpnPwAcSrvId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Index of the service instance.  The value is always
+        0 when the interface isn't a layer 2 Ethernet interface."
+    ::= { unisL2vpnPwCfgEntry 5 }
+
+unisL2vpnPwVsiName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the VSI."
+    ::= { unisL2vpnPwCfgEntry 6 }
+
+unisL2vpnPwXcgName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Cross-connect group name."
+    ::= { unisL2vpnPwCfgEntry 7 }
+
+unisL2vpnPwXcgConnName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Cross-connect name."
+    ::= { unisL2vpnPwCfgEntry 8 }
+
+unisL2vpnPwQosDirection OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        none(1),
+        inbound(2),
+        outbound(3),
+        both(4)
+    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Rate limit in the inbound or outbound direction."
+    ::= { unisL2vpnPwCfgEntry 9 }
+
+unisL2vpnPwInboundQosCir OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Committed Information Rate in the inbound direction."
+    ::= { unisL2vpnPwCfgEntry 10 }
+
+unisL2vpnPwInboundQosCbs OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Committed Burst Size in the inbound direction."
+    ::= { unisL2vpnPwCfgEntry 11 }
+
+unisL2vpnPwInboundQosEbs OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Excess Burst Size in the inbound direction."
+    ::= { unisL2vpnPwCfgEntry 12 }
+
+unisL2vpnPwOutboundQosCir OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Committed Information Rate in the outbound direction."
+    ::= { unisL2vpnPwCfgEntry 13 }
+
+unisL2vpnPwOutboundQosCbs OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Committed Burst Size in the outbound direction."
+    ::= { unisL2vpnPwCfgEntry 14 }
+
+unisL2vpnPwOutboundQosEbs OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Excess Burst Size in the outbound direction."
+    ::= { unisL2vpnPwCfgEntry 15 }
+END

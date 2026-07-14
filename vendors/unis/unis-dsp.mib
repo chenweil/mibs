@@ -1,0 +1,267 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The purpose of this MIB is to provide the definition of
+--              the DSP(Digital Signal Processing) status.
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 2008-01-16 Initial version, created by Zhu Xinfeng
+-- V1.1 2008-07-14 Add unisVPMStateChange and unisDSPStateChange by zhuxinfeng
+-- =================================================================
+UNIS-DSP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        PhysicalIndex
+    FROM ENTITY-MIB
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Integer32, TimeTicks
+    FROM SNMPv2-SMI;
+
+unisDSP MODULE-IDENTITY
+    LAST-UPDATED "200801161300Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB is to provide the definition of the DSP(Digital Signal
+        Processing) status."
+    REVISION "200801161300Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 89 }
+
+-- ===========================================================================
+--                            unisVPMStatusTable
+--
+-- ===========================================================================
+unisVPMStatusTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVPMStatusEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table contains status parameters of VPM(Voice Process
+        Module) card."
+    ::= { unisDSP 1 }
+
+
+unisVPMStatusEntry OBJECT-TYPE
+    SYNTAX      UnisVPMStatusEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The entry of VPM status table."
+    INDEX
+        {
+            unisVPMIndex
+        }
+    ::= { unisVPMStatusTable 1 }
+
+UnisVPMStatusEntry ::= SEQUENCE
+    {
+        unisVPMIndex                  Integer32,
+        unisVPMEnPhysicalIndex        PhysicalIndex,
+        unisVPMState                  INTEGER,
+        unisVPMResourceUtilization    Integer32,
+        unisVPMHiWaterUtilization     Integer32,
+        unisVPMMaxChannel             Integer32
+    }
+
+unisVPMIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..64)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The index for this entry. The sequence of VPM card in the chassis is
+        from the top to bottom."
+    ::= { unisVPMStatusEntry 1 }
+
+unisVPMEnPhysicalIndex OBJECT-TYPE
+    SYNTAX      PhysicalIndex
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The object corresponds to PhysicalIndex in the chassis."
+    ::= { unisVPMStatusEntry 2 }
+
+unisVPMState OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            normal(1),
+            warning(2),
+            fatal(3),
+            offLine(4)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The object indicates the current state of VPM card being monitored.
+        normal(1)  - VPM card in normal condition.
+        warning(2) - VPM card has some problem and need attention.
+        fatal(3)   - VPM card is not functional.
+        offLine(4) - VPM card is in off-line maintenance state."
+    ::= { unisVPMStatusEntry 3 }
+
+unisVPMResourceUtilization OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The object indicates the percentage of current DSP resource utilization
+        of the VPM card. The utilization is a ratio of number of busy DSP
+        resources (for handling calls, transcoding, voice compression,...)
+        to the total available DSP resources."
+    ::= { unisVPMStatusEntry 4 }
+
+unisVPMHiWaterUtilization OBJECT-TYPE
+    SYNTAX      Integer32(0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The object indicates the highest percentage of DSP resource utilization
+        of the VPM card that have been occured."
+    ::= { unisVPMStatusEntry 5 }
+
+unisVPMMaxChannel OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of channels can be supported in each VPM card."
+    ::= { unisVPMStatusEntry 6 }
+
+-- ===========================================================================
+--                            unisDSPStatusTable
+--
+-- ===========================================================================
+unisDSPStatusTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDSPStatusEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table contains status parameters of DSP(Digital Signal
+        Processing) card."
+    ::= { unisDSP 2 }
+
+unisDSPStatusEntry OBJECT-TYPE
+    SYNTAX      UnisDSPStatusEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The entry of DSP status table."
+    INDEX
+        {
+            unisDSPIndex
+        }
+    ::= { unisDSPStatusTable 1 }
+
+UnisDSPStatusEntry ::= SEQUENCE
+    {
+        unisDSPIndex              Integer32,
+        unisDSPVPMIndex           Integer32,
+        unisDSPEnPhysicalIndex    PhysicalIndex,
+        unisDSPResetTime          TimeTicks,
+        unisDSPMaxChannel         Integer32,
+        unisDSPState              INTEGER,
+        unisDSPInUseChannel       Integer32
+    }
+
+unisDSPIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..256)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The index for this entry. DSP is fixed on VPM card or chassis card.
+        The sequence of DSP in the VPM card or chassis card is from right to left."
+    ::= { unisDSPStatusEntry 1 }
+
+unisDSPVPMIndex OBJECT-TYPE
+    SYNTAX      Integer32(0..64)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The object corresponds to VPMIndex in the chassis.
+        If value of this object is non-zero, it is the index of VPM card.(DSP is in
+        this VPM card.) If value of this object is 0, then the DSP is fixed in the
+        chassis card."
+    ::= { unisDSPStatusEntry 2 }
+
+unisDSPEnPhysicalIndex OBJECT-TYPE
+    SYNTAX      PhysicalIndex
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The object corresponds to PhysicalIndex in the chassis."
+    ::= { unisDSPStatusEntry 3 }
+
+unisDSPResetTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of sysUpTime from the last DSP reset occurred."
+    ::= { unisDSPStatusEntry 4 }
+
+unisDSPMaxChannel OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of channels can be supported in each DSP.
+        The value is chosen in an implementation-dependent manner by the
+        DSP functionality."
+    ::= { unisDSPStatusEntry 5 }
+
+unisDSPState OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            normal(1),
+            fatal(3),
+            offLine(4)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The object indicates the current state of DSP being monitored.
+        normal(1)  - DSP in normal condition.
+        fatal(3)   - DSP is not functional.
+        offLine(4) - DSP is in off-line maintenance state."
+    ::= { unisDSPStatusEntry 6 }
+
+unisDSPInUseChannel OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of channels that are reserved for serving calls.
+        The value is incremented when the DSP channel is reserved for call setup
+        and is decremented after the DSP channel is free due to call disconnection."
+    ::= { unisDSPStatusEntry 7 }
+
+-- ===========================================================================
+--                            unisTrapGroup
+--
+-- ===========================================================================
+-- Traps are defined below.
+
+unisDSPTrap OBJECT IDENTIFIER ::= { unisDSP 3 }
+
+unisDSPTrapPrex OBJECT IDENTIFIER ::= { unisDSPTrap 0 }
+
+unisVPMStateChange NOTIFICATION-TYPE
+    OBJECTS  { unisVPMIndex, unisVPMEnPhysicalIndex, unisVPMState }
+    STATUS   current
+    DESCRIPTION
+        "This trap is sent when VPM state changes."
+    ::= { unisDSPTrapPrex 1 }
+
+unisDSPStateChange NOTIFICATION-TYPE
+    OBJECTS  { unisDSPIndex, unisDSPVPMIndex, unisDSPEnPhysicalIndex, unisDSPState }
+    STATUS   current
+    DESCRIPTION
+        "This trap is sent when DSP state changes."
+    ::= { unisDSPTrapPrex 2 }
+
+END

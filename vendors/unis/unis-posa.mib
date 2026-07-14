@@ -1,0 +1,1950 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This MIB is to provide the definition of the POSA
+--              (Point Of Sale Access) system.
+-- Reference:
+-- Version: V1.9
+-- History:
+-- V1.0 2008-03-12 Initial version, created by Lei Hao, Yang Xu
+-- V1.1 2008-09-22 updated by yangxu
+--      Modified the limitation(SIZE (4..7)) of unisPosaMapDestCode
+--      Modified the default value of unisPosaFcmAnswerTimeout
+--      Modified the limitation(0..65535) of unisPosaAppHostPort
+--      Modified the limitation(0..65535) of unisPosaTerminalListenPort
+--      Added new node unisPosaTerminalTransAppID in unisPosaTerminalTable
+--      Renamed unisPosaAppDiscardedPkts to unisPosaAppInDiscardedPkts
+--      Added new node unisPosaAppOutDiscardedPkts in unisPosaAppStatTable
+--      Renamed unisPosaTerminalDiscardedPkts to unisPosaTerminalInDiscardedPkts
+--      Added new node unisPosaTerminalOutDiscardedPkts in unisPosaTerminalStatTable
+--      Modified the description of object unisPosaAppHostPort,
+--      unisPosaFcmStatTimeoutCnts, unisPosaFcmStatConnectFailCnts,
+--      unisPosaAppRecvPkts, unisPosaAppSendPkts, unisPosaAppErrPkts,
+--      unisPosaAppDistributeErrCnts, unisPosaAppInDiscardedPkts,
+--      unisPosaTerminalRecvPkts, unisPosaTerminalSendPkts,
+--      unisPosaTerminalErrPkts, unisPosaTerminalMapErrCnts,
+--      unisPosaTerminalInDiscardedPkts.
+-- V1.2 2010-04-08 updated by Cai Zibin, Tong Wei
+--      Added unisPosaFcmConfTable
+--      Added unisPosaTcpTermStatTable
+--      Added unisPosaBatchTerminalTable
+--      Added unisPosaCallerStatTable
+--      Added new node unisPosaTerminalHangUp, unisPosaFcmLinkNegoFailed,
+--      unisPosaFcmPhyNegoFailed in unisPosaTrapPrex
+--      Added new node unisPosaSrvStateChangeTrapEnable,
+--      unisPosaAppStateChangeTrapEnable, unisPosaTerminalHangUpTrapEnable,
+--      unisPosaFcmLnkNegoFailTrapEnable, unisPosaFcmPhyNegoFailTrapEnable,
+--      in unisPosaControl
+--      unisPosaAppName, unisPosaCallerIDTransEnable, unisPosaTpduChangeStrategy
+--      in unisPosaAppTable
+--      unisPosaTerminalName and unisPosaTerminalCfgIfIndex in unisPosaTerminalTable
+--      unisPosaMapSrcCode in unisPosaMapTable
+-- V1.3 2011-09-01 updated by he changfu,du pengfei
+--      Added new node unisPosaBackupAppID,unisPosaQuietTimeOut
+--      in unisPosaAppTable
+--      Added a new value for UnisPeerState.
+--      2011-12-12 updated by lei hao,yang xu
+--      Added new node, unisPosaFcmStatTransCnts, unisPosaFcmStatTransSuccessCnts
+--      and unisPosaFcmStatTransCntsClear in unisPosaFcmStatTable
+--      2012-2-28 updated by zhangxianyi
+--      Added new node unisPosaAppHello, unisPosaAppHelloInterval
+--      unisPosaAppRouterPort
+--      in unisPosaAppTable
+-- V1.4 2012-8-22 updated by dupengfei
+--      Added value of "error(9)" for UnisPeerState
+-- V1.5 2013-08-30 updated by q04356
+--      Modified the range of unisPosaAppID and unisPosaBackupAppID in unisPosaAppTable
+--      Modified the range of unisPosaTerminalTransAppID in unisPosaTerminalTable
+--      Modified the range of unisPosaMapAppID in unisPosaMapTable
+--      2013-09-03 updated by q04356
+--      Added new nodes unisPosaTcpConnectionNumber, unisPosaFcmConnectionNumber
+--      unisPosaTcpConnectionThreshold, unisPosaFcmConnectionThreshold,
+--      unisPosaTcpConnectionTrapEnable and
+--      unisPosaFcmConnectionTrapEnable in unisPosaControl
+--      Added new nodes unisPosaTcpConnectionExceed and
+--      unisPosaFcmConnectionExceed in unisPosaTrapPrex
+-- V1.6 2013-10-18 updated by zhangxinhua
+--      Modified the MAX-ACCESS of unisPosaTerminalID to be accessible-for-notify
+--      Deleted the range description of unisPosaTcpConnectionThreshold and
+--      unisPosaFcmConnectionThreshold
+--      Added new nodes unisPosaTcpTradeLimit, unisPosaTcpTradeTrapEnable,
+--      unisPosaTcpTradeTimeout in unisPosaControl
+--      Added new nodes unisPosaTcpTradeExceed in unisPosaTrapPrex
+--      2013-12-14 updated by q04356
+--      Modified the default of unisPosaFcmIdleTimeout in unisPosaControl
+-- V1.7 2014-05-29 updated by liubo
+--      Modified the range for unisPosaAppID and unisPosaBackupAppID in unisPosaAppTable
+--      Modified the range for unisPosaTerminalTransAppID in unisPosaTerminalTable
+--      Modified the range for unisPosaMapAppID in unisPosaMapTable
+-- V1.8 2014-11-14 updated by liubo
+--      Modified the range for unisPosaTerminalID in unisPosaTerminalTable
+--      Modified the range for unisPosaBatchTerminalFirstID in unisPosaBatchTerminalTable
+--      Modified the default value for unisPosaFcmConnectionThreshold
+-- V1.9 2015-8-26 updated by limeng
+--      Added unisPosaNiiStatTable
+--      Added unisPosaE1StatTable
+--      Added new nodes unisPosaTradeSuccessFallingTrapEnable, unisPosaTradeSuccessFallingThreshold,
+--      unisPosaE1DialFallingTrapEnable, unisPosaE1DialFallingThreshold
+--      and unisPosaFcmTradeAbnormalTrapEnable in unisPosaControl
+--      Added new node unisPosaTermianlTcpConnectionNumber in unisPosaTerminalStatTable
+--      Added new nodes unisPosaTradeSuccessFalling, unisPosaE1DialFalling
+--      and unisPosaFcmTradeAbnormal in unisPosaTrapPrex
+--      Added new object unisPosaCallerStatCallerID to unisPosaTerminalHangUp
+--      Added new object unisPosaCallerStatCallerID to unisPosaFcmLinkNegoFailed
+--      Added new object unisPosaCallerStatCallerID to unisPosaFcmPhyNegoFailed
+--      Modified the MAX-ACCESS of unisPosaCallerStatCallerID to be accessible-for-notify
+-- =================================================================
+UNIS-POSA-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, Counter32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE,
+    Counter64, Gauge32
+        FROM SNMPv2-SMI
+    RowStatus, TruthValue, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    InetAddress, InetAddressType
+        FROM INET-ADDRESS-MIB
+    ifIndex, ifDescr
+        FROM IF-MIB;
+
+unisPosa MODULE-IDENTITY
+    LAST-UPDATED "201508260000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB is to provide the definition of the POSA
+        (Point Of Sale Access) system."
+    REVISION "201508260000Z"
+    DESCRIPTION
+        "Added unisPosaNiiStatTable.
+        Added unisPosaE1StatTable.
+        Added new nodes unisPosaTradeSuccessFallingTrapEnable, unisPosaTradeSuccessFallingThreshold,
+        unisPosaE1DialFallingTrapEnable, unisPosaE1DialFallingThreshold
+        and unisPosaFcmTradeAbnormalTrapEnable in unisPosaContro.
+        Added new node unisPosaTermianlTcpConnectionNumber in unisPosaTerminalStatTable.
+        Added new nodes unisPosaTradeSuccessFalling, unisPosaE1DialFalling
+        and unisPosaFcmTradeAbnormal in unisPosaTrapPrex.
+        Added new object unisPosaCallerStatCallerID to unisPosaTerminalHangUp.
+        Added new object unisPosaCallerStatCallerID to unisPosaFcmLinkNegoFailed.
+        Added new object unisPosaCallerStatCallerID to unisPosaFcmPhyNegoFailed.
+        Modified the MAX-ACCESS of unisPosaCallerStatCallerID to be accessible-for-notify."
+    REVISION "201411140000Z"
+    DESCRIPTION
+        "Modified the range for unisPosaTerminalID in unisPosaTerminalTable.
+        Modified the range for unisPosaBatchTerminalFirstID in unisPosaBatchTerminalTable.
+        Modified the default value for unisPosaFcmConnectionThreshold"
+    REVISION "200803120933Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 92 }
+
+
+-- definition of textual conventions
+
+UnisAppServiceType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The service type of a POS application.  It means the way
+        in which the router connects with the application server.
+        At present, it supports two service types, tcp(1) and flow(2).
+        If the router connects with the server through SEARIAL/ASYNC
+        interface, the service type is flow(1).  If through TCP/IP,
+        the service type is tcp(1)."
+    SYNTAX INTEGER
+        {
+        tcp(1),
+        flow(2)
+        }
+
+UnisAppMode ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The work mode of a POS application.  It has two value normal(1)
+        and temporary(2).  This attribute is valid only when the service type
+        is tcp(1).  If it works in temporary(2) mode, the TCP connection
+        between router and application server is established
+        when a POS trade begins and disconnected when a POS trade finishes.
+        In normal(1) mode, the TCP connection is established
+        when POS function is enabled and exists all along."
+    SYNTAX INTEGER
+        {
+        normal(1),
+        temporary(2)
+        }
+
+UnisPeerState ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The current running state of the peer (application server or POS terminal)
+        of the router.
+        notset(1)     The peer is not configured correctly.
+        down(2)       The interface connecting with the peer is down.
+        up(3)         The interface connecting with the peer is up.
+        kept(4)       The connection between router and the peer is
+                      not established.
+        linking(5)    The connection between router and the peer is
+                      establishing.
+        linked(6)     The connection between router and the peer is
+                      established.
+        multilink(7)  There are multiple connections between router and the peer.
+        blocked(8)    The connection between router and the peer is
+                      unreachable.
+        error(9)      Enable failed.
+
+        The status of down(2) and up(3) appear only when the router and the peer
+        are connected with interface.
+        The status about TCP connections appear when the router and the peer are
+        connected with TCP/IP.
+        "
+    SYNTAX INTEGER
+        {
+        notset(1),
+        down(2),
+        up(3),
+        kept(4),
+        linking(5),
+        linked(6),
+        multilink(7),
+        blocked(8),
+        error(9)
+        }
+
+UnisTerminalAccessType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The access type of a POS terminal.  Now it supports 3 types.
+        fcm(1)  The POS terminal connects with router through FCM interface.
+        flow(2) The POS terminal connects with router through SERIAL, ASYNC,
+                AM (Analog Modem) or AUX interface.
+        tcp(3)  The POS terminal connects with router through TCP/IP protocol.
+                The default access type is fcm(2)."
+    SYNTAX INTEGER
+        {
+        fcm(1),
+        flow(2),
+        tcp(3)
+        }
+
+UnisTpduChangeStrategy ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The strategy to modify the address of the packet from terminals before
+        delivering it to application server.  Now it supports 2 types.
+        ChangeTpduSrc(1)  Replace the source address of the packet with POSID.
+        ChangeTpduDest(2) Replace the destination address of the packet with
+                          POSID."
+    SYNTAX INTEGER
+        {
+        changeTpduSrc(1),
+        changeTpduDest(2)
+        }
+
+--
+-- nodes defined
+--
+
+unisPosaControl OBJECT IDENTIFIER ::= { unisPosa 1 }
+
+unisPosaServerEnable OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        disabled(1),
+        enabled(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute controls the starting or stoppage of POS access function.
+        The defalut value is disabled(1)."
+    DEFVAL { disabled }
+    ::= { unisPosaControl 1 }
+
+unisPosaFcmAnswerTimeout OBJECT-TYPE
+    SYNTAX Integer32 (500..2000)
+    UNITS "milliseconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The maximum answer time of a POS connection through a FCM (Fast
+        Connection Modem) interface.
+        The answer time is the interval from the POS terminal sending request
+        to the Router giving its reply, in units of milliseconds."
+    DEFVAL { 2000 }
+    ::= { unisPosaControl 2 }
+
+unisPosaFcmTradeTimeout OBJECT-TYPE
+    SYNTAX Integer32 (30000..12000000)
+    UNITS "milliseconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The maximum time of a POS trade through a FCM interface,
+        in units of milliseconds."
+    DEFVAL { 12000000 }
+    ::= { unisPosaControl 3 }
+
+unisPosaFcmIdleTimeout OBJECT-TYPE
+    SYNTAX Integer32 (1..12000)
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The maximum idle time of a POS connection through the FCM interface,
+        in units of seconds."
+    DEFVAL { 180 }
+    ::= { unisPosaControl 4 }
+
+unisPosaSrvStateChangeTrapEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute controls whether the unisPosaServerStatusChange trap will
+        be sent or not."
+    DEFVAL { true }
+    ::= { unisPosaControl 5 }
+
+unisPosaAppStateChangeTrapEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute controls whether the unisPosaAppStateChange trap will
+        be sent or not."
+    DEFVAL { true }
+    ::= { unisPosaControl 6 }
+
+unisPosaTerminalHangUpTrapEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute controls whether the unisPosaTerminalHangUp trap will
+        be sent or not."
+    DEFVAL { true }
+    ::= { unisPosaControl 7 }
+
+unisPosaFcmLnkNegoFailTrapEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute controls whether the unisPosaFcmLinkNegoFailed trap will
+        be sent or not."
+    DEFVAL { true }
+    ::= { unisPosaControl 8 }
+
+unisPosaFcmPhyNegoFailTrapEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute controls whether the unisPosaFcmPhyNegoFailed trap will
+        be sent or not."
+    DEFVAL { true }
+    ::= { unisPosaControl 9 }
+
+unisPosaTcpConnectionNumber OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The current number of TCP connections."
+    ::= { unisPosaControl 10 }
+
+unisPosaFcmConnectionNumber OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The current number of FCM connections."
+    ::= { unisPosaControl 11 }
+
+unisPosaTcpConnectionThreshold OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The threshold of TCP connections."
+    DEFVAL {4096}
+    ::= { unisPosaControl 12 }
+
+unisPosaFcmConnectionThreshold OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The threshold of FCM connections."
+    DEFVAL {1024}
+    ::= { unisPosaControl 13 }
+
+unisPosaTcpConnectionTrapEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute specifies the threshold that must be exceeded to
+        send the unisPosaTcpConnectionExceed trap."
+    DEFVAL { true }
+    ::= { unisPosaControl 14 }
+
+unisPosaFcmConnectionTrapEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute specifies the threshold that must be exceeded to
+        send the unisPosaFcmConnectionExceed trap."
+    DEFVAL { true }
+    ::= { unisPosaControl 15 }
+
+unisPosaTcpTradeLimit OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The limit of concurrent trades in one TCP connection.  The value 0
+        means unlimited."
+    DEFVAL {0}
+    ::= { unisPosaControl 16 }
+
+unisPosaTcpTradeTrapEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute specifies the limit that must be exceeded to
+        send the unisPosaTcpTradeExceed trap."
+    DEFVAL { true }
+    ::= { unisPosaControl 17 }
+
+unisPosaTcpTradeTimeout OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The maximum interval to wait for the reply from sending the trade
+        packet to the application server.  The value 0 means wait forever."
+    DEFVAL {240}
+    ::= { unisPosaControl 18 }
+
+unisPosaTradeSuccessFallingTrapEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute controls whether the unisPosaTradeSuccessFalling trap will
+        be sent or not."
+    DEFVAL { true }
+    ::= { unisPosaControl 19 }
+
+unisPosaTradeSuccessFallingThreshold OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The threshold of transaction success rate ."
+    DEFVAL {90}
+    ::= { unisPosaControl 20 }
+
+unisPosaE1DialFallingTrapEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute controls whether the unisPosaE1DialFalling trap will
+        be sent or not."
+    DEFVAL { true }
+    ::= { unisPosaControl 21 }
+
+unisPosaE1DialFallingThreshold OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The threshold of dialing success rate ."
+    DEFVAL {90}
+    ::= { unisPosaControl 22 }
+
+unisPosaFcmTradeAbnormalTrapEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute controls whether the unisPosaFcmTradeAbnormal trap will
+        be sent or not."
+    DEFVAL { true }
+    ::= { unisPosaControl 23 }
+
+unisPosaTables OBJECT IDENTIFIER ::= { unisPosa 2 }
+
+--
+-- definition of unisPosaAppTable
+--
+
+unisPosaAppTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPosaAppEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the configuration information and
+        running status of POS application."
+    ::= { unisPosaTables 1 }
+
+unisPosaAppEntry OBJECT-TYPE
+    SYNTAX UnisPosaAppEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the configuration information and
+        running status of POS application."
+    INDEX { unisPosaAppID }
+    ::= { unisPosaAppTable 1 }
+
+UnisPosaAppEntry ::=
+    SEQUENCE {
+        unisPosaAppID
+            Integer32,
+        unisPosaAppServiceType
+            UnisAppServiceType,
+        unisPosaAppIfIndex
+            Integer32,
+        unisPosaAppMode
+            UnisAppMode,
+        unisPosaAppHostIPType
+            InetAddressType,
+        unisPosaAppHostIP
+            InetAddress,
+        unisPosaAppHostPort
+            Integer32,
+        unisPosaAppRouterIPType
+            InetAddressType,
+        unisPosaAppRouterIP
+            InetAddress,
+        unisPosaAppKeepAliveInterval
+            Integer32,
+        unisPosaAppKeepAliveCount
+            Integer32,
+        unisPosaAppConnectTimeout
+            Integer32,
+        unisPosaAppState
+            UnisPeerState,
+        unisPosaAppRowStatus
+            RowStatus,
+        unisPosaAppName
+            OCTET STRING,
+        unisPosaCallerIDTransEnable
+            TruthValue,
+        unisPosaTpduChangeStrategy
+            UnisTpduChangeStrategy,
+        unisPosaBackupAppID
+            Integer32,
+        unisPosaQuietTimeOut
+            Integer32,
+        unisPosaAppHello
+            TruthValue,
+        unisPosaAppHelloInterval
+            Integer32,
+        unisPosaAppRouterPort
+            Integer32
+     }
+
+unisPosaAppID OBJECT-TYPE
+    SYNTAX Integer32 (1..1024)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The identification of a POS application."
+    ::= { unisPosaAppEntry 1 }
+
+unisPosaAppServiceType OBJECT-TYPE
+    SYNTAX UnisAppServiceType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The service type of a POS application.  It means the way
+        in which the router connects with the application server."
+    DEFVAL { tcp }
+    ::= { unisPosaAppEntry 2 }
+
+unisPosaAppIfIndex OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "This attribute is the ifindex through which the router connecting with
+        the application server, if the service type of POS application is flow(2).
+        It is invalid if the service type is tcp(1).
+        At preasent, it supports 5 types of interface: FCM, SERIAL, ASYNC,
+        AM (Analog Modem) and AUX."
+    REFERENCE
+        "ifindex"
+    ::= { unisPosaAppEntry 3 }
+
+unisPosaAppMode OBJECT-TYPE
+    SYNTAX UnisAppMode
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The work mode of a POS application."
+    DEFVAL { normal }
+    ::= { unisPosaAppEntry 4 }
+
+unisPosaAppHostIPType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The IP address type of the application server.  And now it must be IPV4.
+        It is invalid if the service type is flow(2)."
+    ::= { unisPosaAppEntry 5 }
+
+unisPosaAppHostIP OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The IP address of the application server.  And now it only supports IPV4.
+        It is invalid if the service type is flow(2)."
+    ::= { unisPosaAppEntry 6 }
+
+unisPosaAppHostPort OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The listening port of the application server.  If the information of
+        the application server is not specified, this object will return the
+        value 0.
+        It is invalid if the service type is flow(2)."
+    ::= { unisPosaAppEntry 7 }
+
+unisPosaAppRouterIPType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The source IP address type of the access router.  Now it must be ipv4.
+        It is invalid if the service type is flow(2)."
+    ::= { unisPosaAppEntry 8 }
+
+unisPosaAppRouterIP OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The source IP address of access router used in connecting with
+        application server.  Now it only supports ipv4.
+        It is invalid if the service type is flow(2)."
+    ::= { unisPosaAppEntry 9 }
+
+unisPosaAppKeepAliveInterval OBJECT-TYPE
+    SYNTAX Integer32 (1..7200)
+    UNITS "seconds"
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The TCP keep alive interval of the connection between the router and
+        the application server.  In unit of seconds.
+        The default value is 2 seconds.
+        It is valid only when the service type is tcp(1)."
+    DEFVAL { 2 }
+    ::= { unisPosaAppEntry 10 }
+
+unisPosaAppKeepAliveCount OBJECT-TYPE
+    SYNTAX Integer32 (2..100)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The maximum number of sending TCP keep alive packets.
+        It is valid only when the service type is tcp(1)."
+    DEFVAL { 3 }
+    ::= { unisPosaAppEntry 11 }
+
+unisPosaAppConnectTimeout OBJECT-TYPE
+    SYNTAX Integer32 (1..20)
+    UNITS "seconds"
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The maximum interval that the router waits for the reply from
+        application server after sending the request for establishing a TCP
+        connection.  It is invalid if the service type is flow(2)."
+    DEFVAL { 20 }
+    ::= { unisPosaAppEntry 12 }
+
+unisPosaAppState OBJECT-TYPE
+    SYNTAX UnisPeerState
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The current running state of application server."
+    ::= { unisPosaAppEntry 13 }
+
+unisPosaAppRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Operation status."
+    ::= { unisPosaAppEntry 14 }
+
+unisPosaAppName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..32))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The description of a POS application."
+    ::= { unisPosaAppEntry 15 }
+
+unisPosaCallerIDTransEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Enable or disable the caller-id transmission function."
+    DEFVAL { false }
+    ::= { unisPosaAppEntry 16 }
+
+unisPosaTpduChangeStrategy OBJECT-TYPE
+    SYNTAX UnisTpduChangeStrategy
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Set the strategy to modify the address of the packet from terminals
+        before delivering it to application server."
+    DEFVAL { changeTpduSrc }
+    ::= { unisPosaAppEntry 17 }
+
+unisPosaBackupAppID OBJECT-TYPE
+    SYNTAX Integer32 (0..1024)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Specify the backup application ID, 0 indicates not using backup application.
+        It is invalid if the service type is flow(2)."
+    ::= { unisPosaAppEntry 18 }
+
+unisPosaQuietTimeOut OBJECT-TYPE
+    SYNTAX Integer32 (10..600)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Specify the wait time for re-activating application server.
+        It is invalid if the service type is flow(2)."
+    ::= { unisPosaAppEntry 19 }
+
+unisPosaAppHello OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Specify the switch of hello packet for the application server."
+    DEFVAL { false }
+    ::= { unisPosaAppEntry 20 }
+
+unisPosaAppHelloInterval OBJECT-TYPE
+    SYNTAX Integer32 (1..600)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Specify the interval time in minute(s) of hello packet."
+    DEFVAL { 1 }
+    ::= { unisPosaAppEntry 21 }
+
+unisPosaAppRouterPort OBJECT-TYPE
+    SYNTAX Integer32 (0..4999)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The source port of access router used in connecting with
+        application server.  0 indicates not to specify the source port.
+        It is valid only if the service type is tcp(1) and mode is normal(1)."
+    ::= { unisPosaAppEntry 22 }
+
+--
+-- definition of unisPosaTerminalTable
+--
+
+unisPosaTerminalTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPosaTerminalEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the configuration information and
+        running status of POS terminal."
+    ::= { unisPosaTables 2 }
+
+unisPosaTerminalEntry OBJECT-TYPE
+    SYNTAX UnisPosaTerminalEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the configuration information and
+        running status of POS terminal."
+    INDEX { unisPosaTerminalID }
+    ::= { unisPosaTerminalTable 1 }
+
+UnisPosaTerminalEntry ::=
+    SEQUENCE {
+        unisPosaTerminalID
+            Integer32,
+        unisPosaTerminalAccessType
+            UnisTerminalAccessType,
+        unisPosaTerminalIfIndex
+            Integer32,
+        unisPosaTerminalTransAppID
+            Integer32,
+        unisPosaTerminalListenPort
+            Integer32,
+        unisPosaTerminalState
+            UnisPeerState,
+        unisPosaTerminalRowStatus
+            RowStatus,
+        unisPosaTerminalName
+            OCTET STRING,
+        unisPosaTerminalCfgIfIndex
+            Integer32
+     }
+
+unisPosaTerminalID OBJECT-TYPE
+    SYNTAX Integer32 (1..1024)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The identification of a POS terminal."
+    ::= { unisPosaTerminalEntry 1 }
+
+unisPosaTerminalAccessType OBJECT-TYPE
+    SYNTAX UnisTerminalAccessType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The access type of a POS terminal."
+    DEFVAL { fcm }
+    ::= { unisPosaTerminalEntry 2 }
+
+unisPosaTerminalIfIndex OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The ifindex of the interface through which connects the POS terminal
+        and the router.  It is invalid if the access type is TCP."
+    REFERENCE
+        "ifindex"
+    ::= { unisPosaTerminalEntry 3 }
+
+unisPosaTerminalTransAppID OBJECT-TYPE
+    SYNTAX Integer32 (0..1024)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The identification of the application server to which all the packets
+        from this POS terminal will be sent.
+        If this object is set to 0, the destination application server to which
+        a packet from this POS terminal will be sent is determined by its TPDU
+        (Transport Protocol Data Unit) destination address.
+        It is invalid if the access type is TCP."
+    DEFVAL { 0 }
+    ::= { unisPosaTerminalEntry 4 }
+
+unisPosaTerminalListenPort OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The listening port accepting the connection from POS terminals.
+        It is valid only when the access type is TCP."
+    ::= { unisPosaTerminalEntry 5 }
+
+unisPosaTerminalState OBJECT-TYPE
+    SYNTAX UnisPeerState
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The current running status of a POS terminal."
+    ::= { unisPosaTerminalEntry 6 }
+
+unisPosaTerminalRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Operation status."
+    ::= { unisPosaTerminalEntry 7 }
+
+unisPosaTerminalName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..32))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The description of a POS terminal."
+    ::= { unisPosaTerminalEntry 8 }
+
+unisPosaTerminalCfgIfIndex OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The ifindex of the interface on which the terminal configuration is.
+        If it is a physical interface, its value is equal to that of
+        unisPosaTerminalIfIndex."
+    REFERENCE
+        "ifindex"
+    ::= { unisPosaTerminalEntry 9 }
+
+--
+-- definition of unisPosaMapTable
+--
+
+unisPosaMapTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPosaMapEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table describe the application-mapping information."
+    ::= { unisPosaTables 3 }
+
+unisPosaMapEntry OBJECT-TYPE
+    SYNTAX UnisPosaMapEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table describe the application-mapping information."
+    INDEX { unisPosaMapSrcCode, unisPosaMapDestCode }
+    ::= { unisPosaMapTable 1 }
+
+UnisPosaMapEntry ::=
+    SEQUENCE {
+        unisPosaMapDestCode
+            OCTET STRING,
+        unisPosaMapAppID
+            Integer32,
+        unisPosaMapRowStatus
+            RowStatus,
+        unisPosaMapSrcCode
+            OCTET STRING
+     }
+
+unisPosaMapDestCode OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (4..7))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The destination code of the mapping item.  Generally, the destination
+        code is a 4-character-string.  If the destination address in POS packet
+        matches the code, the packet will be deliveried to the corresponding
+        application server.  If any code can not be matched, the packet will be
+        deliveried to the default server.  A special destination code, 'default',
+        is for default mapping item."
+    ::= { unisPosaMapEntry 1 }
+
+unisPosaMapAppID OBJECT-TYPE
+    SYNTAX Integer32 (1..1024)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The identifier of POS application.  It is the index of unisPosaAppTable."
+    ::= { unisPosaMapEntry 2 }
+
+unisPosaMapRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Operation status."
+    ::= { unisPosaMapEntry 3 }
+
+unisPosaMapSrcCode OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (4..7))
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The source code of the mapping item.  Generally, the source code is a
+        4-character-string.  If the source address in POS packet matches the
+        code, the packet will be deliveried to the corresponding application
+        server.  If any code can not be matched, the packet will be deliveried
+        to the default server.  A special source code, 'default', is for
+        default mapping item."
+    ::= { unisPosaMapEntry 4 }
+
+--
+-- definition of unisPosaFcmStatTable
+--
+
+unisPosaFcmStatTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPosaFcmStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the statistics information of FCM interface."
+    ::= { unisPosaTables 4 }
+
+unisPosaFcmStatEntry OBJECT-TYPE
+    SYNTAX UnisPosaFcmStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the statistics information of FCM interface."
+    INDEX { unisPosaFcmStatIfIndex }
+    ::= { unisPosaFcmStatTable 1 }
+
+UnisPosaFcmStatEntry ::=
+    SEQUENCE {
+        unisPosaFcmStatIfIndex
+            Integer32,
+        unisPosaFcmStatTimeoutCnts
+            Counter32,
+        unisPosaFcmStatConnectFailCnts
+            Counter32,
+        unisPosaFcmStatTransCnts
+            Gauge32,
+        unisPosaFcmStatTransSuccessCnts
+            Gauge32,
+        unisPosaFcmStatTransCntsClear
+            TruthValue
+     }
+
+unisPosaFcmStatIfIndex OBJECT-TYPE
+    SYNTAX Integer32 (0..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of FCM interface."
+    ::= { unisPosaFcmStatEntry 1 }
+
+unisPosaFcmStatTimeoutCnts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of disconnections because of trade timeouts."
+    ::= { unisPosaFcmStatEntry 2 }
+
+unisPosaFcmStatConnectFailCnts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of connection failures because of unsuccessful negotiations."
+    ::= { unisPosaFcmStatEntry 3 }
+unisPosaFcmStatTransCnts OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of all transactions made through the interface."
+    ::= { unisPosaFcmStatEntry 4 }
+
+unisPosaFcmStatTransSuccessCnts OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of successful transactions made through the interface."
+    ::= { unisPosaFcmStatEntry 5 }
+
+unisPosaFcmStatTransCntsClear OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Clear the number of successful transactions and all transactions."
+    DEFVAL { false }
+    ::= { unisPosaFcmStatEntry 6 }
+
+--
+-- definition of unisPosaAppStatTable
+--
+
+unisPosaAppStatTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPosaAppStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the statistics information of application."
+    ::= { unisPosaTables 5 }
+
+unisPosaAppStatEntry OBJECT-TYPE
+    SYNTAX UnisPosaAppStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the statistics information of application."
+    INDEX { unisPosaAppID }
+    ::= { unisPosaAppStatTable 1 }
+
+UnisPosaAppStatEntry ::=
+    SEQUENCE {
+        unisPosaAppRecvPkts
+            Counter32,
+        unisPosaAppSendPkts
+            Counter32,
+        unisPosaAppErrPkts
+            Counter32,
+        unisPosaAppDistributeErrCnts
+            Counter32,
+        unisPosaAppInDiscardedPkts
+            Counter32,
+        unisPosaAppOutDiscardedPkts
+            Counter32
+     }
+
+unisPosaAppRecvPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets recieved from the application server."
+    ::= { unisPosaAppStatEntry 1 }
+
+unisPosaAppSendPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets sent to the application server."
+    ::= { unisPosaAppStatEntry 2 }
+
+unisPosaAppErrPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of inbound packets that contained errors."
+    ::= { unisPosaAppStatEntry 3 }
+
+unisPosaAppDistributeErrCnts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets that are discarded when no corresponding POS
+        terminal can be found."
+    ::= { unisPosaAppStatEntry 4 }
+
+unisPosaAppInDiscardedPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of inbound packets that are discarded when the incoming
+        buffer is full."
+    ::= { unisPosaAppStatEntry 5 }
+
+unisPosaAppOutDiscardedPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of outbound packets that are discarded because of link
+        errors between the router and the application server."
+    ::= { unisPosaAppStatEntry 6 }
+
+--
+-- definition of unisPosaTerminalStatTable
+--
+
+unisPosaTerminalStatTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPosaTerminalStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the statistics information of application."
+    ::= { unisPosaTables 6 }
+
+unisPosaTerminalStatEntry OBJECT-TYPE
+    SYNTAX UnisPosaTerminalStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the statistics information of application."
+    INDEX { unisPosaTerminalID }
+    ::= { unisPosaTerminalStatTable 1 }
+
+UnisPosaTerminalStatEntry ::=
+    SEQUENCE {
+        unisPosaTerminalRecvPkts
+            Counter32,
+        unisPosaTerminalSendPkts
+            Counter32,
+        unisPosaTerminalErrPkts
+            Counter32,
+        unisPosaTerminalMapErrCnts
+            Counter32,
+        unisPosaTerminalInDiscardedPkts
+            Counter32,
+        unisPosaTerminalOutDiscardedPkts
+            Counter32,
+        unisPosaTermianlTcpConnectionNumber
+            Integer32
+     }
+
+unisPosaTerminalRecvPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets recieved from the POS terminal."
+    ::= { unisPosaTerminalStatEntry 1 }
+
+unisPosaTerminalSendPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets sent to the POS terminal."
+    ::= { unisPosaTerminalStatEntry 2 }
+
+unisPosaTerminalErrPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of inbound packets that contained errors."
+    ::= { unisPosaTerminalStatEntry 3 }
+
+unisPosaTerminalMapErrCnts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets that are discarded because of mapping errors."
+    ::= { unisPosaTerminalStatEntry 4 }
+
+unisPosaTerminalInDiscardedPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of inbound packets that are discarded when the incoming
+        buffer is full."
+    ::= { unisPosaTerminalStatEntry 5 }
+
+unisPosaTerminalOutDiscardedPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of outbound packets that are discarded because of link
+        errors between the router and the POS terminal."
+    ::= { unisPosaTerminalStatEntry 6 }
+
+unisPosaTermianlTcpConnectionNumber OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of TCP connections between the router and the POS terminal."
+    ::= { unisPosaTerminalStatEntry 7 }
+
+--
+-- definition of unisPosaBatchTerminalTable
+--
+
+unisPosaBatchTerminalTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPosaBatchTerminalEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table of the configuration information relevant to
+        a batch of POS terminals."
+    ::= { unisPosaTables 7 }
+
+unisPosaBatchTerminalEntry OBJECT-TYPE
+    SYNTAX UnisPosaBatchTerminalEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The configuration information relevant to a batch of
+        POS terminals."
+    INDEX { ifIndex }
+    ::= { unisPosaBatchTerminalTable 1 }
+
+UnisPosaBatchTerminalEntry ::=
+    SEQUENCE {
+        unisPosaBatchTerminalFirstID
+            Integer32,
+        unisPosaBatchTerminalRowStatus
+            RowStatus
+     }
+
+unisPosaBatchTerminalFirstID OBJECT-TYPE
+    SYNTAX Integer32 (1..1024)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The first ID of the batch of POS terminals."
+    ::= { unisPosaBatchTerminalEntry 1 }
+
+unisPosaBatchTerminalRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Operation status."
+    ::= { unisPosaBatchTerminalEntry 2 }
+
+--
+-- definition of unisPosaTcpTermStatTable
+--
+
+unisPosaTcpTermStatTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPosaTcpTermStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the statistics information of terminal whose
+        access type is tcp."
+    ::= { unisPosaTables 8 }
+
+unisPosaTcpTermStatEntry OBJECT-TYPE
+    SYNTAX UnisPosaTcpTermStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows the statistics information of terminal whose
+        access type is tcp."
+    INDEX { unisPosaTcpTermStatIndex }
+    ::= { unisPosaTcpTermStatTable 1 }
+
+UnisPosaTcpTermStatEntry ::=
+    SEQUENCE {
+        unisPosaTcpTermStatIndex
+            Integer32,
+        unisPosaTcpTermStatIPType
+            InetAddressType,
+        unisPosaTcpTermStatIP
+            InetAddress,
+        unisPosaTcpTermStatIPMask
+            InetAddress,
+        unisPosaTcpTermRecvPkts
+            Counter64,
+        unisPosaTcpTermSendPkts
+            Counter64,
+        unisPosaTcpTermErrPkts
+            Counter64,
+        unisPosaTcpTermMapErrCnts
+            Counter64,
+        unisPosaTcpTermInDiscardedPkts
+            Counter64,
+        unisPosaTcpTermOutDiscardedPkts
+            Counter64,
+        unisPosaTcpTermStatRowStatus
+            RowStatus
+     }
+
+unisPosaTcpTermStatIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..64)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of entity."
+    ::= { unisPosaTcpTermStatEntry 1 }
+
+unisPosaTcpTermStatIPType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The type of Internet address.  And now it must be ipv4."
+    ::= { unisPosaTcpTermStatEntry 2 }
+
+unisPosaTcpTermStatIP OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The IP address or the subnet of the statistics terminal(s).
+        When the vlaue is a subnet, the statistics of all the
+        terminals in the subnet will be added up.  And now it only
+        supports ipv4."
+    ::= { unisPosaTcpTermStatEntry 3 }
+
+unisPosaTcpTermStatIPMask OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The mask associated with the IP address or the subnet.  And
+        now it only supports ipv4."
+    ::= { unisPosaTcpTermStatEntry 4 }
+
+unisPosaTcpTermRecvPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets recieved from the POS terminal(s)."
+    ::= { unisPosaTcpTermStatEntry 5 }
+
+unisPosaTcpTermSendPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets sent to the POS terminal(s)."
+    ::= { unisPosaTcpTermStatEntry 6 }
+
+unisPosaTcpTermErrPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of inbound packets that contained errors."
+    ::= { unisPosaTcpTermStatEntry 7 }
+
+unisPosaTcpTermMapErrCnts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets that are discarded because of mapping errors."
+    ::= { unisPosaTcpTermStatEntry 8 }
+
+unisPosaTcpTermInDiscardedPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of inbound packets that are discarded when the incoming
+        buffer is full."
+    ::= { unisPosaTcpTermStatEntry 9 }
+
+unisPosaTcpTermOutDiscardedPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of outbound packets that are discarded because of link
+        errors between the router and the POS terminal(s)."
+    ::= { unisPosaTcpTermStatEntry 10 }
+
+unisPosaTcpTermStatRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Operation status."
+    ::= { unisPosaTcpTermStatEntry 11 }
+
+unisPosaFcmConfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPosaFcmConfEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table shows the configuration information of FCM (Fast Connection
+        Modem) interfaces."
+    ::= { unisPosaTables 9 }
+
+unisPosaFcmConfEntry OBJECT-TYPE
+    SYNTAX         UnisPosaFcmConfEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "This entry shows the configuration information of FCM (Fast Connection
+        Modem) interfaces."
+    INDEX { ifIndex }
+    ::= { unisPosaFcmConfTable 1 }
+
+UnisPosaFcmConfEntry ::= SEQUENCE  {
+        unisPosaFcmNegoHookOff         Integer32,
+        unisPosaFcmNegoSilence         Integer32,
+        unisPosaFcmNegoScrmbBinary1    Integer32,
+        unisPosaFcmNegoUnscrmbBinary1  Integer32,
+        unisPosaFcmThresholdRlsdOff    Integer32,
+        unisPosaFcmThresholdRlsdOn     Integer32,
+        unisPosaFcmThresholdTxPower    Integer32,
+        unisPosaFcmThresholdAnswerTone Integer32
+        }
+
+unisPosaFcmNegoHookOff     OBJECT-TYPE
+    SYNTAX   Integer32 (100..6000)
+    UNITS       "milliseconds"
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "Delay time for hookoff."
+    DEFVAL { 500 }
+    ::= { unisPosaFcmConfEntry 1 }
+
+unisPosaFcmNegoSilence     OBJECT-TYPE
+    SYNTAX   Integer32 (0..3000)
+    UNITS       "milliseconds"
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "Silence time for modem negotiation."
+    DEFVAL { 0 }
+    ::= { unisPosaFcmConfEntry 2 }
+
+unisPosaFcmNegoScrmbBinary1 OBJECT-TYPE
+    SYNTAX   Integer32 (100..1500)
+    UNITS       "milliseconds"
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "Scramble-binary1 time for modem negotiation."
+    DEFVAL { 250 }
+    ::= { unisPosaFcmConfEntry 3 }
+
+unisPosaFcmNegoUnscrmbBinary1 OBJECT-TYPE
+    SYNTAX   Integer32 (300..1500)
+    UNITS       "milliseconds"
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "Unscramble-binary1 time for modem negotiation."
+    DEFVAL { 400 }
+    ::= { unisPosaFcmConfEntry 4 }
+
+unisPosaFcmThresholdRlsdOff  OBJECT-TYPE
+    SYNTAX   Integer32 (0..75)
+    UNITS       "-dBm"
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "RLSD (Received Line Signal Detect) off threshold for modem."
+    DEFVAL { 48 }
+    ::= { unisPosaFcmConfEntry 5 }
+
+unisPosaFcmThresholdRlsdOn  OBJECT-TYPE
+    SYNTAX   Integer32 (0..75)
+    UNITS       "-dBm"
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "RLSD (Received Line Signal Detect) on threshold for modem."
+    DEFVAL { 43 }
+    ::= { unisPosaFcmConfEntry 6 }
+
+unisPosaFcmThresholdTxPower OBJECT-TYPE
+    SYNTAX   Integer32 (1..42)
+    UNITS       "-dBm"
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "TX power for modem."
+    DEFVAL { 10 }
+    ::= { unisPosaFcmConfEntry 7 }
+
+unisPosaFcmThresholdAnswerTone OBJECT-TYPE
+    SYNTAX   Integer32 (1..42)
+    UNITS       "-dBm"
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "Answer tone level for modem."
+    DEFVAL { 9 }
+    ::= { unisPosaFcmConfEntry 8 }
+
+unisPosaCallerStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPosaCallerStatEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table shows the statistics information of terminal according the
+        caller-ID."
+    ::= { unisPosaTables 10 }
+
+unisPosaCallerStatEntry OBJECT-TYPE
+    SYNTAX         UnisPosaCallerStatEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "This table shows the statistics information of terminal according the
+        caller-ID."
+    INDEX { unisPosaCallerStatCallerID }
+    ::= { unisPosaCallerStatTable 1 }
+
+UnisPosaCallerStatEntry ::= SEQUENCE  {
+        unisPosaCallerStatCallerID
+            OCTET STRING,
+        unisPosaCallerRecvPkts
+            Counter64,
+        unisPosaCallerSendPkts
+            Counter64,
+        unisPosaCallerErrPkts
+            Counter64,
+        unisPosaCallerMapErrCnts
+            Counter64,
+        unisPosaCallerInDiscardedPkts
+            Counter64,
+        unisPosaCallerOutDiscardedPkts
+            Counter64,
+        unisPosaCallerStatRowStatus
+            RowStatus
+        }
+
+unisPosaCallerStatCallerID OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..64))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The caller number."
+    ::= { unisPosaCallerStatEntry 1 }
+
+unisPosaCallerRecvPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets recieved from the POS terminal(s)."
+    ::= { unisPosaCallerStatEntry 2 }
+
+unisPosaCallerSendPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets sent to the POS terminal(s)."
+    ::= { unisPosaCallerStatEntry 3 }
+
+unisPosaCallerErrPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of inbound packets that contained errors."
+    ::= { unisPosaCallerStatEntry 4 }
+
+unisPosaCallerMapErrCnts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets that are discarded because of mapping errors."
+    ::= { unisPosaCallerStatEntry 5 }
+
+unisPosaCallerInDiscardedPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of inbound packets that are discarded when the incoming
+        buffer is full."
+    ::= { unisPosaCallerStatEntry 6 }
+
+unisPosaCallerOutDiscardedPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of outbound packets that are discarded because of link
+        errors between the router and the POS terminal(s)."
+    ::= { unisPosaCallerStatEntry 7 }
+
+unisPosaCallerStatRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Operation status."
+    ::= { unisPosaCallerStatEntry 8 }
+
+--
+-- definition of unisPosaNiiStatTable
+--
+
+unisPosaNiiStatTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPosaNiiStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows statistics on the Network International Identifier."
+    ::= { unisPosaTables 11 }
+
+unisPosaNiiStatEntry OBJECT-TYPE
+    SYNTAX UnisPosaNiiStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows statistics on the Network International Identifier."
+    INDEX { unisPosaNiiStatIndex }
+    ::= { unisPosaNiiStatTable 1 }
+
+UnisPosaNiiStatEntry ::=
+    SEQUENCE {
+        unisPosaNiiStatIndex
+            OCTET STRING,
+        unisPosaNiiRecvPkts
+            Counter32,
+        unisPosaNiiSendPkts
+            Counter32,
+        unisPosaNiiSuccessTradeCnt
+            Counter32,
+        unisPosaNiiTradeCnt
+            Counter32
+     }
+
+unisPosaNiiStatIndex OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (4))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The index of entity."
+    ::= { unisPosaNiiStatEntry 1 }
+
+unisPosaNiiRecvPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets received from the POS terminals."
+    ::= { unisPosaNiiStatEntry 2 }
+
+unisPosaNiiSendPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets sent to the POS terminals."
+    ::= { unisPosaNiiStatEntry 3 }
+
+unisPosaNiiSuccessTradeCnt OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of successful transactions of the Network International Identifier."
+    ::= { unisPosaNiiStatEntry 4 }
+
+unisPosaNiiTradeCnt OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of all transactions of the Network International Identifier."
+    ::= { unisPosaNiiStatEntry 5 }
+
+--
+-- definition of unisPosaE1StatTable
+--
+
+unisPosaE1StatTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisPosaE1StatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows statistics on E1-controller."
+    ::= { unisPosaTables 12 }
+
+unisPosaE1StatEntry OBJECT-TYPE
+    SYNTAX UnisPosaE1StatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table shows statistics on E1-controller."
+    INDEX { unisPosaE1StatIndex }
+    ::= { unisPosaE1StatTable 1 }
+
+UnisPosaE1StatEntry ::=
+    SEQUENCE {
+        unisPosaE1StatIndex
+            Integer32,
+        unisPosaE1DialCnt
+            Counter32,
+        unisPosaE1DialSuccess
+            Counter32,
+        unisPosaE1RecvPkts
+            Counter32,
+        unisPosaE1SendPkts
+            Counter32,
+        unisPosaE1ErrPkts
+            Counter32,
+        unisPosaE1MapErrCnts
+            Counter32,
+        unisPosaE1InDiscardedPkts
+            Counter32,
+        unisPosaE1OutDiscardedPkts
+            Counter32
+     }
+
+unisPosaE1StatIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of entity."
+    ::= { unisPosaE1StatEntry 1 }
+
+unisPosaE1DialCnt OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of dialing  from the E1-controller."
+    ::= { unisPosaE1StatEntry 2 }
+
+unisPosaE1DialSuccess OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of successful dialing  from the E1-controller."
+    ::= { unisPosaE1StatEntry 3 }
+
+unisPosaE1RecvPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets received from the POS terminals."
+    ::= { unisPosaE1StatEntry 4 }
+
+unisPosaE1SendPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets sent to the POS terminals."
+    ::= { unisPosaE1StatEntry 5 }
+
+unisPosaE1ErrPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of inbound packets that contained errors."
+    ::= { unisPosaE1StatEntry 6 }
+
+unisPosaE1MapErrCnts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of packets that are discarded because of mapping errors."
+    ::= { unisPosaE1StatEntry 7 }
+
+unisPosaE1InDiscardedPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of inbound packets that are discarded when the incoming
+        buffer is full."
+    ::= { unisPosaE1StatEntry 8 }
+
+unisPosaE1OutDiscardedPkts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of outbound packets that are discarded because of link
+        errors between the router and the POS terminal."
+    ::= { unisPosaE1StatEntry 9 }
+
+--
+-- traps defined
+--
+
+unisPosaTrap OBJECT IDENTIFIER ::= { unisPosa 3 }
+
+unisPosaTrapPrex OBJECT IDENTIFIER ::= { unisPosaTrap 0 }
+
+unisPosaServerStatusChange NOTIFICATION-TYPE
+    OBJECTS { unisPosaServerEnable }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated when the POS function is started or stopped."
+    ::= { unisPosaTrapPrex 1 }
+
+unisPosaAppStateChange NOTIFICATION-TYPE
+    OBJECTS { unisPosaAppID, unisPosaAppStateChangeObject }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated whenever the availability of application server
+        changes."
+    ::= { unisPosaTrapPrex 2 }
+
+unisPosaTerminalHangUp NOTIFICATION-TYPE
+    OBJECTS { ifIndex, ifDescr, unisPosaCallerStatCallerID }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated whenever the POS connection through a FCM (Fast
+        Connection Modem) interface is hanged up by POS terminal."
+    ::= { unisPosaTrapPrex 3 }
+
+unisPosaFcmLinkNegoFailed NOTIFICATION-TYPE
+    OBJECTS { ifIndex, ifDescr , unisPosaCallerStatCallerID }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated whenever the link layer negotiation is failed
+        between the POS terminal and router through a FCM (Fast Connection
+        Modem) interface."
+    ::= { unisPosaTrapPrex 4 }
+
+unisPosaFcmPhyNegoFailed NOTIFICATION-TYPE
+    OBJECTS { ifIndex, ifDescr , unisPosaCallerStatCallerID }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated whenever the physical layer negotiation is failed
+        between the POS terminal and router through a FCM (Fast Connection
+        Modem) interface."
+    ::= { unisPosaTrapPrex 5 }
+
+unisPosaTcpConnectionExceed NOTIFICATION-TYPE
+    OBJECTS { unisPosaTcpConnectionThreshold }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated whenever the number of connections exceeds the threshold."
+    ::= { unisPosaTrapPrex 6 }
+
+unisPosaFcmConnectionExceed NOTIFICATION-TYPE
+    OBJECTS { unisPosaFcmConnectionThreshold }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated whenever the number of connections exceeds the threshold."
+    ::= { unisPosaTrapPrex 7 }
+
+unisPosaTcpTradeExceed NOTIFICATION-TYPE
+    OBJECTS { unisPosaTcpTradeLimit, unisPosaTerminalID }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated whenever the number of trades in any TCP connect exceeds
+        the limit."
+    ::= { unisPosaTrapPrex 8 }
+
+unisPosaTradeSuccessFalling NOTIFICATION-TYPE
+    OBJECTS { unisPosaNiiStatIndex, unisPosaTradeSuccessFallingThreshold }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated whenever the transaction success rate of bank server is smaller than or equal to the threshold."
+    ::= { unisPosaTrapPrex 9 }
+
+unisPosaE1DialFalling NOTIFICATION-TYPE
+    OBJECTS { ifIndex, ifDescr, unisPosaE1DialFallingThreshold }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated whenever the dialing success rate of E1-controller is smaller than or equal to the threshold."
+    ::= { unisPosaTrapPrex 10 }
+
+unisPosaFcmTradeAbnormal NOTIFICATION-TYPE
+    OBJECTS { ifIndex, ifDescr, unisPosaCallerStatCallerID }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated whenever the dialing link is abnormal."
+    ::= { unisPosaTrapPrex 11 }
+
+unisPosaTrapObjects OBJECT IDENTIFIER ::= { unisPosaTrap 1 }
+
+unisPosaAppStateChangeObject OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        available(1),
+        unavailable(2)
+        }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "This is a dummy MIB object referenced by the unisPosaAppStateChange trap.
+        This object shows the availability changing of corresponding application
+        server."
+    ::= { unisPosaTrapObjects 1 }
+
+END

@@ -1,0 +1,143 @@
+-- =================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Ethernet Ring Protection Switching (ERPS) MIB
+-- Reference: IF-MIB
+-- Version: V1.1
+-- History:
+--   V1.0 created by zhengjun
+--     Initial version 2022-05-11
+--   V1.1 added unisErpsRingStateChange trap by zhengjun 2023-06-10
+-- =================================================================
+-- =================================================================
+--
+-- Import and definition
+--
+-- =================================================================
+UNIS-ERPS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    ifDescr, ifIndex
+        FROM IF-MIB;
+
+unisErps MODULE-IDENTITY
+    LAST-UPDATED
+        "202305311357Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB defines objects for managing ERPS.
+        ERPS is a feature developed to address the slow convergence
+        issue with STP.
+        It provides link redundancy and fast convergence in
+        a ring network, allowing the backup link to take over quickly
+        when the primary link fails."
+
+    REVISION
+        "202305311357Z"
+    DESCRIPTION
+        "Add the trap for ERPS ring state change."
+    REVISION
+        "202205111153Z"
+    DESCRIPTION
+        "Initial revision of the ERPS MIB module."
+    ::= { unisCommon  225 }
+
+unisErpsTrap            OBJECT IDENTIFIER ::= { unisErps 1 }
+unisErpsTrapPrefix      OBJECT IDENTIFIER ::= { unisErpsTrap 0 }
+unisErpsPortStateForwarding NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisErpsRingID
+        }
+    STATUS      current
+    DESCRIPTION
+        "A trap message is generated when the status of a port
+        in an ERPS ring changes to forwarding."
+    ::= { unisErpsTrapPrefix 1 }
+
+unisErpsPortStateDiscarding NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisErpsRingID
+        }
+    STATUS      current
+    DESCRIPTION
+        "A trap message is generated when the status of a port
+        in an ERPS ring changes to discarding."
+    ::= { unisErpsTrapPrefix 2 }
+
+unisErpsRingStateChange NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisErpsRingID,
+            unisErpsInstanceID,
+            unisErpsState
+        }
+    STATUS      current
+    DESCRIPTION
+        "A trap message is generated when the status of an ERPS ring is changed."
+    ::= { unisErpsTrapPrefix 3 }
+
+unisErpsTrapObjects OBJECT IDENTIFIER ::= { unisErpsTrap 1 }
+
+unisErpsRingID OBJECT-TYPE
+    SYNTAX Integer32 (1..255)
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "ERPS ring ID."
+    ::= { unisErpsTrapObjects 1 }
+
+unisErpsInstanceID OBJECT-TYPE
+    SYNTAX Integer32 (1..64)
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "ERPS instance ID."
+    ::= { unisErpsTrapObjects 2 }
+
+unisErpsState OBJECT-TYPE
+    SYNTAX       INTEGER {
+         undefined(1),
+         init(2),
+         idle(3),
+         protection(4),
+         ms(5),
+         fs(6),
+         pending(7)
+    }
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+
+    DESCRIPTION
+        "The current state of the erps ring state. This object has
+        seven defined values:
+
+        - 'undifined', which indicates that the
+         ERPS ring is not working.
+
+        - 'init', which indicates the ERPS ring is in initial state.
+
+        - 'idle', which indicates the ERPS ring is in stable state.
+
+        - 'protectioin', which indicates the ERPS ring is in protection state.
+
+        - 'ms', which indicates the ERPS ring is in in manual switch state.
+
+        - 'fs', which indicates the ERPS ring is in in forced switch state.
+
+        - 'pending', which indicates the ERPS ring is in pending state."
+    ::= { unisErpsTrapObjects 3 }
+
+END

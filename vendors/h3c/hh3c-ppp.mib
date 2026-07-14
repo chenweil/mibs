@@ -1,0 +1,694 @@
+-- =================================================================
+-- Copyright (c) 2004-2025 New H3C Tech. Co., Ltd. All rights reserved.
+--
+-- Description: This MIB file is used for inquiring for PPP access user
+--              authentication information.
+-- Reference:
+-- Version:     V1.4
+-- History:
+--   V1.0 Initial version by hkf6733
+--   V1.1 2021-09-01 add hh3cPPPConfigTable by wangzhenjun
+--   V1.2 2022-06-16 add hh3cPPPTrapOid, hh3cPPPLcpNegoFailTrap
+--                   add hh3cPPPNcpNegoFailTrap
+--                   add hh3cPPPLoopbackDetectTrap by wangzhenjun
+--   V1.3 2024-09-13 add hh3cPPPCall,hh3cPPPLinkFailed,hh3cPPPLinkCannotBreak by guoxiaopeng
+--   V1.4 2025-08-20 add hh3cPPPUserInfoTable by huangxiaodan
+-- =================================================================
+HH3C-PPP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    hh3cCommon
+        FROM HH3C-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, Integer32, NOTIFICATION-TYPE, Counter32, Unsigned32, Counter64
+        FROM SNMPv2-SMI
+    InterfaceIndex, InterfaceIndexOrZero
+        FROM IF-MIB
+    DisplayString, MacAddress,DateAndTime
+        FROM SNMPv2-TC
+    InetAddressIPv6, InetAddressIPv4
+        FROM INET-ADDRESS-MIB;
+
+hh3cPPP MODULE-IDENTITY
+    LAST-UPDATED "202508200000Z"       -- August 20th, 2025 at 00:00 GMT
+    ORGANIZATION
+        "New H3C Technologies Co., Ltd."
+    CONTACT-INFO
+        "Platform Team New H3C Technologies Co., Ltd.
+         Hai-Dian District Beijing P.R. China
+         http://www.h3c.com
+         Zip: 100085"
+    DESCRIPTION
+        "Added hh3cPPPUserInfoTable."
+    REVISION    "202508200000Z"
+    DESCRIPTION
+        "This MIB contains objects that manage the information of PPP access."
+    REVISION    "202409130000Z"
+    DESCRIPTION
+        "Supporting ppp server statistics information."
+    REVISION    "202206160000Z"
+    DESCRIPTION
+        "Supporting the trap for PPP."
+    REVISION    "202109010000Z"
+    DESCRIPTION
+        "Supporting the configuration for PPP on interface virtual template."
+    REVISION    "201802010000Z"
+    DESCRIPTION
+        "Initial version."
+    ::= { hh3cCommon 175 }
+
+--
+-- Node definitions
+--
+
+hh3cPPPAuthObjects OBJECT IDENTIFIER ::= { hh3cPPP  1 }
+
+
+hh3cPPPAuthTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Hh3cPPPAuthEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table describes the authentication information for PPP access
+        users.  The index of this table is the interface and authentication
+        type."
+    ::= { hh3cPPPAuthObjects 1 }
+
+hh3cPPPAuthEntry OBJECT-TYPE
+    SYNTAX Hh3cPPPAuthEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry in this table describes the authentication  information of
+        a PPP access user.  The available information includes: The index of
+        the interface on which the PPP authentication information are
+        configured, authentication type and username on the interface."
+    INDEX { hh3cPPPIfIndex, hh3cPPPAuthType }
+        ::= { hh3cPPPAuthTable 1 }
+
+Hh3cPPPAuthEntry ::=
+    SEQUENCE {
+        hh3cPPPIfIndex
+            InterfaceIndex,
+        hh3cPPPAuthType
+            INTEGER,
+        hh3cPPPUserName
+            DisplayString
+        }
+
+hh3cPPPIfIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of the interface on the PPP authentication information are
+        configured."
+        ::= { hh3cPPPAuthEntry 1 }
+
+hh3cPPPAuthType OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            unknown(1),
+            pap(2),
+            chap(3)
+        }
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The type of authentication for the peer."
+    ::= { hh3cPPPAuthEntry 2 }
+
+hh3cPPPUserName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..80))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The username for access user."
+    ::= { hh3cPPPAuthEntry 3 }
+
+
+hh3cPPPConfigTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Hh3cPPPConfigEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table describes the authentication information for PPP access
+        users.  The index of this table is the virtual template interface."
+    ::= { hh3cPPPAuthObjects 2 }
+
+hh3cPPPConfigEntry OBJECT-TYPE
+    SYNTAX Hh3cPPPConfigEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry in this table describes the authentication information of
+        virtual template for PPP access users."
+    INDEX { hh3cPPPConfigIfIndex }
+        ::= { hh3cPPPConfigTable 1 }
+
+Hh3cPPPConfigEntry ::=
+    SEQUENCE {
+        hh3cPPPConfigIfIndex        InterfaceIndex,
+        hh3cPPPConfigAuthMode       INTEGER,
+        hh3cPPPConfigNegTimeout     Integer32,
+        hh3cPPPConfigKeepInterval   Integer32,
+        hh3cPPPConfigKeepRetransmit Integer32
+        }
+
+hh3cPPPConfigIfIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of the virtual template interface on the PPP authentication
+        information are configured."
+    ::= { hh3cPPPConfigEntry 1 }
+
+hh3cPPPConfigAuthMode OBJECT-TYPE
+    SYNTAX INTEGER {
+                none(1),
+                pap(2),
+                chap(3),
+                msChap(4),
+                msChapV2(5)
+               }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The value is type of authentication mode for the peer."
+    DEFVAL { none }
+    ::= { hh3cPPPConfigEntry 2 }
+
+hh3cPPPConfigNegTimeout OBJECT-TYPE
+    SYNTAX Integer32 (1..10)
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The timeout of the negotiation."
+    DEFVAL { 3 }
+    ::= { hh3cPPPConfigEntry 3 }
+
+hh3cPPPConfigKeepInterval OBJECT-TYPE
+    SYNTAX Integer32 (0..32767)
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The hold time value, the default value is dependent on device."
+    ::= { hh3cPPPConfigEntry 4 }
+
+hh3cPPPConfigKeepRetransmit OBJECT-TYPE
+    SYNTAX Integer32 (1..255)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The maximum number of attempts for transmitting a
+        keepalive message, the default value is dependent on device."
+    ::= { hh3cPPPConfigEntry 5 }
+
+hh3cPPPTrapOid OBJECT IDENTIFIER ::= { hh3cPPP 2 }
+
+hh3cPPPTrapIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..47))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The involved interface name of trap information."
+    ::= { hh3cPPPTrapOid 1 }
+
+hh3cPPPTrapNcpName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..31))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The involved reason string why LCP negotiation failed
+         of trap information."
+    ::= { hh3cPPPTrapOid 2 }
+
+hh3cPPPTrapNegoFailReason OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The involved reason string why LCP negotiation failed
+         of trap information."
+    ::= { hh3cPPPTrapOid 3 }
+
+hh3cPPPLcpNegoFailTrap OBJECT IDENTIFIER  ::= { hh3cPPP 3 }
+
+hh3cPPPLcpNegoFailTrapPrefix OBJECT IDENTIFIER  ::= { hh3cPPPLcpNegoFailTrap 0 }
+
+hh3cPPPLcpNegoFailed NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cPPPTrapIfName,
+        hh3cPPPTrapNegoFailReason
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the LCP negotiation failed."
+    ::= { hh3cPPPLcpNegoFailTrapPrefix 1 }
+
+hh3cPPPLcpNegoResumed NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cPPPTrapIfName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the LCP negotiation succeeded
+         after failure."
+    ::= { hh3cPPPLcpNegoFailTrapPrefix 2 }
+
+hh3cPPPNcpNegoFailTrap OBJECT IDENTIFIER  ::= { hh3cPPP 4 }
+
+hh3cPPPNcpNegoFailTrapPrefix OBJECT IDENTIFIER  ::= { hh3cPPPNcpNegoFailTrap 0 }
+
+hh3cPPPNcpNegoFailed NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cPPPTrapIfName,
+        hh3cPPPTrapNcpName,
+        hh3cPPPTrapNegoFailReason
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the NCP negotiation failed."
+    ::= { hh3cPPPNcpNegoFailTrapPrefix 1 }
+
+hh3cPPPNcpNegoResumed NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cPPPTrapIfName,
+        hh3cPPPTrapNcpName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the NCP negotiation succeeded
+         after failure."
+    ::= { hh3cPPPNcpNegoFailTrapPrefix 2 }
+
+hh3cPPPLoopbackDetectTrap OBJECT IDENTIFIER  ::= { hh3cPPP 5 }
+
+hh3cPPPLoopbackDetectTrapPrefix OBJECT IDENTIFIER  ::= { hh3cPPPLoopbackDetectTrap 0 }
+
+hh3cPPPLoopbackDetect NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cPPPTrapIfName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when a loop is detected."
+    ::= { hh3cPPPLoopbackDetectTrapPrefix 1 }
+
+hh3cPPPLoopbackDetectResume NOTIFICATION-TYPE
+    OBJECTS
+    {
+        hh3cPPPTrapIfName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the loop is removed."
+    ::= { hh3cPPPLoopbackDetectTrapPrefix 2 }
+
+hh3cPPPServerStats OBJECT IDENTIFIER  ::= { hh3cPPP 6 }
+
+hh3cPPPCall OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Count of PPP dialups."
+    ::= { hh3cPPPServerStats 1 }
+
+hh3cPPPLinkFailed OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Count of PPP dialup failures."
+    ::= { hh3cPPPServerStats 2 }
+
+hh3cPPPLinkCannotBreak OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Count of PPP link termination failures."
+    ::= { hh3cPPPServerStats 3 }
+
+hh3cPPPUserInfoTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Hh3cPPPUserInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "This table contains the information about PPP users."
+    ::= { hh3cPPP 7 }
+
+hh3cPPPUserInfoEntry  OBJECT-TYPE
+    SYNTAX      Hh3cPPPUserInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry for PPP user info."
+    INDEX
+    {
+        hh3cPPPUserPPPIndex
+    }
+    ::= { hh3cPPPUserInfoTable 1 }
+
+Hh3cPPPUserInfoEntry ::=
+    SEQUENCE
+    {
+            hh3cPPPUserPPPIndex                           InterfaceIndex,
+            hh3cPPPUserIfName                             DisplayString,
+            hh3cPPPUserUserID                             Unsigned32,
+            hh3cPPPUserUserName                           DisplayString,
+            hh3cPPPUserUserType                           INTEGER,
+            hh3cPPPUserUserState                          INTEGER,
+            hh3cPPPUserMacAddr                            MacAddress,
+            hh3cPPPUserIpAddr                             InetAddressIPv4,
+            hh3cPPPUserIPv6Addr                           InetAddressIPv6,
+            hh3cPPPUserVPNInstanceName                    DisplayString,
+            hh3cPPPUserServiceVLAN                        Unsigned32,
+            hh3cPPPUserCustomerVLAN                       Unsigned32,
+            hh3cPPPUserAuthenDomain                       DisplayString,
+            hh3cPPPUserAuthorDomain                       DisplayString,
+            hh3cPPPUserLoginTime                          DateAndTime,
+            hh3cPPPUserOnlineTime                         DisplayString,
+            hh3cPPPUserRemainTime                         Unsigned32,
+            hh3cPPPUserUserProfileName                    DisplayString,
+            hh3cPPPUserGroupProfileName                   DisplayString,
+            hh3cPPPUserInboundCAR                         Unsigned32,
+            hh3cPPPUserInboundPIR                         Unsigned32,
+            hh3cPPPUserOutboundCAR                        Unsigned32,
+            hh3cPPPUserOutboundPIR                        Unsigned32,
+            hh3cPPPUserIPv4UpLinkPkts                     Counter64,
+            hh3cPPPUserIPv4UpLinkBytes                    Counter64,
+            hh3cPPPUserIPv4DownLinkPkts                   Counter64,
+            hh3cPPPUserIPv4DownLinkBytes                  Counter64,
+            hh3cPPPUserIPv6UpLinkPkts                     Counter64,
+            hh3cPPPUserIPv6UpLinkBytes                    Counter64,
+            hh3cPPPUserIPv6DownLinkPkts                   Counter64,
+            hh3cPPPUserIPv6DownLinkBytes                  Counter64,
+            hh3cPPPUserInboundFlowRate                    Counter64,
+            hh3cPPPUserOutboundFlowRate                   Counter64,
+            hh3cPPPUserAccessIfIndex                      InterfaceIndexOrZero,
+            hh3cPPPUserCfgIfIndex                         InterfaceIndexOrZero
+    }
+
+hh3cPPPUserPPPIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "PPP session index."
+    ::= { hh3cPPPUserInfoEntry 1 }
+
+hh3cPPPUserIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (1..24))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Interface name of PPP user interface."
+    ::= { hh3cPPPUserInfoEntry 2 }
+
+hh3cPPPUserUserID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User ID of PPP user."
+    ::= { hh3cPPPUserInfoEntry 3 }
+
+hh3cPPPUserUserName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (1..80))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User name of PPP user."
+    ::= { hh3cPPPUserInfoEntry 4 }
+
+hh3cPPPUserUserType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        lac(1),
+                        lns(2),
+                        pppoa(3),
+                        pppoe(4)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User type of PPP user."
+    ::= { hh3cPPPUserInfoEntry 5 }
+
+hh3cPPPUserUserState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        dead(1),
+                        establish(2),
+                        authenticate(3),
+                        ddrauth(4),
+                        multilink(5),
+                        network(6),
+                        terminate(7)
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User state of PPP user."
+    ::= { hh3cPPPUserInfoEntry 6 }
+
+hh3cPPPUserMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "MAC address of PPP user."
+    ::= { hh3cPPPUserInfoEntry 7 }
+
+hh3cPPPUserIpAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv4
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IP address of BRAS access user."
+    ::= { hh3cPPPUserInfoEntry 8 }
+
+hh3cPPPUserIPv6Addr OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 address of BRAS access user."
+    ::= { hh3cPPPUserInfoEntry 9 }
+
+hh3cPPPUserVPNInstanceName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized virtual private network (VPN) instance name of PPP user."
+    ::= { hh3cPPPUserInfoEntry 10 }
+
+hh3cPPPUserServiceVLAN OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Service provider virtual local area network (VLAN) of PPP user."
+    ::= { hh3cPPPUserInfoEntry 11 }
+
+hh3cPPPUserCustomerVLAN OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Customer VLAN of PPP user."
+    ::= { hh3cPPPUserInfoEntry 12 }
+
+hh3cPPPUserAuthenDomain OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (1..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Domain name for authentication."
+    ::= { hh3cPPPUserInfoEntry 13 }
+
+hh3cPPPUserAuthorDomain OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (1..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Domain name for authorization."
+    ::= { hh3cPPPUserInfoEntry 14 }
+
+hh3cPPPUserLoginTime OBJECT-TYPE
+    SYNTAX      DateAndTime (SIZE    (11))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "User login time of PPP user."
+    ::= { hh3cPPPUserInfoEntry 15 }
+
+hh3cPPPUserOnlineTime OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (8..16))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Online time of PPP user.
+         The structure of the OCTET STRING is hour:munite:second(hh:mm:ss)."
+    ::= { hh3cPPPUserInfoEntry 16 }
+
+hh3cPPPUserRemainTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Session duration from authentication, authorization, and accounting (AAA)."
+    ::= { hh3cPPPUserInfoEntry 17 }
+
+hh3cPPPUserUserProfileName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized user profile name from AAA."
+    ::= { hh3cPPPUserInfoEntry 18 }
+
+hh3cPPPUserGroupProfileName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE    (1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized group user profile name from AAA."
+    ::= { hh3cPPPUserInfoEntry 19 }
+
+hh3cPPPUserInboundCAR OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized inbound average rate value."
+    ::= { hh3cPPPUserInfoEntry 20 }
+
+hh3cPPPUserInboundPIR OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized inbound peak rate value."
+    ::= { hh3cPPPUserInfoEntry 21 }
+
+hh3cPPPUserOutboundCAR OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized outbound average rate value."
+    ::= { hh3cPPPUserInfoEntry 22 }
+
+hh3cPPPUserOutboundPIR OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Authorized outbound peak rate value."
+    ::= { hh3cPPPUserInfoEntry 23 }
+
+hh3cPPPUserIPv4UpLinkPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 uplink flow statistics in packets."
+    ::= { hh3cPPPUserInfoEntry 24 }
+
+hh3cPPPUserIPv4UpLinkBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 uplink flow statistics in bytes."
+    ::= { hh3cPPPUserInfoEntry 25 }
+
+hh3cPPPUserIPv4DownLinkPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 downlink flow statistics in packets."
+    ::= { hh3cPPPUserInfoEntry 26 }
+
+hh3cPPPUserIPv4DownLinkBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv4 downlink flow statistics in bytes."
+    ::= { hh3cPPPUserInfoEntry 27 }
+
+hh3cPPPUserIPv6UpLinkPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 uplink flow statistics in packets."
+    ::= { hh3cPPPUserInfoEntry 28 }
+
+hh3cPPPUserIPv6UpLinkBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 uplink flow statistics in bytes."
+    ::= { hh3cPPPUserInfoEntry 29 }
+
+hh3cPPPUserIPv6DownLinkPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 downlink flow statistics in packets."
+    ::= { hh3cPPPUserInfoEntry 30 }
+
+hh3cPPPUserIPv6DownLinkBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "IPv6 downlink flow statistics in bytes."
+    ::= { hh3cPPPUserInfoEntry 31 }
+
+hh3cPPPUserInboundFlowRate OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Inbound flow rate of PPP user."
+    ::= { hh3cPPPUserInfoEntry 32 }
+
+hh3cPPPUserOutboundFlowRate OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Outbound flow rate of PPP user."
+    ::= { hh3cPPPUserInfoEntry 33 }
+
+hh3cPPPUserAccessIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Interface index of PPP user access interface."
+    ::= { hh3cPPPUserInfoEntry 34 }
+
+hh3cPPPUserCfgIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Interface index of PPP user configured interface."
+    ::= { hh3cPPPUserInfoEntry 35 }
+
+END

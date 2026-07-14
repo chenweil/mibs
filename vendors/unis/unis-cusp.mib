@@ -1,0 +1,199 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The UNIS-CUSP-MIB is a statistical MIB of CUSP module
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2020.07.20 The initial version, created by yizhigao.
+-- ============================================================================
+UNIS-CUSP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM  UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Integer32
+        FROM SNMPv2-SMI
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB;
+
+-- ----------------------------------------------------------------------
+-- Node definitions
+-- ----------------------------------------------------------------------
+unisCusp MODULE-IDENTITY
+    LAST-UPDATED "202007201300Z"        -- Jul 20, 2020 at 13:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB contains information about the control-/user-plane separation trap"
+    REVISION "202007201300Z"
+    DESCRIPTION
+        "Initial version."
+    ::= { unisCommon 190 }
+
+-- ----------------------------------------------------------------------
+-- nodes defined
+-- ----------------------------------------------------------------------
+-- ----------------------------------------------------------------------
+-- unisCuspMibTrapOid Table
+-- ----------------------------------------------------------------------
+unisCuspMibTrap OBJECT IDENTIFIER ::= { unisCusp 1 }
+
+unisCuspMibTrapOid OBJECT IDENTIFIER ::= { unisCuspMibTrap 1 }
+
+unisCuspServerDisconnectReason OBJECT-TYPE
+    SYNTAX Integer32 (0..14)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Reason why this instance is disconnected from a controller
+             0: Connection became abnormal.
+             1: An SSL connection became abnormal.
+             2: BFD timed out.
+             3: Version negotiation failed.
+             4: Protocol disabled.
+             5: Connection became abnormal when messages were being sent.
+             6: Connection recover failed.
+             7: Received invalid packets or incorrectly processed received packets.
+             8: Connection became abnormal when messages were being received.
+             9: VPN instance deleted.
+             10: A TCP connection became abnormal.
+             11: Heartbeat packets sending failed.
+             12: Heartbeat packets timed out.
+             13: Configuration changes.
+             14: Not enough memory."
+    ::= { unisCuspMibTrapOid 1 }
+
+unisCuspClientDisconnectReason OBJECT-TYPE
+    SYNTAX Integer32 (0..10)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Reason why this instance is disconnected from a controller
+             0: Connection became abnormal.
+             1: Configuration changes.
+             2: Heartbeat packets timed out.
+             3: Version negotiation failed.
+             4: Receiving Hello packets timed out.
+             5: A TCP connection became abnormal.
+             6: VPN instance deleted.
+             7: VRF service disabled.
+             8: Resource request failed.
+             9: BFD timed out.
+             10: Not enough memory."
+    ::= { unisCuspMibTrapOid 2 }
+
+unisCuspVpnInstanceName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "VPN name for a CUSP connection."
+    ::= { unisCuspMibTrapOid 3 }
+
+unisCuspLocalIPaddressType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The IP addresses type of the CUSP connection local IP address."
+    ::= { unisCuspMibTrapOid 4 }
+
+unisCuspLocalIPaddress OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "CUSP connection local IP address.
+         The type of this address is determined by the value of
+         unisCuspLocalIPaddressType.
+        "
+    ::= { unisCuspMibTrapOid 5 }
+
+unisCuspRemoteIPaddressType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The IP addresses type of the CUSP connection remote IP address."
+    ::= { unisCuspMibTrapOid 6 }
+
+unisCuspRemoteIPaddress OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "CUSP connection remote IP address.
+         The type of this address is determined by the value of
+         unisCuspRemoteIPaddressType.
+        "
+    ::= { unisCuspMibTrapOid 7 }
+
+-- ----------------------------------------------------------------------
+-- unisCuspTraps Table
+-- ----------------------------------------------------------------------
+unisCuspTraps      OBJECT IDENTIFIER ::= { unisCuspMibTrap 2 }
+unisCuspTrapsPrefix      OBJECT IDENTIFIER ::= { unisCuspTraps 0 }
+
+unisCuspServerDisconnect NOTIFICATION-TYPE
+    OBJECTS {
+                unisCuspLocalIPaddressType,
+                unisCuspLocalIPaddress,
+                unisCuspRemoteIPaddressType,
+                unisCuspRemoteIPaddress,
+                unisCuspVpnInstanceName,
+                unisCuspServerDisconnectReason
+             }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated when the controller is disconnected
+         from the agent.  The disconnection reason is
+         unisCuspServiceDisconnect."
+    ::= { unisCuspTrapsPrefix 1 }
+
+unisCuspServerConnect NOTIFICATION-TYPE
+    OBJECTS {
+                unisCuspLocalIPaddressType,
+                unisCuspLocalIPaddress,
+                unisCuspRemoteIPaddressType,
+                unisCuspRemoteIPaddress,
+                unisCuspVpnInstanceName
+             }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated when the controller is connected
+         to the agent."
+    ::= { unisCuspTrapsPrefix 2 }
+
+unisCuspClientDisconnect NOTIFICATION-TYPE
+    OBJECTS {
+                unisCuspLocalIPaddressType,
+                unisCuspLocalIPaddress,
+                unisCuspRemoteIPaddressType,
+                unisCuspRemoteIPaddress,
+                unisCuspVpnInstanceName,
+                unisCuspClientDisconnectReason
+             }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated when the agent is disconnected
+         from the controller.  The disconnection reason is
+         unisCuspClientDisconnect."
+    ::= { unisCuspTrapsPrefix 3 }
+
+unisCuspClientConnect NOTIFICATION-TYPE
+    OBJECTS {
+                unisCuspLocalIPaddressType,
+                unisCuspLocalIPaddress,
+                unisCuspRemoteIPaddressType,
+                unisCuspRemoteIPaddress,
+                unisCuspVpnInstanceName
+             }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated when the agent is connected
+         to the controller."
+    ::= { unisCuspTrapsPrefix 4 }
+END

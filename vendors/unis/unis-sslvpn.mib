@@ -1,0 +1,118 @@
+-- ==========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Private MIB File For SSL VPN
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0  2017-07-05 Initial Version created by wuqingchun 11459.
+-- ==========================================================================
+UNIS-SSLVPN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    MODULE-IDENTITY, OBJECT-TYPE, Counter64
+        FROM SNMPv2-SMI         -- [RFC2578]
+    DisplayString
+        FROM SNMPv2-TC;         -- [RFC2578]
+
+unisSslvpn MODULE-IDENTITY
+    LAST-UPDATED "201707051920Z"  -- July 05, 2017 at 19:20 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The private MIB file includes the SSL VPN information of
+         a device."
+    REVISION      "201707051920Z"
+    DESCRIPTION
+        "Initial revision of this MIB module."
+    ::= { unisCommon 170 }
+
+
+--
+-- Node definitions
+--
+unisSslvpnMibObjects OBJECT IDENTIFIER ::= { unisSslvpn 1 }
+
+unisSslvpnInfomation OBJECT IDENTIFIER ::= { unisSslvpnMibObjects 1 }
+
+--
+-- SSL VPN context IP-access packet statistics table definitions
+--
+unisSslvpnCtxIpacStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisSslvpnCtxIpacStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "This table contains SSL VPN context configuration."
+    ::= { unisSslvpnInfomation 1 }
+
+unisSslvpnCtxIpacStatEntry OBJECT-TYPE
+    SYNTAX      UnisSslvpnCtxIpacStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An entry (conceptual row) in the SSL VPN context IP-access packet
+             statistics table."
+    INDEX   { unisSslvpnCtxName }
+    ::= { unisSslvpnCtxIpacStatTable 1 }
+
+UnisSslvpnCtxIpacStatEntry ::=
+    SEQUENCE {
+        unisSslvpnCtxName                DisplayString,
+        unisSslvpnCtxIpacClientInBytes   Counter64,
+        unisSslvpnCtxIpacClientOutBytes  Counter64,
+        unisSslvpnCtxIpacServerInBytes   Counter64,
+        unisSslvpnCtxIpacServerOutBytes  Counter64
+    }
+
+unisSslvpnCtxName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..31))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Name of the SSL VPN context, which is case insensitive and
+             must be unique.  The string can contain only letters, digits, and
+             underscores (_)."
+    ::= { unisSslvpnCtxIpacStatEntry 1 }
+
+unisSslvpnCtxIpacClientInBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Number of IP-access packet bytes that the SSL VPN context
+             received from client."
+    ::= { unisSslvpnCtxIpacStatEntry 2 }
+
+unisSslvpnCtxIpacClientOutBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Number of IP-access packet bytes that the SSL VPN context
+             sent to client."
+    ::= { unisSslvpnCtxIpacStatEntry 3 }
+
+unisSslvpnCtxIpacServerInBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Number of IP-access packet bytes that the SSL VPN context
+             received from server."
+    ::= { unisSslvpnCtxIpacStatEntry 4 }
+
+unisSslvpnCtxIpacServerOutBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Number of IP-access packet bytes that the SSL VPN
+             context sent to server."
+    ::= { unisSslvpnCtxIpacStatEntry 5 }
+
+END

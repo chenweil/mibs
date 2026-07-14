@@ -1,0 +1,103 @@
+-- =============================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Multiprotocol Label Switching Static Lsp MIB
+-- Reference:
+-- Version: V1.1
+-- History:
+--   V1.0 2022-06-01 Initial version Created by Zhouwan
+--   V1.1 2023-03-14 Modified by Long lewen, Modified unisMplsExtNotifications
+-- =============================================================================
+UNIS-MPLSSLSP-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB
+    ;
+
+-- =============================================================================
+-- module identity part
+-- =============================================================================
+unisMplsSlsp MODULE-IDENTITY
+    LAST-UPDATED
+        "202303141400Z"   -- Mar 14, 2023 at 14:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Multiprotocol Label Switching Static Lsp MIB"
+    REVISION
+        "202303141400Z"   -- Mar 14, 2023 at 14:00 GMT
+    DESCRIPTION
+        "Modified unisMplsExtNotifications"
+    REVISION
+        "202206070920Z"   -- June 07, 2022 at 09:20 GMT
+    DESCRIPTION
+        "Initial version of this MIB."
+    ::= { unisCommon 230 }
+
+-- =============================================================================
+-- Top level components of this MIB module.
+-- =============================================================================
+unisMplsSlspNotifications OBJECT IDENTIFIER ::= { unisMplsSlsp 0 }
+
+unisMplsSlspObjects      OBJECT IDENTIFIER  ::= { unisMplsSlsp 1 }
+
+unisMplsSlspScalarGroup   OBJECT IDENTIFIER ::= { unisMplsSlspObjects 1 }
+
+unisMplsSlspBaseInfo    OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..127))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The base information of MPLS static LSP."
+    ::= { unisMplsSlspScalarGroup 1 }
+
+unisMplsSlspExtInfo    OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..127))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The external information of MPLS static LSP"
+    ::= { unisMplsSlspScalarGroup 2 }
+
+-- =============================================================================
+-- Notifications
+-- =============================================================================
+unisMplsSlspDown  NOTIFICATION-TYPE
+    OBJECTS {
+            unisMplsSlspBaseInfo,
+            unisMplsSlspExtInfo
+            }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when the Static LSP changed to Down."
+    ::= { unisMplsSlspNotifications 1 }
+
+unisMplsSlspUp  NOTIFICATION-TYPE
+    OBJECTS {
+            unisMplsSlspBaseInfo,
+            unisMplsSlspExtInfo
+            }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when the Static LSP changed to Up."
+    ::= { unisMplsSlspNotifications 2 }
+
+unisMplsSlspLabelDup  NOTIFICATION-TYPE
+    OBJECTS {
+            unisMplsSlspBaseInfo,
+            unisMplsSlspExtInfo
+            }
+    STATUS      current
+    DESCRIPTION
+      "This notification is generated when the Incoming label is duplicate."
+    ::= { unisMplsSlspNotifications 3 }
+
+-- =============================================================================
+-- End of notifications.
+-- =============================================================================
+
+END

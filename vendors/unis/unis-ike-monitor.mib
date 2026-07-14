@@ -1,0 +1,1826 @@
+-- ====================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB is designed to get IKE tunnels' statistic information.
+--
+-- Reference:
+-- Version: 1.4
+-- History:
+--     V1.0: The initial version created by Caixiansen, Renweichun and Maoyu.
+--     V1.1: modified by liguanmin.2005.1.19
+--           In order to describe DPD work parameters if a tunnel enable
+--           DPD function, two nodes have added in UnisIKETunnelEntry .those nodes are
+--           unisIKETunDpdIntervalTime and unisIKETunDpdTimeOut.
+--     V1.2: Modified by Caixiansen Mar.3 2005
+--           Two values 'modp1536(5)' and 'modp2048(14)'are added for data type
+--           'UnisDiffHellmanGrp' .
+--     V1.3: Modified by Liukan Dec.8 2008
+--           Three values 'aesCbc128(8)', 'aesCbc192(9)' and 'aesCbc256(10)' are added
+--           to data type 'UnisEncryptAlgo'.
+--           Value description of data type 'UnisIKENegoMode' is changed from 'aggressive(4)' to
+--           'aggressiveMode(4)'.
+--     V1.4: Modified by Weiyanheng Jun.28 2012
+--           1) 'dsaSignatures(2)' is added to data type 'UnisIKEAuthMethod'.
+--           2) 'none(0)' 'invalidGroup(2147483647)' and 'dhGroup24(24)' are added
+--               to data type 'UnisDiffHellmanGrp'.
+--           3) Value description of data type 'UnisDiffHellmanGrp' is changed
+--              from 'modp768(1)' 'modp1024(2)' 'modp1536(5)' 'modp2048(14)'
+--              to 'dhGroup1(1)' 'dhGroup2(2)' 'dhGroup5(5)' 'dhGroup14(14)'.
+--           4) 'aesCtr(11)', 'aesCamelliaCbc(12)', 'rc4(13)' and 'invalidAlg(2147483647)'
+--               are added to data type 'UnisEncryptAlgo'.
+--           5) Value description of data type 'UnisAuthAlgo' is changed from
+--              'sha(2)' to 'sha1(2)'.
+--           6) 'sha256(3)', 'sha384(4)', 'sha512(5)' and 'invalidAlg(2147483647)'
+--              are added to data type 'UnisAuthAlgo'.
+--           7) In order to describe the IPV4 and IPV6 address of a tunnel, four
+--              nodes have added in UnisIKETunnelEntry.
+--              These nodes are unisIKETunLocalInetAddrType, unisIKETunLocalInetAddr,
+--              unisIKETunRemoteInetAddrType and unisIKETunRemoteInetAddr.
+--           8) 'unisIKETunLocalAddr' and 'unisIKETunRemoteAddr' are deprecated.
+-- =====================================================================
+UNIS-IKE-MONITOR-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        DisplayString,TEXTUAL-CONVENTION
+            FROM SNMPv2-TC
+        IpAddress, Integer32, Counter32, Counter64, OBJECT-TYPE, MODULE-IDENTITY,
+        Gauge32, NOTIFICATION-TYPE
+            FROM SNMPv2-SMI
+        InetAddressType, InetAddress
+            FROM INET-ADDRESS-MIB
+        MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+            FROM SNMPv2-CONF
+        unisCommon
+            FROM UNIS-OID-MIB;
+
+    unisIKEMonitor MODULE-IDENTITY
+        LAST-UPDATED "201206280000Z"            -- Jun. 28, 2012  GMT
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "The MIB is designed to get statistic information of
+            IKE tunnels. With this MIB, we can get information of a certain IKE tunnel
+            or all IKE tunnels"
+        ::= { unisCommon 30 }
+
+        UnisIKENegoMode   ::= TEXTUAL-CONVENTION
+                   STATUS     current
+                   DESCRIPTION
+                       "The IKE negotiation mode."
+                   SYNTAX INTEGER {
+                             mainMode(2),
+                             aggressiveMode(4),
+                             quickMode(32)
+                          }
+
+    UnisIKEAuthMethod   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+        "The authentication method used in IKE negotiations."
+        SYNTAX INTEGER {
+            preSharedKey(1),
+            dsaSignatures(2),
+            rsaSignatures(3)
+        }
+
+    UnisDiffHellmanGrp   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+           "The Diffie Hellman Group used in IKE and IPsec negotiations."
+        SYNTAX INTEGER {
+            none(0),
+            dhGroup1(1),
+            dhGroup2(2),
+            dhGroup5(5),
+            dhGroup14(14),
+            dhGroup24(24),
+            invalidGroup(2147483647)
+        }
+
+    UnisEncryptAlgo   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The encryption algorithm used in IKE and IPsec negotiations."
+        SYNTAX INTEGER {
+            none(0),
+            desCbc(1),
+            ideaCbc(2),
+            blowfishCbc(3),
+            rc5R16B64Cbc(4),
+            tripleDesCbc(5),
+            castCbc(6),
+            aesCbc(7),
+            aesCbc128(8),
+            aesCbc192(9),
+            aesCbc256(10),
+            aesCtr(11),
+            aesCamelliaCbc(12),
+            rc4(13),
+            invalidAlg(2147483647)
+        }
+
+    UnisAuthAlgo   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The authentication algorithm used in IKE negotiations."
+        SYNTAX INTEGER {
+            none(0),
+            md5(1),
+            sha1(2),
+            sha256(3),
+            sha384(4),
+            sha512(5),
+            invalidAlg(2147483647)
+        }
+
+        UnisSaProtocol   ::= TEXTUAL-CONVENTION
+                   STATUS     current
+                   DESCRIPTION
+                       "The protocol of security association."
+                   SYNTAX INTEGER {
+                             reserved(0),
+                             isakmp(1),
+                             ah(2),
+                             esp(3),
+                             ipcomp(4)
+                          }
+
+        UnisTrapStatus   ::= TEXTUAL-CONVENTION
+                   STATUS     current
+                   DESCRIPTION
+                       "The switch which determines whether send a trap or not."
+                   SYNTAX INTEGER {
+                             enabled(1),
+                             disabled(2)
+                          }
+
+        UnisIKEIDType   ::= TEXTUAL-CONVENTION
+                   STATUS     current
+                   DESCRIPTION
+                       "The type of IKE Identity."
+                   SYNTAX INTEGER {
+                             reserved(0),
+                             ipv4Addr(1),
+                             fqdn(2),             -- fully-qualified domain name
+                             userFqdn(3),         -- fully-qualified username
+                             ipv4AddrSubnet(4),
+                             ipv6Addr(5),
+                             ipv6AddrSubnet(6),
+                             ipv4AddrRange(7),
+                             ipv6AddrRange(8),
+                             derAsn1Dn(9),        -- the binary DER encoding of an ASN.1 X.500 Distinguished Name
+                                                  -- [X.501] of the principal whose certificates are being exchanged
+                                                  -- to establish the SA.
+
+                             derAsn1Gn(10),       -- the binary DER encoding of an ASN.1 X.500 GeneralName [X.509]
+                                                  -- of the principal whose certificates are being exchanged to
+                                                  -- establish the SA.
+
+                             keyId(11)            -- specifies an opaque byte stream which may be used to pass
+                                                  -- vendor-specific information necessary to identify which
+                                                  -- pre-shared key should be used to authenticate Aggressive
+                                                  -- mode negotiations.
+                          }
+
+        UnisTrafficType   ::= TEXTUAL-CONVENTION
+                   STATUS     current
+                   DESCRIPTION
+                       "The type of the data flow."
+                   SYNTAX INTEGER {
+                             ipv4Addr(1),
+                             ipv4AddrSubnet(4),
+                             ipv6Addr(5),
+                             ipv6AddrSubnet(6),
+                             ipv4AddrRange(7),
+                             ipv6AddrRange(8)
+                          }
+
+
+        UnisIKETunnelState   ::= TEXTUAL-CONVENTION
+                   STATUS     current
+                   DESCRIPTION
+                       "The state of the IKE tunnel."
+                   SYNTAX INTEGER {
+                             active(1),
+                             timeout(2)
+                          }
+
+
+-- ========================================================================
+-- Node definitions
+-- ========================================================================
+--Begin the node of unisIKEObjects.
+
+        unisIKEObjects OBJECT IDENTIFIER ::= { unisIKEMonitor 1 }
+-- ================================================
+-- Begin the table of unisIKETunnelTable.
+-- ================================================
+
+        unisIKETunnelTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIKETunnelEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The IPsec Phase-1 Internet Key Exchange Tunnel Table.
+                 There is one entry in this table for each active IPsec Phase-1 IKE Tunnel."
+            ::= { unisIKEObjects 1 }
+
+        unisIKETunnelEntry OBJECT-TYPE
+            SYNTAX UnisIKETunnelEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The entry contains the information about unisIKETunnelTable, such as negotiate mode,
+                 encryption algorithm and authentication algorithm, etc."
+            INDEX { unisIKETunIndex }
+            ::= { unisIKETunnelTable 1 }
+
+    UnisIKETunnelEntry ::=
+        SEQUENCE {
+            unisIKETunIndex
+                Integer32,
+            unisIKETunLocalType
+                UnisIKEIDType,
+            unisIKETunLocalValue1
+                DisplayString,
+            unisIKETunLocalValue2
+                DisplayString,
+            unisIKETunLocalAddr
+                IpAddress,
+            unisIKETunRemoteType
+                UnisIKEIDType,
+            unisIKETunRemoteValue1
+                DisplayString,
+            unisIKETunRemoteValue2
+                DisplayString,
+            unisIKETunRemoteAddr
+                IpAddress,
+            unisIKETunInitiator
+                INTEGER,
+            unisIKETunNegoMode
+                UnisIKENegoMode,
+            unisIKETunDiffHellmanGrp
+                UnisDiffHellmanGrp,
+            unisIKETunEncryptAlgo
+                UnisEncryptAlgo,
+            unisIKETunHashAlgo
+                UnisAuthAlgo,
+            unisIKETunAuthMethod
+                UnisIKEAuthMethod,
+            unisIKETunLifeTime
+                Integer32,
+            unisIKETunActiveTime
+                Integer32,
+            unisIKETunRemainTime
+                Integer32,
+            unisIKETunTotalRefreshes
+                Counter32,
+            unisIKETunState
+                UnisIKETunnelState,
+            unisIKETunDpdIntervalTime
+                Integer32,
+            unisIKETunDpdTimeOut
+                Integer32,
+            unisIKETunLocalInetAddrType
+                InetAddressType,
+            unisIKETunLocalInetAddr
+                InetAddress,
+            unisIKETunRemoteInetAddrType
+                InetAddressType,
+            unisIKETunRemoteInetAddr
+                InetAddress
+        }
+
+        unisIKETunIndex OBJECT-TYPE
+            SYNTAX Integer32 (1..2147483647)
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The index of the IPsec Phase-1 IKE Tunnel Table.
+                 The value of the index is a number which begins
+                 at one and is incremented with each tunnel that
+                 is created. The value of this object will wrap
+                 at 2147483647."
+            ::= { unisIKETunnelEntry 1 }
+
+        unisIKETunLocalType OBJECT-TYPE
+            SYNTAX UnisIKEIDType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The type of local peer identity."
+            ::= { unisIKETunnelEntry 2 }
+
+        unisIKETunLocalValue1 OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The value of the local peer identity.
+
+                If the local peer type is ipv4Addr/ipv6Addr, this is the IP address
+                used to identify the local peer.
+
+                If the local peer type is ipv4AddrSubnet/ipv6AddrSubnet, this is
+                the subnet address.
+
+                If the local peer type is ipv4AddrRange/ipv6AddrRange, this is
+                the beginning IP address of the range.
+
+                If the local peer type is fqdn/userFqdn, this is the host name
+                used to identify the local peer.
+
+                If the local peer type is derAsn1Dn, this is the binary DER
+                encoding of an ASN.1 X.500 Distinguished Name [X.501] of the
+                principal whose certificates are being exchanged to establish
+                the SA.
+
+                If the local peer type is derAsn1Gn, this is the binary DER
+                encoding of an ASN.1 X.500 GeneralName [X.509] of the principal
+                whose certificates are being exchanged to establish the SA.
+
+                If the local peer type is keyId, this is an opaque byte
+                stream which may be used to pass vendor-specific information
+                necessary to identify which pre-shared key should be used to
+                authenticate Aggressive mode negotiations."
+            ::= { unisIKETunnelEntry 3 }
+
+        unisIKETunLocalValue2 OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The second specification of the local peer's IP address.
+
+                 If the local peer type is ipv4AddrSubnet/ipv6AddrSubnet, this
+                 is the subnet mask.
+
+                 If the local peer type is ipv4AddrRange/ipv6AddrRange, this is
+                 the ending IP address of the range.
+
+                 If the local peer type are others, this is a zero-length string."
+            ::= { unisIKETunnelEntry 4 }
+
+        unisIKETunLocalAddr OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-only
+            STATUS deprecated
+            DESCRIPTION
+                "The IP address of the local endpoint for the IPsec
+                 Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelEntry 5 }
+
+        unisIKETunRemoteType OBJECT-TYPE
+            SYNTAX UnisIKEIDType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The type of remote peer identity."
+            ::= { unisIKETunnelEntry 6 }
+
+        unisIKETunRemoteValue1 OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The value of the remote peer identity.
+
+                If the remote peer type is ipv4Addr/ipv6Addr, this is the IP address
+                used to identify the remote peer.
+
+                If the remote peer type is ipv4AddrSubnet/ipv6AddrSubnet, this is
+                the subnet address.
+
+                If the remote peer type is ipv4AddrRange/ipv6AddrRange, this is
+                the beginning IP address of the range.
+
+                If the remote peer type is fqdn/userFqdn, this is the host name
+                used to identify the remote peer.
+
+                If the remote peer type is derAsn1Dn, this is the binary DER
+                encoding of an ASN.1 X.500 Distinguished Name [X.501] of the
+                principal whose certificates are being exchanged to establish
+                the SA.
+
+                If the remote peer type is derAsn1Gn, this is the binary DER
+                encoding of an ASN.1 X.500 GeneralName [X.509] of the principal
+                whose certificates are being exchanged to establish the SA.
+
+                If the remote peer type is keyId, this is an opaque byte
+                stream which may be used to pass vendor-specific information
+                necessary to identify which pre-shared key should be used to
+                authenticate Aggressive mode negotiations."
+            ::= { unisIKETunnelEntry 7 }
+
+        unisIKETunRemoteValue2 OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The second specification of the remote peer's IP address.
+
+                 If the remote peer type is ipv4AddrSubnet/ipv6AddrSubnet, this
+                 is the subnet mask.
+
+                 If the remote peer type is ipv4AddrRange/ipv6AddrRange, this is
+                 the ending IP address of the range.
+
+                 If the remote peer type are others, this is a zero-length string."
+            ::= { unisIKETunnelEntry 8 }
+
+        unisIKETunRemoteAddr OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-only
+            STATUS deprecated
+            DESCRIPTION
+                "The IP address of the remote peer for the IPsec
+                Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelEntry 9 }
+
+        unisIKETunInitiator OBJECT-TYPE
+            SYNTAX INTEGER  {
+                                local(1),
+                                remote(2)
+                            }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The initiator of this tunnel."
+            ::= { unisIKETunnelEntry 10 }
+
+        unisIKETunNegoMode OBJECT-TYPE
+            SYNTAX UnisIKENegoMode
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The negotiation mode of the IPsec Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelEntry 11 }
+
+        unisIKETunDiffHellmanGrp OBJECT-TYPE
+            SYNTAX UnisDiffHellmanGrp
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Diffie Hellman Group used in the IPsec Phase-1 IKE
+                 negotiations."
+            ::= { unisIKETunnelEntry 12 }
+
+        unisIKETunEncryptAlgo OBJECT-TYPE
+            SYNTAX UnisEncryptAlgo
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The encryption algorithm used in the IPsec Phase-1 IKE
+                 negotiations."
+            ::= { unisIKETunnelEntry 13 }
+
+        unisIKETunHashAlgo OBJECT-TYPE
+            SYNTAX UnisAuthAlgo
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The hash algorithm used in the IPsec Phase-1 IKE
+                 negotiations."
+            ::= { unisIKETunnelEntry 14 }
+
+        unisIKETunAuthMethod OBJECT-TYPE
+            SYNTAX UnisIKEAuthMethod
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The authentication method used in the IPsec Phase-1
+                 IKE negotiations."
+            ::= { unisIKETunnelEntry 15 }
+
+        unisIKETunLifeTime OBJECT-TYPE
+            SYNTAX Integer32 (1..2147483647)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The negotiated LifeTime of the IPsec Phase-1
+                 IKE Tunnel in seconds."
+            ::= { unisIKETunnelEntry 16 }
+
+        unisIKETunActiveTime OBJECT-TYPE
+            SYNTAX Integer32 (1..2147483647)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The duration the IPsec Phase-1 IKE tunnel
+                 has been active in seconds."
+            ::= { unisIKETunnelEntry 17 }
+
+        unisIKETunRemainTime OBJECT-TYPE
+            SYNTAX Integer32 (1..2147483647)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The security association remaining time in
+                 seconds."
+            ::= { unisIKETunnelEntry 18 }
+
+        unisIKETunTotalRefreshes OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of security association
+                 refreshing performed."
+            ::= { unisIKETunnelEntry 19 }
+
+        unisIKETunState OBJECT-TYPE
+            SYNTAX UnisIKETunnelState
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The State of IKE Tunnel."
+            ::= { unisIKETunnelEntry 20 }
+
+        unisIKETunDpdIntervalTime OBJECT-TYPE
+            SYNTAX Integer32
+            UNITS "second"
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The time that trigger DPD request.
+                If ipsec message is expected to be sent out
+                and the interval time between current time
+                and the last time receiving peer's IPsec
+                message is bigger than this time, DPD request
+                would be triggered."
+            DEFVAL { 10 }
+            ::= { unisIKETunnelEntry 21 }
+
+        unisIKETunDpdTimeOut OBJECT-TYPE
+            SYNTAX Integer32
+            UNITS "second"
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The overtime of single DPD request.
+                If DPD requests are refused three times, all
+                security associations related would be deleted."
+            DEFVAL { 5 }
+            ::= { unisIKETunnelEntry 22 }
+
+    unisIKETunLocalInetAddrType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of the local peer's IP address."
+        ::= { unisIKETunnelEntry 23 }
+
+    unisIKETunLocalInetAddr OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The IP address of the local peer for the IPsec Phase-1 IKE Tunnel."
+        ::= { unisIKETunnelEntry 24 }
+
+    unisIKETunRemoteInetAddrType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of the remote peer's IP address."
+        ::= { unisIKETunnelEntry 25 }
+
+    unisIKETunRemoteInetAddr OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The IP address of the remote peer for the IPsec Phase-1 IKE Tunnel."
+        ::= { unisIKETunnelEntry 26 }
+
+-- =======================================
+-- begin the table of unisIKETunnelStatTable.
+-- =======================================
+
+        unisIKETunnelStatTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIKETunnelStatEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The IPsec Phase-1 IKE Tunnel Statistic Table."
+            ::= { unisIKEObjects 2 }
+
+
+        unisIKETunnelStatEntry OBJECT-TYPE
+            SYNTAX UnisIKETunnelStatEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The entry contains the information of unisIKETunnelStatTable,
+                 such as the number of packets sent and received by the
+                 IKE tunnel, etc."
+            INDEX { unisIKETunIndex }
+            ::= { unisIKETunnelStatTable 1 }
+
+        UnisIKETunnelStatEntry ::=
+            SEQUENCE {
+                                unisIKETunInOctets
+                                    Counter64,
+                                unisIKETunInPkts
+                                    Counter64,
+                                unisIKETunInDropPkts
+                                    Counter64,
+                                unisIKETunInP2Exchgs
+                                    Counter64,
+                                unisIKETunInP2ExchgRejets
+                                    Counter64,
+                                unisIKETunInP2SaDelRequests
+                                    Counter64,
+                                unisIKETunInP1SaDelRequests
+                                    Counter64,
+                                unisIKETunInNotifys
+                                    Counter32,
+                                unisIKETunOutOctets
+                                    Counter64,
+                                unisIKETunOutPkts
+                                    Counter64,
+                                unisIKETunOutDropPkts
+                                    Counter64,
+                                unisIKETunOutP2Exchgs
+                                    Counter64,
+                                unisIKETunOutP2ExchgRejects
+                                    Counter64,
+                                unisIKETunOutP2SaDelRequests
+                                    Counter64,
+                                unisIKETunOutP1SaDelRequests
+                                    Counter64,
+                                unisIKETunOutNotifys
+                                    Counter32
+             }
+
+        unisIKETunInOctets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of octets received by
+                 this IPsec Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelStatEntry 1 }
+
+        unisIKETunInPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of packets received by
+                 this IPsec Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelStatEntry 2 }
+
+        unisIKETunInDropPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of packets dropped  by this
+                 IPsec Phase-1 IKE Tunnel during receiving process."
+            ::= { unisIKETunnelStatEntry 3 }
+
+        unisIKETunInP2Exchgs OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-2 exchanges
+                 received by this IPsec Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelStatEntry 4 }
+
+        unisIKETunInP2ExchgRejets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-2 exchanges
+                 received and rejected by this IPsec Phase-1 Tunnel."
+            ::= { unisIKETunnelStatEntry 5 }
+
+        unisIKETunInP2SaDelRequests OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-2 security association
+                 deleting requests received by this IPsec Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelStatEntry 6 }
+
+        unisIKETunInP1SaDelRequests OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-1
+                 security association deleting requests."
+            ::= { unisIKETunnelStatEntry 7 }
+
+        unisIKETunInNotifys OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of notifications received by this
+                 IPsec Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelStatEntry 8 }
+
+        unisIKETunOutOctets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of octets sent by this IPsec
+                 Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelStatEntry 9 }
+
+        unisIKETunOutPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of packets sent by this IPsec
+                 Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelStatEntry 10 }
+
+        unisIKETunOutDropPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of packets dropped by this
+                 IPsec Phase-1 IKE Tunnel during sending process."
+            ::= { unisIKETunnelStatEntry 11 }
+
+        unisIKETunOutP2Exchgs OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-2 exchanges sent
+                 by this IPsec Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelStatEntry 12 }
+
+        unisIKETunOutP2ExchgRejects OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-2 exchanges sent
+                 and rejected by this IPsec Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelStatEntry 13 }
+
+        unisIKETunOutP2SaDelRequests OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-2 security
+                 association deleting requests sent by this
+                 IPsec Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelStatEntry 14 }
+
+        unisIKETunOutP1SaDelRequests OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-1 security
+                 association deleting requests sent by this
+                 IPsec Phase-1 IKE Tunnel."
+            ::= { unisIKETunnelStatEntry 15 }
+
+        unisIKETunOutNotifys OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of notifications sent by this IPsec
+                 Phase-1 Tunnel."
+            ::= { unisIKETunnelStatEntry 16 }
+
+-- =======================================
+-- Begin the unisIKEGlobalStats.
+-- =======================================
+
+        unisIKEGlobalStats OBJECT IDENTIFIER ::= { unisIKEObjects 3 }
+
+        unisIKEGlobalActiveTunnels OBJECT-TYPE
+            SYNTAX Gauge32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of currently active IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 1 }
+
+        unisIKEGlobalInOctets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of octets received by all currently and
+                 previously active IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 2 }
+
+        unisIKEGlobalInPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of packets received by all
+                 currently and previously active IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 3 }
+
+        unisIKEGlobalInDropPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of packets which were dropped during receiving
+                 process by all currently and previously active IPsec Phase-1
+                 IKE Tunnels."
+            ::= { unisIKEGlobalStats 4 }
+
+        unisIKEGlobalInP2Exchgs OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-2 exchanges received by all
+                 currently and previously active IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 5 }
+
+        unisIKEGlobalInP2ExchgRejects OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-2 exchanges which were
+                 received and rejected by all currently and previously
+                 active IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 6 }
+
+        unisIKEGlobalInP2SaDelRequests OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-2 security association
+                 deleting requests received by all currently and previously
+                 active IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 7 }
+
+        unisIKEGlobalInNotifys OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of notifications received by all IPsec
+                 Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 8 }
+
+        unisIKEGlobalOutOctets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of octets sent by all currently
+                 and previously active and IPsec Phase-1 IKE Tunnels. "
+            ::= { unisIKEGlobalStats 9 }
+
+        unisIKEGlobalOutPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of packets sent by all currently
+                 and previously active and IPsec Phase-1 Tunnels."
+            ::= { unisIKEGlobalStats 10 }
+
+        unisIKEGlobalOutDropPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of packets which were dropped during
+                 sending process by all currently and previously active
+                 IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 11 }
+
+        unisIKEGlobalOutP2Exchgs OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-2 exchanges which were
+                 sent by all currently and previously active IPsec
+                 Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 12 }
+
+        unisIKEGlobalOutP2ExchgRejects OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-2 exchanges which
+                 were sent and rejected by all currently and previously
+                 active IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 13 }
+
+        unisIKEGlobalOutP2SaDelRequests OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-2 SA deleting requests sent
+                 by all currently and previously active IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 14 }
+
+        unisIKEGlobalOutNotifys OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of notifications sent by all active IPsec
+                 Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 15 }
+
+        unisIKEGlobalInitTunnels OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-1 IKE Tunnels which
+                 were locally initiated."
+            ::= { unisIKEGlobalStats 16 }
+
+        unisIKEGlobalInitTunnelFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-1 IKE Tunnels which
+                 were locally initiated and failed to activate."
+            ::= { unisIKEGlobalStats 17 }
+
+        unisIKEGlobalRespTunnels OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-1 IKE Tunnels which
+                 were remotely initiated."
+            ::= { unisIKEGlobalStats 18 }
+
+        unisIKEGlobalRespTunnelFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of IPsec Phase-1 IKE Tunnels which
+                 were remotely initiated and failed to activate."
+            ::= { unisIKEGlobalStats 19 }
+
+        unisIKEGlobalAuthFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of authentications which ended in
+                 failure by all current and previous IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 20 }
+
+        unisIKEGlobalNoSaFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of non-existent Security Association
+                 in failures which occurred during processing of all
+                 current and previous IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 21 }
+
+        unisIKEGlobalInvalidCookieFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of invalid cookie in failures which
+                 occurred during processing of all current and previous
+                 IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 22 }
+
+        unisIKEGlobalAttrNotSuppFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of attributes not supported in failures
+                 which occurred during processing of all current and previous
+                 IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 23 }
+
+        unisIKEGlobalNoProposalChosenFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of no proposal chosen in failures which
+                 occurred during processing of all current and previous
+                 IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 24 }
+
+        unisIKEGlobalUnsportExchTypeFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of unsupported exchange type in failures
+                 which occurred during processing of all current and
+                 previous IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 25 }
+
+        unisIKEGlobalInvalidIdFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of invalid id Information in failures
+                 which occurred during processing of all current and
+                 previous IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 26 }
+
+            unisIKEGlobalInvalidProFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of invalid protocol id in failures which
+                 occurred during processing of all current and previous
+                 IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 27 }
+
+            unisIKEGlobalCertTypeUnsuppFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of certificate type unsupported in failures
+                 which occurred during processing of all current and
+                 previous IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 28 }
+
+        unisIKEGlobalInvalidCertAuthFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                   "The total number of failures because of invalid certificate authority
+                 which occurred during processing of all current and
+                 previous IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 29 }
+
+        unisIKEGlobalInvalidSignFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of failures because of the invalid signature which
+                 occurred during processing of all current and previous
+                 IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 30 }
+
+        unisIKEGlobalCertUnavailableFails OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total number of certificate unavailable in failures
+                 which occurred during processing of all current and
+                 previous IPsec Phase-1 IKE Tunnels."
+            ::= { unisIKEGlobalStats 31 }
+
+-- =======================================
+-- Begin the unisIKETrapObject.
+-- =======================================
+
+        unisIKETrapObject OBJECT IDENTIFIER ::= { unisIKEObjects 4 }
+
+        unisIKEProposalNumber OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The IKE proposal's number with a trap."
+            ::= { unisIKETrapObject 1 }
+
+        unisIKEProposalSize OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The number of IKE proposals with a trap."
+            ::= { unisIKETrapObject 2 }
+
+        unisIKEIdInformation OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The id information with a trap."
+            ::= { unisIKETrapObject 3 }
+
+        unisIKEProtocolNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The protocol number with a trap"
+            ::= { unisIKETrapObject 4 }
+
+        unisIKECertInformation OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The certificate information with a trap."
+            ::= { unisIKETrapObject 5 }
+
+
+-- =======================================
+-- Begin the unisIKETrapCntl.
+-- =======================================
+
+        unisIKETrapCntl OBJECT IDENTIFIER ::= { unisIKEObjects 5 }
+
+        unisIKETrapGlobalCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether all IKE traps should be generated."
+            ::= { unisIKETrapCntl 1 }
+
+
+        unisIKETunnelStartTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKETunnelStart traps should be generated."
+            ::= { unisIKETrapCntl 2 }
+
+        unisIKETunnelStopTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                        "Indicates whether unisIKETunnelStop traps should be generated."
+            ::= { unisIKETrapCntl 3 }
+
+        unisIKENoSaTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKENoSaFailure traps should be generated."
+            ::= { unisIKETrapCntl 4 }
+
+        unisIKEEncryFailureTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEEncryFailFailure traps should be generated."
+            ::= { unisIKETrapCntl 5 }
+
+        unisIKEDecryFailureTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEDecryFailFailure traps should be generated."
+            ::= { unisIKETrapCntl 6 }
+
+        unisIKEInvalidProposalTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEInvalidProposalFailure traps should be generated."
+            ::= { unisIKETrapCntl 7 }
+
+        unisIKEAuthFailTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEAuthFailFailure traps should be generated."
+            ::= { unisIKETrapCntl 8 }
+
+        unisIKEInvalidCookieTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEInvalidCookieFailure traps should be generated."
+            ::= { unisIKETrapCntl 9 }
+
+        unisIKEInvalidSpiTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEInvalidSpiFailure traps should be generated."
+            ::= { unisIKETrapCntl 10 }
+
+        unisIKEAttrNotSuppTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEAttrNotSuppFailure traps should be generated."
+            ::= { unisIKETrapCntl 11 }
+
+        unisIKEUnsportExchTypeTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEUnsportExchTypeFailure traps should be generated."
+            ::= { unisIKETrapCntl 12 }
+
+        unisIKEInvalidIdTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEInvalidIdFailure traps should be generated."
+            ::= { unisIKETrapCntl 13 }
+
+        unisIKEInvalidProtocolTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEInvalidProtocolFailure traps should be generated."
+            ::= { unisIKETrapCntl 14 }
+
+        unisIKECertTypeUnsuppTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKECertTypeUnsuppFailure traps should be generated."
+            ::= { unisIKETrapCntl 15 }
+
+        unisIKEInvalidCertAuthTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEInvalidCertAuthFailure traps should be generated."
+            ::= { unisIKETrapCntl 16 }
+
+        unisIKEInvalidSignTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEInvalidSignFailure traps should be generated."
+            ::= { unisIKETrapCntl 17 }
+
+        unisIKECertUnavailableTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKECertUnavailableFailure traps should be generated."
+            ::= { unisIKETrapCntl 18 }
+
+        unisIKEProposalAddTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEProposalAdd traps should be generated."
+            ::= { unisIKETrapCntl 19 }
+
+        unisIKEProposalDelTrapCntl OBJECT-TYPE
+            SYNTAX UnisTrapStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates whether unisIKEProposalDel traps should be generated."
+            ::= { unisIKETrapCntl 20 }
+
+-- ================================================
+-- definition of traps.
+-- ================================================
+
+        unisIKETrap OBJECT IDENTIFIER ::= { unisIKEObjects 6 }
+        unisIKENotifications OBJECT IDENTIFIER ::= { unisIKETrap 1 }
+
+        unisIKETunnelStart NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKETunLifeTime,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                 "This notification is generated when an IPsec Phase-1
+                  IKE Tunnel is created."
+                    ::= { unisIKENotifications 1 }
+
+        unisIKETunnelStop NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKETunActiveTime,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when an IPsec Phase-1
+                IKE Tunnel is deleted."
+                    ::= { unisIKENotifications 2 }
+
+        unisIKENoSaFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when the IKE tunnel
+                 has a non-existent SA error."
+        ::= { unisIKENotifications 3 }
+
+        unisIKEEncryFailFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when the IKE tunnel
+                 has an encrypting failure."
+                    ::= { unisIKENotifications 4 }
+
+        unisIKEDecryFailFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+                    DESCRIPTION
+                "This notification is generated when the IKE tunnel
+                has a decrypting failure."
+                    ::= { unisIKENotifications 5 }
+
+        unisIKEInvalidProposalFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when the IPsec phase-1
+                invalid proposal occurs."
+                    ::= { unisIKENotifications 6 }
+
+        unisIKEAuthFailFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when the IPsec phase-1
+                authentication failure occurs."
+            ::= { unisIKENotifications 7 }
+
+        unisIKEInvalidCookieFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when the IPsec phase-1
+                invalid cookie failure occurs."
+            ::= { unisIKENotifications 8 }
+
+        unisIKEAttrNotSuppFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when the IPsec phase-1 unsupported
+                attribute failure occurs."
+            ::= { unisIKENotifications 9 }
+
+        unisIKEUnsportExchTypeFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when the IPsec phase-1
+                unsupported exchange type failure occurs."
+            ::= { unisIKENotifications 10 }
+
+        unisIKEInvalidIdFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKEIdInformation,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when the IPsec phase-1
+                invalid id failure occurs."
+            ::= { unisIKENotifications 11 }
+
+        unisIKEInvalidProtocolFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKEProtocolNum,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                        }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when the processing for
+                an IPsec Phase-1 IKE Tunnel has a protocol related errors."
+            ::= { unisIKENotifications 12 }
+
+        unisIKECertTypeUnsuppFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKECertInformation,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when the IPsec phase-1
+                unsupported certificate type failure occurs."
+            ::= { unisIKENotifications 13 }
+
+        unisIKEInvalidCertAuthFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKECertInformation,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when the IPsec phase-1
+                invalid certificate authorization failure occurs."
+            ::= { unisIKENotifications 14 }
+
+        unisIKElInvalidSignFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKECertInformation,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when the IPsec phase-1
+                invalid signature failure occurs."
+            ::= { unisIKENotifications 15 }
+
+        unisIKECertUnavailableFailure NOTIFICATION-TYPE
+            OBJECTS {
+                        unisIKETunLocalAddr,
+                        unisIKETunRemoteAddr,
+                        unisIKECertInformation,
+                        unisIKETunIndex,
+                        unisIKETunLocalInetAddrType,
+                        unisIKETunLocalInetAddr,
+                        unisIKETunRemoteInetAddrType,
+                        unisIKETunRemoteInetAddr
+                    }
+            STATUS     current
+            DESCRIPTION
+                "This notification is generated when the IPsec phase-1
+                certificate unavailable failure occurs."
+            ::= { unisIKENotifications 16 }
+
+        unisIKEProposalAdd NOTIFICATION-TYPE
+                    OBJECTS { unisIKEProposalNumber,
+                              unisIKEProposalSize
+                            }
+                    STATUS     current
+                    DESCRIPTION
+                "This notification is generated when an IKE proposal is added."
+                    ::= { unisIKENotifications 17 }
+
+        unisIKEProposalDel NOTIFICATION-TYPE
+                    OBJECTS { unisIKEProposalNumber,
+                              unisIKEProposalSize
+                            }
+                    STATUS     current
+                    DESCRIPTION
+                "This notification is generated when an IKE proposal is deleted."
+                    ::= { unisIKENotifications 18 }
+
+-- =======================================
+-- Begin the unisIKEScalarObjects.
+-- =======================================
+    unisIKEScalarObjects OBJECT IDENTIFIER ::= { unisIKEObjects 7 }
+
+    unisIKEMIBVersion OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Version string of this MIB."
+        ::= { unisIKEScalarObjects 1 }
+
+-- =======================================
+-- Conformance Information
+-- =======================================
+        unisIKEConformance   OBJECT IDENTIFIER
+                                 ::= { unisIKEMonitor 2 }
+        unisIKECompliances   OBJECT IDENTIFIER
+                                 ::= { unisIKEConformance 1 }
+        unisIKEGroups        OBJECT IDENTIFIER
+                                 ::= { unisIKEConformance 2 }
+
+-- =======================================
+-- Compliance Statements
+-- =======================================
+        unisIKECompliance MODULE-COMPLIANCE
+            STATUS current
+            DESCRIPTION
+                " "
+            MODULE -- this module
+            MANDATORY-GROUPS
+                {
+                    unisIKETunnelTableGroup,
+                    unisIKETunnelStatTableGroup,
+                    unisIKEGlobalStatsGroup,
+                    unisIKETrapObjectGroup,
+                    unisIKETrapCntlGroup,
+                    unisIKETrapGroup,
+                    unisIKEScalarObjectsGroup
+                }
+            ::= { unisIKECompliances 1 }
+
+    unisIKETunnelTableGroup OBJECT-GROUP
+        OBJECTS {
+            unisIKETunLocalType,
+            unisIKETunLocalValue1,
+            unisIKETunLocalValue2,
+            unisIKETunLocalAddr,
+            unisIKETunRemoteType,
+            unisIKETunRemoteValue1,
+            unisIKETunRemoteValue2,
+            unisIKETunRemoteAddr,
+            unisIKETunInitiator,
+            unisIKETunNegoMode,
+            unisIKETunDiffHellmanGrp,
+            unisIKETunEncryptAlgo,
+            unisIKETunHashAlgo,
+            unisIKETunAuthMethod,
+            unisIKETunLifeTime,
+            unisIKETunActiveTime,
+            unisIKETunRemainTime,
+            unisIKETunTotalRefreshes,
+            unisIKETunState,
+            unisIKETunDpdIntervalTime,
+            unisIKETunDpdTimeOut,
+            unisIKETunLocalInetAddrType,
+            unisIKETunLocalInetAddr,
+            unisIKETunRemoteInetAddrType,
+            unisIKETunRemoteInetAddr
+        }
+        STATUS current
+        DESCRIPTION
+            "The group contains the IKE tunnel's property information."
+        ::= { unisIKEGroups 1 }
+
+
+        unisIKETunnelStatTableGroup OBJECT-GROUP
+            OBJECTS {
+                                unisIKETunInOctets ,
+                                unisIKETunInPkts,
+                                unisIKETunInDropPkts,
+                                unisIKETunInP2Exchgs,
+                                unisIKETunInP2ExchgRejets,
+                                unisIKETunInP2SaDelRequests,
+                                unisIKETunInP1SaDelRequests,
+                                unisIKETunInNotifys,
+                                unisIKETunOutOctets,
+                                unisIKETunOutPkts,
+                                unisIKETunOutDropPkts,
+                                unisIKETunOutP2Exchgs,
+                                unisIKETunOutP2ExchgRejects,
+                                unisIKETunOutP2SaDelRequests,
+                                unisIKETunOutP1SaDelRequests,
+                                unisIKETunOutNotifys
+                                }
+            STATUS current
+            DESCRIPTION
+                "The group contains the IKE tunnel's statistic information."
+            ::= { unisIKEGroups 2 }
+
+        unisIKEGlobalStatsGroup OBJECT-GROUP
+            OBJECTS {
+                                unisIKEGlobalActiveTunnels,
+                                unisIKEGlobalInOctets,
+                                unisIKEGlobalInPkts,
+                                unisIKEGlobalInDropPkts,
+                                unisIKEGlobalInP2Exchgs,
+                                unisIKEGlobalInP2ExchgRejects,
+                                unisIKEGlobalInP2SaDelRequests,
+                                unisIKEGlobalInNotifys,
+                                unisIKEGlobalOutOctets,
+                                unisIKEGlobalOutPkts,
+                                unisIKEGlobalOutDropPkts,
+                                unisIKEGlobalOutP2Exchgs,
+                                unisIKEGlobalOutP2ExchgRejects,
+                                unisIKEGlobalOutP2SaDelRequests,
+                                unisIKEGlobalOutNotifys,
+                                unisIKEGlobalInitTunnels,
+                                unisIKEGlobalInitTunnelFails,
+                                unisIKEGlobalRespTunnels,
+                                unisIKEGlobalRespTunnelFails,
+                                unisIKEGlobalAuthFails,
+                                unisIKEGlobalNoSaFails,
+                                unisIKEGlobalInvalidCookieFails,
+                                unisIKEGlobalAttrNotSuppFails,
+                                unisIKEGlobalNoProposalChosenFails,
+                                unisIKEGlobalUnsportExchTypeFails,
+                                unisIKEGlobalInvalidIdFails,
+                                unisIKEGlobalInvalidProFails,
+                                unisIKEGlobalCertTypeUnsuppFails,
+                                unisIKEGlobalInvalidCertAuthFails,
+                                unisIKEGlobalInvalidSignFails,
+                                unisIKEGlobalCertUnavailableFails
+                                }
+            STATUS current
+            DESCRIPTION
+                "The group contains all of the IKE tunnel's statistic information."
+            ::= { unisIKEGroups 3 }
+
+        unisIKETrapObjectGroup OBJECT-GROUP
+            OBJECTS {
+                                unisIKEProposalNumber,
+                                unisIKEProposalSize,
+                                unisIKEIdInformation,
+                                unisIKEProtocolNum,
+                                unisIKECertInformation
+                    }
+            STATUS current
+            DESCRIPTION
+                "The group contains all of trap objects of IKE tunnels."
+            ::= { unisIKEGroups 4 }
+
+        unisIKETrapCntlGroup OBJECT-GROUP
+            OBJECTS {
+                                unisIKETrapGlobalCntl,
+                                unisIKETunnelStartTrapCntl,
+                                unisIKETunnelStopTrapCntl,
+                                unisIKENoSaTrapCntl,
+                                unisIKEEncryFailureTrapCntl,
+                                unisIKEDecryFailureTrapCntl,
+                                unisIKEInvalidProposalTrapCntl,
+                                unisIKEAuthFailTrapCntl,
+                                unisIKEInvalidCookieTrapCntl,
+                                unisIKEInvalidSpiTrapCntl,
+                                unisIKEAttrNotSuppTrapCntl,
+                                unisIKEUnsportExchTypeTrapCntl,
+                                unisIKEInvalidIdTrapCntl,
+                                unisIKEInvalidProtocolTrapCntl,
+                                unisIKECertTypeUnsuppTrapCntl,
+                                unisIKEInvalidCertAuthTrapCntl,
+                                unisIKEInvalidSignTrapCntl,
+                                unisIKECertUnavailableTrapCntl,
+                                unisIKEProposalAddTrapCntl,
+                                unisIKEProposalDelTrapCntl
+                                }
+            STATUS current
+            DESCRIPTION
+                "The group contains all of trap switches of IKE tunnels."
+            ::= { unisIKEGroups 5 }
+
+        unisIKETrapGroup  NOTIFICATION-GROUP
+            NOTIFICATIONS {
+                                unisIKETunnelStart,
+                                unisIKETunnelStop,
+                                unisIKENoSaFailure,
+                                unisIKEEncryFailFailure,
+                                unisIKEDecryFailFailure,
+                                unisIKEInvalidProposalFailure,
+                                unisIKEAuthFailFailure,
+                                unisIKEInvalidCookieFailure,
+                                unisIKEAttrNotSuppFailure,
+                                unisIKEUnsportExchTypeFailure,
+                                unisIKEInvalidIdFailure,
+                                unisIKEInvalidProtocolFailure,
+                                unisIKECertTypeUnsuppFailure,
+                                unisIKEInvalidCertAuthFailure,
+                                unisIKElInvalidSignFailure,
+                                unisIKECertUnavailableFailure,
+                                unisIKEProposalAdd,
+                                unisIKEProposalDel
+                           }
+            STATUS current
+            DESCRIPTION
+                "The group contains all of trap of IKE tunnels."
+            ::= { unisIKEGroups 6 }
+
+        unisIKEScalarObjectsGroup OBJECT-GROUP
+            OBJECTS {
+                        unisIKEMIBVersion
+                    }
+            STATUS current
+            DESCRIPTION
+                "The group contains all of scalar objects of the MIB."
+            ::= { unisIKEGroups 7 }
+
+    END

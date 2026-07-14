@@ -1,0 +1,151 @@
+-- =================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Terminal Access Controller Access Control System MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--  V1.0 2023-10-17 Initial version, create by jiangzuhuan
+-- =================================================================
+UNIS-TACACS-MIB DEFINITIONS ::= BEGIN
+
+
+IMPORTS
+        unisCommon
+            FROM UNIS-OID-MIB
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE,
+        Integer32
+            FROM SNMPv2-SMI
+        DisplayString
+            FROM SNMPv2-TC
+        InetAddressType, InetAddress
+            FROM INET-ADDRESS-MIB;
+
+unisTacacs MODULE-IDENTITY
+    LAST-UPDATED "202310171800Z"            -- October 17, 2023 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for managing TACACS."
+    REVISION "202310171800Z"        -- October 17, 2023 at 18:00 GMT
+    DESCRIPTION
+         "The initial version."
+
+::= { unisCommon 266 }
+
+-- ----------------------------------------------------------------------
+-- unisTacacsMibTrapOid Table
+-- ----------------------------------------------------------------------
+unisTacacsMibTrap OBJECT IDENTIFIER ::= { unisTacacs 1 }
+
+unisTacacsMibTrapOid OBJECT IDENTIFIER ::= { unisTacacsMibTrap 1 }
+unisTacacsTrapOidDefine OBJECT IDENTIFIER ::= { unisTacacsMibTrapOid 1 }
+
+unisTacacsServerAddressType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "IP addresses type (IPv4 or IPv6) of a TACACS server."
+    ::= { unisTacacsTrapOidDefine 1 }
+
+unisTacacsServerAddress OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "IP address of the TACACS server."
+    ::= { unisTacacsTrapOidDefine 2 }
+
+unisTacacsServerPortNumber OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "TCP port used by the client to send request messages to the
+        TACACS server. The default value is 49."
+    ::= { unisTacacsTrapOidDefine 3 }
+
+unisTacacsServerVpnName OBJECT-TYPE
+    SYNTAX DisplayString(SIZE(0..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "VPN instance name of the TACACS server."
+    ::= { unisTacacsTrapOidDefine 4 }
+
+-- ----------------------------------------------------------------------
+-- unisTacacsTraps Table
+-- ----------------------------------------------------------------------
+unisTacacsTraps      OBJECT IDENTIFIER ::= { unisTacacsMibTrap 2 }
+unisTacacsTrapsDefine      OBJECT IDENTIFIER ::= { unisTacacsTraps 0 }
+
+unisTacacsAuthServerDownTrap NOTIFICATION-TYPE
+    OBJECTS { unisTacacsServerAddressType,
+              unisTacacsServerAddress,
+              unisTacacsServerPortNumber,
+              unisTacacsServerVpnName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the authentication TACACS server
+        does not respond to the client's requests for a period of time."
+    ::= { unisTacacsTrapsDefine 1 }
+
+unisTacacsAuthServerUpTrap NOTIFICATION-TYPE
+    OBJECTS { unisTacacsServerAddressType,
+              unisTacacsServerAddress,
+              unisTacacsServerPortNumber,
+              unisTacacsServerVpnName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the device finds that the state of the
+        TACACS authentication server changes from unreachable to reachable."
+    ::= { unisTacacsTrapsDefine 2 }
+
+unisTacacsAuthorServerDownTrap NOTIFICATION-TYPE
+    OBJECTS { unisTacacsServerAddressType,
+              unisTacacsServerAddress,
+              unisTacacsServerPortNumber,
+              unisTacacsServerVpnName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the authorization TACACS server
+        does not respond to the client's requests for a period of time."
+    ::= { unisTacacsTrapsDefine 3 }
+
+unisTacacsAuthorServerUpTrap NOTIFICATION-TYPE
+    OBJECTS { unisTacacsServerAddressType,
+              unisTacacsServerAddress,
+              unisTacacsServerPortNumber,
+              unisTacacsServerVpnName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the device finds that the state of the
+        TACACS authorization server changes from unreachable to reachable."
+    ::= { unisTacacsTrapsDefine 4 }
+
+unisTacacsAccServerDownTrap NOTIFICATION-TYPE
+    OBJECTS { unisTacacsServerAddressType,
+              unisTacacsServerAddress,
+              unisTacacsServerPortNumber,
+              unisTacacsServerVpnName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the accounting TACACS server
+        does not respond to the client's requests for a period of time."
+    ::= { unisTacacsTrapsDefine 5 }
+
+unisTacacsAccServerUpTrap NOTIFICATION-TYPE
+    OBJECTS { unisTacacsServerAddressType,
+              unisTacacsServerAddress,
+              unisTacacsServerPortNumber,
+              unisTacacsServerVpnName }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the device finds that the state of the
+        TACACS accounting server changes from unreachable to reachable."
+    ::= { unisTacacsTrapsDefine 6 }
+
+END

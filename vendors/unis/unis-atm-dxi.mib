@@ -1,0 +1,321 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description:  This MIB is used for configuration of ATM-DXI.
+--               include :1.ATM-DXI PVC
+--                        2.ATM-DXI MAP
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2005/04/14 created by Liguanmin
+-- ============================================================================
+UNIS-ATM-DXI-MIB DEFINITIONS ::= BEGIN
+
+      IMPORTS
+                unisCommon
+                    FROM UNIS-OID-MIB
+                ifIndex
+                    FROM RFC1213-MIB
+                OBJECT-GROUP,MODULE-COMPLIANCE
+                    FROM SNMPv2-CONF
+                Integer32, OBJECT-TYPE, MODULE-IDENTITY
+                    FROM SNMPv2-SMI
+                InetAddressType,InetAddress
+                    FROM INET-ADDRESS-MIB
+                RowStatus
+                    FROM SNMPv2-TC;
+
+      unisAtmDxi MODULE-IDENTITY
+                LAST-UPDATED "200504141518Z"            -- 14 April, 2005 at 15:18 GMT
+                ORGANIZATION
+                    "Unisyue Technologies Co., Ltd."
+                CONTACT-INFO
+                    ""
+                DESCRIPTION
+                        "This MIB contains objects to manage configuration of ATM-DXI.
+                         There are no constraints on this MIB."
+                REVISION "200504141518Z"                -- 14 April, 2005 at 15:18 GMT
+                DESCRIPTION
+                        "The initial revision of this MIB module."
+                ::= { unisCommon 49 }
+
+--
+-- Node definitions
+--
+        unisAtmDxiScalarGroup OBJECT IDENTIFIER ::= { unisAtmDxi 1 }
+
+        unisAtmDxiConfMode OBJECT-TYPE
+                SYNTAX INTEGER
+                        {
+                        mode1a(1),
+                        mode1b(2),
+                        mode2(3)
+                        }
+                MAX-ACCESS read-only
+                STATUS current
+                DESCRIPTION
+                        "This node identifies the ATM-DXI mode being
+                        used at the ATM-DXI port."
+                ::= { unisAtmDxiScalarGroup 1 }
+
+
+        unisAtmDxiIfObjects OBJECT IDENTIFIER ::= { unisAtmDxi 2 }
+
+
+        unisAtmDxiPvcTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF UnisAtmDxiPvcEntry
+                MAX-ACCESS not-accessible
+                STATUS current
+                DESCRIPTION
+                        "This table describes information of PVC in ATM-DXI interface."
+                ::= { unisAtmDxiIfObjects 1 }
+
+
+        unisAtmDxiPvcEntry OBJECT-TYPE
+                SYNTAX UnisAtmDxiPvcEntry
+                MAX-ACCESS not-accessible
+                STATUS current
+                DESCRIPTION
+                        "The entry of unisAtmDxiPvcTable."
+                INDEX { ifIndex, unisAtmDxiPvcVpi, unisAtmDxiPvcVci }
+                ::= { unisAtmDxiPvcTable 1 }
+
+
+        UnisAtmDxiPvcEntry ::=
+                SEQUENCE {
+                        unisAtmDxiPvcVpi
+                                Integer32,
+                        unisAtmDxiPvcVci
+                                Integer32,
+                        unisAtmDxiPvcDFA
+                                Integer32,
+                        unisAtmDxiPvcEncType
+                                INTEGER,
+                        unisAtmDxiPvcMapCount
+                                Integer32,
+                        unisAtmDxiPvcRowStatus
+                                RowStatus
+                 }
+
+
+        unisAtmDxiPvcVpi OBJECT-TYPE
+                SYNTAX Integer32 (0..15)
+                MAX-ACCESS not-accessible
+                STATUS current
+                DESCRIPTION
+                        "The value of VPI.  It can't be 0 if unisAtmDxiPvcVci is 0."
+                ::= { unisAtmDxiPvcEntry 1 }
+
+
+        unisAtmDxiPvcVci OBJECT-TYPE
+                SYNTAX Integer32 (0..63)
+                MAX-ACCESS not-accessible
+                STATUS current
+                DESCRIPTION
+                        "The value of VCI.  It can't be 0 if unisAtmDxiPvcVpi is 0."
+                ::= { unisAtmDxiPvcEntry 2 }
+
+
+        unisAtmDxiPvcDFA OBJECT-TYPE
+                SYNTAX Integer32
+                MAX-ACCESS read-create
+                STATUS current
+                DESCRIPTION
+                        "The index of PVC.  It is equal with vci and VPI.  And this node value
+                        is correlate with unisAtmDxiPvcVpi and unisAtmDxiPvcVci. "
+                ::= { unisAtmDxiPvcEntry 3 }
+
+
+        unisAtmDxiPvcEncType OBJECT-TYPE
+                SYNTAX INTEGER
+                        {
+                        snap(1),
+                        nlpid(2),
+                        mux(3)
+                        }
+                MAX-ACCESS read-create
+                STATUS current
+                DESCRIPTION
+                        "Encapsulation type of the frame."
+                DEFVAL { snap }
+                ::= { unisAtmDxiPvcEntry 4 }
+
+
+        unisAtmDxiPvcMapCount OBJECT-TYPE
+                SYNTAX Integer32 (0..32)
+                MAX-ACCESS read-create
+                STATUS current
+                DESCRIPTION
+                        "The number of map.  One map can only associate with one PVC, but
+                        one PVC can associate with 32 maps.  This node is the map count
+                        which one PVC associated with."
+                ::= { unisAtmDxiPvcEntry 5 }
+
+
+        unisAtmDxiPvcRowStatus OBJECT-TYPE
+                SYNTAX RowStatus
+                MAX-ACCESS read-create
+                STATUS current
+                DESCRIPTION
+                        "Only support 'destroy' 'createAndGo' and 'active'."
+                ::= { unisAtmDxiPvcEntry 6 }
+
+
+        unisAtmDxiMapTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF UnisAtmDxiMapEntry
+                MAX-ACCESS not-accessible
+                STATUS current
+                DESCRIPTION
+                        "This table describes PVC map information."
+                ::= { unisAtmDxiIfObjects 2 }
+
+
+        unisAtmDxiMapEntry OBJECT-TYPE
+                SYNTAX UnisAtmDxiMapEntry
+                MAX-ACCESS not-accessible
+                STATUS current
+                DESCRIPTION
+                        "The entry of unisAtmDxiMapTable."
+                INDEX { ifIndex,
+                        unisAtmDxiMapPeerIpType,
+                        unisAtmDxiMapPeerIp,
+                        unisAtmDxiMapPvcVpi,
+                        unisAtmDxiMapPvcVci,
+                        unisAtmDxiMapType
+                      }
+                ::= { unisAtmDxiMapTable 1 }
+
+
+        UnisAtmDxiMapEntry ::=
+                SEQUENCE {
+                        unisAtmDxiMapPeerIpType
+                                InetAddressType,
+                        unisAtmDxiMapPeerIp
+                                InetAddress,
+                        unisAtmDxiMapPvcVpi
+                                Integer32,
+                        unisAtmDxiMapPvcVci
+                                Integer32,
+                        unisAtmDxiMapType
+                                INTEGER,
+                        unisAtmDxiMapInarpTime
+                                Integer32,
+                        unisAtmDxiMapBroEnable
+                                INTEGER,
+                        unisAtmDxiMapRowStatus
+                                RowStatus
+                 }
+
+        unisAtmDxiMapPeerIpType OBJECT-TYPE
+                SYNTAX InetAddressType
+                MAX-ACCESS not-accessible
+                STATUS current
+                DESCRIPTION
+                        "The type of ip address: IPv4 or IPv6."
+                ::= { unisAtmDxiMapEntry 1 }
+
+        unisAtmDxiMapPeerIp OBJECT-TYPE
+                SYNTAX InetAddress
+                MAX-ACCESS not-accessible
+                STATUS current
+                DESCRIPTION
+                        "The peer ip address.  This ip address is the peer ip
+                        address which the frame will arrive."
+                ::= { unisAtmDxiMapEntry 2 }
+
+        unisAtmDxiMapPvcVpi OBJECT-TYPE
+                SYNTAX Integer32 (0..15)
+                MAX-ACCESS not-accessible
+                STATUS current
+                DESCRIPTION
+                        "The VPI of PVC.  It can't be 0 if unisAtmDxiMapPvcVci is 0."
+                ::= { unisAtmDxiMapEntry 3 }
+
+        unisAtmDxiMapPvcVci OBJECT-TYPE
+                SYNTAX Integer32 (0..63)
+                MAX-ACCESS not-accessible
+                STATUS current
+                DESCRIPTION
+                        "The VCI of PVC.  It can't be 0 if unisAtmDxiMapPvcVpi is 0."
+                ::= { unisAtmDxiMapEntry 4 }
+
+        unisAtmDxiMapType OBJECT-TYPE
+                SYNTAX INTEGER
+                        {
+                        address(1),
+                        inarp(2),
+                        default(3)
+                        }
+                MAX-ACCESS not-accessible
+                STATUS current
+                DESCRIPTION
+                        "Pvc map type."
+                ::= { unisAtmDxiMapEntry 5 }
+
+        unisAtmDxiMapInarpTime OBJECT-TYPE
+                SYNTAX Integer32 (0 | 5..10)
+                MAX-ACCESS read-create
+                STATUS current
+                DESCRIPTION
+                        "The interval time of inarp request.  This node describes
+                        the interval time inarp request frame sent.  If the unisAtmDxiMapType
+                        isn't inarp, this value is 0.  Its unit is minute."
+                DEFVAL { 10 }
+                ::= { unisAtmDxiMapEntry 6 }
+
+        unisAtmDxiMapBroEnable OBJECT-TYPE
+                SYNTAX INTEGER
+                        {
+                        enable(1),
+                        disable(2)
+                        }
+                MAX-ACCESS read-create
+                STATUS current
+                DESCRIPTION
+                        "Whether ATM-DXI map enable broadcast or not."
+                DEFVAL { 2 }
+                ::= { unisAtmDxiMapEntry 7 }
+
+        unisAtmDxiMapRowStatus OBJECT-TYPE
+                SYNTAX RowStatus
+                MAX-ACCESS read-create
+                STATUS current
+                DESCRIPTION
+                        "Only support 'destroy', 'createAndGo' and 'active'."
+                ::= { unisAtmDxiMapEntry 8 }
+
+
+        unisAtmDxiConformance OBJECT IDENTIFIER ::= { unisAtmDxi 3 }
+
+        unisAtmDxiCompliances OBJECT IDENTIFIER ::= { unisAtmDxiConformance 1 }
+
+        unisAtmDxiCompliance MODULE-COMPLIANCE
+               STATUS current
+               DESCRIPTION
+                       "The compliance statement."
+               MODULE
+               MANDATORY-GROUPS { unisPVCMAPGroup }
+               GROUP unisAtmDxiGeneralGroup
+               DESCRIPTION
+                       "If ATM-DXI protocol supports other ATM-DXI modes,
+                       this group must be supported."
+               ::= { unisAtmDxiCompliances 1 }
+
+        unisAtmDxiGroup OBJECT IDENTIFIER ::= { unisAtmDxiConformance 2 }
+
+        unisPVCMAPGroup OBJECT-GROUP
+                OBJECTS { unisAtmDxiPvcDFA, unisAtmDxiPvcEncType, unisAtmDxiPvcMapCount,
+                          unisAtmDxiPvcRowStatus, unisAtmDxiMapBroEnable, unisAtmDxiMapInarpTime,
+                          unisAtmDxiMapRowStatus }
+                STATUS current
+                DESCRIPTION
+                        "This group includes nodes which are associated with interface."
+                ::= { unisAtmDxiGroup 1 }
+
+        unisAtmDxiGeneralGroup OBJECT-GROUP
+                OBJECTS { unisAtmDxiConfMode }
+                STATUS current
+                DESCRIPTION
+                        "This group includes the general nodes about ATM-DXI."
+                ::= { unisAtmDxiGroup 2 }
+
+END

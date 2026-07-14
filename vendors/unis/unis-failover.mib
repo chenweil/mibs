@@ -1,0 +1,322 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: FAILOVER GROUP MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- revision 1.0 2015-10-27 created by j03525
+--
+-- ============================================================================
+UNIS-FAILOVER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString, RowStatus
+        FROM SNMPv2-TC;
+
+unisFailover MODULE-IDENTITY
+    LAST-UPDATED "201510271040Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file is to provide the definition of failover group.
+
+        Such as:
+        1. Configure Failover Groups for a device and display Failover Groups
+           and their status.
+        2. Assign CPU to the Failover Group, and display their status.
+
+        Failover Group: A failover group contains a primary node and a secondary node.
+        When a failover group is referenced by a service module, the primary node
+        processes services and backs up service data to the secondary node.
+        The secondary node does not process services, but it takes over the services
+        when the primary node fails.
+        When the primary node is recovered, traffic is switched to the primary node again."
+    REVISION "201510271040Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 164 }
+
+
+-- Node definitions
+
+unisFailoverScalarObjects OBJECT IDENTIFIER ::= { unisFailover 1 }
+
+unisFailoverMaxNum OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The maximum number of Failover groups which the system supported to create, does not include the AutoBackup."
+    ::= { unisFailoverScalarObjects 1 }
+
+
+unisFailoverCurrentNum OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The current number of Failover groups which the system has created, does not include the AutoBackup."
+    ::= { unisFailoverScalarObjects 2 }
+
+
+unisFailoverTables OBJECT IDENTIFIER ::= { unisFailover 2 }
+
+unisFailoverCfgTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisFailoverCfgEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table is for configuration of backup group."
+    ::= { unisFailoverTables 1 }
+
+
+unisFailoverCfgEntry OBJECT-TYPE
+    SYNTAX UnisFailoverCfgEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry of the unisFailoverGroupCfgTable."
+    INDEX { unisFailoverIndex }
+    ::= { unisFailoverCfgTable 1 }
+
+
+UnisFailoverCfgEntry ::=
+    SEQUENCE
+    {
+        unisFailoverIndex
+            Unsigned32,
+        unisFailoverName
+            DisplayString,
+        unisFailoverPrimaryChassisID
+            Integer32,
+        unisFailoverPrimarySlotID
+            Integer32,
+        unisFailoverPrimaryCpuID
+            Integer32,
+        unisFailoverSecondaryChassisID
+            Integer32,
+        unisFailoverSecondarySlotID
+            Integer32,
+        unisFailoverSecondaryCpuID
+            Integer32,
+        unisFailoverState
+            INTEGER,
+        unisFailoverRowStatus
+            RowStatus
+    }
+
+unisFailoverIndex OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Failover group ID is used as group index, the value range of failover group ID
+        depends on the device model.
+        The failover GroupIndex cannot be modified after creation."
+    ::= { unisFailoverCfgEntry 1 }
+
+
+unisFailoverName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..63))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Specifies the backup group name, a case-sensitive string of 1 to 63 characters.
+        The failover group name cannot be modified after creation.
+        The name can not include '?', and can not begin or end with ' '."
+    ::= { unisFailoverCfgEntry 2 }
+
+
+unisFailoverPrimaryChassisID OBJECT-TYPE
+    SYNTAX Integer32 (-1..255)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Specifies a card on an IRF member device.  The chassis-number argument represents
+        the member ID of the IRF member device.  (Distributed devices In IRF mode.)
+        On a centralized or distributed device, the value for this node is always zero.
+        Note:The -1 for delete the node."
+    ::= { unisFailoverCfgEntry 3 }
+
+
+unisFailoverPrimarySlotID OBJECT-TYPE
+    SYNTAX Integer32 (-1..255)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Specifies a card by its slot number.  (Distributed devices In standalone mode.)
+        Note:The -1 for delete the node."
+    ::= { unisFailoverCfgEntry 4 }
+
+
+unisFailoverPrimaryCpuID OBJECT-TYPE
+    SYNTAX Integer32 (-1..7)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Specifies a CPU by its number.  This option is available only if multiple CPUs
+        are available on the specified slot.
+        Note:The -1 for delete the node."
+    ::= { unisFailoverCfgEntry 5 }
+
+
+unisFailoverSecondaryChassisID OBJECT-TYPE
+    SYNTAX Integer32 (-1..255)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Specifies a card on an IRF member device.  The chassis-number argument represents
+        the member ID of the IRF member device.  (Distributed devices In IRF mode.)
+        On a centralized or distributed device, the value for this node is always zero.
+        Note:The -1 for delete the node."
+    ::= { unisFailoverCfgEntry 6 }
+
+
+unisFailoverSecondarySlotID OBJECT-TYPE
+    SYNTAX Integer32 (-1..255)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Specifies a card by its slot number.  (Distributed devices In standalone mode.)
+        Note:The -1 for delete the node."
+    ::= { unisFailoverCfgEntry 7 }
+
+
+unisFailoverSecondaryCpuID OBJECT-TYPE
+    SYNTAX Integer32 (-1..7)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Specifies a CPU by its number.  This option is available only if multiple CPUs
+        are available on the specified slot.
+        Note:The -1 for delete the node."
+    ::= { unisFailoverCfgEntry 8 }
+
+
+unisFailoverState OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            initial(1),
+            normal(2),
+            fault(3)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Backup group state:
+        Initial: No node in the failover group is processing services.
+        Normal: The primary node is processing services.
+        Fault: The secondary node is processing services."
+    ::= { unisFailoverCfgEntry 9 }
+
+
+unisFailoverRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry.
+        Only support active(1), createAndGo(4) and destroy(6)."
+    ::= { unisFailoverCfgEntry 10 }
+
+--
+-- Notification definitions
+--
+-- =================================================================
+-- Traps are defined below.
+unisFailoverNotification OBJECT IDENTIFIER ::= { unisFailover 3 }
+
+-- All objects used for TRAP only are defined here.
+unisFailoverTrap OBJECT IDENTIFIER ::= { unisFailoverNotification 0 }
+
+unisFailoverCreate  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFailoverIndex,
+            unisFailoverName
+        }
+
+    STATUS current
+    DESCRIPTION
+        "The unisFailoverCreate trap indicates that the failover group has created."
+    ::= { unisFailoverTrap 1 }
+
+unisFailoverDelete  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFailoverIndex,
+            unisFailoverName
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisFailoverDelete trap indicates that the failover group has deleted."
+    ::= { unisFailoverTrap 2 }
+
+unisFailoverPrimaryNodeAdd  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFailoverIndex,
+            unisFailoverName,
+            unisFailoverPrimaryChassisID,
+            unisFailoverPrimarySlotID,
+            unisFailoverPrimaryCpuID
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisFailoverPrimaryNodeAdd trap indicates that the failover group has
+        added the primary node."
+    ::= { unisFailoverTrap 3 }
+
+unisFailoverPrimaryNodeRemove  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFailoverIndex,
+            unisFailoverName,
+            unisFailoverPrimaryChassisID,
+            unisFailoverPrimarySlotID,
+            unisFailoverPrimaryCpuID
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisFailoverPrimaryNodeRemove trap indicates that the failover group has
+        removed the primary node."
+    ::= { unisFailoverTrap 4 }
+
+unisFailoverSecondaryNodeAdd  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFailoverIndex,
+            unisFailoverName,
+            unisFailoverSecondaryChassisID,
+            unisFailoverSecondarySlotID,
+            unisFailoverSecondaryCpuID
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisFailoverSecondaryNodeAdd trap indicates that the failover group has
+        added the secondary node."
+    ::= { unisFailoverTrap 5 }
+
+unisFailoverSecondaryNodeRemove  NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFailoverIndex,
+            unisFailoverName,
+            unisFailoverSecondaryChassisID,
+            unisFailoverSecondarySlotID,
+            unisFailoverSecondaryCpuID
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisFailoverSecondaryNodeRemove trap indicates that the failover group has
+        removed the secondary node."
+    ::= { unisFailoverTrap 6 }
+
+END

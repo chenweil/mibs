@@ -1,0 +1,539 @@
+--==============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: PPP Over Sonet MIB
+-- Reference:
+-- Version: V1.5
+-- History:
+--  V1.0 2004-10-28 created by fuzhenyu
+--  V1.1 2004-12-13 add notifications(9-13) under unisPosMIBNotifications by fuzhenyu.
+--  V1.2 2005-04-12 add unisPosFlagJ0Type, unisPosFlagJ1Type in unisPosParamTable by zhaotingqi.
+--  V1.3 2007-07-19 add unisPosNormalAlarm in unisPosMIBNotifications by chenfangchun
+--  V1.4 2010-05-19 modified by Tong Wei for TCA (Threshold Crossing Alarms)
+--                  add unisPosB1TCAThreshold, unisPosB2TCAThreshold, unisPosB3TCAThreshold,
+--                      unisPosB1TCAEnable, unisPosB2TCAEnable and unisPosB3TCAEnable
+--                      in unisPosParamTable
+--                  add unisPosB1TCAlarm, unisPosB2TCAlarm and unisPosB3TCAlarm
+--                      in unisPosMIBNotifications
+--  V1.5 2013-10-10 modify unisPosEncapsulation and unisPosMTU
+--                  in unisPosParamTable by chenzhouhui.  
+--  V1.6 2016-09-09 modify unisPosEncapsulation in unisPosParamTable by zhengwei.
+--==============================================================================
+UNIS-PPP-OVER-SONET-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        ifIndex, ifDescr
+    FROM IF-MIB
+        Counter64, Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        DisplayString, TruthValue
+    FROM SNMPv2-TC
+        unisCommon
+    FROM UNIS-OID-MIB;
+
+unisPos MODULE-IDENTITY
+    LAST-UPDATED "201609091700Z"        -- Sep 09, 2016  GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB manages POS(PPP Over Sonet)interfaces by providing
+        an operational table which controls parameters of each POS
+        interface and reports alarm conditions.
+        "
+    REVISION "201609091700Z"        -- Sep 09, 2016 at 17:00 GMT
+    DESCRIPTION "Update the version of this MIB module"
+    REVISION "201310101700Z"        -- Oct 10, 2013 at 17:00 GMT
+    DESCRIPTION "Update the version of this MIB module"
+    REVISION "201005191700Z"        -- May 19, 2010 at 17:00 GMT
+    DESCRIPTION "Update the version of this MIB module"
+    REVISION "200707191700Z"        -- Jul 19, 2007 at 17:00 GMT
+    DESCRIPTION "The initial version of this MIB module"
+    ::= { unisCommon 19 }
+
+unisPosMIBObjects OBJECT IDENTIFIER ::= { unisPos 1 }
+
+unisPosParamTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisPosParamTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The pos parameter table."
+    ::= { unisPosMIBObjects 1 }
+
+unisPosParamTableEntry OBJECT-TYPE
+    SYNTAX      UnisPosParamTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The entry of pos table."
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisPosParamTable 1 }
+
+UnisPosParamTableEntry ::= SEQUENCE
+    {
+        unisPosCRC                 INTEGER,
+        unisPosMTU                 Integer32,
+        unisPosScramble            TruthValue,
+        unisPosClockSource         INTEGER,
+        unisPosSdhFlagJ0           DisplayString,
+        unisPosSdhFlagJ1           DisplayString,
+        unisPosSonetFlagJ0         Integer32,
+        unisPosSonetFlagJ1         DisplayString,
+        unisPosFlagC2              Integer32,
+        unisPosFrameType           INTEGER,
+        unisPosBindVlanId          Integer32,
+        unisPosEncapsulation       INTEGER,
+        unisPoskeepaliveTimeout    Integer32,
+        unisPosBERthresholdSF      Integer32,
+        unisPosBERthresholdSD      Integer32,
+        unisPosB1Error             Counter64,
+        unisPosB2Error             Counter64,
+        unisPosB3Error             Counter64,
+        unisPosM1Error             Counter64,
+        unisPosG1Error             Counter64,
+        unisPosFlagJ0Type          INTEGER,
+        unisPosFlagJ1Type          INTEGER,
+        unisPosB1TCAThreshold      Integer32,
+        unisPosB2TCAThreshold      Integer32,
+        unisPosB3TCAThreshold      Integer32,
+        unisPosB1TCAEnable         INTEGER,
+        unisPosB2TCAEnable         INTEGER,
+        unisPosB3TCAEnable         INTEGER
+    }
+
+unisPosCRC OBJECT-TYPE
+    SYNTAX      INTEGER{crc32(1),crc16(2)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The length of CRC"
+    DEFVAL { crc32 }
+    ::={ unisPosParamTableEntry 1 }
+
+unisPosMTU OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Maximum Transfer Unit (MTU) of POS interface"
+    ::={ unisPosParamTableEntry 2 }
+
+unisPosScramble OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Scrambling is used to avoid continuous 0 or 1 in signals. This
+        object is to decide whether to scramble or not"
+    DEFVAL { true }
+    ::={ unisPosParamTableEntry 3 }
+
+unisPosClockSource OBJECT-TYPE
+    SYNTAX      INTEGER{system(1),line(2)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value indicates the source of clock signal. System indicates
+        that clock signals are from device itself and line for clock signals
+        from remote"
+    DEFVAL { line }
+    ::={ unisPosParamTableEntry 4 }
+
+unisPosSdhFlagJ0 OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..15))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The section trace byte. This node is used when the frame type is sdh."
+    ::={ unisPosParamTableEntry 5 }
+
+unisPosSdhFlagJ1 OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..15))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The path trace byte. This node is used when the frame type is sdh."
+    ::={ unisPosParamTableEntry 6 }
+
+unisPosSonetFlagJ0 OBJECT-TYPE
+    SYNTAX      Integer32(0..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The section trace byte. This node is used when the frame type is sonet."
+    ::={ unisPosParamTableEntry 7 }
+
+unisPosSonetFlagJ1 OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(0..62))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The path trace byte. This node is used when the frame type is sonet."
+    ::={ unisPosParamTableEntry 8 }
+
+
+unisPosFlagC2 OBJECT-TYPE
+    SYNTAX      Integer32(0..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The parameter for the channel signal value of C2 byte"
+    DEFVAL { 22 }
+    ::={ unisPosParamTableEntry 9 }
+
+unisPosFrameType OBJECT-TYPE
+    SYNTAX      INTEGER{sdh(1),sonet(2)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The frame type that encapsulates the packet. Default frame type is
+        sdh(Synchronous Digital Hierarchy) It also can be configured using
+        sonet type(Synchronous Optical Network)."
+    DEFVAL      { sdh }
+    ::={ unisPosParamTableEntry 10 }
+
+unisPosBindVlanId OBJECT-TYPE
+    SYNTAX      Integer32(0..4095)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The vlan that this pos port binds. The vlan can not include any other
+        port, otherwise error will be returned. If the vlan has a virtual
+        interface, the status of virtual interface will be up or down according
+        to the link status or this pos."
+    ::={ unisPosParamTableEntry 11 }
+
+unisPosEncapsulation OBJECT-TYPE
+    SYNTAX      INTEGER{ppp(1),hdlc(2),fr(3),mfr(4)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The type of encapsulation "
+    DEFVAL      { ppp }
+    ::={ unisPosParamTableEntry 12 }
+
+unisPoskeepaliveTimeout OBJECT-TYPE
+    SYNTAX      Integer32(0..32767)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The keeplive of ppp, hdlc, fr or mfr. It is the query interval of link status. Two
+        members of a link should have same keeplive. The default 0 prohibits
+        detecting status of link."
+    ::={ unisPosParamTableEntry 13 }
+
+unisPosBERthresholdSF OBJECT-TYPE
+    SYNTAX      Integer32(3..9)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The bit-error rate threshold for Signal Fault. SF threshold should
+        be greater than SD threshold."
+    DEFVAL      { 3 }
+    ::={ unisPosParamTableEntry 14 }
+
+unisPosBERthresholdSD OBJECT-TYPE
+    SYNTAX      Integer32(3..9)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The bit-error rate threshold for Signal Degrade. SD threshold should
+        be less than SF threshold."
+    DEFVAL      { 6 }
+    ::={ unisPosParamTableEntry 15 }
+
+unisPosB1Error OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Counter for SBIPE(Section Bit Interleave Parity Error)"
+    ::={ unisPosParamTableEntry 16 }
+
+unisPosB2Error OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Counter for LBIPE(Line Bit Interleave Parity Error)"
+    ::={ unisPosParamTableEntry 17 }
+
+unisPosB3Error OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Counter for PBIPE(Path Bit Interleave Parity Error)"
+    ::={ unisPosParamTableEntry 18 }
+
+unisPosM1Error OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "How many times does LREI(Line Remote Error Indication) occur"
+    ::={ unisPosParamTableEntry 19 }
+
+unisPosG1Error OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "How many times does PREI(Path Remote Error Indication) occur"
+    ::={ unisPosParamTableEntry 20 }
+
+unisPosFlagJ0Type OBJECT-TYPE
+    SYNTAX      INTEGER{sdh(1),sonet(2)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The frame type that encapsulates the flag J0. Default frame type is
+        sdh(Synchronous Digital Hierarchy). It also can be configured using
+        sonet(Synchronous Optical Network) type."
+    DEFVAL      { sdh }
+    ::={ unisPosParamTableEntry 21 }
+
+unisPosFlagJ1Type OBJECT-TYPE
+    SYNTAX      INTEGER{sdh(1),sonet(2)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The frame type that encapsulates the flag J1. Default frame type is
+        sdh(Synchronous Digital Hierarchy). It also can be configured using
+        sonet(Synchronous Optical Network) type."
+    DEFVAL      { sdh }
+    ::={ unisPosParamTableEntry 22 }
+
+unisPosB1TCAThreshold OBJECT-TYPE
+    SYNTAX  Integer32 (3..9)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Threshold for B1 TCA."
+    DEFVAL { 6 }
+    ::={ unisPosParamTableEntry 23 }
+
+unisPosB2TCAThreshold OBJECT-TYPE
+    SYNTAX  Integer32 (3..9)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Threshold for B2 TCA."
+    DEFVAL { 6 }
+    ::={ unisPosParamTableEntry 24 }
+
+unisPosB3TCAThreshold OBJECT-TYPE
+    SYNTAX  Integer32 (3..9)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Threshold for B3 TCA."
+    DEFVAL { 6 }
+    ::={ unisPosParamTableEntry 25 }
+
+unisPosB1TCAEnable OBJECT-TYPE
+    SYNTAX  INTEGER {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable traps of B1 TCA."
+    DEFVAL { enable }
+    ::={ unisPosParamTableEntry 26 }
+
+unisPosB2TCAEnable OBJECT-TYPE
+    SYNTAX  INTEGER {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable traps of B2 TCA."
+    DEFVAL { enable }
+    ::={ unisPosParamTableEntry 27 }
+
+unisPosB3TCAEnable OBJECT-TYPE
+    SYNTAX  INTEGER {
+            enable(1),
+            disable(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable traps of B3 TCA."
+    DEFVAL { enable }
+    ::={ unisPosParamTableEntry 28 }
+
+unisPosMIBNotificationsPrefix OBJECT IDENTIFIER ::= { unisPos 2 }
+unisPosMIBNotifications OBJECT IDENTIFIER ::= { unisPosMIBNotificationsPrefix 0 }
+
+unisPosLOSAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm indicates loss of signal"
+    ::={ unisPosMIBNotifications 1 }
+
+unisPosLOFAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm indicates loss of frame"
+    ::={ unisPosMIBNotifications 2 }
+
+unisPosOOFAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm indicates out of frame"
+    ::={ unisPosMIBNotifications 3 }
+
+unisPosLAISAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm when LAIS(Line  Alarm  Indication  Signal) arrives"
+    ::={ unisPosMIBNotifications 4 }
+
+unisPosLRDIAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm when LRDI(Line  Remote  Defect  Indication) arrives"
+    ::={ unisPosMIBNotifications 5 }
+
+unisPosPRDIAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm when PRDI(Path  Remote  Defect  Indication) arrives"
+    ::={ unisPosMIBNotifications 6 }
+
+unisPosPAISAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm when PAIS(Path  Alarm  Indication  Signal) arrives"
+    ::={ unisPosMIBNotifications 7 }
+
+unisPosLOPAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm indicates loss of pointer"
+    ::={ unisPosMIBNotifications 8 }
+
+unisPosSTIMAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm indicates inconsistency between sent and received J0 bytes."
+    ::={ unisPosMIBNotifications 9 }
+
+unisPosPTIMAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm indicates inconsistency between sent and received J1 bytes."
+    ::={ unisPosMIBNotifications 10 }
+
+unisPosPSLMAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm indicates a mismatched C2 byte."
+    ::={ unisPosMIBNotifications 11 }
+
+unisPosLSDAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm indicates that the B2 bit-error rate exceeds SD threshold."
+    ::={ unisPosMIBNotifications 12 }
+
+unisPosLSFAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm indicates that the B2 bit-error rate exceeds SF threshold."
+    ::={ unisPosMIBNotifications 13 }
+
+unisPosNormalAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex
+        }
+    STATUS      current
+    DESCRIPTION
+        "Alarm indicates that the Pos interface state returns normal."
+    ::={ unisPosMIBNotifications 14 }
+
+unisPosB1TCAlarm NOTIFICATION-TYPE
+    OBJECTS { ifIndex, ifDescr }
+    STATUS      current
+    DESCRIPTION
+        "Threshold crossing alarms for B1."
+    ::={ unisPosMIBNotifications 15 }
+
+unisPosB2TCAlarm NOTIFICATION-TYPE
+    OBJECTS { ifIndex, ifDescr }
+    STATUS      current
+    DESCRIPTION
+        "Threshold crossing alarms for B2."
+    ::={ unisPosMIBNotifications 16 }
+
+unisPosB3TCAlarm NOTIFICATION-TYPE
+    OBJECTS { ifIndex, ifDescr }
+    STATUS      current
+    DESCRIPTION
+        "Threshold crossing alarms for B3."
+    ::={ unisPosMIBNotifications 17 }
+
+END

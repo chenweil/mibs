@@ -1,0 +1,2061 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: DVPN MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2005-07-01
+--   Initial version, created by zhanglihua, zhangzhen, lilin and liukan
+-- ============================================================================
+UNIS-DVPN-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        unisCommon
+            FROM UNIS-OID-MIB
+        InetAddressType, InetAddress
+            FROM INET-ADDRESS-MIB
+        Integer32, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE,
+        TimeTicks
+            FROM SNMPv2-SMI
+        RowStatus, TEXTUAL-CONVENTION
+            FROM SNMPv2-TC
+        MODULE-COMPLIANCE, OBJECT-GROUP
+            FROM SNMPv2-CONF
+        ifIndex
+            FROM IF-MIB;
+
+
+
+--Node definitions
+
+
+    unisDvpn MODULE-IDENTITY
+        LAST-UPDATED "200507011936Z"        -- July 1, 2005 at 19:36 GMT
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "
+                This MIB is Dynamic Virtual Private Network(Dvpn) mib.
+                This MIB is applicable to router.
+                Some objects in this may be used only for some specific products,
+                so users should refer to the related documents to acquire more
+                detail information.
+            "
+        ::= { unisCommon 57 }
+
+
+    DvpnAlgorithmSuite ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "
+                13 kinds of dvpn algorithms.
+                                         encryption method | hash method | key width.
+                dvpnDesCbcMd5PreShaModp768:          des   |  md5        |     768
+                dvpnDesCbcMd5PreShaModp1024:         des   |  md5        |    1024
+                dvpnDesCbcSha1PreShaModp768:         des   | sha1        |     768
+                dvpnDesCbcSha1PreShaModp1024:        des   | sha1        |    1024
+                dvpn3DesCbcMd5PreShaModp768:        3des   |  md5        |     768
+                dvpn3DesCbcMd5PreShaModp1024:       3des   |  md5        |    1024
+                dvpn3DesCbcSha1PreShaModp768:       3des   | sha1        |     768
+                dvpn3DesCbcSha1PreShaModp1024:      3des   | sha1        |    1024
+                dvpnAesCbcMd5PreShaModp768:          Aes   |  md5        |     768
+                dvpnAesCbcMd5PreShaModp1024:         Aes   |  md5        |    1024
+                dvpnAesCbcSHA1Sha1PreShaModp768:     Aes   | sha1        |     768
+                dvpnAesCbcSHA1Sha1PreShaModp1024:    Aes   | sha1        |    1024
+                dvpnAlgorithmNone:                  none   | none        |  no key
+            "
+        SYNTAX INTEGER
+            {
+                dvpnDesCbcMd5PreShaModp768(1),
+                dvpnDesCbcMd5PreShaModp1024(2),
+                dvpnDesCbcSha1PreShaModp768(3),
+                dvpnDesCbcSha1PreShaModp1024(4),
+                dvpn3DesCbcMd5PreShaModp768(5),
+                dvpn3DesCbcMd5PreShaModp1024(6),
+                dvpn3DesCbcSha1PreShaModp768(7),
+                dvpn3DesCbcSha1PreShaModp1024(8),
+                dvpnAesCbcMd5PreShaModp768(9),
+                dvpnAesCbcMd5PreShaModp1024(10),
+                dvpnAesCbcSHA1Sha1PreShaModp768(11),
+                dvpnAesCbcSHA1Sha1PreShaModp1024(12),
+                dvpnAlgorithmNone(13)
+            }
+
+    DvpnCommunicateType ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "
+                The type of the communication between client and server.
+                It indicates the direction of the communication.
+            "
+        SYNTAX INTEGER
+            {
+                clientToserver(1),
+                serverToclient(2),
+                serverToserver(3),
+                clientToclient(4)
+            }
+
+    unisDvpnMibObjects OBJECT IDENTIFIER ::= { unisDvpn 1 }
+
+    unisDvpnMibGlobal OBJECT IDENTIFIER  ::= { unisDvpnMibObjects 1 }
+
+    unisDvpnMibTableTroop OBJECT IDENTIFIER  ::= { unisDvpnMibObjects 2 }
+
+    unisDvpnMibNotification OBJECT IDENTIFIER  ::= { unisDvpnMibObjects 3 }
+
+    unisDvpnMibConformance OBJECT IDENTIFIER ::= { unisDvpnMibObjects 4 }
+
+
+
+    unisDvpnServiceEnable OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                enable(1),
+                disable(2)
+            }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn service enable or disable.
+                If dvpn service is 'disable', dvpn service can not be used.
+            "
+        DEFVAL { disable }
+        ::= { unisDvpnMibGlobal 1 }
+
+    unisDvpnClassNumber OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of dvpn classes.
+                It is only used on client.
+            "
+        DEFVAL { 0 }
+        ::= { unisDvpnMibGlobal 2 }
+
+
+    unisDvpnClientNumber OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of clients which register on the server.
+                When a session of server to client type is built,
+                add 1 to the value of this node.
+                It is only used on server.
+            "
+        DEFVAL { 0 }
+        ::= { unisDvpnMibGlobal 3 }
+
+    unisDvpnMapAgeTime OBJECT-TYPE
+        SYNTAX Integer32 (10..180)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn map age time, the unit is second.
+                It is only used on server.
+            "
+        DEFVAL { 30 }
+        ::= { unisDvpnMibGlobal 4 }
+
+
+    unisDvpnClientRegisterInterval OBJECT-TYPE
+        SYNTAX Integer32 (3..60)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "
+                The length of time between the registering of client, the unit
+                is second.
+                It is only used on client.
+            "
+        DEFVAL { 10 }
+        ::= { unisDvpnMibGlobal 5 }
+
+
+    unisDvpnClientRegisterDumb OBJECT-TYPE
+        SYNTAX Integer32 (60..3600)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "
+                The length of time when client dumbs, the unit is second.
+                It is only used on client.
+            "
+        DEFVAL { 300 }
+        ::= { unisDvpnMibGlobal 6 }
+
+
+    unisDvpnClientRegisterRetry OBJECT-TYPE
+       SYNTAX Integer32(1..6)
+       MAX-ACCESS read-write
+       STATUS current
+       DESCRIPTION
+           "
+               Regist retry times of client after register fail.
+               It is only used on client.
+            "
+       DEFVAL { 3 }
+       ::= { unisDvpnMibGlobal 7 }
+
+    unisDvpnInputPkt OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of recieved packets.
+            "
+        DEFVAL { 0 }
+        ::= { unisDvpnMibGlobal 8 }
+
+    unisDvpnDropPkt OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of packets have been droped.
+            "
+        DEFVAL { 0 }
+        ::= { unisDvpnMibGlobal 9 }
+
+    unisDvpnOutputPkt OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of packets have been sent.
+            "
+        DEFVAL { 0 }
+        ::= { unisDvpnMibGlobal 10 }
+
+    unisDvpnOutputErrorPkt OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of output error packets.
+            "
+        DEFVAL { 0 }
+        ::= { unisDvpnMibGlobal 11 }
+
+    unisDvpnEncryptErrorPkt  OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of packets have been encrypted wrongly.
+            "
+        DEFVAL { 0 }
+        ::= { unisDvpnMibGlobal 12 }
+
+    unisDvpnCurrentDeviceRole  OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                none(1),
+                server(2),
+                client(3),
+                both(4)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The current role of the device.
+                The value is decided by the configuration of the tunnel-interface.
+            "
+        ::= { unisDvpnMibGlobal 13 }
+
+    unisDvpnDomainNumber  OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of dvpn domains.
+
+            "
+        DEFVAL { 0 }
+        ::= { unisDvpnMibGlobal 14 }
+
+    unisDvpnMapNumber  OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of dvpn maps.
+            "
+        DEFVAL { 0 }
+        ::= { unisDvpnMibGlobal 15 }
+
+    unisDvpnSessionNumber OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+             "
+                 The number of dvpn sessiones including the session of all states.
+             "
+        DEFVAL { 0 }
+        ::= {  unisDvpnMibGlobal 16 }
+
+    unisDvpnServerPreSharedKey  OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..127))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "
+                The pre-shared-key of server.
+                It is only used on server.
+            "
+        ::= { unisDvpnMibGlobal 17 }
+
+    unisDvpnMapTrapEnable OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                enable(1),
+                disable(2)
+            }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn map trap enable or disable.
+            "
+        DEFVAL { enable }
+        ::= { unisDvpnMibGlobal 18 }
+
+    unisDvpnSessionTrapEnable OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                enable(1),
+                disable(2)
+            }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn session trap enable or disable.
+            "
+        DEFVAL { enable }
+        ::= { unisDvpnMibGlobal 19 }
+
+    unisDvpnVersion  OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                version2(1),
+                version3(2)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn version.
+            "
+        ::= { unisDvpnMibGlobal 20 }
+
+    unisDvpnClearDomainAllConection  OBJECT-TYPE
+        SYNTAX Integer32(1..65535)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "
+                Clear all dvpn conects in the domain, the parameter is
+                the id of the domain.
+            "
+        ::= { unisDvpnMibGlobal 21 }
+
+    unisDvpnClearDvpnStaInfo OBJECT-TYPE
+        SYNTAX Integer32(1)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "
+                Clear the statistic information of dvpn.
+            "
+        ::= {  unisDvpnMibGlobal 22 }
+
+    unisDvpnTotalRedirectNumber OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of redirect packets.
+                It is only used on server.
+            "
+        DEFVAL { 0 }
+        ::= { unisDvpnMibGlobal 23 }
+
+
+    unisDvpnGlobalAuthenClientType OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                 none(1),
+                 pap(2),
+                 chap(3)
+            }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn global authentication type being used by server to client.
+                The value is decided by the configuration by the user.
+            "
+        DEFVAL { none }
+        ::= { unisDvpnMibGlobal 24 }
+
+
+
+    unisDvpnGlobalUserDefAAADomain OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..24))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn global AAA domain of the user. The domain will decide the
+                authentication server which is used by the dvpn server to
+                authenticate dvpn client.
+            "
+        ::= { unisDvpnMibGlobal 25 }
+
+    unisDvpnLocalDeviceId OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The device ID, it is a string.
+            "
+        ::= {  unisDvpnMibGlobal 26 }
+
+    unisDvpnSessionHisAgeTime OBJECT-TYPE
+        SYNTAX Integer32(1..100)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "
+                The age-time of the unisDvpnSessionHisTable table.
+                The unit is hour.
+            "
+        DEFVAL { 50 }
+        ::= {  unisDvpnMibGlobal 27 }
+
+    unisDvpnSessionHisReset OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                 reset(1)
+            }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "
+                The reset flag of dvpn unisDvpnSessionHisTable table.
+            "
+        ::= {  unisDvpnMibGlobal 28 }
+
+
+--unisDvpnPolicyTable
+
+    unisDvpnPolicyTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisDvpnPolicyEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "
+                The dvpn policy table.
+                It is used on dvpn server.
+            "
+        ::= { unisDvpnMibTableTroop 1 }
+
+    unisDvpnPolicyEntry OBJECT-TYPE
+        SYNTAX UnisDvpnPolicyEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "
+                The entry of unisDvpnPolicyTable.
+            "
+        INDEX { unisDvpnPolicyName }
+        ::= { unisDvpnPolicyTable 1 }
+
+    UnisDvpnPolicyEntry ::=
+        SEQUENCE {
+            unisDvpnPolicyName                            OCTET STRING,
+            unisDvpnPoAuthenClientType                    INTEGER,
+            unisDvpnPoSessionAlgorithmSuite               DvpnAlgorithmSuite,
+            unisDvpnPoSessionIdleTime                     Integer32,
+            unisDvpnPoSessionKeepTime                     Integer32,
+            unisDvpnPoSessionSetupInterval                Integer32,
+            unisDvpnPoDataAlgorithmSuite                  DvpnAlgorithmSuite,
+            unisDvpnPoSaSeconds                           Integer32,
+            unisDvpnPoUserDefAAADomain                    OCTET STRING,
+            unisDvpnPoRefTimes                            Integer32,
+            unisDvpnPoRowStatus                           RowStatus
+        }
+
+    unisDvpnPolicyName OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(1..31))
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "
+                The name of Dvpn policy.
+            "
+        ::= { unisDvpnPolicyEntry 1 }
+
+    unisDvpnPoAuthenClientType OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                none(1),
+                pap(2),
+                chap(3)
+            }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                The authentication type used by server to client.
+                The value is decided by the policy configuration of the user.
+                The default value is none.
+            "
+        DEFVAL { none }
+        ::= { unisDvpnPolicyEntry 2 }
+
+    unisDvpnPoSessionAlgorithmSuite OBJECT-TYPE
+        SYNTAX DvpnAlgorithmSuite
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                The algorithm suite used when session is created.
+            "
+        DEFVAL { dvpnDesCbcMd5PreShaModp768 }
+        ::= { unisDvpnPolicyEntry 3 }
+
+    unisDvpnPoSessionIdleTime OBJECT-TYPE
+        SYNTAX Integer32(60..86400)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                The session idle time, the unit is second.
+            "
+        DEFVAL { 300 }
+        ::= { unisDvpnPolicyEntry 4 }
+
+    unisDvpnPoSessionKeepTime OBJECT-TYPE
+        SYNTAX Integer32(5..300)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                The session keepalive time, the unit is second.
+            "
+        DEFVAL { 10 }
+        ::= { unisDvpnPolicyEntry 5 }
+
+    unisDvpnPoSessionSetupInterval OBJECT-TYPE
+        SYNTAX Integer32(5..60)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                The session setup interval time, the unit is second.
+            "
+        DEFVAL { 10 }
+        ::= { unisDvpnPolicyEntry 6 }
+
+    unisDvpnPoDataAlgorithmSuite OBJECT-TYPE
+        SYNTAX DvpnAlgorithmSuite
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                The algorithm suite used by the session for createing ipsec sa.
+            "
+        DEFVAL { dvpnDesCbcMd5PreShaModp768 }
+        ::= { unisDvpnPolicyEntry 7 }
+
+    unisDvpnPoSaSeconds OBJECT-TYPE
+        SYNTAX Integer32(180..604800)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                The duration of DVPN IPSec security association.
+                The unit is second.
+            "
+        DEFVAL { 3600 }
+        ::= { unisDvpnPolicyEntry 8 }
+
+    unisDvpnPoUserDefAAADomain OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..24))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn policy AAA domain of the user. The domain will decide the
+                authentication server which used by the dvpn server to authenticate
+                dvpn client.
+            "
+        ::= { unisDvpnPolicyEntry 9 }
+
+    unisDvpnPoRefTimes OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The total times of the policy being used by dvpn.
+            "
+        ::= { unisDvpnPolicyEntry 10 }
+
+    unisDvpnPoRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                The status of this conceptual row.
+                We support the characteristic of active(1),createAndGo(4),destroy(6).
+            "
+        ::= { unisDvpnPolicyEntry 11 }
+
+
+
+--unisDvpnDomainInfoTable
+
+    unisDvpnDomainInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisDvpnDomainInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "
+                The dvpn domain table.
+            "
+        ::= { unisDvpnMibTableTroop 2 }
+
+    unisDvpnDomainInfoEntry OBJECT-TYPE
+        SYNTAX UnisDvpnDomainInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "
+                The entry of unisDvpnDomainInfoTable.
+            "
+        INDEX { unisDvpnDomainID }
+        ::= { unisDvpnDomainInfoTable 1 }
+
+    UnisDvpnDomainInfoEntry ::=
+        SEQUENCE
+        {
+            unisDvpnDomainID                       Integer32,
+            unisDvpnDomainSessionNum               Unsigned32,
+            unisDvpnDomainRedirectNum              Unsigned32,
+            unisDvpnDomainInputPkt                 Unsigned32,
+            unisDvpnDomainDropPkt                  Unsigned32,
+            unisDvpnDomainOutputPkt                Unsigned32,
+            unisDvpnDomainOutputErrorPkt           Unsigned32,
+            unisDvpnDomainEncryptErrorPkt          Unsigned32
+        }
+
+    unisDvpnDomainID OBJECT-TYPE
+        SYNTAX Integer32(1..65535)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn domain ID.
+            "
+        ::= { unisDvpnDomainInfoEntry 1 }
+
+    unisDvpnDomainSessionNum OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of session in this dvpn domain.
+            "
+        ::= { unisDvpnDomainInfoEntry 2 }
+
+    unisDvpnDomainRedirectNum OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+               The number of redirect packets in this dvpn domain.
+            "
+        ::= { unisDvpnDomainInfoEntry 3 }
+
+    unisDvpnDomainInputPkt OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+               The number of input packets in this dvpn domain.
+            "
+        ::= { unisDvpnDomainInfoEntry 4 }
+
+    unisDvpnDomainDropPkt OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of drop packets in this dvpn domain.
+            "
+        ::= { unisDvpnDomainInfoEntry 5 }
+
+    unisDvpnDomainOutputPkt OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of output packets in this dvpn domain.
+            "
+        ::= { unisDvpnDomainInfoEntry 6 }
+
+    unisDvpnDomainOutputErrorPkt OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of output error packets in this dvpn domain.
+            "
+        ::= { unisDvpnDomainInfoEntry 7 }
+
+    unisDvpnDomainEncryptErrorPkt OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The number of encrypt error packets in this dvpn domain.
+            "
+        ::= { unisDvpnDomainInfoEntry 8 }
+
+
+
+
+
+--unisDvpnClassTable
+
+    unisDvpnClassTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisDvpnClassEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "
+                The Dvpn class table.
+                It is only used on dvpn client.
+            "
+        ::= { unisDvpnMibTableTroop 3 }
+
+    unisDvpnClassEntry OBJECT-TYPE
+        SYNTAX UnisDvpnClassEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "
+                The entry of the unisDvpnClassTable.
+            "
+        INDEX { unisDvpnClassName }
+        ::= { unisDvpnClassTable 1 }
+
+    UnisDvpnClassEntry ::=
+        SEQUENCE {
+            unisDvpnClassName                 OCTET STRING,
+            unisDvpnClServerPublicIpType      InetAddressType,
+            unisDvpnClServerPublicIp          InetAddress,
+            unisDvpnClServerPriIpType         InetAddressType,
+            unisDvpnClServerPriIp             InetAddress,
+            unisDvpnClAlgorithmSuite          DvpnAlgorithmSuite,
+            unisDvpnClAuthenServerType        INTEGER,
+            unisDvpnClPreShareKey             OCTET STRING,
+            unisDvpnClUserName                OCTET STRING,
+            unisDvpnClPwdEncrypted            INTEGER,
+            unisDvpnClPasswd                  OCTET STRING,
+            unisDvpnClassRowStatus            RowStatus
+        }
+
+    unisDvpnClassName OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(1..31))
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "
+                The dvpn class name. It is the index of unisDvpnClassTable.
+            "
+        ::= { unisDvpnClassEntry  1 }
+
+    unisDvpnClServerPublicIpType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn server public ip type (ipv4, ipv6).
+            "
+        ::= { unisDvpnClassEntry  2 }
+
+    unisDvpnClServerPublicIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn server public ip address.
+            "
+        ::= { unisDvpnClassEntry  3 }
+
+    unisDvpnClServerPriIpType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn server private ip type (ipv4, ipv6).
+            "
+        ::= { unisDvpnClassEntry  4 }
+
+    unisDvpnClServerPriIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn server private ip address.
+            "
+        ::= { unisDvpnClassEntry  5 }
+
+    unisDvpnClAlgorithmSuite OBJECT-TYPE
+        SYNTAX DvpnAlgorithmSuite
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                The algorithm suite used by the client when sending registry
+                packets to the server.
+                'dvpnAlgorithmNone' is not supported here.
+            "
+        DEFVAL { dvpnDesCbcMd5PreShaModp768 }
+        ::= { unisDvpnClassEntry  6 }
+
+    unisDvpnClAuthenServerType OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                none(1),
+                preShareKey(2)
+            }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                The authentication type being used by client to server.
+                The value is decided by the class configuration of the user.
+                The default value is none.
+            "
+        DEFVAL { none }
+        ::= { unisDvpnClassEntry  7 }
+
+    unisDvpnClPreShareKey OBJECT-TYPE
+        SYNTAX OCTET STRING(SIZE(0..127))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn PreShareKey.
+                It is used when the method used by client when authenticating
+                server is pre-share-key, only when the value of the key is the
+                same as that on the server, the client can authenticate server
+                successfully.
+            "
+        ::= { unisDvpnClassEntry  8 }
+
+    unisDvpnClUserName OBJECT-TYPE
+        SYNTAX OCTET STRING(SIZE(0..80))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn UserName. It is configured by the user.
+            "
+        ::= { unisDvpnClassEntry  9 }
+
+    unisDvpnClPwdEncrypted OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                simple(1),
+                cipher(2)
+            }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn password encrypted or not.
+            "
+        ::= { unisDvpnClassEntry  10 }
+
+    unisDvpnClPasswd OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn password. It is configured by the user.
+            "
+        ::= { unisDvpnClassEntry  11 }
+
+    unisDvpnClassRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "
+                The status of this conceptual row.
+                Only 'active', 'createAndGo' and 'destroy' are supported.
+            "
+        ::= { unisDvpnClassEntry  12 }
+
+
+--unisDvpnTunnelTable
+
+    unisDvpnTunnelTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF UnisDvpnTunnelEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "
+                The dvpn tunnel table.
+            "
+        ::= { unisDvpnMibTableTroop 4 }
+
+    unisDvpnTunnelEntry OBJECT-TYPE
+        SYNTAX     UnisDvpnTunnelEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "
+                The Entry of unisDvpnTunnelTable.
+            "
+        INDEX { ifIndex }
+        ::= { unisDvpnTunnelTable 1 }
+
+    UnisDvpnTunnelEntry ::= SEQUENCE {
+        unisDvpnTunnelInterfaceType      INTEGER,
+        unisDvpnTunnelAcl                Integer32,
+        unisDvpnTunnelClientRegType      INTEGER,
+        unisDvpnTunnelDvpnId             Integer32,
+        unisDvpnTunnelPolicy             OCTET STRING,
+        unisDvpnTunnelClass              OCTET STRING
+    }
+
+
+    unisDvpnTunnelInterfaceType OBJECT-TYPE
+        SYNTAX     INTEGER
+            {
+                client(1),
+                server(2)
+            }
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "
+                The type of dvpn tunnel (client or server).
+            "
+        DEFVAL { client }
+        ::= { unisDvpnTunnelEntry 1 }
+
+    unisDvpnTunnelAcl OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "
+                The security acl used by the tunnel.
+                If a packet permits the rules, it will not be encrypted.
+            "
+        ::= { unisDvpnTunnelEntry 2 }
+
+    unisDvpnTunnelClientRegType OBJECT-TYPE
+        SYNTAX     INTEGER
+            {
+                undistributed(1),
+                forward(2),
+                undistributedandforward(3),
+                normal(4)
+            }
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "
+                The register type used by the client .
+                Only the interface type is client, it can be used.
+                undistributed: If a client send a packet to the client with
+                this configuration, setver will only forward the packet whitout
+                sending redirect packets.
+
+                forward: The client with this configuration will only send packets
+                forwarded by server, which means it can not initiate to build
+                a session with other clients.
+                undistributedandforward: The client with this configuration have
+                the characteristics of both 'forward' and 'undistributed'.
+                normal: The client with this configuration can build session with
+                other clients without any restriction.
+            "
+        DEFVAL { normal }
+        ::= { unisDvpnTunnelEntry 3 }
+
+    unisDvpnTunnelDvpnId OBJECT-TYPE
+        SYNTAX     Integer32(0..65535)
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "
+                The dvpn ID used by the tunnel.
+                The dvpn ID is 0 means that user does not configure dvpn ID.
+                User can not configure a dvpn ID with 0.
+            "
+        DEFVAL { 0 }
+        ::= { unisDvpnTunnelEntry 4 }
+
+    unisDvpnTunnelPolicy OBJECT-TYPE
+        SYNTAX     OCTET STRING(SIZE(0..31))
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "
+                The dvpn policy used by the tunnel.
+                Only the interface type is server, it can be used.
+            "
+        ::= { unisDvpnTunnelEntry 5 }
+
+    unisDvpnTunnelClass OBJECT-TYPE
+        SYNTAX     OCTET STRING(SIZE(0..31))
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+            "
+                The dvpn class used by the tunnel.
+                Only the interface type is client, it can be used.
+            "
+        ::= { unisDvpnTunnelEntry 6 }
+
+
+--unisDvpnMapTable
+
+    unisDvpnMapTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisDvpnMapEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "
+                The dvpn map table.
+            "
+        ::= { unisDvpnMibTableTroop 5 }
+
+    unisDvpnMapEntry OBJECT-TYPE
+        SYNTAX UnisDvpnMapEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "
+                The entry of the unisDvpnMapTable.
+            "
+        INDEX { unisDvpnMapIndex }
+        ::= { unisDvpnMapTable 1 }
+
+    UnisDvpnMapEntry ::=
+        SEQUENCE {
+            unisDvpnMapIndex                       Unsigned32,
+            unisDvpnMapPeerDeviceId                OCTET STRING,
+            unisDvpnMapDvpnId                      Unsigned32,
+            unisDvpnMapBuildTime                   TimeTicks,
+            unisDvpnMapPeerPriIpType               InetAddressType,
+            unisDvpnMapPeerPriIp                   InetAddress,
+            unisDvpnMapPeerPublicIpType            InetAddressType,
+            unisDvpnMapPeerPublicIp                InetAddress,
+            unisDvpnMapLocalPriIpType              InetAddressType,
+            unisDvpnMapLocalPriIp                  InetAddress,
+            unisDvpnMapLocalPublicIpType           InetAddressType,
+            unisDvpnMapLocalPublicIp               InetAddress,
+            unisDvpnMapUserName                    OCTET STRING,
+            unisDvpnMapUdpPort                     Integer32,
+            unisDvpnMapControlId                   Unsigned32,
+            unisDvpnMapType                        DvpnCommunicateType,
+            unisDvpnMapState                       INTEGER
+        }
+
+    unisDvpnMapIndex OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "
+                The index of unisDvpnMapTable.
+            "
+        ::= { unisDvpnMapEntry 1 }
+
+    unisDvpnMapPeerDeviceId OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The identifier of peer device.
+                It is a string.
+            "
+        ::= { unisDvpnMapEntry 2 }
+
+    unisDvpnMapDvpnId OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The ID of the dvpn domain which the map belongs to.
+                The dvpn ID is 0 means that the map has not been built.
+                It has not gotten the dvpn ID at that time.
+            "
+        ::= { unisDvpnMapEntry 3 }
+
+    unisDvpnMapBuildTime OBJECT-TYPE
+        SYNTAX TimeTicks
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The time of the map created, the unit is second.
+            "
+        ::= { unisDvpnMapEntry 4 }
+
+    unisDvpnMapPeerPriIpType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The private ip type (ipv4, ipv6) of map peer device.
+            "
+        ::= { unisDvpnMapEntry 5 }
+
+    unisDvpnMapPeerPriIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The private ip of map peer device.
+            "
+        ::= { unisDvpnMapEntry 6 }
+
+    unisDvpnMapPeerPublicIpType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The public ip type (ipv4, ipv6) of map peer device.
+            "
+        ::= { unisDvpnMapEntry 7 }
+
+    unisDvpnMapPeerPublicIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The public ip of map peer device.
+            "
+        ::= { unisDvpnMapEntry 8 }
+
+    unisDvpnMapLocalPriIpType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The private ip type (ipv4, ipv6) of map local device.
+            "
+        ::= { unisDvpnMapEntry 9 }
+
+    unisDvpnMapLocalPriIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The private ip of map local device.
+            "
+        ::= { unisDvpnMapEntry 10 }
+
+    unisDvpnMapLocalPublicIpType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The public ip type (ipv4, ipv6) of map local device.
+            "
+        ::= { unisDvpnMapEntry 11 }
+
+    unisDvpnMapLocalPublicIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The public ip of map local device.
+            "
+        ::= { unisDvpnMapEntry 12 }
+
+    unisDvpnMapUserName OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The user name used by the client registering to server.
+                If the client is not been authenticated, this is a null string.
+            "
+        ::= { unisDvpnMapEntry 13 }
+
+    unisDvpnMapUdpPort OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The udp port used by map peer device.
+            "
+        ::= { unisDvpnMapEntry 14 }
+
+    unisDvpnMapControlId OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn map control ID.
+            "
+        ::= { unisDvpnMapEntry 15 }
+
+    unisDvpnMapType OBJECT-TYPE
+        SYNTAX DvpnCommunicateType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The type of the map.
+                'clientToclient' is not supported here.
+            "
+        ::= { unisDvpnMapEntry 16 }
+
+    unisDvpnMapState OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                mapClientInit(1),
+                mapClientBegin(2),
+                mapClientAlgreq(3),
+                mapClientKexReq(4),
+                mapClientAuthenReq(5),
+                mapClientConfigReq(6),
+                mapClientReq(7),
+                mapClientSuccess(8),
+                mapServerBegin(9),
+                mapServerAlgorithm(10),
+                mapServerKexInit(11),
+                mapServerAuthenInit(12),
+                mapServerConfigInit(13),
+                mapServerInit(14),
+                mapServerFinished(15)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                mapClientInit: The client initiates the map.
+                mapClientBegin: The client begins the process of registering
+                                to the server.
+                mapClientAlgreq: The client requests to negotiate the algorithm.
+                mapClientKexReq: The client requests to negotiate the key.
+                mapClientAuthenReq: The client sends authentication information
+                                    to the server.
+                mapClientConfigReq: The client requests to get some configuration
+                                    information from the server. Do not support now.
+                mapClientReq: The client requests to register to the server.
+                mapClientSuccess: The client registers to the server successfully.
+                mapServerBegin: The server begins the process of receive a new register.
+                mapServerAlgorithm:The sever begins to negotiate Algorithm.
+                mapServerKexInit: The server replys to the algorithm negotiation
+                                  packet from the client successfully and begin
+                                  to negotiate key.
+                mapServerAuthenInit: The server replys to the key negotiation
+                                     packet from the client successfully and
+                                     begin to authenticate client, in the case of
+                                     the authentication-client method is not none.
+                mapServerConfigInit: The server send some configuration information
+                                     to client. Do not support now.
+                mapServerInit: The server replys to the authentication packet
+                               from the client successfully and begin to receive
+                               client information.
+                mapServerFinished: The server receives client information successfully.
+            "
+        ::= { unisDvpnMapEntry 17 }
+
+
+
+--unisDvpnSessionTable
+
+    unisDvpnSessionTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisDvpnSessionEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "
+                The dvpn session table.
+            "
+        ::= { unisDvpnMibTableTroop 6 }
+
+    unisDvpnSessionEntry OBJECT-TYPE
+        SYNTAX UnisDvpnSessionEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "
+                The entry of unisDvpnSessionTable.
+            "
+        INDEX { unisDvpnSessionDvpnId,
+                unisDvpnSessionPeerPriIpType,
+                unisDvpnSessionPeerPriIp
+              }
+        ::= { unisDvpnSessionTable 1 }
+
+    UnisDvpnSessionEntry ::=
+        SEQUENCE {
+            unisDvpnSessionDvpnId                          Integer32,
+            unisDvpnSessionPeerPriIpType                   InetAddressType,
+            unisDvpnSessionPeerPriIp                       InetAddress,
+            unisDvpnSessionPeerDeviceId                    OCTET STRING,
+            unisDvpnSessionBuildTime                       TimeTicks,
+            unisDvpnSessionPeerPubIpType                   InetAddressType,
+            unisDvpnSessionPeerPubIp                       InetAddress,
+            unisDvpnSessionLocalPubIpType                  InetAddressType,
+            unisDvpnSessionLocalPubIp                      InetAddress,
+            unisDvpnSessionLocalPriIpType                  InetAddressType,
+            unisDvpnSessionLocalPriIp                      InetAddress,
+            unisDvpnSessionPeerUdpPort                     Integer32,
+            unisDvpnSessionInitiator                       INTEGER,
+            unisDvpnSessionUserName                        OCTET STRING,
+            unisDvpnSessionState                           INTEGER,
+            unisDvpnSessionType                            DvpnCommunicateType,
+            unisDvpnSessionPeerType                        INTEGER
+        }
+
+    unisDvpnSessionDvpnId OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "
+                The ID of the dvpn domain which the session belongs to.
+            "
+        ::= { unisDvpnSessionEntry 1 }
+
+    unisDvpnSessionPeerPriIpType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "
+               The private ip type (ipv4, ipv6) of session peer device.
+            "
+        ::= { unisDvpnSessionEntry 2 }
+
+    unisDvpnSessionPeerPriIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "
+                The private ip of the session peer device.
+            "
+        ::= { unisDvpnSessionEntry 3 }
+
+    unisDvpnSessionPeerDeviceId OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The device ID of session peer device.
+                It is a string.
+            "
+        ::= { unisDvpnSessionEntry 4 }
+
+    unisDvpnSessionBuildTime OBJECT-TYPE
+        SYNTAX TimeTicks
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The time of the Session being built, the unit is second.
+            "
+        ::= { unisDvpnSessionEntry 5 }
+
+    unisDvpnSessionPeerPubIpType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The public ip type (ipv4, ipv6) of session peer device.
+            "
+        ::= { unisDvpnSessionEntry 6 }
+
+    unisDvpnSessionPeerPubIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The public ip of session peer device.
+            "
+        ::= { unisDvpnSessionEntry 7 }
+
+
+    unisDvpnSessionLocalPubIpType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+               The public ip type (ipv4, ipv6) of session local device.
+            "
+        ::= { unisDvpnSessionEntry 8 }
+
+    unisDvpnSessionLocalPubIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+               The public ip of session local device.
+            "
+        ::= { unisDvpnSessionEntry 9 }
+
+    unisDvpnSessionLocalPriIpType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+               The private ip type (ipv4, ipv6) of session local device.
+            "
+        ::= { unisDvpnSessionEntry 10 }
+
+    unisDvpnSessionLocalPriIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+               The private ip of session local device.
+            "
+        ::= { unisDvpnSessionEntry 11 }
+
+    unisDvpnSessionPeerUdpPort OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+               The udp port used by session peer device .
+            "
+        ::= { unisDvpnSessionEntry 12 }
+
+    unisDvpnSessionInitiator OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                yes(1),
+                no(2)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The flag of initiator.
+            "
+        ::= { unisDvpnSessionEntry 13 }
+
+    unisDvpnSessionUserName OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The user's name.
+                If the session type is client to client,
+                the value of this object is a null string.
+            "
+        ::= { unisDvpnSessionEntry 14 }
+
+    unisDvpnSessionState OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                 sessionSetupInit(1),
+                 sessionSetupReq(2),
+                 sessionSetupSuccess(3),
+                 sessionRekeyReq(4),
+                 sessionRekeyRep(5)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The state of the session.
+                sessionSetupInit: The initiation of the session.
+                sessionSetupReq: The initiator requests to negotiate the SA and
+                                 so on of the session.
+                sessionSetupSuccess: The session has been built successfully.
+                sessionRekeyReq: The initiator requests to renegotiate the SA.
+                sessionRekeyRep: The passive side replies with a SA renegotiation
+                                 response packet successfully.
+            "
+        ::= { unisDvpnSessionEntry 15 }
+
+    unisDvpnSessionType OBJECT-TYPE
+        SYNTAX DvpnCommunicateType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The type of the session.
+            "
+        ::= { unisDvpnSessionEntry 16 }
+
+    unisDvpnSessionPeerType OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                router(1),
+                pcClient(2)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The type of the session peer device.
+                It may be client software or a router.
+            "
+        ::= { unisDvpnSessionEntry 17 }
+
+
+--unisDvpnSessionHisTable
+
+    unisDvpnSessionHisTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF UnisDvpnSessionHisEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "
+                The dvpn session history table.
+                This table contains session's history information,
+                include input/output packet number, up/down time, etc.
+                This table will exist during the 'unisDvpnSessionHisAgeTime'.
+            "
+        ::= { unisDvpnMibTableTroop 7 }
+
+    unisDvpnSessionHisEntry OBJECT-TYPE
+        SYNTAX     UnisDvpnSessionHisEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "
+                The entry of unisDvpnSessionHisTable.
+            "
+        INDEX { unisDvpnSessionHisDvpnID,
+                unisDvpnSessionHisPeerPriIPType,
+                unisDvpnSessionHisPeerPriIP }
+        ::= { unisDvpnSessionHisTable 1 }
+
+    UnisDvpnSessionHisEntry ::= SEQUENCE {
+        unisDvpnSessionHisDvpnID           Integer32,
+        unisDvpnSessionHisPeerPriIPType    InetAddressType,
+        unisDvpnSessionHisPeerPriIP        InetAddress,
+        unisDvpnSessionHisSendPkt          Unsigned32,
+        unisDvpnSessionHisRcvPkt           Unsigned32,
+        unisDvpnSessionHisOnlineNumber     Unsigned32,
+        unisDvpnSessionHisFirstUpTime      TimeTicks,
+        unisDvpnSessionHisLastUpTime       TimeTicks,
+        unisDvpnSessionHisLastDownTime     TimeTicks,
+        unisDvpnSessionHisOnlineFlag       INTEGER,
+        unisDvpnSessionHisPeerDeviceId     OCTET STRING
+     }
+
+
+    unisDvpnSessionHisDvpnID OBJECT-TYPE
+        SYNTAX     Integer32(1..65535)
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "
+                The ID of the dvpn domain which the session belongs to.
+            "
+        ::= { unisDvpnSessionHisEntry 1 }
+
+    unisDvpnSessionHisPeerPriIPType OBJECT-TYPE
+        SYNTAX     InetAddressType
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "
+                The private ip type (ipv4, ipv6) of session peer device.
+            "
+        ::= { unisDvpnSessionHisEntry 2 }
+
+    unisDvpnSessionHisPeerPriIP OBJECT-TYPE
+        SYNTAX     InetAddress
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "
+                 The private ip of the session peer device.
+            "
+        ::= { unisDvpnSessionHisEntry 3 }
+
+    unisDvpnSessionHisSendPkt OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "
+                The number of sent packets on the session.
+            "
+        ::= { unisDvpnSessionHisEntry 4 }
+
+    unisDvpnSessionHisRcvPkt OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "
+                The number of received packets on the session.
+            "
+        ::= { unisDvpnSessionHisEntry 5 }
+
+    unisDvpnSessionHisOnlineNumber OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "
+                The number of the session online.
+            "
+        ::= { unisDvpnSessionHisEntry 6 }
+
+    unisDvpnSessionHisFirstUpTime OBJECT-TYPE
+        SYNTAX     TimeTicks
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "
+                The session first online time.
+            "
+        ::= { unisDvpnSessionHisEntry 7 }
+
+
+    unisDvpnSessionHisLastUpTime OBJECT-TYPE
+        SYNTAX     TimeTicks
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "
+                The session last online time.
+            "
+        ::= { unisDvpnSessionHisEntry 8 }
+
+    unisDvpnSessionHisLastDownTime OBJECT-TYPE
+        SYNTAX     TimeTicks
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "
+                The session last down time.
+            "
+        ::= { unisDvpnSessionHisEntry 9 }
+
+
+    unisDvpnSessionHisOnlineFlag OBJECT-TYPE
+        SYNTAX     INTEGER
+            {
+                yes(1),
+                no(2)
+            }
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "
+                If the session is online, the value is 'yes'.
+                If the session is not online, the value is 'no'.
+            "
+        ::= { unisDvpnSessionHisEntry 10 }
+
+    unisDvpnSessionHisPeerDeviceId OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "
+                The identifier of peer device.
+                It is a string.
+            "
+        ::= { unisDvpnSessionHisEntry 11 }
+
+
+
+ --unisDvpnMibTrap
+
+    unisDvpnNotification OBJECT IDENTIFIER ::= { unisDvpnMibNotification 0 }
+
+    unisDvpnSessionBuildNotification NOTIFICATION-TYPE
+        OBJECTS {
+            unisDvpnSessionDvpnId,
+            unisDvpnSessionPeerPriIpType,
+            unisDvpnSessionPeerPriIp,
+            unisDvpnLocalDeviceId,
+            unisDvpnSessionLocalPriIpType,
+            unisDvpnSessionLocalPriIp,
+            unisDvpnSessionLocalPubIpType,
+            unisDvpnSessionLocalPubIp,
+            unisDvpnSessionPeerDeviceId,
+            unisDvpnSessionPeerPubIpType,
+            unisDvpnSessionPeerPubIp,
+            unisDvpnSessionPeerUdpPort,
+            unisDvpnSessionPeerType,
+            unisDvpnSessionUserName
+        }
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn session build notification.
+            "
+        ::= { unisDvpnNotification 1 }
+
+    unisDvpnSessionDelNotification NOTIFICATION-TYPE
+        OBJECTS {
+            unisDvpnSessionDvpnId,
+            unisDvpnSessionPeerPriIpType,
+            unisDvpnSessionPeerPriIp,
+            unisDvpnLocalDeviceId,
+            unisDvpnSessionLocalPriIpType,
+            unisDvpnSessionLocalPriIp,
+            unisDvpnSessionLocalPubIpType,
+            unisDvpnSessionLocalPubIp,
+            unisDvpnSessionPeerDeviceId,
+            unisDvpnSessionPeerPubIpType,
+            unisDvpnSessionPeerPubIp,
+            unisDvpnSessionPeerUdpPort,
+            unisDvpnSessionPeerType,
+            unisDvpnSessionUserName
+        }
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn session deleted notification.
+            "
+        ::= { unisDvpnNotification 2 }
+
+    unisDvpnMapBuildNotification NOTIFICATION-TYPE
+        OBJECTS {
+            unisDvpnMapIndex,
+            unisDvpnMapDvpnId,
+            unisDvpnMapPeerDeviceId,
+            unisDvpnMapPeerPriIpType,
+            unisDvpnMapPeerPriIp,
+            unisDvpnMapPeerPublicIpType,
+            unisDvpnMapPeerPublicIp,
+            unisDvpnLocalDeviceId,
+            unisDvpnMapLocalPriIpType,
+            unisDvpnMapLocalPriIp,
+            unisDvpnMapLocalPublicIpType,
+            unisDvpnMapLocalPublicIp,
+            unisDvpnMapUserName
+        }
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn map build notification.
+            "
+        ::= { unisDvpnNotification 3 }
+
+    unisDvpnMapDelNotification NOTIFICATION-TYPE
+        OBJECTS {
+            unisDvpnMapIndex,
+            unisDvpnMapDvpnId,
+            unisDvpnMapPeerDeviceId,
+            unisDvpnMapPeerPriIpType,
+            unisDvpnMapPeerPriIp,
+            unisDvpnMapPeerPublicIpType,
+            unisDvpnMapPeerPublicIp,
+            unisDvpnLocalDeviceId,
+            unisDvpnMapLocalPriIpType,
+            unisDvpnMapLocalPriIp,
+            unisDvpnMapLocalPublicIpType,
+            unisDvpnMapLocalPublicIp,
+            unisDvpnMapUserName
+        }
+        STATUS current
+        DESCRIPTION
+            "
+                Dvpn map deleted notification.
+            "
+        ::= { unisDvpnNotification 4 }
+
+
+--conformance and Compliance define
+
+    unisDvpnMibCompliances OBJECT IDENTIFIER ::= { unisDvpnMibConformance 1 }
+
+    unisDvpnMibCompliance MODULE-COMPLIANCE
+        STATUS current
+        DESCRIPTION
+            "
+                The compliance statement for entities which implement
+                the DVPN MIB.
+            "
+        MODULE
+            MANDATORY-GROUPS {
+                unisDvpnGlobalGroup,
+                unisDvpnDomainInfoGroup,
+                unisDvpnPolicyGroup,
+                unisDvpnClassGroup,
+                unisDvpnTunnelGroup,
+                unisDvpnMapGroup,
+                unisDvpnSessionGroup,
+                unisDvpnSessionHisGroup,
+                unisDvpnNotificationGroup
+            }
+        ::= { unisDvpnMibCompliances 1 }
+
+    unisDvpnMibGroups OBJECT IDENTIFIER ::= { unisDvpnMibConformance 2 }
+
+    unisDvpnGlobalGroup OBJECT-GROUP
+        OBJECTS {
+            unisDvpnServiceEnable,
+            unisDvpnClassNumber,
+            unisDvpnClientNumber,
+            unisDvpnMapAgeTime,
+            unisDvpnClientRegisterInterval,
+            unisDvpnClientRegisterDumb,
+            unisDvpnClientRegisterRetry,
+            unisDvpnInputPkt,
+            unisDvpnDropPkt,
+            unisDvpnOutputPkt,
+            unisDvpnOutputErrorPkt,
+            unisDvpnEncryptErrorPkt,
+            unisDvpnCurrentDeviceRole,
+            unisDvpnDomainNumber,
+            unisDvpnMapNumber,
+            unisDvpnSessionNumber,
+            unisDvpnServerPreSharedKey,
+            unisDvpnMapTrapEnable,
+            unisDvpnSessionTrapEnable,
+            unisDvpnVersion,
+            unisDvpnClearDomainAllConection,
+            unisDvpnClearDvpnStaInfo,
+            unisDvpnTotalRedirectNumber,
+            unisDvpnGlobalAuthenClientType,
+            unisDvpnGlobalUserDefAAADomain,
+            unisDvpnLocalDeviceId,
+            unisDvpnSessionHisAgeTime,
+            unisDvpnSessionHisReset
+        }
+        STATUS current
+        DESCRIPTION
+            "
+                A collection of objects providing dvpn global information.
+            "
+        ::= { unisDvpnMibGroups 1 }
+
+    unisDvpnPolicyGroup OBJECT-GROUP
+        OBJECTS {
+            unisDvpnPoAuthenClientType,
+            unisDvpnPoSessionAlgorithmSuite,
+            unisDvpnPoSessionIdleTime,
+            unisDvpnPoSessionKeepTime,
+            unisDvpnPoSessionSetupInterval,
+            unisDvpnPoDataAlgorithmSuite,
+            unisDvpnPoSaSeconds,
+            unisDvpnPoUserDefAAADomain,
+            unisDvpnPoRefTimes,
+            unisDvpnPoRowStatus
+        }
+        STATUS current
+        DESCRIPTION
+            "
+                A collection of objects providing dvpn policy information.
+            "
+        ::= { unisDvpnMibGroups 2 }
+
+    unisDvpnDomainInfoGroup OBJECT-GROUP
+        OBJECTS {
+            unisDvpnDomainSessionNum,
+            unisDvpnDomainRedirectNum,
+            unisDvpnDomainInputPkt,
+            unisDvpnDomainDropPkt,
+            unisDvpnDomainOutputPkt,
+            unisDvpnDomainOutputErrorPkt,
+            unisDvpnDomainEncryptErrorPkt
+        }
+        STATUS current
+        DESCRIPTION
+            "
+                A collection of objects providing dvpn domain information.
+            "
+        ::= { unisDvpnMibGroups 3 }
+
+    unisDvpnClassGroup OBJECT-GROUP
+        OBJECTS {
+            unisDvpnClServerPublicIpType,
+            unisDvpnClServerPublicIp,
+            unisDvpnClServerPriIpType,
+            unisDvpnClServerPriIp,
+            unisDvpnClAlgorithmSuite,
+            unisDvpnClAuthenServerType,
+            unisDvpnClPreShareKey,
+            unisDvpnClUserName,
+            unisDvpnClPwdEncrypted,
+            unisDvpnClPasswd,
+            unisDvpnClassRowStatus
+        }
+        STATUS current
+        DESCRIPTION
+            "
+                A collection of objects providing dvpn class information.
+            "
+        ::= { unisDvpnMibGroups 4 }
+
+    unisDvpnTunnelGroup OBJECT-GROUP
+        OBJECTS {
+            unisDvpnTunnelInterfaceType,
+            unisDvpnTunnelAcl,
+            unisDvpnTunnelClientRegType,
+            unisDvpnTunnelDvpnId,
+            unisDvpnTunnelPolicy,
+            unisDvpnTunnelClass
+        }
+        STATUS current
+        DESCRIPTION
+            "
+                A collection of objects providing dvpn tunnel interface information.
+            "
+        ::= { unisDvpnMibGroups 5 }
+
+    unisDvpnMapGroup OBJECT-GROUP
+        OBJECTS {
+            unisDvpnMapIndex,
+            unisDvpnMapPeerDeviceId,
+            unisDvpnMapDvpnId,
+            unisDvpnMapBuildTime,
+            unisDvpnMapPeerPriIpType,
+            unisDvpnMapPeerPriIp,
+            unisDvpnMapPeerPublicIpType,
+            unisDvpnMapPeerPublicIp,
+            unisDvpnMapLocalPriIpType,
+            unisDvpnMapLocalPriIp,
+            unisDvpnMapLocalPublicIpType,
+            unisDvpnMapLocalPublicIp,
+            unisDvpnMapUserName,
+            unisDvpnMapUdpPort,
+            unisDvpnMapControlId,
+            unisDvpnMapType,
+            unisDvpnMapState
+        }
+        STATUS current
+        DESCRIPTION
+            "
+                A collection of objects providing dvpn map information.
+            "
+        ::= { unisDvpnMibGroups 6 }
+
+    unisDvpnSessionGroup OBJECT-GROUP
+        OBJECTS {
+            unisDvpnSessionDvpnId,
+            unisDvpnSessionPeerDeviceId,
+            unisDvpnSessionBuildTime,
+            unisDvpnSessionPeerPubIpType,
+            unisDvpnSessionPeerPubIp,
+            unisDvpnSessionPeerPriIpType,
+            unisDvpnSessionPeerPriIp,
+            unisDvpnSessionLocalPubIpType,
+            unisDvpnSessionLocalPubIp,
+            unisDvpnSessionLocalPriIpType,
+            unisDvpnSessionLocalPriIp,
+            unisDvpnSessionPeerUdpPort,
+            unisDvpnSessionInitiator,
+            unisDvpnSessionUserName,
+            unisDvpnSessionState,
+            unisDvpnSessionType,
+            unisDvpnSessionPeerType
+        }
+        STATUS current
+        DESCRIPTION
+            "
+                A collection of objects providing dvpn session information.
+            "
+        ::= { unisDvpnMibGroups 7 }
+
+    unisDvpnSessionHisGroup OBJECT-GROUP
+        OBJECTS {
+            unisDvpnSessionHisPeerPriIPType,
+            unisDvpnSessionHisSendPkt,
+            unisDvpnSessionHisRcvPkt,
+            unisDvpnSessionHisOnlineNumber,
+            unisDvpnSessionHisFirstUpTime,
+            unisDvpnSessionHisLastUpTime,
+            unisDvpnSessionHisLastDownTime,
+            unisDvpnSessionHisOnlineFlag,
+            unisDvpnSessionHisPeerDeviceId
+        }
+        STATUS current
+        DESCRIPTION
+            "
+                A collection of objects providing dvpn session history information.
+            "
+        ::= { unisDvpnMibGroups 8 }
+
+
+    unisDvpnNotificationGroup OBJECT-GROUP
+        OBJECTS {
+            unisDvpnSessionBuildNotification,
+            unisDvpnSessionDelNotification,
+            unisDvpnMapBuildNotification,
+            unisDvpnMapDelNotification
+        }
+        STATUS current
+        DESCRIPTION
+            "
+                A collection of objects providing dvpn notification information.
+            "
+        ::= { unisDvpnMibGroups 9 }
+
+END

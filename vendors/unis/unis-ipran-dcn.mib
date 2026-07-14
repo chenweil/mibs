@@ -1,0 +1,268 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description: Ipran Data Communication Network(DCN) MIB.
+-- Reference:
+-- Version:     V1.1
+-- V1.0  2011-09-30 The initial version, created by Longgang
+--       2014-03-10 updated by wangguanglun
+--       Changed the format
+-- V1.1  2015-01-27 updated by fengxiaodong
+--       Added unisIpRanDcnMAC and unisIpRanDcnVendor nodes to unisIpRanDcnInfoObject
+--       Added unisIpRanDcnNeInfoMAC and unisIpRanDcnNeInfoVendor nodes to unisIpRanDcnNeInfoTable
+-- ==================================================================
+UNIS-IPRAN-DCN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB
+    TEXTUAL-CONVENTION,  DisplayString, MacAddress
+        FROM SNMPv2-TC;
+
+unisIpRanDcn MODULE-IDENTITY
+    LAST-UPDATED "201501300000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB provides mechanisms to monitor all network elements(NE)
+        in Ipran Data Communication Network."
+    REVISION "201501300000Z"
+    DESCRIPTION
+        "Add nodes to unisIpRanDcnInfoObject and unisIpRanDcnNeInfoTable."
+    REVISION "201307240000Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 152 }
+
+UnisIpRanNeId ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "1d.1d.1d.1d"
+    STATUS current
+    DESCRIPTION
+        "Uniquely identifies the network entity ID.
+        The first 8 bits are 0 and the total number of valid bits is 24.
+        The high 8 bits represent the subnet number and the low 16 bits represent the base ID.
+        The IpRanNeId will be shown as 0.x.x.x."
+    SYNTAX OCTET STRING (SIZE (4))
+
+unisIpRanDcnMIB OBJECT IDENTIFIER ::= { unisIpRanDcn 1 }
+
+unisIpRanDcnObjects OBJECT IDENTIFIER ::= { unisIpRanDcnMIB 1 }
+
+unisIpRanDcnInfoObject OBJECT IDENTIFIER ::= { unisIpRanDcnObjects 1 }
+unisIpRanDcnNeId OBJECT-TYPE
+    SYNTAX      UnisIpRanNeId
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the ID of the local network element."
+    ::= { unisIpRanDcnInfoObject 1 }
+
+unisIpRanDcnNeIpType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This is the IP address type of the local network element."
+    ::= { unisIpRanDcnInfoObject 2 }
+
+unisIpRanDcnNeIp OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This is the IP address of the local network element."
+    ::= { unisIpRanDcnInfoObject 3 }
+
+unisIpRanDcnMask OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This is the IP address mask of the local network element."
+::= { unisIpRanDcnInfoObject 4 }
+
+unisIpRanDcnMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The bridge MAC address of the network element."
+    ::= { unisIpRanDcnInfoObject 5 }
+
+unisIpRanDcnVendor OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Company name."
+::= { unisIpRanDcnInfoObject 6 }
+
+unisIpRanDcnNeInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisIpRanDcnNeInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table provides information about all network elements online."
+    ::= { unisIpRanDcnObjects 2 }
+
+unisIpRanDcnNeInfoEntry OBJECT-TYPE
+    SYNTAX      UnisIpRanDcnNeInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A single network element information entry."
+    INDEX { unisIpRanDcnNeInfoNeId }
+    ::= { unisIpRanDcnNeInfoTable 1 }
+
+UnisIpRanDcnNeInfoEntry ::=
+    SEQUENCE
+        {
+            unisIpRanDcnNeInfoNeId         UnisIpRanNeId,
+            unisIpRanDcnNeInfoNeIpType     InetAddressType,
+            unisIpRanDcnNeInfoNeIp         InetAddress,
+            unisIpRanDcnNeInfoMetric       Integer32,
+            unisIpRanDcnNeInfoDeviceType   DisplayString,
+            unisIpRanDcnNeInfoMAC          MacAddress,
+            unisIpRanDcnNeInfoVendor       DisplayString
+        }
+
+unisIpRanDcnNeInfoNeId OBJECT-TYPE
+    SYNTAX      UnisIpRanNeId
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This is the network element ID uniquely identifying
+        one network element in the routing domain."
+    ::= { unisIpRanDcnNeInfoEntry 1 }
+
+unisIpRanDcnNeInfoNeIpType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This is the IP address type of the network element."
+    ::= { unisIpRanDcnNeInfoEntry 2 }
+
+unisIpRanDcnNeInfoNeIp OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This is the IP address of the network element."
+    ::= { unisIpRanDcnNeInfoEntry 3 }
+
+unisIpRanDcnNeInfoMetric OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The metric from the local network element to the remote
+        network element."
+    ::= { unisIpRanDcnNeInfoEntry 4 }
+
+unisIpRanDcnNeInfoDeviceType OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This is the device type of the network element."
+    ::= { unisIpRanDcnNeInfoEntry 5 }
+
+unisIpRanDcnNeInfoMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The bridge MAC address of the network element."
+    ::= { unisIpRanDcnNeInfoEntry 6 }
+
+unisIpRanDcnNeInfoVendor OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Company name."
+    ::= { unisIpRanDcnNeInfoEntry 7 }
+
+unisIpRanDcnTrapObjects OBJECT IDENTIFIER ::= { unisIpRanDcnMIB 2 }
+
+unisIpRanDcnNeNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The overall number of network elements online."
+    ::= { unisIpRanDcnTrapObjects 1 }
+
+unisIpRanDcnNeChangeMode OBJECT-TYPE
+    SYNTAX  INTEGER
+        {
+            online (1),
+            offline (2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The change mode of the last trap."
+    ::= { unisIpRanDcnTrapObjects 2 }
+
+unisIpRanDcnCompanyName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Company name."
+    ::= { unisIpRanDcnTrapObjects 3 }
+
+unisIpRanDcnDeviceType OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Device type."
+    ::= { unisIpRanDcnTrapObjects 4 }
+
+unisIpRanDcnDeviceMac OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+       "The bridge MAC address of the network element."
+    ::= { unisIpRanDcnTrapObjects 5 }
+
+unisIpRanDcnTraps OBJECT IDENTIFIER ::= { unisIpRanDcnMIB 3 }
+unisIpRanDcnTrapsPrefix OBJECT IDENTIFIER ::= { unisIpRanDcnTraps 0 }
+
+unisIpRanDcnNeOnline NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpRanDcnNeInfoNeId,
+            unisIpRanDcnNeInfoNeIpType,
+            unisIpRanDcnNeInfoNeIp,
+            unisIpRanDcnCompanyName,
+            unisIpRanDcnDeviceType,
+            unisIpRanDcnDeviceMac
+        }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when a new network element is online."
+    ::= { unisIpRanDcnTrapsPrefix 1 }
+
+unisIpRanDcnNeOffline NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpRanDcnNeInfoNeId,
+            unisIpRanDcnNeInfoNeIpType,
+            unisIpRanDcnNeInfoNeIp
+        }
+    STATUS current
+    DESCRIPTION
+        "The trap is generated when a network element is offline."
+    ::= { unisIpRanDcnTrapsPrefix 2 }
+
+END

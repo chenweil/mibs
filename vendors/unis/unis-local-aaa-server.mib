@@ -1,0 +1,60 @@
+-- ==========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Local AAA Server mib
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2013-07-06 created by yangxu 02965
+-- ==========================================================================
+UNIS-LOCAL-AAA-SERVER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisLocAAASvr MODULE-IDENTITY
+    LAST-UPDATED "201307060945Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB provides the definition of the local AAA Server."
+    REVISION "201307060945Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 141 }
+
+-- definition of textual conventions
+
+--
+-- nodes defined
+--
+
+unisLocAAASvrControl OBJECT IDENTIFIER ::= { unisLocAAASvr 1 }
+
+--
+-- tables defined
+--
+
+unisLocAAASvrTables OBJECT IDENTIFIER ::= { unisLocAAASvr 2 }
+
+--
+-- traps defined
+--
+
+unisLocAAASvrTrap OBJECT IDENTIFIER ::= { unisLocAAASvr 3 }
+
+unisLocAAASvrTrapPrex OBJECT IDENTIFIER ::= { unisLocAAASvrTrap 0 }
+
+unisLocAAASvrBillExportFailed NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+        "This trap is generated when local AAA bills
+        cannot be exported to a bill server."
+    ::= { unisLocAAASvrTrapPrex 1 }
+
+END

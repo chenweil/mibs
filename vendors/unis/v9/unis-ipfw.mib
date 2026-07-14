@@ -1,0 +1,612 @@
+-- =================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: IP forwarding MIB File
+-- Reference:
+-- Version: V1.5
+-- History:
+-- V1.0 2021-10-11 created by zhangxing
+-- V1.1 2021-12-08
+--   Add unisIpfwFragTraps Modified by zhuqiuxue
+-- V1.2 2022-07-14
+--   Add unisIpfwMTUTable Modified by zhangxing
+-- V1.3 2022-11-14
+--   Add four NOTIFICATION-TYPE unisIpfwIpv4VfrExcAlarm,unisIpfwIPv4VfrExcAlarmResume,
+--   unisIpfwIPv6VfrExcAlarm,unisIpfwIPv6VfrExcAlarmResume and seven OBJECT-TYPE
+--   unisIpfwChassis,unisIpfwSlot,unisIpfwVsysID,unisIpfwIPv4FragBufSrcAddress,
+--   unisIpfwIPv4FragBufDstAddress,unisIpfwIPv6FragBufSrcAddress,unisIpfwIPv6FragBufDstAddress
+--   Modified by qiuhongdi
+-- V1.4 2023-04-20
+--   Add unisIpfwMbufAllocFailed and unisIpfwMbufAllocFailedNum
+--   Modified by yuanyuchen
+-- V1.5 2023-07-27
+--   Add four NOTIFICATION-TYPE unisIpfwTTLExpLoopAlarm,unisIpfwTTLExpLoopResume,
+--   unisIpfwHopLimitExpLoopAlarm,unisIpfwHopLimitExpLoopResume and twelve OBJECT-TYPE
+--   unisIpfwTTLLastRateLow,unisIpfwTTLLastRateHigh,unisIpfwTTLCurRateLow,
+--   unisIpfwTTLCurRateHigh,unisIpfwTTLInterval,unisIpfwTTLThreshold,
+--   unisIpfwHopLimitLastRateLow,unisIpfwHopLimitLastRateHigh,unisIpfwHopLimitCurRateLow,
+--   unisIpfwHopLimitCurRateHigh,unisIpfwHopLimitInterval,unisIpfwHopLimitThreshold
+--   Modified by yuanyuchen
+-- =================================================================
+UNIS-IPFW-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, Unsigned32, Counter64, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    InterfaceIndex
+        FROM IF-MIB;
+
+unisIpfw MODULE-IDENTITY
+    LAST-UPDATED
+        "202307271655Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB contains objects that manage the configuration and
+        information of IP forwarding.
+        "
+    REVISION "202307271655Z"
+    DESCRIPTION
+        "Add four NOTIFICATION-TYPE unisIpfwTTLExpLoopAlarm,unisIpfwTTLExpLoopResume,
+         unisIpfwHopLimitExpLoopAlarm,unisIpfwHopLimitExpLoopResume and twelve OBJECT-TYPE
+         unisIpfwTTLLastRateLow,unisIpfwTTLLastRateHigh,unisIpfwTTLCurRateLow,
+         unisIpfwTTLCurRateHigh,unisIpfwTTLInterval,unisIpfwTTLThreshold,
+         unisIpfwHopLimitLastRateLow,unisIpfwHopLimitLastRateHigh,unisIpfwHopLimitCurRateLow,
+         unisIpfwHopLimitCurRateHigh,unisIpfwHopLimitInterval,unisIpfwHopLimitThreshold."
+    REVISION "202304201610Z"
+    DESCRIPTION
+        "Add unisIpfwMbufAllocFailed and unisIpfwMbufAllocFailedNum."
+    REVISION "202211141730Z"
+    DESCRIPTION
+        "Add four NOTIFICATION-TYPE unisIpfwIpv4VfrExcAlarm,unisIpfwIPv4VfrExcAlarmResume,
+         unisIpfwIPv6VfrExcAlarm,unisIpfwIPv6VfrExcAlarmResume and seven OBJECT-TYPE
+         unisIpfwChassis,unisIpfwSlot,unisIpfwVsysID,unisIpfwIPv4FragBufSrcAddress,
+         unisIpfwIPv4FragBufDstAddress,unisIpfwIPv6FragBufSrcAddress,unisIpfwIPv6FragBufDstAddress."
+    REVISION "202207141625Z"
+    DESCRIPTION
+        "Modified to add unisIpfwMTUTable."
+    REVISION "202112081430Z"
+    DESCRIPTION
+        "Modified to add unisIpfwFragTraps."
+    REVISION
+        "202110111534Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 211 }
+
+unisIpfwObjects OBJECT IDENTIFIER ::= { unisIpfw 1 }
+
+-- ip forwarding speed table
+unisIpfwSpeedTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIpfwSpeedEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "This table contains objects to get average speed information
+                 in the specified interval for interfaces on a device."
+    ::= { unisIpfwObjects 1 }
+
+unisIpfwSpeedEntry    OBJECT-TYPE
+    SYNTAX      UnisIpfwSpeedEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Entry items."
+    INDEX {
+            unisIpfwSpeedStatIfIndex,
+            unisIpfwSpeedStatIpType
+          }
+    ::= { unisIpfwSpeedTable 1 }
+
+UnisIpfwSpeedEntry ::=
+    SEQUENCE
+    {
+            unisIpfwSpeedStatIfIndex              InterfaceIndex,
+            unisIpfwSpeedStatIpType               INTEGER,
+            unisIpfwSpeedStatInterval             Unsigned32,
+            unisIpfwSpeedStatInPkts               Counter64,
+            unisIpfwSpeedStatOutPkts              Counter64,
+            unisIpfwSpeedStatInBytes              Counter64,
+            unisIpfwSpeedStatOutBytes             Counter64,
+            unisIpfwSpeedStatInBits               Counter64,
+            unisIpfwSpeedStatOutBits              Counter64
+    }
+
+unisIpfwSpeedStatIfIndex    OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "The index value which uniquely identifies the interface to
+            which this entry is applicable. The interface identified by
+            a particular value of this index is the same interface as
+            identified by the same value of RFC 2863's ifIndex."
+    ::= { unisIpfwSpeedEntry 1 }
+
+unisIpfwSpeedStatIpType    OBJECT-TYPE
+    SYNTAX INTEGER {
+                     ipv4(1),
+                     ipv6(2)
+                   }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "IP version."
+    ::= { unisIpfwSpeedEntry 2 }
+
+unisIpfwSpeedStatInterval   OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Sampling interval for in/out flow of interface."
+    ::= { unisIpfwSpeedEntry 3 }
+
+unisIpfwSpeedStatInPkts   OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Average of input packets per second in the specified interval by
+             unisIpfwSpeedStatInterval."
+    ::= { unisIpfwSpeedEntry 4 }
+
+unisIpfwSpeedStatOutPkts   OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Average of output packets per second in the specified interval by
+             unisIpfwSpeedStatInterval."
+    ::= { unisIpfwSpeedEntry 5 }
+
+unisIpfwSpeedStatInBytes   OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Average of input bytes per second in the specified interval by
+             unisIpfwSpeedStatInterval."
+    ::= { unisIpfwSpeedEntry 6 }
+
+unisIpfwSpeedStatOutBytes   OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Average of output bytes per second in the specified interval by
+             unisIpfwSpeedStatInterval."
+    ::= { unisIpfwSpeedEntry 7 }
+
+unisIpfwSpeedStatInBits   OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Average of input bits per second in the specified interval by
+             unisIpfwSpeedStatInterval."
+    ::= { unisIpfwSpeedEntry 8 }
+
+unisIpfwSpeedStatOutBits   OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Average of output bits per second in the specified interval by
+             unisIpfwSpeedStatInterval."
+    ::= { unisIpfwSpeedEntry 9 }
+
+
+-- ip mtu table
+unisIpfwMTUTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisIpfwMTUEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "This table contains objects to get interface MTU information
+                 on a device."
+    ::= { unisIpfwObjects 2 }
+
+unisIpfwMTUEntry    OBJECT-TYPE
+    SYNTAX      UnisIpfwMTUEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Entry items."
+    INDEX {
+            unisIpfwMTUIfIndex,
+            unisIpfwMTUIpType
+          }
+    ::= { unisIpfwMTUTable 1 }
+
+UnisIpfwMTUEntry ::=
+    SEQUENCE
+    {
+            unisIpfwMTUIfIndex              InterfaceIndex,
+            unisIpfwMTUIpType               INTEGER,
+            unisIpfwMTUValue                Unsigned32
+    }
+
+unisIpfwMTUIfIndex    OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "The index value which uniquely identifies the interface to
+            which this entry is applicable. The interface identified by
+            a particular value of this index is the same interface as
+            identified by the same value of RFC 2863's ifIndex."
+    ::= { unisIpfwMTUEntry 1 }
+
+unisIpfwMTUIpType    OBJECT-TYPE
+    SYNTAX INTEGER {
+                     ipv4(1),
+                     ipv6(2)
+                   }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "IP version."
+    ::= { unisIpfwMTUEntry 2 }
+
+unisIpfwMTUValue   OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "A interface MTU in bytes."
+    ::= { unisIpfwMTUEntry 3 }
+
+
+unisIpfwFragTraps OBJECT IDENTIFIER ::= { unisIpfw 2 }
+unisIpfwFragTrap OBJECT IDENTIFIER ::= { unisIpfwFragTraps 0 }
+
+-- unisIpfwFragTrap
+unisIpfwPktNumExcAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpfwIfIndex,
+            unisIpfwPeerAddress,
+            unisIpfwInterfaceName
+        }
+    STATUS      current
+    DESCRIPTION
+        "Received fragment packets over limit alarm was detected."
+    ::= { unisIpfwFragTrap 1 }
+
+unisIpfwPktNumExcAlarmResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpfwIfIndex,
+            unisIpfwPeerAddress,
+            unisIpfwInterfaceName
+        }
+    STATUS      current
+    DESCRIPTION
+        "Received fragment packets over limit alarm was resumed."
+    ::= { unisIpfwFragTrap 2 }
+
+unisIpfwIPv4VfrExcAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpfwChassis,
+            unisIpfwSlot,
+            unisIpfwVsysID,
+            unisIpfwIPv4FragBufSrcAddress,
+            unisIpfwIPv4FragBufDstAddress
+        }
+    STATUS      current
+    DESCRIPTION
+        "IP virtual fragment reassembly over limit alarm was detected."
+    ::= { unisIpfwFragTrap 3 }
+
+unisIpfwIPv4VfrExcAlarmResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpfwChassis,
+            unisIpfwSlot,
+            unisIpfwVsysID
+        }
+    STATUS      current
+    DESCRIPTION
+        "IP virtual fragment reassembly over limit alarm was resumed."
+    ::= { unisIpfwFragTrap 4 }
+
+unisIpfwIPv6VfrExcAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpfwChassis,
+            unisIpfwSlot,
+            unisIpfwVsysID,
+            unisIpfwIPv6FragBufSrcAddress,
+            unisIpfwIPv6FragBufDstAddress
+        }
+    STATUS      current
+    DESCRIPTION
+        "IPv6 virtual fragment reassembly over limit alarm was detected."
+    ::= { unisIpfwFragTrap 5 }
+
+unisIpfwIPv6VfrExcAlarmResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpfwChassis,
+            unisIpfwSlot,
+            unisIpfwVsysID
+        }
+    STATUS      current
+    DESCRIPTION
+        "IPv6 virtual fragment reassembly over limit alarm was resumed."
+    ::= { unisIpfwFragTrap 6 }
+
+unisIpfwMbufAllocFailed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpfwMbufAllocFailedNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "Failed to create an MBUF(memory buffer) data block because of
+         insufficient memory."
+    ::= { unisIpfwFragTrap 7 }
+
+unisIpfwTTLExpLoopAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpfwChassis,
+            unisIpfwSlot,
+            unisIpfwTTLLastRateLow,
+            unisIpfwTTLLastRateHigh,
+            unisIpfwTTLCurRateLow,
+            unisIpfwTTLCurRateHigh,
+            unisIpfwTTLInterval,
+            unisIpfwTTLThreshold
+        }
+    STATUS      current
+    DESCRIPTION
+        "TTL-expired-loop alarm was detected."
+    ::= { unisIpfwFragTrap 8 }
+
+unisIpfwTTLExpLoopResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpfwChassis,
+            unisIpfwSlot,
+            unisIpfwTTLLastRateLow,
+            unisIpfwTTLLastRateHigh,
+            unisIpfwTTLCurRateLow,
+            unisIpfwTTLCurRateHigh,
+            unisIpfwTTLInterval,
+            unisIpfwTTLThreshold
+        }
+    STATUS      current
+    DESCRIPTION
+        "TTL-expired-loop alarm was resumed."
+    ::= { unisIpfwFragTrap 9 }
+
+unisIpfwHopLimitExpLoopAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpfwChassis,
+            unisIpfwSlot,
+            unisIpfwHopLimitLastRateLow,
+            unisIpfwHopLimitLastRateHigh,
+            unisIpfwHopLimitCurRateLow,
+            unisIpfwHopLimitCurRateHigh,
+            unisIpfwHopLimitInterval,
+            unisIpfwHopLimitThreshold
+        }
+    STATUS      current
+    DESCRIPTION
+        "HopLimit-expired-loop alarm was detected."
+    ::= { unisIpfwFragTrap 10 }
+
+unisIpfwHopLimitExpLoopResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpfwChassis,
+            unisIpfwSlot,
+            unisIpfwHopLimitLastRateLow,
+            unisIpfwHopLimitLastRateHigh,
+            unisIpfwHopLimitCurRateLow,
+            unisIpfwHopLimitCurRateHigh,
+            unisIpfwHopLimitInterval,
+            unisIpfwHopLimitThreshold
+        }
+    STATUS      current
+    DESCRIPTION
+        "HopLimit-expired-loop alarm was resumed."
+    ::= { unisIpfwFragTrap 11 }
+
+unisIpfwFragTrapObjects OBJECT IDENTIFIER ::= { unisIpfwFragTraps 1 }
+
+-- unisIPFWFragTrapObjects
+unisIpfwIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of interface index."
+    ::= { unisIpfwFragTrapObjects 1 }
+
+unisIpfwPeerAddress OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The IP address of the peer."
+    ::= { unisIpfwFragTrapObjects 2 }
+
+unisIpfwInterfaceName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The name of interface."
+    ::= { unisIpfwFragTrapObjects 3 }
+
+unisIpfwChassis OBJECT-TYPE
+    SYNTAX      Unsigned32(0..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Chassis number."
+    ::= { unisIpfwFragTrapObjects 4 }
+
+unisIpfwSlot OBJECT-TYPE
+    SYNTAX      Unsigned32(0..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Slot number."
+    ::= { unisIpfwFragTrapObjects 5 }
+
+unisIpfwVsysID OBJECT-TYPE
+    SYNTAX      Unsigned32(0..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Vsystem number."
+    ::= { unisIpfwFragTrapObjects 6 }
+
+unisIpfwIPv4FragBufSrcAddress OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Source ip address."
+    ::= { unisIpfwFragTrapObjects 7 }
+
+unisIpfwIPv4FragBufDstAddress OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Destination ip address."
+    ::= { unisIpfwFragTrapObjects 8 }
+
+unisIpfwIPv6FragBufSrcAddress OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Source ipv6 address."
+    ::= { unisIpfwFragTrapObjects 9 }
+
+unisIpfwIPv6FragBufDstAddress OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Destination ipv6 address."
+    ::= { unisIpfwFragTrapObjects 10 }
+
+unisIpfwMbufAllocFailedNum OBJECT-TYPE
+    SYNTAX      Unsigned32(0..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of MBUF memory alloc failures."
+    ::= { unisIpfwFragTrapObjects 11 }
+
+unisIpfwTTLLastRateLow OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of bytes discarded by TTL timeout packets
+         in the previous cycle(low order)."
+    ::= { unisIpfwFragTrapObjects 12 }
+
+unisIpfwTTLLastRateHigh OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of bytes discarded by TTL timeout packets
+         in the previous cycle(high order)."
+    ::= { unisIpfwFragTrapObjects 13 }
+
+unisIpfwTTLCurRateLow OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of bytes discarded by TTL timeout packets
+         in the current cycle(low order)."
+    ::= { unisIpfwFragTrapObjects 14 }
+
+unisIpfwTTLCurRateHigh OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of bytes discarded by TTL timeout packets
+         in the current cycle(high order)."
+    ::= { unisIpfwFragTrapObjects 15 }
+
+unisIpfwTTLInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "TTL-expired-loop alarm interval."
+    ::= { unisIpfwFragTrapObjects 16 }
+
+unisIpfwTTLThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "TTL-expired-loop alarm threshold."
+    ::= { unisIpfwFragTrapObjects 17 }
+
+unisIpfwHopLimitLastRateLow OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of bytes discarded by HopLimit timeout packets
+         in the previous cycle(low order)."
+    ::= { unisIpfwFragTrapObjects 18 }
+
+unisIpfwHopLimitLastRateHigh OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of bytes discarded by HopLimit timeout packets
+         in the previous cycle(high order)."
+    ::= { unisIpfwFragTrapObjects 19 }
+
+unisIpfwHopLimitCurRateLow OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of bytes discarded by HopLimit timeout packets
+         in the current cycle(low order)."
+    ::= { unisIpfwFragTrapObjects 20 }
+
+unisIpfwHopLimitCurRateHigh OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of bytes discarded by HopLimit timeout packets
+         in the current cycle(high order)."
+    ::= { unisIpfwFragTrapObjects 21 }
+
+unisIpfwHopLimitInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "HopLimit-expired-loop alarm interval."
+    ::= { unisIpfwFragTrapObjects 22 }
+
+unisIpfwHopLimitThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "HopLimit-expired-loop alarm threshold."
+    ::= { unisIpfwFragTrapObjects 23 }
+
+END
+

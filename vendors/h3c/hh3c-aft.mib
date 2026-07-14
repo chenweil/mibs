@@ -1,0 +1,369 @@
+-- ============================================================================
+-- Copyright (c) 2004-2024 New H3C Tech. Co., Ltd. All rights reserved.
+-- Description:  This MIB file is used for configuration of AFT.
+--                include :1.AFT Log Trap
+-- Reference:
+-- Version: V1.2
+-- History:
+--  V1.0 2024-3-9 Initial version, create by liumengfei
+--  V1.1 2024-4-22 Modify by liumengfei
+--       Add hh3cAftPortBlockUsageTrap, hh3cAftPortBlockUsageRecovTrap
+--       Modify hh3cAftAddrGrpUsageTrap, hh3cAftAddrGrpUsageRecovTrap, hh3cAftPortUsageTrap, hh3cAftPortUsageRecovTrap
+--       hh3cAftPortExhaustTrap, hh3cAftPortExhaustRecovTrap
+--  V1.2 2024-6-21 Modify by liumengfei
+--       Modify hh3cAftTrapAddrGrpIndex, hh3cAftTrapAddrGrpChassis, hh3cAftTrapAddrGrpSlot
+-- ============================================================================
+HH3C-AFT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        hh3cCommon
+                FROM HH3C-OID-MIB
+        InetAddress, InetAddressType
+                FROM INET-ADDRESS-MIB
+        Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+                FROM SNMPv2-SMI;
+
+hh3cAft MODULE-IDENTITY
+    LAST-UPDATED "202406211200Z"            -- June 21, 2024 at 12:00 GMT
+    ORGANIZATION
+        "New H3C Technologies Co., Ltd."
+    CONTACT-INFO
+        "Platform Team New H3C Tech. Co., Ltd.
+        Hai-Dian District Beijing P.R. China
+        http://www.h3c.com
+        Zip:100085
+        "
+    DESCRIPTION
+        "This MIB contains objects that manage the configuration and information
+         of AFT module."
+
+    REVISION "202406211200Z"                -- June 21, 2024 at 12:00 GMT
+    DESCRIPTION
+            "Modify hh3cAftTrapAddrGrpIndex, hh3cAftTrapAddrGrpChassis, hh3cAftTrapAddrGrpSlot"
+
+    REVISION "202404221500Z"                -- April 22, 2024 at 15:00 GMT
+    DESCRIPTION
+            "Add hh3cAftPortBlockUsageTrap, hh3cAftPortBlockUsageRecovTrap
+             Modify hh3cAftAddrGrpUsageTrap, hh3cAftAddrGrpUsageRecovTrap
+             hh3cAftPortUsageTrap, hh3cAftPortUsageRecovTrap
+             hh3cAftPortExhaustTrap, hh3cAftPortExhaustRecovTrap"
+
+    REVISION "202403091200Z"        -- Match 9, 2024 at 12:00 GMT
+    DESCRIPTION
+        "The initial version."
+
+    ::= { hh3cCommon 268 }
+
+hh3cAftMibTrap OBJECT IDENTIFIER ::= { hh3cAft 1 }
+
+-- ----------------------------------------------------------------------
+-- hh3cAftTraps Table
+-- ----------------------------------------------------------------------
+hh3cAftTraps      OBJECT IDENTIFIER ::= { hh3cAftMibTrap 1 }
+hh3cAftTrapsPrefix      OBJECT IDENTIFIER ::= { hh3cAftTraps 0 }
+
+hh3cAftAddrGrpExhaustTrap NOTIFICATION-TYPE
+    OBJECTS { hh3cAftTrapAddrGrpChassis,
+              hh3cAftTrapAddrGrpSlot,
+              hh3cAftTrapAddrGrpCpu,
+              hh3cAftTrapAddrGrpIndex }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the address-group resources exhausted"
+    ::= { hh3cAftTrapsPrefix 1 }
+
+hh3cAftAddrGrpExhaustRecovTrap NOTIFICATION-TYPE
+    OBJECTS { hh3cAftTrapAddrGrpChassis,
+              hh3cAftTrapAddrGrpSlot,
+              hh3cAftTrapAddrGrpCpu,
+              hh3cAftTrapAddrGrpIndex }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the address-group resources drop below 87.5 percent."
+    ::= { hh3cAftTrapsPrefix 2}
+
+hh3cAftAddrGrpUsageTrap NOTIFICATION-TYPE
+    OBJECTS{ hh3cAftTrapAddrGrpChassis,
+             hh3cAftTrapAddrGrpSlot,
+             hh3cAftTrapAddrGrpCpu,
+             hh3cAftTrapAddrGrpIndex,
+             hh3cAftTrapAddrGrpUsgThreshold,
+             hh3cAftTrapPortAllocMode,
+             hh3cAftTrapPortAllocProtocol }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the address-group resources usage increase to above threshold."
+    ::= { hh3cAftTrapsPrefix 3}
+
+hh3cAftAddrGrpUsageRecovTrap NOTIFICATION-TYPE
+    OBJECTS { hh3cAftTrapAddrGrpChassis,
+              hh3cAftTrapAddrGrpSlot,
+              hh3cAftTrapAddrGrpCpu,
+              hh3cAftTrapAddrGrpIndex,
+              hh3cAftTrapAddrGrpUsgThreshold,
+              hh3cAftTrapPortAllocMode,
+              hh3cAftTrapPortAllocProtocol }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the address-group resources usage drop below 87.5 percent of the usage threshold."
+    ::= { hh3cAftTrapsPrefix 4}
+
+hh3cAftPortExhaustTrap NOTIFICATION-TYPE
+    OBJECTS{ hh3cAftTrapAddrGrpChassis,
+             hh3cAftTrapAddrGrpSlot,
+             hh3cAftTrapAddrGrpCpu,
+             hh3cAftTrapAddrGrpIndex,
+             hh3cAftTrapUserIPType,
+             hh3cAftTrapUserIP,
+             hh3cAftTrapUserVpn,
+             hh3cAftTrapAddrGrpMemberIPType,
+             hh3cAftTrapAddrGrpMemberIP,
+             hh3cAftTrapAddrGrpMemberVpn,
+             hh3cAftTrapMemberIPPortNums,
+             hh3cAftTrapPortAllocMode,
+             hh3cAftTrapPortAllocProtocol }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the port resources exhausted."
+    ::= { hh3cAftTrapsPrefix 5}
+
+hh3cAftPortExhaustRecovTrap NOTIFICATION-TYPE
+    OBJECTS{ hh3cAftTrapAddrGrpChassis,
+             hh3cAftTrapAddrGrpSlot,
+             hh3cAftTrapAddrGrpCpu,
+             hh3cAftTrapAddrGrpIndex,
+             hh3cAftTrapUserIPType,
+             hh3cAftTrapUserIP,
+             hh3cAftTrapUserVpn,
+             hh3cAftTrapAddrGrpMemberIPType,
+             hh3cAftTrapAddrGrpMemberIP,
+             hh3cAftTrapAddrGrpMemberVpn,
+             hh3cAftTrapMemberIPPortNums,
+             hh3cAftTrapPortAllocMode,
+             hh3cAftTrapPortAllocProtocol }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the port resources drop below 87.5 percent."
+    ::= { hh3cAftTrapsPrefix 6}
+
+hh3cAftPortUsageTrap NOTIFICATION-TYPE
+    OBJECTS{ hh3cAftTrapAddrGrpChassis,
+             hh3cAftTrapAddrGrpSlot,
+             hh3cAftTrapAddrGrpCpu,
+             hh3cAftTrapAddrGrpIndex,
+             hh3cAftTrapUserIPType,
+             hh3cAftTrapUserIP,
+             hh3cAftTrapUserVpn,
+             hh3cAftTrapAddrGrpMemberIPType,
+             hh3cAftTrapAddrGrpMemberIP,
+             hh3cAftTrapAddrGrpMemberVpn,
+             hh3cAftTrapMemberIPPortNums,
+             hh3cAftTrapPortUsageThreshold,
+             hh3cAftTrapPortAllocMode,
+             hh3cAftTrapPortAllocProtocol }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the port resources usage increase to above threshold."
+    ::= { hh3cAftTrapsPrefix 7}
+
+hh3cAftPortUsageRecovTrap NOTIFICATION-TYPE
+    OBJECTS{ hh3cAftTrapAddrGrpChassis,
+             hh3cAftTrapAddrGrpSlot,
+             hh3cAftTrapAddrGrpCpu,
+             hh3cAftTrapAddrGrpIndex,
+             hh3cAftTrapUserIPType,
+             hh3cAftTrapUserIP,
+             hh3cAftTrapUserVpn,
+             hh3cAftTrapAddrGrpMemberIPType,
+             hh3cAftTrapAddrGrpMemberIP,
+             hh3cAftTrapAddrGrpMemberVpn,
+             hh3cAftTrapMemberIPPortNums,
+             hh3cAftTrapPortUsageThreshold,
+             hh3cAftTrapPortAllocMode,
+             hh3cAftTrapPortAllocProtocol }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the port resources usage drop below 87.5 percent of the usage threshold."
+    ::= { hh3cAftTrapsPrefix 8}
+
+hh3cAftPortBlockUsageTrap NOTIFICATION-TYPE
+    OBJECTS{ hh3cAftTrapAddrGrpChassis,
+             hh3cAftTrapAddrGrpSlot,
+             hh3cAftTrapAddrGrpCpu,
+             hh3cAftTrapAddrGrpIndex,
+             hh3cAftTrapPortBlockCount,
+             hh3cAftTrapPortBlockUsedCount,
+             hh3cAftTrapPortBlockUsage }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the address group port block resource usage exceeds the threshold."
+    ::= { hh3cAftTrapsPrefix 9}
+
+hh3cAftPortBlockUsageRecovTrap NOTIFICATION-TYPE
+    OBJECTS { hh3cAftTrapAddrGrpChassis,
+              hh3cAftTrapAddrGrpSlot,
+              hh3cAftTrapAddrGrpCpu,
+              hh3cAftTrapAddrGrpIndex,
+              hh3cAftTrapPortBlockCount,
+              hh3cAftTrapPortBlockUsedCount,
+              hh3cAftTrapPortBlockUsage }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the address group port block resource usage drops below 87.5 percent of the usage threshold."
+    ::= { hh3cAftTrapsPrefix 10}
+
+-- ----------------------------------------------------------------------
+-- hh3cAftMibTrapOid Table
+-- ----------------------------------------------------------------------
+hh3cAftMibTrapOid OBJECT IDENTIFIER ::= { hh3cAftMibTrap 2 }
+hh3cAftTrapsBindingVariables OBJECT IDENTIFIER ::= { hh3cAftMibTrapOid 1 }
+
+hh3cAftTrapAddrGrpChassis OBJECT-TYPE
+    SYNTAX Integer32 (0..65534)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The chassis number of the AFT address-group current location."
+    ::= { hh3cAftTrapsBindingVariables 1 }
+
+hh3cAftTrapAddrGrpSlot OBJECT-TYPE
+    SYNTAX Integer32 (0..65534)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The slot number of the AFT address-group current location."
+    ::= { hh3cAftTrapsBindingVariables 2 }
+
+hh3cAftTrapAddrGrpCpu OBJECT-TYPE
+    SYNTAX Integer32 (0..7)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The cpu number of the AFT address-group current location."
+    ::= { hh3cAftTrapsBindingVariables 3 }
+
+hh3cAftTrapAddrGrpIndex OBJECT-TYPE
+    SYNTAX Integer32 (0..65536)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The number of AFT address-group index."
+    ::= { hh3cAftTrapsBindingVariables 4 }
+
+hh3cAftTrapAddrGrpUsgThreshold OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The address resources usage threshold of the AFT address-group."
+    ::= { hh3cAftTrapsBindingVariables 5 }
+
+hh3cAftTrapUserIPType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The IP type of the user traffic."
+    ::= { hh3cAftTrapsBindingVariables 6 }
+
+hh3cAftTrapUserIP OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The IP address of the user traffic."
+    ::= { hh3cAftTrapsBindingVariables 7 }
+
+hh3cAftTrapUserVpn OBJECT-TYPE
+    SYNTAX OCTET STRING(SIZE(0..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The vpn-instance of the user traffic."
+    ::= { hh3cAftTrapsBindingVariables 8 }
+
+hh3cAftTrapAddrGrpMemberIPType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The IP type of the AddrGrpMember."
+    ::= { hh3cAftTrapsBindingVariables 9 }
+
+hh3cAftTrapAddrGrpMemberIP OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The IP of the AddrGrpMember."
+    ::= { hh3cAftTrapsBindingVariables 10 }
+
+hh3cAftTrapAddrGrpMemberVpn OBJECT-TYPE
+    SYNTAX OCTET STRING(SIZE(0..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The vpn-instance of the AddrGrpMember."
+    ::= { hh3cAftTrapsBindingVariables 11 }
+
+hh3cAftTrapMemberIPPortNums OBJECT-TYPE
+    SYNTAX Integer32 (0..65536)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The number of the AFT address-group IP port."
+    ::= { hh3cAftTrapsBindingVariables 12 }
+
+hh3cAftTrapPortUsageThreshold OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The port resources usage threshold of the AFT port-block."
+    ::= { hh3cAftTrapsBindingVariables 13 }
+
+hh3cAftTrapPortAllocMode OBJECT-TYPE
+    SYNTAX INTEGER
+                {
+                    cdm(1),
+                    eim(2)
+                }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Port allocation mode."
+    ::= { hh3cAftTrapsBindingVariables 14 }
+
+hh3cAftTrapPortAllocProtocol OBJECT-TYPE
+    SYNTAX OCTET STRING(SIZE (1..32))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The protocol name of ports."
+    ::= { hh3cAftTrapsBindingVariables 15 }
+
+hh3cAftTrapPortBlockCount OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The number of port blocks of the address group."
+    ::= { hh3cAftTrapsBindingVariables 16 }
+
+hh3cAftTrapPortBlockUsedCount OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The number of used port blocks of the address group."
+    ::= { hh3cAftTrapsBindingVariables 17 }
+
+hh3cAftTrapPortBlockUsage OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The port block usage of the address group."
+    ::= { hh3cAftTrapsBindingVariables 18 }
+
+END

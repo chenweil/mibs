@@ -1,0 +1,130 @@
+-- ============================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description:  This MIB file is used for configuration of VSRP (Virtual Service
+--               Redundancy Protocol).
+--                include :1.VSRP Peer trap
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2022/08/31 created by w22500
+-- ============================================================================
+UNIS-VSRP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM SNMPv2-TC;
+
+
+unisVsrp MODULE-IDENTITY
+    LAST-UPDATED "202208312041Z"             -- august 31, 2022 at 20:41 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The initial revision of this MIB module."
+
+    REVISION "202208312041Z"             -- august 31, 2022 at 20:41 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 254 }
+
+
+--
+-- Node definitions
+--
+
+
+-- Describes objects for VSRP peer connect traps
+unisVsrpTraps OBJECT IDENTIFIER ::= { unisVsrp 1 }
+
+unisVsrpTrapsPrefix OBJECT IDENTIFIER ::= { unisVsrpTraps 0 }
+unisVsrpPeerConnDownTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisVsrpPeerName,
+        unisVsrpPeerConnDownReason
+    }
+    STATUS current
+    DESCRIPTION
+        "Send trap when the TCP connection of VSRP peer was torn down."
+    ::= { unisVsrpTrapsPrefix 1 }
+
+unisVsrpPeerConnUPTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisVsrpPeerName
+    }
+    STATUS current
+    DESCRIPTION
+        "Send traps when the TCP connection of VSRP peer is established."
+    ::= { unisVsrpTrapsPrefix 2 }
+
+unisVsrpInstanceStateChangeTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisVsrpInstanceName,
+        unisVsrpInstanceOldState,
+        unisVsrpInstanceNewState,
+        unisVsrpInstChangeReason
+    }
+    STATUS current
+    DESCRIPTION
+        "Send traps when VSRP instance state changed."
+    ::= { unisVsrpTrapsPrefix 3 }
+
+
+unisVsrpTrapsInfo OBJECT IDENTIFIER ::= { unisVsrpTraps 1 }
+unisVsrpPeerName OBJECT-TYPE
+    SYNTAX DisplayString(SIZE (1..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "VSRP Peer name."
+    ::= { unisVsrpTrapsInfo 1 }
+
+unisVsrpPeerConnDownReason OBJECT-TYPE
+    SYNTAX DisplayString(SIZE (1..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The reason for TCP connection torn down."
+    ::= { unisVsrpTrapsInfo 2 }
+
+unisVsrpInstanceName OBJECT-TYPE
+    SYNTAX DisplayString(SIZE (1..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "VSRP instance name."
+    ::= { unisVsrpTrapsInfo 3 }
+
+unisVsrpInstanceOldState OBJECT-TYPE
+    SYNTAX DisplayString(SIZE (1..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The old state of VSRP instance."
+    ::= { unisVsrpTrapsInfo 4 }
+
+unisVsrpInstanceNewState OBJECT-TYPE
+    SYNTAX DisplayString(SIZE (1..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The new state of VSRP instance."
+    ::= { unisVsrpTrapsInfo 5 }
+
+unisVsrpInstChangeReason OBJECT-TYPE
+    SYNTAX DisplayString(SIZE (1..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The reason for VSRP instance state change."
+    ::= { unisVsrpTrapsInfo 6 }
+
+END

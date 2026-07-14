@@ -1,0 +1,251 @@
+-- ============================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The purpose of this MIB file is to provide the definition of
+--              the tunnel trap.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2022-05-16
+--   Initial version, created by shaojunjun
+--   Add unisTunnelTrapStatus
+--   Modify by yuanyuchen
+--   Add unisTunnelTrapVxlanCfg, unisTunnelTrapVxlanDecap,
+--   unisTunnelTrapIfNumExceed
+-- ============================================================================
+UNIS-TUNNEL-TRAP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Integer32, Unsigned32
+    FROM SNMPv2-SMI
+        InetAddressType, InetAddress
+    FROM INET-ADDRESS-MIB;
+
+-- Node definitions
+unisTunnelTrap MODULE-IDENTITY
+    LAST-UPDATED "202205161800Z"        -- MAY 16, 2022 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file defines the tunnel trap warning feature only."
+    REVISION "202205161800Z"
+    DESCRIPTION
+        "The initial version of this MIB file.
+         Add unisTunnelTrapVxlanCfg, unisTunnelTrapVxlanDecap,
+         unisTunnelTrapIfNumExceed, unisTunnelTrapStatus."
+    ::= { unisCommon 226}
+
+-- unisTunnelTrapStatus
+unisTunnelTrapStatus OBJECT IDENTIFIER ::= { unisTunnelTrap 1 }
+unisTunnelTrapVxlanStatus OBJECT IDENTIFIER  ::= { unisTunnelTrapStatus 1 }
+unisTunnelTrapsVxlanStatus OBJECT IDENTIFIER  ::= { unisTunnelTrapVxlanStatus 0 }
+
+-- unisTunnelTrapsVxlanStatus
+unisTunnelTrapVxlanStatusUp NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTunnelTrapVxlanStatusSType,
+            unisTunnelTrapVxlanStatusSrcIP,
+            unisTunnelTrapVxlanStatusDType,
+            unisTunnelTrapVxlanStatusDstIP
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the status of the VXLAN tunnel changes to up,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisTunnelTrapsVxlanStatus 1 }
+
+unisTunnelTrapVxlanStatusDown NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTunnelTrapVxlanStatusSType,
+            unisTunnelTrapVxlanStatusSrcIP,
+            unisTunnelTrapVxlanStatusDType,
+            unisTunnelTrapVxlanStatusDstIP
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the status of the VXLAN tunnel changes to down,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisTunnelTrapsVxlanStatus 2 }
+
+unisTunnelTrapStatusObjects OBJECT IDENTIFIER  ::= { unisTunnelTrapVxlanStatus 1 }
+
+-- unisTunnelTrapStatusObjects
+unisTunnelTrapVxlanStatusSType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "VXLAN tunnel source address type."
+    ::= { unisTunnelTrapStatusObjects 1 }
+
+unisTunnelTrapVxlanStatusSrcIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "VXLAN tunnel source address."
+    ::= { unisTunnelTrapStatusObjects 2 }
+
+unisTunnelTrapVxlanStatusDType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "VXLAN tunnel destination address type."
+    ::= { unisTunnelTrapStatusObjects 3 }
+
+unisTunnelTrapVxlanStatusDstIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        " VXLAN tunnel destination address."
+    ::= { unisTunnelTrapStatusObjects 4 }
+
+unisTunnelTrapVxlanCfg OBJECT IDENTIFIER  ::= { unisTunnelTrap 2 }
+unisTunnelTrapsVxlanCfg OBJECT IDENTIFIER  ::= { unisTunnelTrapVxlanCfg 0 }
+
+-- unisTunnelTrapsVxlanCfg
+unisTunnelTrapVxlanCfgFailed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTunnelTrapVxlanCfgTunnelIfNo
+        }
+    STATUS      current
+    DESCRIPTION
+        "Vxlan tunnel configuration delivery failed."
+    ::= { unisTunnelTrapsVxlanCfg 1 }
+
+unisTunnelTrapVxlanCfgObjects OBJECT IDENTIFIER  ::= { unisTunnelTrapVxlanCfg 1 }
+
+-- unisTunnelTrapVxlanCfgObjects
+unisTunnelTrapVxlanCfgTunnelIfNo OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Tunnel interface number."
+    ::= { unisTunnelTrapVxlanCfgObjects 1 }
+
+unisTunnelTrapVxlanDecap OBJECT IDENTIFIER  ::= { unisTunnelTrap 3 }
+unisTunnelTrapsVxlanDecap OBJECT IDENTIFIER  ::= { unisTunnelTrapVxlanDecap 0 }
+
+-- unisTunnelTrapsVxlanDecap
+unisTunnelTrapVxlanFailDecapPkt NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTunnelTrapVxlanChassis,
+            unisTunnelTrapVxlanSlot,
+            unisTunnelTrapVxlanVni,
+            unisTunnelTrapVxlanSrcType,
+            unisTunnelTrapVxlanSrcIP,
+            unisTunnelTrapVxlanDstType,
+            unisTunnelTrapVxlanDstIP
+        }
+    STATUS      current
+    DESCRIPTION
+        "Failed to decapsulate VXLAN packet on the device."
+    ::= { unisTunnelTrapsVxlanDecap 1 }
+
+unisTunnelTrapVxlanDecapObjects OBJECT IDENTIFIER  ::= { unisTunnelTrapVxlanDecap 1 }
+
+-- unisTunnelTrapVxlanDecapObjects
+unisTunnelTrapVxlanChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+         not a stacked device."
+    ::= { unisTunnelTrapVxlanDecapObjects 1 }
+
+unisTunnelTrapVxlanSlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of slot."
+    ::= { unisTunnelTrapVxlanDecapObjects 2 }
+
+unisTunnelTrapVxlanVni OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The network identifier of VXLAN."
+    ::= { unisTunnelTrapVxlanDecapObjects 3 }
+
+unisTunnelTrapVxlanSrcType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "VXLAN tunnel source address type."
+    ::= { unisTunnelTrapVxlanDecapObjects 4 }
+
+unisTunnelTrapVxlanSrcIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "VXLAN tunnel source address."
+    ::= { unisTunnelTrapVxlanDecapObjects 5 }
+
+unisTunnelTrapVxlanDstType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "VXLAN tunnel destination address type."
+    ::= { unisTunnelTrapVxlanDecapObjects 6 }
+
+unisTunnelTrapVxlanDstIP OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "VXLAN tunnel destination address."
+    ::= { unisTunnelTrapVxlanDecapObjects 7 }
+
+unisTunnelTrapIfNumExceed OBJECT IDENTIFIER  ::= { unisTunnelTrap 4 }
+unisTunnelTrapsIfNumExceed OBJECT IDENTIFIER  ::= { unisTunnelTrapIfNumExceed 0 }
+
+-- unisTunnelTrapsIfNumExceed
+unisTunnelTrapIfNumExceeded NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisTunnelTrapIfNumExceedCurNum,
+            unisTunnelTrapIfNumExceedSpecNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of tunnel interfaces on the device exceeds the limit."
+    ::= { unisTunnelTrapsIfNumExceed 1 }
+
+unisTunnelTrapIfNumExceedObjects OBJECT IDENTIFIER  ::= { unisTunnelTrapIfNumExceed 1 }
+
+-- unisTunnelTrapIfNumExceedObjects
+unisTunnelTrapIfNumExceedCurNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Current number of tunnel interfaces."
+    ::= { unisTunnelTrapIfNumExceedObjects 1 }
+
+unisTunnelTrapIfNumExceedSpecNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Maximum number of tunnel interfaces."
+    ::= { unisTunnelTrapIfNumExceedObjects 2 }
+
+END
+

@@ -1,0 +1,1465 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: RPR private MIB. Description of entity extend properties for
+-- IEEE-802DOT17-RPR-MIB
+-- Reference: IEEE-802DOT17-RPR-MIB
+-- Version: V1.2
+-- History:
+--  V1.0 created by qinxia
+--  V1.1 modified by hexuefei,Add the RPR packet drop counters table.
+--  V1.2 2015-04-30 Bug fixed by songhao
+-- =================================================================
+UNIS-RPR-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        unisCommon
+            FROM UNIS-OID-MIB
+        rprTopoImageEntry, rprTopoImageMacAddress, rprTopoImageInetAddress
+            FROM IEEE-802DOT17-RPR-MIB
+        InterfaceIndex
+            FROM IF-MIB
+        SnmpAdminString
+            FROM SNMP-FRAMEWORK-MIB
+        RowStatus, TruthValue, MacAddress, TEXTUAL-CONVENTION
+            FROM SNMPv2-TC
+        MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+        Gauge32, Counter64, Integer32
+            FROM SNMPv2-SMI
+        InetAddress
+            FROM INET-ADDRESS-MIB;
+
+        unisRpr MODULE-IDENTITY
+            LAST-UPDATED "200503161000Z"  -- March 16, 2005 at 10:18:41 GMT
+            ORGANIZATION
+                "Unisyue Technologies Co., Ltd."
+            CONTACT-INFO
+                ""
+            DESCRIPTION
+                "This MIB manages RPR(Resilient Packet Ring)interfaces by
+                 providing an operational table which controls parameters
+                 of each RPR interface and reports alarm conditions.
+
+                 A RPR ring is composed of two fiber rings: Outer and Inner."
+            REVISION "200503161000Z"      -- March 16, 2005 at 10:18:41 GMT
+            DESCRIPTION
+                "First published version."
+            ::= { unisCommon 60 }
+
+--
+-- Textual conventions
+--
+
+    UnisRprRingletID ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "Indicates the path on which data flow is selected.
+             The valid value is ringlet0 and ringlet1. They indicate
+             two RPR fiber rings. Ringlet0 refers to outer ring and
+             ringlet1 refers to inner ring."
+        REFERENCE
+            "IEEE 802.17 V3.3 Subclause 11.2.1.1 Span and
+             ringlet parameterization."
+        SYNTAX INTEGER
+            {
+             ringlet0(1),
+             ringlet1(2)
+        }
+
+    UnisRprServiceClass ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "Indicates the service class of RPR.
+             The valid value is ClassC, ClassB, ClassA1 and ClassA0."
+        REFERENCE
+                "IEEE 802.17 V3.3 Subclause 7.3 Service class."
+        SYNTAX INTEGER
+            {
+             classC(1),
+             classB(2),
+             classA1(3),
+             classA0(4)
+        }
+
+    unisRprObjects OBJECT IDENTIFIER ::= { unisRpr 1 }
+
+-- RPR maximum define table
+
+    unisRprMaxmumDefine OBJECT IDENTIFIER ::= { unisRprObjects 1 }
+
+    unisRprMaxmumDefineTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprMaxmumDefineEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table contains the specs of RPR ring."
+      ::= { unisRprMaxmumDefine 1 }
+
+    unisRprMaxmumDefineEntry OBJECT-TYPE
+        SYNTAX UnisRprMaxmumDefineEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The entry of RPR Maximum Table."
+        INDEX { unisRprMaxMumIfIndex }
+        ::= { unisRprMaxmumDefineTable 1 }
+
+    UnisRprMaxmumDefineEntry ::=
+        SEQUENCE {
+            unisRprMaxMumIfIndex
+                InterfaceIndex,
+            unisRprMaxStationNumDefine
+                INTEGER,
+            unisRprMaxReservedRateDefine
+                Gauge32
+        }
+
+    unisRprMaxMumIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of this RPR interface."
+        ::= { unisRprMaxmumDefineEntry 1 }
+
+    unisRprMaxStationNumDefine OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Max station number supported by RPR ring."
+        ::= { unisRprMaxmumDefineEntry 2 }
+
+
+    unisRprMaxReservedRateDefine OBJECT-TYPE
+        SYNTAX Gauge32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Max reserved rate supported by each RPR ringlet.
+             An estimate of the interface's current bandwidth in
+             units of 1,000,000 bits per second.  If this object
+             reports a value of 'n' then the speed of the interface
+             is somewhere in the range of 'n-500,000' to
+             'n+499,999'.  For interfaces which do not vary in
+             bandwidth or for those where no accurate estimation
+             can be made, this object should contain the nominal
+             bandwidth.  For a sub-layer which has no concept of
+             bandwidth, this object should be zero."
+        ::= { unisRprMaxmumDefineEntry 3 }
+
+    unisRprTopoImage OBJECT IDENTIFIER ::= { unisRprObjects 2 }
+
+-- extension to the RPR topology table
+
+    unisRprTopoImageXTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprTopoImageXEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table contains additional objects
+             for the rprTopoImageTable in IEEE-802DOT17-RPR-MIB."
+        REFERENCE
+            "rprTopoImageTable in IEEE-802DOT17-RPR-MIB."
+        ::= { unisRprTopoImage 1 }
+
+    unisRprTopoImageXEntry OBJECT-TYPE
+        SYNTAX UnisRprTopoImageXEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Each entry contains information specific to a particular
+             station on the ring. The table has at least one entry for
+             the station itself, this entry indicates zero hops on each
+             ringlet."
+         AUGMENTS { rprTopoImageEntry }
+         ::= { unisRprTopoImageXTable 1 }
+
+    UnisRprTopoImageXEntry ::=
+        SEQUENCE {
+            unisRprTopoImageXWestEdgeStatus
+                TruthValue,
+            unisRprTopoImageXEastEdgeStatus
+                TruthValue,
+            unisRprTopoImageXStationName
+                SnmpAdminString
+        }
+
+    unisRprTopoImageXWestEdgeStatus OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The current edge status of the west span.
+             If an edge exists,the unisRprTopoImageXWestEdgeStatus is true.
+             Otherwise, the unisRprTopoImageXWestEdgeStatus is false."
+        REFERENCE
+            "IEEE 802.17  V3.3 Subclause 11.1.1.5, Edges"
+        ::= { unisRprTopoImageXEntry 3 }
+
+    unisRprTopoImageXEastEdgeStatus OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The current edge status of the east span.
+             If an edge exists, the unisRprTopoImageXEastEdgeStatus is true.
+             Otherwise, the unisRprTopoImageXEastEdgeStatus is false."
+        REFERENCE
+             "IEEE 802.17  V3.3 Subclause 11.1.1.5, Edges"
+        ::= { unisRprTopoImageXEntry 4 }
+
+    unisRprTopoImageXStationName OBJECT-TYPE
+        SYNTAX SnmpAdminString
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The operator assigned station name. The operator can assigned it
+             by unisRprTopoImageXStationName."
+        REFERENCE
+            "IEEE 802.17 V3.3 Subclause 11.2.6, stationName."
+        ::= { unisRprTopoImageXEntry 5 }
+
+    unisRprSpanCounters OBJECT IDENTIFIER ::= { unisRprObjects 3 }
+
+-- RPR source mac counters table
+
+    unisRprSrcMacCountTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprSrcMacCountEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR Source Mac Count Table contains the cumulative sum
+             of frames and octects from the particular source station."
+        ::= { unisRprSpanCounters 1 }
+
+    unisRprSrcMacCountEntry OBJECT-TYPE
+        SYNTAX UnisRprSrcMacCountEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the RPR Source Mac Count Table."
+        INDEX { unisRprSrcMacCountIfIndex, unisRprSrcMacCountBySrcAddress }
+        ::= { unisRprSrcMacCountTable 1 }
+
+    UnisRprSrcMacCountEntry ::=
+        SEQUENCE {
+            unisRprSrcMacCountIfIndex
+                InterfaceIndex,
+            unisRprSrcMacCountBySrcAddress
+                MacAddress,
+          unisRprSrcMacCountReceivedFrames
+                Counter64,
+            unisRprSrcMacCountReceivedOctets
+                Counter64
+        }
+
+    unisRprSrcMacCountIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of this RPR interface."
+        REFERENCE
+            "RFC 2863, ifIndex."
+        ::= { unisRprSrcMacCountEntry 1 }
+
+    unisRprSrcMacCountBySrcAddress OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "MAC address of the source station where the frames come from."
+        ::= { unisRprSrcMacCountEntry 2 }
+
+    unisRprSrcMacCountReceivedFrames OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Frames received from a particular MAC address of source station."
+        ::= { unisRprSrcMacCountEntry 3 }
+
+    unisRprSrcMacCountReceivedOctets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Octets received from a particular MAC address of source station."
+        ::= { unisRprSrcMacCountEntry 4 }
+
+-- RPR destination mac counters table
+
+    unisRprDestMacCountTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprDestMacCountEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR Destination MAC Count Table contains the cumulative sum
+             of  frames and octects to the particular destination station."
+        ::= { unisRprSpanCounters 2 }
+
+    unisRprDestMacCountEntry OBJECT-TYPE
+        SYNTAX UnisRprDestMacCountEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the RPR MAC Destination Count Table."
+        INDEX { unisRprDestMacCountIfIndex, unisRprDestMacCountByDestAddress }
+        ::= { unisRprDestMacCountTable 1 }
+
+    UnisRprDestMacCountEntry ::=
+        SEQUENCE {
+            unisRprDestMacCountIfIndex
+                InterfaceIndex,
+            unisRprDestMacCountByDestAddress
+                MacAddress,
+            unisRprDestMacCountReceivedFrames
+                Counter64,
+            unisRprDestMacCountReceivedOctets
+                Counter64
+        }
+
+    unisRprDestMacCountIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of RPR interface."
+        REFERENCE
+            "RFC 2863, ifIndex"
+        ::= { unisRprDestMacCountEntry 1 }
+
+    unisRprDestMacCountByDestAddress OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "MAC address of the destination station where the frames are sent
+             to."
+        ::= { unisRprDestMacCountEntry 2 }
+
+    unisRprDestMacCountReceivedFrames OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Frames sent to a particular MAC address of destination station."
+        ::= { unisRprDestMacCountEntry 3 }
+
+    unisRprDestMacCountReceivedOctets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Octets sent to a particular MAC address of destination station."
+        ::= { unisRprDestMacCountEntry 4 }
+
+-- RPR packet drop counters table
+
+     unisRprPktDropCountTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprPktDropCountEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR Packet Drop Count Table contains the cumulative sum
+             of packets dropped for congestion."
+        ::= { unisRprSpanCounters 3 }
+
+     unisRprPktDropCountEntry OBJECT-TYPE
+        SYNTAX UnisRprPktDropCountEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the RPR Packet Drop Count Table."
+        INDEX { unisRprPktDropCntIfIndex, unisRprPktDropCntRingletID }
+        ::= { unisRprPktDropCountTable 1 }
+
+     UnisRprPktDropCountEntry ::=
+        SEQUENCE {
+                unisRprPktDropCntIfIndex
+                    InterfaceIndex,
+                unisRprPktDropCntRingletID
+                    UnisRprRingletID,
+                unisRprDownFlowClassAPktDrops
+                    Counter64,
+                unisRprUpFlowClassAPktDrops
+                    Counter64,
+                unisRprDownFlowClassBPktDrops
+                    Counter64,
+                unisRprUpFlowClassBPktDrops
+                    Counter64,
+                unisRprDownFlowClassCPktDrops
+                    Counter64,
+                unisRprUpFlowClassCPktDrops
+                    Counter64
+        }
+
+     unisRprPktDropCntIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of this RPR interface."
+        REFERENCE
+             "RFC 2863, ifIndex."
+        ::= { unisRprPktDropCountEntry 1 }
+
+     unisRprPktDropCntRingletID OBJECT-TYPE
+        SYNTAX UnisRprRingletID
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR Ringlet of the station through which the packets transmit."
+        ::= { unisRprPktDropCountEntry 2 }
+
+     unisRprDownFlowClassAPktDrops OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total dropped number of Class A packets which transmit
+             down from the host."
+        ::= { unisRprPktDropCountEntry 3 }
+
+     unisRprUpFlowClassAPktDrops OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total dropped number of Class A packets which transmit
+             up to the host."
+        ::= { unisRprPktDropCountEntry 4 }
+
+     unisRprDownFlowClassBPktDrops OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total dropped number of Class B packets which transmit
+             down from the host."
+        ::= { unisRprPktDropCountEntry 5 }
+
+     unisRprUpFlowClassBPktDrops OBJECT-TYPE
+         SYNTAX Counter64
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+            "The total dropped number of Class B packets which transmit
+             up to the host."
+         ::= { unisRprPktDropCountEntry 6 }
+
+     unisRprDownFlowClassCPktDrops OBJECT-TYPE
+         SYNTAX Counter64
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+             "The total dropped number of Class C packets which transmit
+              down from the host."
+         ::= { unisRprPktDropCountEntry 7 }
+
+     unisRprUpFlowClassCPktDrops OBJECT-TYPE
+         SYNTAX Counter64
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+             "The total dropped number of Class C packets which transmit
+              up to the host."
+         ::= { unisRprPktDropCountEntry 8 }
+
+    unisRprRS OBJECT IDENTIFIER ::= { unisRprObjects 4 }
+
+-- The RPR static ring selection table
+
+    unisRprStaticRSTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprStaticRSEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR Static Ring Selection table contains the static
+             ring selection information by the way of configuration."
+        ::= { unisRprRS 1 }
+
+    unisRprStaticRSEntry OBJECT-TYPE
+        SYNTAX UnisRprStaticRSEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the RPR Static Ring Selection table."
+        INDEX { unisRprStaticRSIfIndex, unisRprStaticRSMacAddress }
+        ::= { unisRprStaticRSTable 1 }
+
+    UnisRprStaticRSEntry ::=
+        SEQUENCE {
+            unisRprStaticRSIfIndex
+                InterfaceIndex,
+            unisRprStaticRSMacAddress
+                MacAddress,
+            unisRprStaticRSRingletID
+                UnisRprRingletID,
+            unisRprStaticRSTtl
+                INTEGER,
+            unisRprStaticRSValid
+                TruthValue,
+            unisRprStaticRSRowStatus
+                RowStatus
+        }
+
+    unisRprStaticRSIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of RPR interface."
+        REFERENCE
+            "RFC 2863, ifIndex"
+        ::= { unisRprStaticRSEntry 1 }
+
+    unisRprStaticRSMacAddress OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The MAC address of the station on the ring."
+        ::= { unisRprStaticRSEntry 2 }
+
+    unisRprStaticRSRingletID OBJECT-TYPE
+        SYNTAX UnisRprRingletID
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The identifier of the ring which frames are sent
+             from one station to another. Ringlet0 refers to outer ring,
+             while ringlet1 does inner."
+        ::= { unisRprStaticRSEntry 3 }
+
+    unisRprStaticRSTtl  OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The hops from source station to destination station by the
+             selected ringlet."
+        ::= { unisRprStaticRSEntry 4 }
+
+    unisRprStaticRSValid OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The flag identify whether the configed ringlet is valid.
+             If it is true, the configed ringlet is valid, otherwise
+             it's invalid."
+        ::= { unisRprStaticRSEntry 5 }
+
+    unisRprStaticRSRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The status of this table entry.
+             The status includes createAndGo, active and destroy."
+        ::= { unisRprStaticRSEntry 6 }
+
+-- The RPR Ipv4 dynamic ring selection table
+
+    unisRprIpv4DynamicRSTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprIpv4DynamicRSEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR Ipv4Dynamic Ring Selection Table that contains the
+             dynamic ring selection information by shortest path."
+        ::= { unisRprRS 2 }
+
+    unisRprIpv4DynamicRSEntry OBJECT-TYPE
+        SYNTAX UnisRprIpv4DynamicRSEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the RPR Ipv4Dynamic Ring Selection Table."
+        INDEX { unisRprIpv4DynamicRSIfIndex, unisRprIpv4DynamicRSMacAddress }
+        ::= { unisRprIpv4DynamicRSTable 1 }
+
+    UnisRprIpv4DynamicRSEntry ::=
+        SEQUENCE {
+            unisRprIpv4DynamicRSIfIndex
+                InterfaceIndex,
+            unisRprIpv4DynamicRSMacAddress
+                MacAddress,
+            unisRprIpv4DynamicRSRingletID
+                UnisRprRingletID,
+            unisRprIpv4DynamicRSTtl
+                INTEGER
+        }
+
+    unisRprIpv4DynamicRSIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of RPR interface."
+        REFERENCE
+            "RFC 2863, ifIndex"
+        ::= { unisRprIpv4DynamicRSEntry 1 }
+
+    unisRprIpv4DynamicRSMacAddress OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The Ipv4 MAC address of destination station on the ring."
+        ::= { unisRprIpv4DynamicRSEntry 2 }
+
+    unisRprIpv4DynamicRSRingletID OBJECT-TYPE
+        SYNTAX UnisRprRingletID
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The identifier of the ring which frames are sent
+             from the source station to the destination station."
+        ::= { unisRprIpv4DynamicRSEntry 3 }
+
+    unisRprIpv4DynamicRSTtl OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The hops from source station to destination station by the
+             selected ringlet."
+        ::= { unisRprIpv4DynamicRSEntry 4 }
+
+-- The RPR Ipv6 dynamic ring selection table
+
+    unisRprIpv6DynamicRSTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprIpv6DynamicRSEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR Ipv6 Dynamic Ring Selection Table that contains the Ipv6
+             ring selection information by dynamic ring selection and static
+             ring selection."
+        ::= { unisRprRS 3 }
+
+    unisRprIpv6DynamicRSEntry OBJECT-TYPE
+        SYNTAX UnisRprIpv6DynamicRSEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the RPR Ipv6 Ring Selection Table."
+        INDEX { unisRprIpv6DynamicRSIfIndex, unisRprIpv6DynamicRSMacAddress }
+        ::= { unisRprIpv6DynamicRSTable 1 }
+
+    UnisRprIpv6DynamicRSEntry ::=
+        SEQUENCE {
+            unisRprIpv6DynamicRSIfIndex
+                InterfaceIndex,
+            unisRprIpv6DynamicRSMacAddress
+                MacAddress,
+            unisRprIpv6DynamicRSRingletID
+                UnisRprRingletID,
+            unisRprIpv6DynamicRSTtl
+                INTEGER
+        }
+
+    unisRprIpv6DynamicRSIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of RPR interface."
+        REFERENCE
+            "RFC 2863, ifIndex"
+        ::= { unisRprIpv6DynamicRSEntry 1 }
+
+    unisRprIpv6DynamicRSMacAddress OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The Ipv6 MAC address of the destination station on the ring."
+        ::= { unisRprIpv6DynamicRSEntry 2 }
+
+    unisRprIpv6DynamicRSRingletID OBJECT-TYPE
+        SYNTAX UnisRprRingletID
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The identifier of the ring which frames are sent
+             from the source station to the destination station."
+        ::= { unisRprIpv6DynamicRSEntry 3 }
+
+    unisRprIpv6DynamicRSTtl OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The hops from source station to destination station by selected
+             ringlet."
+        ::= { unisRprIpv6DynamicRSEntry 4 }
+
+-- The RPR Ipv4 overall ring selection table
+
+    unisRprIpv4OverallRSTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprIpv4OverallRSEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR Ipv4 Overall Ring Selection Table that contains the
+             overall and active  ring selection infomation by dynamic ring
+             selection and static ring selection."
+        ::= { unisRprRS 4 }
+
+    unisRprIpv4OverallRSEntry OBJECT-TYPE
+        SYNTAX UnisRprIpv4OverallRSEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the RPR Overall Ring Selection Table."
+        INDEX { unisRprIpv4OverallRSIfIndex, unisRprIpv4OverallRSMacAddress }
+        ::= { unisRprIpv4OverallRSTable 1 }
+
+    UnisRprIpv4OverallRSEntry ::=
+        SEQUENCE {
+            unisRprIpv4OverallRSIfIndex
+                InterfaceIndex,
+            unisRprIpv4OverallRSMacAddress
+                MacAddress,
+            unisRprIpv4OverallRSType
+                INTEGER,
+            unisRprIpv4OverallRSRingletID
+                UnisRprRingletID,
+            unisRprIpv4OverallRSTtl
+                INTEGER
+        }
+
+    unisRprIpv4OverallRSIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of RPR interface."
+        REFERENCE
+            "RFC 2863, ifIndex"
+        ::= { unisRprIpv4OverallRSEntry 1 }
+
+    unisRprIpv4OverallRSMacAddress OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The MAC address of the destination station on the ring."
+        ::= { unisRprIpv4OverallRSEntry 2 }
+
+    unisRprIpv4OverallRSType OBJECT-TYPE
+        SYNTAX INTEGER {
+            static(1),
+            dynamic(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The ring selection item type indicates static or dynamic."
+        ::= { unisRprIpv4OverallRSEntry 3 }
+
+    unisRprIpv4OverallRSRingletID OBJECT-TYPE
+        SYNTAX UnisRprRingletID
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The identifier of the ring which frames are sent
+             from the source station to the destination station."
+        ::= { unisRprIpv4OverallRSEntry 4 }
+
+    unisRprIpv4OverallRSTtl OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The hops from source station to destination station  by
+             selected ringlet."
+        ::= { unisRprIpv4OverallRSEntry 5 }
+
+-- The RPR VRRP ring selection table
+
+    unisRprVrrpRSTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprVrrpRSEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR VRRP Ring Selection Table that contains the ring
+             selection information when the vrrp group is configured."
+        ::= { unisRprRS 5 }
+
+    unisRprVrrpRSEntry OBJECT-TYPE
+        SYNTAX UnisRprVrrpRSEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the RPR VRRP Ring Selection Table."
+        INDEX { unisRprVrrpRSIfIndex, unisRprVrrpRSVirtualMacAddress }
+        ::= { unisRprVrrpRSTable 1 }
+
+    UnisRprVrrpRSEntry ::=
+        SEQUENCE {
+            unisRprVrrpRSIfIndex
+                InterfaceIndex,
+            unisRprVrrpRSVirtualMacAddress
+                MacAddress,
+            unisRprVrrpRSMacAddress
+                MacAddress,
+            unisRprVrrpRSRingletID
+                UnisRprRingletID,
+            unisRprVrrpRSTtl
+                INTEGER
+        }
+
+    unisRprVrrpRSIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of RPR interface."
+        REFERENCE
+            "RFC 2863, ifIndex"
+        ::= { unisRprVrrpRSEntry 1 }
+
+    unisRprVrrpRSVirtualMacAddress OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The virtual MAC address of the staion in VRRP group."
+        ::= { unisRprVrrpRSEntry 2 }
+
+
+    unisRprVrrpRSMacAddress OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The MAC address of the station that is  the master in VRRP group."
+        ::= { unisRprVrrpRSEntry 3 }
+
+    unisRprVrrpRSRingletID OBJECT-TYPE
+        SYNTAX UnisRprRingletID
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The identifier of the ring which frames are sent
+             from the source station to the destination station."
+        ::= { unisRprVrrpRSEntry 4 }
+
+    unisRprVrrpRSTtl OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The hops from source station to destination station by
+             selected ringlet."
+        ::= { unisRprVrrpRSEntry 5 }
+
+
+-- The RPR default ring identifier config Table
+
+    unisRprDefaultRingIDTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprDefaultRingIDEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR Default RingID Table specify the default ringID."
+        ::= { unisRprRS 6 }
+
+    unisRprDefaultRingIDEntry OBJECT-TYPE
+        SYNTAX UnisRprDefaultRingIDEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the RPR Default RingID Table."
+        INDEX { unisRprDefaultRingIDIfIndex }
+        ::= { unisRprDefaultRingIDTable 1 }
+
+    UnisRprDefaultRingIDEntry ::=
+        SEQUENCE {
+            unisRprDefaultRingIDIfIndex
+                InterfaceIndex,
+            unisRprDefaultConfigRingletID
+                UnisRprRingletID,
+            unisRprDefaultActiveRingID
+                UnisRprRingletID
+        }
+
+    unisRprDefaultRingIDIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of RPR interface."
+        REFERENCE
+            "RFC 2863, ifIndex"
+        ::= { unisRprDefaultRingIDEntry 1 }
+
+    unisRprDefaultConfigRingletID OBJECT-TYPE
+        SYNTAX UnisRprRingletID
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The default identifier of the ring configured by user."
+        ::= { unisRprDefaultRingIDEntry 2 }
+
+    unisRprDefaultActiveRingID OBJECT-TYPE
+        SYNTAX UnisRprRingletID
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The identifier of the default ring which is active currently.
+             The default ring configured by user may be inactive."
+        ::= { unisRprDefaultRingIDEntry 3 }
+
+-- The RPR defect report table
+
+    unisRprDefect OBJECT IDENTIFIER ::= { unisRprObjects 5 }
+
+    unisRprDefectReportTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprDefectReportEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR Defect Report Table that contains the trap information on
+             the ring."
+        ::= { unisRprDefect 1 }
+
+    unisRprDefectReportEntry OBJECT-TYPE
+        SYNTAX UnisRprDefectReportEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the RPR Defect Report Table."
+        INDEX { unisRprDefectIfIndex }
+        ::= { unisRprDefectReportTable 1 }
+
+    UnisRprDefectReportEntry ::=
+        SEQUENCE {
+            unisRprDefectIfIndex
+                InterfaceIndex,
+            unisRprDefectCurrentStatus
+                BITS
+        }
+
+    unisRprDefectIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of RPR interface."
+        REFERENCE
+            "RFC 2863, ifIndex"
+        ::= { unisRprDefectReportEntry 1 }
+
+    unisRprDefectCurrentStatus OBJECT-TYPE
+        SYNTAX BITS {
+            topologyOpenRing(0),
+            topoInstability(1),
+            topoInconsistent(2),
+            dulpMacAddress(3),
+            dulpIPAddress(4),
+            lrttDefect(5),
+            protCfgDefect(6),
+            jumboCfgDefect(7),
+            excessReservedRateDefect(8),
+            excessMaxStationNum(9),
+            miscabling(10),
+            backPressure(11)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Indicates the current status of RPR ring.
+             This attribute is used to notify the management system that
+             alarms generate or clear about some RPR ring."
+        REFERENCE
+            "IEEE 802.17 V3.3 Subclause 11.2.9."
+        ::= { unisRprDefectReportEntry 2 }
+
+-- The priority to RPR service class map table
+
+    unisRprPriorityMap OBJECT IDENTIFIER ::= { unisRprObjects 6 }
+
+    unisRprPriority2ClassMapTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprPriority2ClassMapEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The Table is for Class Of Service and RPR Service Class Mapping."
+        ::= { unisRprPriorityMap 1 }
+
+    unisRprPriority2ClassMapEntry OBJECT-TYPE
+        SYNTAX UnisRprPriority2ClassMapEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the COS to Service Class Map Table."
+        INDEX { unisRprPriority2ClassMapIfIndex,
+                unisRprPriority2ClassMapType,
+                unisRprPriorityValue
+        }
+        ::= { unisRprPriority2ClassMapTable 1 }
+
+    UnisRprPriority2ClassMapEntry ::=
+        SEQUENCE {
+            unisRprPriority2ClassMapIfIndex
+                InterfaceIndex,
+            unisRprPriority2ClassMapType
+                INTEGER,
+            unisRprPriorityValue
+                INTEGER,
+            unisRprPriority2ClassMap
+                UnisRprServiceClass
+        }
+
+    unisRprPriority2ClassMapIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of RPR interface."
+        REFERENCE
+            "RFC 2863, ifIndex"
+        ::= { unisRprPriority2ClassMapEntry 1 }
+
+    unisRprPriority2ClassMapType OBJECT-TYPE
+        SYNTAX INTEGER {
+            tag(1),
+            mpls(2),
+            ip(3)
+        }
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The type of Priority,include tag, mpls, ip."
+        ::= { unisRprPriority2ClassMapEntry 2 }
+
+    unisRprPriorityValue OBJECT-TYPE
+        SYNTAX INTEGER {
+            pri0(1),
+            pri1(2),
+            pri2(3),
+            pri3(4),
+            pri4(5),
+            pri5(6),
+            pri6(7),
+            pri7(8)
+        }
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The priority of tag,mpls and ip, the value range is 0~7."
+        ::= { unisRprPriority2ClassMapEntry 3 }
+
+    unisRprPriority2ClassMap OBJECT-TYPE
+        SYNTAX UnisRprServiceClass
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The RPR service class."
+        REFERENCE
+            "IEEE 802.17 V3.3 Subclause 7.3 Service class."
+        ::= { unisRprPriority2ClassMapEntry 4 }
+
+-- The RPR rate-limit config table
+
+    unisRprRateLimitConfig OBJECT IDENTIFIER ::= { unisRprObjects 7 }
+
+    unisRprRateLimitConfigTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprRateLimitConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR Rate Limit Configuration Table that contains the rate
+             limit infomation of RPR serviec class."
+        ::= { unisRprRateLimitConfig 1 }
+
+    unisRprRateLimitConfigEntry  OBJECT-TYPE
+        SYNTAX UnisRprRateLimitConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the RPR Rate Limit Configuration Table."
+        INDEX { unisRprRateLimitConfigIfIndex,
+                unisRprRateLimitConfigRingletId,
+                unisRprRateLimitConfigServiceClass
+        }
+        ::= { unisRprRateLimitConfigTable 1 }
+
+    UnisRprRateLimitConfigEntry  ::=
+        SEQUENCE {
+            unisRprRateLimitConfigIfIndex
+                InterfaceIndex,
+            unisRprRateLimitConfigRingletId
+                UnisRprRingletID,
+            unisRprRateLimitConfigServiceClass
+                UnisRprServiceClass,
+            unisRprRateLimitConfigValue
+                Integer32
+        }
+
+    unisRprRateLimitConfigIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of RPR interface."
+        REFERENCE
+            "RFC 2863, ifIndex"
+        ::= { unisRprRateLimitConfigEntry 1 }
+
+    unisRprRateLimitConfigRingletId OBJECT-TYPE
+        SYNTAX UnisRprRingletID
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The identifier of the ring of RPR ringlet."
+        ::= { unisRprRateLimitConfigEntry 2 }
+
+    unisRprRateLimitConfigServiceClass OBJECT-TYPE
+        SYNTAX UnisRprServiceClass
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR service class."
+        REFERENCE
+            "IEEE 802.17 V3.3 Subclause 7.3 Service class."
+        ::= { unisRprRateLimitConfigEntry 3 }
+
+    unisRprRateLimitConfigValue OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The value of rate-limit that configured for diffrent service class.
+             The unit is permillage."
+        ::= { unisRprRateLimitConfigEntry 4 }
+
+-- The RPR mac address learning config table
+
+    unisRprMacAddrLearn  OBJECT IDENTIFIER ::= { unisRprObjects 8 }
+
+    unisRprMacLearnCfgTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprMacLearnCfgEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR MAC Address Table."
+        ::= { unisRprMacAddrLearn 1 }
+
+    unisRprMacLearnCfgEntry OBJECT-TYPE
+        SYNTAX UnisRprMacLearnCfgEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The entry of RPR MAC Address Table."
+        INDEX { unisRprMacLearnIfIndex, unisRprMacLearnRprMac }
+        ::= { unisRprMacLearnCfgTable 1 }
+
+    UnisRprMacLearnCfgEntry ::=
+        SEQUENCE {
+            unisRprMacLearnIfIndex
+                InterfaceIndex,
+            unisRprMacLearnRprMac
+                MacAddress,
+            unisRprMacLearnType
+                INTEGER,
+            unisRprMacLearnDestMac
+                MacAddress,
+            unisRprMacLearnVlanId
+                Integer32,
+            unisRprMacLearnRinglet
+                UnisRprRingletID,
+            unisRprMacLearnTtl
+                INTEGER,
+            unisRprMacLearnIsValid
+                TruthValue,
+            unisRprMacLearnRowStatus
+                RowStatus
+        }
+
+    unisRprMacLearnIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of RPR interface."
+        REFERENCE
+            "RFC 2863, ifIndex"
+        ::= { unisRprMacLearnCfgEntry 1 }
+
+    unisRprMacLearnRprMac OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The MAC address of the RPR station."
+        ::= { unisRprMacLearnCfgEntry 2 }
+
+    unisRprMacLearnType OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The type of MAC address item that the user built. The type
+             includes static and dynamic."
+        ::= { unisRprMacLearnCfgEntry 3 }
+
+    unisRprMacLearnDestMac OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The destination of MAC address."
+        ::= { unisRprMacLearnCfgEntry 4 }
+
+    unisRprMacLearnVlanId OBJECT-TYPE
+        SYNTAX Integer32 (1..4094)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The vlan ID that the MAC address learned from by RPR staion."
+        ::= { unisRprMacLearnCfgEntry 5 }
+
+    unisRprMacLearnRinglet OBJECT-TYPE
+        SYNTAX UnisRprRingletID
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The identifier of the ring which frames are sent
+             from the source station to the destination station."
+        ::= { unisRprMacLearnCfgEntry 6 }
+
+    unisRprMacLearnTtl OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The hops from source station to destination station on the
+             selected ringlet."
+        ::= { unisRprMacLearnCfgEntry 7 }
+
+    unisRprMacLearnIsValid OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The flag identify whether the configured mac address is valid.
+             If it is true, the configured mac address is valid,
+             otherwise it's invalid."
+        ::= { unisRprMacLearnCfgEntry 8 }
+
+    unisRprMacLearnRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The status of this table entry.
+             The status includes createAndGo, active and destroy."
+        ::= { unisRprMacLearnCfgEntry 9 }
+
+-- The RPR table for trap
+
+    unisRprTrapVar OBJECT IDENTIFIER ::= { unisRprObjects 9 }
+
+    unisRprTrapVarTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisRprTrapVarEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The RPR Defect Report Table that contains varible that
+             used to bind in trap."
+        ::= { unisRprTrapVar 1 }
+
+    unisRprTrapVarEntry OBJECT-TYPE
+        SYNTAX UnisRprTrapVarEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the RPR Trap Var Table."
+        INDEX { unisRprTrapIfIndex }
+        ::= { unisRprTrapVarTable 1 }
+
+    UnisRprTrapVarEntry ::=
+        SEQUENCE {
+            unisRprTrapIfIndex
+                InterfaceIndex,
+            unisRprTrapRinglet
+                UnisRprRingletID,
+            unisRprTrapTopoMacAddress
+                MacAddress,
+            unisRprTrapIpAddress
+                InetAddress
+        }
+
+    unisRprTrapIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The ifIndex of RPR interface. It is only used for trap to bind."
+        REFERENCE
+            "RFC 2863, ifIndex"
+        ::= { unisRprTrapVarEntry 1 }
+
+     unisRprTrapRinglet OBJECT-TYPE
+        SYNTAX UnisRprRingletID
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The span of RPR station. It is only used for trap to bind."
+        ::= { unisRprTrapVarEntry 2 }
+
+     unisRprTrapTopoMacAddress OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The MAC address of RPR station. It is only used for trap to bind."
+        ::= { unisRprTrapVarEntry 3 }
+
+    unisRprTrapIpAddress OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The IP address of RPR station. It is only used for trap to bind."
+        ::= { unisRprTrapVarEntry 4 }
+
+
+-- The RPR Traps
+
+    unisRprTrap  OBJECT IDENTIFIER ::= { unisRprObjects 10 }
+
+    unisRprTopologyOpenRing NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex, unisRprTrapRinglet }
+        STATUS  current
+        DESCRIPTION
+            "The topology openRing trap indicates that the RPR ring is opened."
+        REFERENCE
+            "IEEE 802.17 Subclause 3.2.77 open ring."
+        ::= { unisRprTrap 1 }
+
+    unisRprTopologyCloseRing NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex, unisRprTrapRinglet }
+        STATUS  current
+        DESCRIPTION
+            "The topology openRing trap indicates that the RPR ring is closed."
+        REFERENCE
+            "IEEE 802.17 Subclause 3.2.77 close ring."
+        ::= { unisRprTrap 2 }
+
+    unisRprTopologyInconsistent NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex }
+        STATUS  current
+        DESCRIPTION
+            "The topology inconsistent trap indicates that the topology of
+             RPR is inconsistent."
+        REFERENCE
+            "IEEE 802.17 Subclause 11.6.6.1 topology consistency."
+        ::= { unisRprTrap 3 }
+
+    unisRprTopologyInstability NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex }
+        STATUS  current
+        DESCRIPTION
+            "The topology instability trap indicates that the topology of
+             RPR is instability."
+        ::= { unisRprTrap 4 }
+
+
+    unisRprDuplicateMacAddress NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex, unisRprTrapTopoMacAddress}
+        STATUS  current
+        DESCRIPTION
+            "The duplicate MAC address trap indicates that the mac address
+             of the station on the ring is dulplicate. That means there is the
+             same MAC address between two stations on the ring."
+        ::= { unisRprTrap 5 }
+
+    unisRprDulplicateIPAddress NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex, unisRprTrapIpAddress }
+        STATUS  current
+        DESCRIPTION
+            "The dulplicate IP address trap indicates that the IP address of
+             the station on the ring is dulplicate. That means there is the same
+             IP address between two stations on the ring."
+        ::= { unisRprTrap 6 }
+
+    unisRprIncompleteLRTT NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex }
+        STATUS  current
+        DESCRIPTION
+            "The incomplete LRTT trap indicates that LRTT is not completed."
+        ::= { unisRprTrap 7 }
+
+    unisRprProtecConfigInconsistent NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex }
+        STATUS  current
+        DESCRIPTION
+            "The protection configuration inconsistent trap indicates that
+             the configuration of protection mode on the ring is inconsistent.
+             That is one station is configured steer mode while the other is
+             configured wrap mode."
+        ::= { unisRprTrap 8 }
+
+    unisRprJumboConfigInconsistent NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex }
+        STATUS  current
+        DESCRIPTION
+            "The jumbo configuration inconsistent trap indicates that the
+             configuration of jumbo mode on the ring is inconsistent.
+             That is one station supports jumbo frame while the other
+             doesn't support jumbo frame."
+        ::= { unisRprTrap 9 }
+
+    unisRprExceedMaxReservRate NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex, unisRprTrapRinglet }
+        STATUS  current
+        DESCRIPTION
+            "The exceeded max reserved rate trap indicates that the rate
+             on the ringlet exceeded the max reserved rate. The operator can
+             configure reserved rate for every station, but the sum of all
+             stations' reserved rate of each RPR ringlet can't exceed maximum."
+        ::= { unisRprTrap 10 }
+
+    unisRprExceedMaxStationNum NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex }
+        STATUS  current
+        DESCRIPTION
+            "The exceeded max station number trap indicates that the number
+             of the stations on the ring exceeded the max station number."
+        ::= { unisRprTrap 11 }
+
+    unisRprMiscabling NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex, unisRprTrapRinglet }
+        STATUS  current
+        DESCRIPTION
+            "The miscabling trap indicates that the miscabling event occurred."
+        REFERENCE
+            "IEEE 802.17 V3.0 Subclause 11.9.2.1 miscabling defect."
+        ::= { unisRprTrap 12 }
+
+    unisRprBackPressure NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex, unisRprTrapRinglet, unisRprPriority2ClassMap}
+        STATUS  current
+        DESCRIPTION
+            "The back pressure trap indicates that the backpressure is generated
+             on the ringlet. That is the data flow on the ringlet exceeded
+             the range of rate-limit configured."
+        ::= { unisRprTrap 13 }
+
+    unisRprBackPressureOver NOTIFICATION-TYPE
+        OBJECTS { unisRprTrapIfIndex, unisRprTrapRinglet, unisRprPriority2ClassMap }
+        STATUS  current
+        DESCRIPTION
+            "The back pressure over trap indicates that the backpressure is
+             disappeared on the ringlet."
+        ::= { unisRprTrap 14 }
+
+END

@@ -1,0 +1,944 @@
+-- ===========================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description: The MIB is designed to manage the disk.
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2007-09-04 created by lizhicheng
+-- =================================================================
+UNIS-LOGIC-VOLUME-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+        Counter32, Integer32,
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        RowStatus, DateAndTime, TEXTUAL-CONVENTION, TruthValue
+    FROM SNMPv2-TC
+        InetAddressType, InetAddress
+    FROM INET-ADDRESS-MIB
+        entPhysicalIndex
+    FROM ENTITY-MIB
+        UnisLvIDType, UnisStorageEnableState, UnisStorageActionType,
+        UnisStorageLedStateType, UnisSessionIDType,
+        UnisRaidIDType, UnisWwpnListType, unisStorageRef
+    FROM UNIS-STORAGE-REF-MIB;
+
+
+unisLogicVolume MODULE-IDENTITY
+    LAST-UPDATED "200709041452Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB describes the general information of disk device."
+    ::= { unisStorageRef 5 }
+
+unisLvMibObjects OBJECT IDENTIFIER ::= { unisLogicVolume 1 }
+
+
+
+
+unisLogicResourceCapacityObject  OBJECT IDENTIFIER ::= { unisLvMibObjects 1 }
+unisLvCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the maximal number of logic volumes supported."
+    ::= { unisLogicResourceCapacityObject 1 }
+
+unisLvMaxSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "TB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the maximal size of logic volumes supported."
+    ::= { unisLogicResourceCapacityObject 2 }
+
+unisTargetCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the maximal number of targets supported."
+    ::= { unisLogicResourceCapacityObject 3 }
+
+unisInitiatorCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the maximal number of initiators supported."
+    ::= { unisLogicResourceCapacityObject 4 }
+
+unisSanClientCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the maximal number of SAN client supported."
+    ::= { unisLogicResourceCapacityObject 5 }
+
+-- Logic Resource Table
+-- This table described the logic resource information.
+
+unisLogicVolumeResource  OBJECT IDENTIFIER ::= { unisLvMibObjects 2 }
+
+unisLvCreateIndex OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object supplys an valid index which uses to create a new
+        entry for the unisLvTable object. Reference to unisLvRowStatus object
+        for more information.
+        Note that if an entry of the associated table has been created or
+        deleted, the historical value of this object may be an invalid index
+        to create a new entry for the associated table."
+    ::= { unisLogicVolumeResource 1 }
+
+unisLvTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisLvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes the logic resource information of a
+        logic volume."
+    ::= { unisLogicVolumeResource 2 }
+
+unisLvEntry OBJECT-TYPE
+    SYNTAX      UnisLvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to a particular logic resource."
+    INDEX
+        {
+            unisLvIndex
+        }
+
+    ::= { unisLvTable 1 }
+
+UnisLvEntry ::= SEQUENCE
+    {
+        unisLvIndex                UnisLvIDType,
+        unisLvName                 OCTET STRING,
+        unisLvTotalSize            Integer32,
+        unisLvCreateRaidUuid       UnisRaidIDType,
+        unisLvCreateRaidSize       Integer32,
+        unisLvSedInquiryStringKeep TruthValue,
+        unisLvSedRaidUuid          UnisRaidIDType,
+        unisLvState                INTEGER,
+        unisLvAssigned             INTEGER,
+        unisLvType                 INTEGER,
+        unisLvExtendTimes          Integer32,
+        unisLvRowStatus            RowStatus
+    }
+
+unisLvIndex OBJECT-TYPE
+    SYNTAX      UnisLvIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object describes the symbol of a logic volume."
+    ::= { unisLvEntry 1 }
+
+unisLvName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..31))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the name of a logic volume."
+    ::= { unisLvEntry 2 }
+
+unisLvTotalSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the total size of a logic volume. The
+        units is million bytes."
+    ::= { unisLvEntry 3 }
+
+unisLvCreateRaidUuid OBJECT-TYPE
+    SYNTAX      UnisRaidIDType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the ID of array where a logic volume
+        build on."
+    ::= { unisLvEntry 4 }
+
+unisLvCreateRaidSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the size of a logic volume when create it.
+        The units is million bytes."
+    ::= { unisLvEntry 5 }
+
+unisLvSedInquiryStringKeep OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the inquiry string of the logic volume should
+        be reserved. This value of this object is valid only when the associated
+        unisLvType is equal to 'serviceEnabled'."
+    ::= { unisLvEntry 6 }
+
+unisLvSedRaidUuid OBJECT-TYPE
+    SYNTAX      UnisRaidIDType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the location where the SED infomation is
+        build on."
+    ::= { unisLvEntry 7 }
+
+unisLvState OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            usable(1),
+            unusable(2),
+            conflict(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of a logic volume. The value
+        'conflict' means the names of two or more logic volume are reduplicate."
+    ::= { unisLvEntry 8 }
+
+unisLvAssigned OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            use(1),
+            unused(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the logic volume has be designated for
+        target or SAN client."
+    ::= { unisLvEntry 9 }
+
+unisLvType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            virtual(1),
+            direct(2),
+            serviceEnabled(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the type of a logic volume.
+         The value 'virtual' means virtual devices are defined as sets of storage blocks
+         from one or more physical array. This allows the creation of virtual devices that
+         can be a portion of a larger physical array, or an aggregation of multiple physical array.
+         The value 'direct' means direct devices are directly mapped SCSI devices.
+         Because they are not virtualized, direct devices cannot take advantage of advanced storage options,
+         such as mirroring, failover, replication, or snapshot copy.
+         The value 'serviceEnabled' means service enabled devices are all maintained in a one-to-one
+         mapping relationship(one physical array equals one logical device)."
+    ::= { unisLvEntry 10 }
+
+unisLvExtendTimes OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the times the logic volume has been extended."
+    ::= { unisLvEntry 11 }
+
+unisLvRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to create or delete a logic
+        volume."
+    ::= { unisLvEntry 12 }
+
+
+
+-- Extend Logic Resource Table
+-- This table described the extend resource information of the logic volume.
+unisLvExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisLvExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains the extend resource information of the logic
+        volume."
+    ::= { unisLvMibObjects 3}
+
+unisLvExtEntry OBJECT-TYPE
+    SYNTAX      UnisLvExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to extend resource of logic volume."
+    INDEX
+        {
+            unisLvIndex,
+            unisLvRaidUuid
+        }
+
+    ::= { unisLvExtTable 1 }
+
+UnisLvExtEntry ::= SEQUENCE
+    {
+        unisLvRaidUuid        UnisRaidIDType,
+        unisLvExtSize         Integer32,
+        unisLvRaidSize        Integer32,
+        unisLvExtRowStatus    RowStatus
+    }
+
+unisLvRaidUuid OBJECT-TYPE
+    SYNTAX      UnisRaidIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This index is identical to unisRaidUuid in UNIS-RAID-MIB."
+    ::= { unisLvExtEntry 1 }
+
+unisLvExtSize OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    UNITS       "MB"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the extend size of the logic volume in a
+        specific raid. The units is million bytes.
+        This object will always return zero when read."
+    ::= { unisLvExtEntry 2 }
+
+unisLvRaidSize OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "MB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the size of logic volume on the specific raid.
+        The units is million bytes."
+    ::= { unisLvExtEntry 3 }
+
+unisLvExtRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the action to extend the logic volume."
+    ::= { unisLvExtEntry 4 }
+
+
+
+
+
+-- Target's Creation Information Table
+-- This table describes some information when creating the target.
+unisTargetResource OBJECT IDENTIFIER ::= { unisLvMibObjects 4 }
+
+unisTargetCreateIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object supplys an valid index which uses to create a new
+        entry for the unisTargetTable object.
+        Note that if an entry of the associated table has been created or
+        deleted, the historical value of this object may be an invalid index
+        to create a new entry for the associated table."
+    ::= { unisTargetResource 1 }
+
+unisTargetTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTargetEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes some information when creating a target."
+    ::= { unisTargetResource 2 }
+
+unisTargetEntry OBJECT-TYPE
+    SYNTAX      UnisTargetEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to a target when create it."
+    INDEX
+        {
+            unisTargetId
+        }
+
+    ::= { unisTargetTable 1 }
+
+UnisTargetEntry ::= SEQUENCE
+    {
+        unisTargetId           Integer32,
+        unisTargetName         OCTET STRING,
+        unisTargetMinLun       Integer32,
+        unisTargetRowStatus    RowStatus
+    }
+
+unisTargetId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the ID of a target."
+    ::= { unisTargetEntry 1 }
+
+unisTargetName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..223))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the name of a target."
+    ::= { unisTargetEntry 2 }
+
+unisTargetMinLun OBJECT-TYPE
+    SYNTAX      Integer32(0..127)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the mini LUN(logical unit number) number
+        of a target."
+    DEFVAL { 0 }
+    ::= { unisTargetEntry 3 }
+
+unisTargetRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to add or delete the target."
+    ::= { unisTargetEntry 4 }
+
+
+
+
+-- Target's Address Information Table
+-- This table described address information of the target.
+unisTargetAddressTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTargetAddressEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table described some address information of a target."
+    ::= { unisLvMibObjects 5 }
+
+unisTargetAddressEntry OBJECT-TYPE
+    SYNTAX      UnisTargetAddressEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to the address of a target."
+    INDEX
+        {
+            unisTargetId,
+            unisTargetIpAddrType,
+            unisTargetIpAddress
+        }
+
+    ::= { unisTargetAddressTable 1 }
+
+UnisTargetAddressEntry ::= SEQUENCE
+    {
+        unisTargetIpAddress      InetAddress,
+        unisTargetIpAddrType     InetAddressType,
+        unisTargetIpRowStatus    RowStatus
+    }
+
+unisTargetIpAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object describes the IP address of a target."
+    ::= { unisTargetAddressEntry 1 }
+
+unisTargetIpAddrType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object describes the type of IP address."
+    ::= { unisTargetAddressEntry 2 }
+
+unisTargetIpRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to add or delete a IP address
+        of a target."
+    ::= { unisTargetAddressEntry 3 }
+
+
+
+
+
+-- Target's Logic Resource Information Table
+-- This table describes logic resource information of the target.
+unisTargetLvAssignTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTargetLvAssignEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes logic resource information of a target."
+    ::= { unisLvMibObjects 6 }
+
+unisTargetLvAssignEntry OBJECT-TYPE
+    SYNTAX      UnisTargetLvAssignEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to the logic resource of a target."
+    INDEX
+        {
+            unisTargetId,
+            unisLvIndex
+        }
+
+    ::= { unisTargetLvAssignTable 1 }
+
+UnisTargetLvAssignEntry ::= SEQUENCE
+    {
+        unisTargetLvLun          Integer32,
+        unisTargetLvRowStatus    RowStatus
+    }
+
+unisTargetLvLun OBJECT-TYPE
+    SYNTAX      Integer32(0..127)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the init LUN number of a target."
+    ::= { unisTargetLvAssignEntry 1 }
+
+unisTargetLvRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to add or delete
+        the logic resource of a target."
+    ::= { unisTargetLvAssignEntry 2 }
+
+
+
+-- Initiator's Creation Information Table
+-- This table describes the creation information of initiators.
+unisInitiatorResource  OBJECT IDENTIFIER ::= { unisLvMibObjects 7 }
+
+unisInitiatorCreateIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object supplys an valid index which uses to create a new
+        entry for the unisInitiatorTable object.
+        Note that if an entry of the associated table has been created or
+        deleted, the historical value of this object may be an invalid index
+        to create a new entry for the associated table."
+    ::= { unisInitiatorResource 1 }
+
+unisInitiatorTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisInitiatorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes the creation information of initiators."
+    ::= { unisInitiatorResource 2 }
+
+unisInitiatorEntry OBJECT-TYPE
+    SYNTAX      UnisInitiatorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable to the creation
+        of initiator."
+    INDEX
+        {
+            unisSanClientId,
+            unisInitiatorId
+        }
+
+    ::= { unisInitiatorTable 1 }
+
+UnisInitiatorEntry ::= SEQUENCE
+    {
+        unisInitiatorId          Integer32,
+        unisInitiatorName        OCTET STRING,
+        unisInitiatorRowStatus   RowStatus
+    }
+
+unisInitiatorId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the ID of the initiator."
+    ::= { unisInitiatorEntry 1 }
+
+unisInitiatorName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(1..223))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the name of the initiator."
+    ::= { unisInitiatorEntry 2 }
+
+unisInitiatorRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to add or delete initiators."
+    ::= { unisInitiatorEntry 3 }
+
+
+
+
+-- Target And Initiator Associate Information Table
+-- This table describes the associates information between targets and initiators.
+unisTargetInitiatorAssociateTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTargetInitiatorAssociateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes the associate information between the target and
+        initiator."
+    ::= { unisLvMibObjects 8 }
+
+unisTargetInitiatorAssociateEntry OBJECT-TYPE
+    SYNTAX      UnisTargetInitiatorAssociateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to association between the target and initiator."
+    INDEX
+        {
+            unisTargetId,
+            unisInitiatorId
+        }
+
+    ::= { unisTargetInitiatorAssociateTable 1 }
+
+UnisTargetInitiatorAssociateEntry ::= SEQUENCE
+    {
+        unisTIAccessMode    INTEGER,
+        unisTIChap          UnisStorageEnableState,
+        unisTIUserName      OCTET STRING,
+        unisTIPassword      OCTET STRING,
+        unisTIRowStatus     RowStatus
+    }
+
+unisTIAccessMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            read(1),
+            write(2),
+            nonexclusive(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the mode of accessing between the target
+        and initiator.
+        The value 'read' means read available.
+        The value 'write' means read/write available, and write available only for one association.
+        The value 'nonexclusive' means read/write available for multi-association."
+    ::= { unisTargetInitiatorAssociateEntry 1 }
+
+unisTIChap OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of the chap attestation."
+    DEFVAL { disable }
+    ::= { unisTargetInitiatorAssociateEntry 2 }
+
+unisTIUserName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..128))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the user name for the chap attestation."
+    ::= { unisTargetInitiatorAssociateEntry 3 }
+
+unisTIPassword OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(12..16))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the password for the chap attestation.
+        It is proclaimed and can be modified."
+    ::= { unisTargetInitiatorAssociateEntry 4 }
+
+unisTIRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to add or delete the association."
+    ::= { unisTargetInitiatorAssociateEntry 5 }
+
+
+
+
+-- Session Status Table
+-- This table described the information of the sessions between targets and
+-- initiators.
+unisTISessionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisTISessionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table described the information of the sessions."
+    ::= { unisLvMibObjects 9 }
+
+unisTISessionEntry OBJECT-TYPE
+    SYNTAX      UnisTISessionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to the sessions."
+    INDEX
+        {
+            unisTargetId,
+            unisTISessionId
+        }
+
+    ::= { unisTISessionTable 1 }
+
+UnisTISessionEntry ::= SEQUENCE
+    {
+        unisTISessionId                 UnisSessionIDType,
+        unisTISessionConnectionCount    Counter32,
+        unisTISessionInitiatorName      OCTET STRING
+    }
+
+
+unisTISessionId OBJECT-TYPE
+    SYNTAX      UnisSessionIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the ID of a session."
+    ::= { unisTISessionEntry 1 }
+
+unisTISessionConnectionCount OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the number of connections between the targets
+        and initiators."
+    ::= { unisTISessionEntry 2 }
+
+unisTISessionInitiatorName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..223))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the initiator's name of a session."
+    ::= { unisTISessionEntry 3 }
+
+
+-- SAN Client Information Table
+-- This table described the information of the logs.
+unisSanClientResource  OBJECT IDENTIFIER ::= { unisLvMibObjects 10 }
+
+unisSanClientCreateIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object supplys an valid index which uses to create a new
+        entry for the unisSanClientTable object.
+        Note that if an entry of the associated table has been created or
+        deleted, the historical value of this object may be an invalid index
+        to create a new entry for the associated table."
+    ::= { unisSanClientResource 1 }
+
+unisSanClientTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisSanClientEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table described the information of SAN(Storage Area Network)
+        clients."
+    ::= { unisSanClientResource 2 }
+
+unisSanClientEntry OBJECT-TYPE
+    SYNTAX      UnisSanClientEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable to the SAN
+        clients."
+    INDEX
+        {
+            unisSanClientId
+        }
+    ::= { unisSanClientTable 1 }
+
+UnisSanClientEntry ::= SEQUENCE
+    {
+        unisSanClientId            Integer32,
+        unisSanClientName          OCTET STRING,
+        unisSanClientType          INTEGER,
+        unisFcInitiatorWwpnList    UnisWwpnListType,
+        unisFcAccessMode           INTEGER,
+        unisSanClientRowStatus     RowStatus
+    }
+
+unisSanClientId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the index of a SAN client."
+    ::= { unisSanClientEntry 1 }
+
+unisSanClientName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..64))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the name of a SAN client."
+    ::= { unisSanClientEntry 2 }
+
+unisSanClientType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            iscsi(1),
+            fc(2)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the type of a SAN client."
+    ::= { unisSanClientEntry 3 }
+
+unisFcInitiatorWwpnList OBJECT-TYPE
+    SYNTAX      UnisWwpnListType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the name list of FC Initiator WWPN(World Wide
+        Port Name). The value of this object is invalid and should be ignored
+        when the value of associated unisSanClientType object is not equal
+        to 'fc'."
+    ::= { unisSanClientEntry 4 }
+
+unisFcAccessMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            read(1),
+            write(2),
+            nonexclusive(3)
+        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the mode of access. The value of this object
+        is invalid and should be ignored when the value of associated
+        unisSanClientType object is not equal to 'fc'.
+        The value 'read' means read available.
+        The value 'write' means read/write available, and write available only for one association.
+        The value 'nonexclusive' means read/write available for multi-association."
+    ::= { unisSanClientEntry 6 }
+
+unisSanClientRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the action to create or delete a SAN client."
+    ::= { unisSanClientEntry 7 }
+
+-- FC's Logic Resource Information Table
+-- This table describes logic resource information of the FC.
+unisFcLogicResourceTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisFcLogicResourceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes logic resource information of a FC."
+    ::= { unisLvMibObjects 11 }
+
+unisFcLogicResourceEntry OBJECT-TYPE
+    SYNTAX      UnisFcLogicResourceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to the logic resource of a FC."
+    INDEX
+        {
+            unisSanClientId,
+            unisLvIndex
+        }
+
+    ::= { unisFcLogicResourceTable 1 }
+
+UnisFcLogicResourceEntry ::= SEQUENCE
+    {
+        unisFcLvLun             Integer32,
+        unisFcTargetWwpnName    UnisWwpnListType,
+        unisFcInitiatorWwpnName UnisWwpnListType,
+        unisFcLvRowStatus       RowStatus
+    }
+
+unisFcLvLun OBJECT-TYPE
+    SYNTAX      Integer32(0..127)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the init LUN number of a FC."
+    ::= { unisFcLogicResourceEntry 1 }
+
+
+unisFcTargetWwpnName OBJECT-TYPE
+    SYNTAX      UnisWwpnListType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the name list of FC Target WWPN(World Wide
+        Port Name). "
+    ::= { unisFcLogicResourceEntry 2 }
+
+unisFcInitiatorWwpnName OBJECT-TYPE
+    SYNTAX      UnisWwpnListType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the name list of FC Initiator WWPN(World Wide
+        Port Name). "
+    ::= { unisFcLogicResourceEntry 3 }
+
+unisFcLvRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object describes the actions to add or delete
+        the logic resource of a FC."
+    ::= { unisFcLogicResourceEntry 4 }
+END

@@ -1,0 +1,1583 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--   The file defines a MIB to provide wireless switch object and CAPWAP
+--   tunnel information.
+-- Reference:
+-- Version: V2.5
+-- History:
+--   V1.0 created by shiyang (Richard)
+--     Initial version 2006-05-10
+--   V1.1 2007-04-27 modified by shiyang(Richard)
+--        Add apCfgChange(6) for unisDot11ACMtTrapTunlDwnInfo.
+--        Delete unisDot11ACPhysicalIndex,unisDot11ACGlobalCountryCode,
+--        unisDot11ACCtrlTunnelSecSupport and unisDot11ACDataTunnelSecSupport
+--        nodes.
+--   V1.2 2007-06-19 modified by Vikas K.
+--        Add unisDot11WLANAssocStatisInfo for unisDot11ACObjectGroup.
+--        Add unisDot11MaxAPNumPermitted and unisDot11MaxStationNumPermitted
+--        nodes.
+--   V1.3 2007-12-21 modified by wanghao (Kumar)
+--        Add unisDot11StationExDeAuthenSum and unisDot11StationCurAssocSum
+--        for unisDot11WLANAssocStatisInfo.
+--   V1.4 2008-07-09 modified by ChangHuifeng
+--        Add unisDot11ACMtBackupSwtTrap and unisDot11ACMtTrapBackupSwitchInfo
+--        for unisDot11ACMtNotifyGroup.
+--        Change description of unisDot11ACMtTunnelSetupTrap.
+--   V1.5 2008-12-03 modified by Wang Lu
+--        Add new variable bindings unisDot11ACMtTrapTnlAPName and
+--        unisDot11ACMtTrapTnlAPIPAddr to unisDot11ACMtTunnelSetupTrap and
+--        unisDot11ACMtTunnelDownTrap.
+--   V1.6 2009-05-07 modified by Wang Shaojie
+--        Add new trap unisDot11ACLoadBalanceTrap.
+--        Add new variable bindings unisDot11LoadBalanceType,
+--        unisDot11LoadBalanceThreshold for unisDot11ACLoadBalanceTrap.
+--        Add unisDot11ACIFLoadInfoTable to unisDot11ACIFLoadInfoTable.
+--   V1.7 2009-07-29 modified by Heziqi
+--        Add new variable bindings unisDot11ACMtTrapAPIPv6Addr
+--        to unisDot11ACMtTunnelSetupTrap and unisDot11ACMtTunnelDownTrap.
+--        Add unisDot11MasterAPCount, unisDot11SlaveAPCount,
+--        unisDot11ConnectAutoAPCount and unisDot11PersistentAPCount to
+--        unisDot11ACLoadInfo.
+--   V1.8 2009-08-07 modified by Wang Shaojie, Qi Kai
+--        Add new variable bindings unisDot11ACMtTrapTunlDwnCount
+--        to unisDot11ACMtTrapVarObjects
+--        Add unisDot11ACIfStaNum, unisDot11ACIfName to unisDot11ACIFLoadInfoTable
+--   V1.9 2009-12-01 modified by Wang Shaojie
+--        Add unisDot11ACStaFullTrap to unisDot11ACMtTraps and variable bindings
+--        unisDot11ACMaxStaNum for unisDot11ACStaFullTrap.
+--        Add unisDot11CtrlTunnelUpTimeTicks to unisDot11CAPWAPTunnelTable
+--        Add unisDot11AcDownloadFrameCnt, unisDot11AcUploadFrameCnt,
+--        unisDot11AcDownloadFrameBytes, unisDot11AcUploadFrameBytes to
+--        unisDot11ACLoadInfo.
+--        2010-06-10 added unisDot11ACBASIfTable by jinyi
+--        2010-08-04 modified by yin junjie
+--        Add new table unisDot11ACStaUserSecAuthStatis
+--        Add unisDot11ACStaUserAuthCurNumber, unisDot11ACStaUserConnFailCnt,
+--        unisDot11ACStaUserAuthReqCnt, unisDot11ACStaUserAuthSuccCnt,
+--        unisDot11ACStaUserAuthFailCnt to unisDot11ACStaUserSecAuthStatis.
+--   V2.0 2011-09-30 modified by Dong Laqi
+--        Add unisDot11ACMtTrapTnlAPSysName,unisDot11ACMtFirstTrapTime
+--        to unisDot11ACMtTrapVarObjects
+--        and variable bindings unisDot11ACMtFirstTrapTime for
+--        unisDot11ACMtTunnelSetupTrap,unisDot11ACMtTunnelDownTrap,
+--        unisDot11ACMtBackupSwtTrap.
+--        2012-02-14 modified by Dong Laqi
+--        Add unisDot11BackupACRole,unisDot11BackupACNMSIP,unisDot11ACBackupMode,
+--        unisDot11ACBackupStatus and unisDot11ACSwitchCnt to unisDot11ACLoadInfo
+--        Add unisDot11ACStatusSwitchTrap to unisDot11ACMtTraps
+--        and binding unisDot11ACMtTrapACStatusSwitchInfo and unisDot11MasterACNmsIP
+--        for unisDot11ACMtTrapVarObjects
+--   V2.1 2012-05-08 modified by Liu Xuping
+--        Add new table unisDot11ACStaSecAuthTypeStatis
+--        Add unisDot11ACStaUserPortalOnlineNum,unisDot11ACStaUserFreeAuthOnlineNum,
+--        unisDot11ACStaUserAssociateAuthOnlineNum,unisDot11ACStaUserMacAuthOnlineNum,
+--        unisDot11ACStaUserPortalLostConnectionCnt,
+--        unisDot11ACStaUserFreeAuthLostConnectionCnt,
+--        unisDot11ACStaUserAssociateAuthLostConnectionCnt,
+--        unisDot11ACStaUserMacAuthLostConnectionCnt,
+--        unisDot11ACStaPortalAuthReqCnt,unisDot11ACStaAssociateAuthReqCnt,
+--        unisDot11ACStaMacAuthReqCnt,
+--        unisDot11ACStaPortalAuthSuccCnt,unisDot11ACStaAssociateAuthSuccCnt,
+--        unisDot11ACStaMacAuthSuccCnt,
+--        unisDot11ACStaPortalAuthReqFailCnt,unisDot11ACStaAssociateAuthReqFailCnt,
+--        unisDot11ACStaMacAuthReqFailCnt to unisDot11ACStaSecAuthTypeStatis.
+--        2012-05-16 modified by lihonghao
+--        Add unisDot11ACSouthifPacketOutputCount,unisDot11ACSouthifPacketOutputBytes
+--        unisDot11ACSouthifPacketInputCount and unisDot11ACSouthifPacketInputBytes
+--        to unisDot11ACLoadInfo
+--        2012-08-17 modified Zhang Congcong & LiXin
+--        Add new node   unisDot11RunAPNumThreshold       to unisDot11ACObject
+--        Add new node   unisDot11RunAPNumOverload        to unisDot11ACMtTraps
+--        Add new node   unisDot11RunAPNumOverloadRecover to unisDot11ACMtTraps
+--        Add new object unisDot11ACMtTrapAPMacAddress    to unisDot11ACMtTunnelSetupTrap
+--        Add new object unisDot11ACMtTrapAPMacAddress    to unisDot11ACMtTunnelDownTrap
+--        Add new node   unisDot11ACMtTrapAPMacAddress    to unisDot11ACMtTrapVarObjects
+--   V2.2 2013-07-08 modified by Chen Guoxi
+--        Add new node   unisDot11StationAssocReqSum      to unisDot11WLANAssocStatisInfo
+--        Add new node   unisDot11StationReassocReqSum    to unisDot11WLANAssocStatisInfo
+--        Add new node   unisDot11StationReassocFailSum   to unisDot11WLANAssocStatisInfo
+--   v2.3 2013-07-08 modified by Xiao Min
+--        Add new node   unisDot11TotalAPconnected        to unisDot11ACLoadInfo
+--        Add new node   unisDot11RemainingAPcapacity     to unisDot11ACLoadInfo
+--   v2.4 2014-02-14 modified by Zhou Weichao
+--        Add new node unisDot11ACStaUserAutoAuthOnlineNumCM,
+--        unisDot11ACStaUserAutoAuthLostConnectionCntCM,
+--        unisDot11ACStaAutoAuthReqCntCM,
+--        unisDot11ACStaAutoAuthSuccCntCM,
+--        unisDot11ACStaAutoAuthReqFailCntCM to unisDot11ACStaSecAuthTypeStatis
+--        Modify node unisDot11ACStaUserPortalOnlineNum,
+--        unisDot11ACStaUserAssociateAuthOnlineNum from unisDot11ACStaSecAuthTypeStatis
+--        Add unisDot11ACStaUserAllAuthCntCM to unisDot11ACStaUserSecAuthStatis
+--        Add new table unisDot11ACPortalStatisticCMTable
+--        Add unisDot11ACPortalStatisticCMEntry, unisDot11PortalStatisticSSIDCM,
+--        unisACPortalStatAuthReqCM and
+--        unisACPortalStatAuthRespCM to unisDot11ACPortalStatisticCMTable
+--   v2.5 2016-03-11 modified by yubo 04460
+--        Add new node   unisDot11MaxNewConnCntPerSecCM to unisDot11ACObject
+--        Add new node   unisDot11IFNumberCM to unisDot11ACObject
+--        Add new node   unisDot11ACStaUserAuthRespCntCM to unisDot11ACStaUserSecAuthStatis
+--        2016-06-15 modified by zhouwenshuai kf6157
+--        Add new table   unisDot11LocalACModelTable
+--        Add UnisDot11LocalACModelEntry, unisDot11LocalACModelAlias
+--        unisDot11LocalACModelName,
+--        unisDot11LocalACManufacturer, unisDot11LocalACCPUType
+--        unisDot11LocalACCPUClockSpeed, unisDot11LocalACMemoryType
+--        unisDot11LocalACMemorySize, unisDot11LocalACFlashType
+--        unisDot11LocalACFlashSize, unisDot11LocalACMemSize
+--        unisDot11LocalACFlashSizeInBytes to unisDot11LocalACModelTable
+--        2016-09-05 modified by yangxiaobin ykf4651
+--        Add new node   unisDot11APLicenseWeight to unisDot11ACObject
+-- =============================================================================
+UNIS-DOT11-ACMT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE,
+        Integer32,
+        Counter32,
+        IpAddress,
+        Counter64,
+        TimeTicks,
+        Unsigned32,
+        Gauge32
+    FROM SNMPv2-SMI
+        IANAifType
+    FROM IANAifType-MIB
+        unisDot11,
+        UnisDot11MACModeType,
+        UnisDot11TunnelSecSchemType,
+        UnisDot11ObjectIDType
+    FROM UNIS-DOT11-REF-MIB
+        MacAddress
+    FROM SNMPv2-TC;
+
+unisDot11ACMT MODULE-IDENTITY
+    LAST-UPDATED "201603111800Z"        -- Mar 11, 2016 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB defines information as per wireless AC and tunnel between
+        AP and AC.
+        If NMS intends to get more detailed information for the AP and AC,
+        it could refer entPhysicalIndex in the Entity MIB to get entity
+        information.
+
+        GLOSSARY
+
+        IEEE 802.11
+        Standard to encourage interoperability among
+        wireless networking equipment.
+
+        Access point (AP)
+        Transmitter/receiver (transceiver) device
+        that commonly connects and transports data
+        between a wireless network and a wired network.
+
+        Access control (AC)
+        To control and manage multi-APs, it will bridge
+        wireless and wired network.
+
+        Radio
+        The chip set to receive and send wireless signal.
+
+        Fat AP
+        Applied in the home, SOHO and so on, and it could
+        independently work without help from AC.
+
+        Fit AP
+        Applied in the enterprise environment, it will work
+        under the control and management from AC.
+
+        Control And Provisioning of Wireless Access Points Protocol
+        The short name of protocol is CAPWAP. AC will control
+        and manage AP by CAPWAP tunnel protocol defined by IETF.
+        Also, a data tunnel will be set up between AC and AP.
+
+        Basic Service Set
+        The IEEE 802.11 BSS of an AP comprises of the
+        stations directly associating with the AP. It will
+        be identified by BSSID."
+    REVISION "201603111800Z"        -- Mar 11, 2016 at 18:00 GMT
+    DESCRIPTION
+        "Add new nodes."
+    REVISION "201008041800Z"        -- Aug 04, 2010 at 18:00 GMT
+    DESCRIPTION
+        "Add new nodes."
+    REVISION "200908071800Z"        -- Aug 07, 2009 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200907291800Z"        -- Jul 29, 2009 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200905072000Z"        -- May 7, 2009 at 20:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200807091800Z"        -- July 09, 2008 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200712211800Z"        -- Dec 21, 2007 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200706191800Z"        -- June 19, 2007 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new table and new nodes."
+    REVISION "200704272000Z"        -- Apr 27, 2007 at 20:00 GMT
+    DESCRIPTION
+        "Modified to fix some issue."
+    REVISION "200605101900Z"        -- May 10, 2006 at 19:00 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisDot11 1 }
+
+-- *****************************************************************************
+-- *  Major sections
+-- *****************************************************************************
+
+--  AC Object Group Attributes
+--  DEFINED AS " The group provides AC information like MAC Mode and so on,
+--  also could refer to software version and hardware version kept
+--  by Entity MIB by Physical index"
+
+unisDot11ACObjectGroup OBJECT IDENTIFIER     ::= { unisDot11ACMT 1 }
+unisDot11ACObject OBJECT IDENTIFIER          ::= { unisDot11ACObjectGroup 1 }
+unisDot11ACLoadInfo OBJECT IDENTIFIER        ::= { unisDot11ACObjectGroup 2 }
+unisDot11WLANAssocStatisInfo OBJECT IDENTIFIER  ::= { unisDot11ACObjectGroup 3 }
+unisDot11ACBASInfo OBJECT IDENTIFIER  ::= { unisDot11ACObjectGroup 4 }
+unisDot11ACStaUserSecAuthStatis OBJECT IDENTIFIER    ::= { unisDot11ACObjectGroup 5 }
+unisDot11ACStaSecAuthTypeStatis OBJECT IDENTIFIER    ::= { unisDot11ACObjectGroup 6 }
+
+--  AC CAPWAP tunnel Group Attributes
+--  DEFINED AS "The group provides CAPWAP tunnel information"
+
+unisDot11CAPWAPTunnelGroup OBJECT IDENTIFIER  ::= { unisDot11ACMT 2 }
+
+--  AC CAPWAP Notification
+--  DEFINED AS "The notification for AC Management"
+
+unisDot11ACMtNotifyGroup OBJECT IDENTIFIER    ::= { unisDot11ACMT 3 }
+
+-- *****************************************************************************
+-- *  unisDot11ACObject element Definition
+-- *****************************************************************************
+unisDot11CurrentACMACMode OBJECT-TYPE
+    SYNTAX      UnisDot11MACModeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents which MAC mode defined in the CAPWAP draft is in use
+        for the AC."
+    DEFVAL      { split }
+    ::= { unisDot11ACObject 1 }
+
+unisDot11MaxAPNumPermitted OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum number of AP connection permitted
+        for one AC."
+    ::= { unisDot11ACObject 2 }
+
+unisDot11MaxStationNumPermitted OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum number of station connection
+        permitted for one AC."
+    ::= { unisDot11ACObject 3 }
+unisDot11RunAPNumThreshold OBJECT-TYPE
+    SYNTAX      Integer32(30..100)
+    UNITS       "percent"
+    MAX-ACCESS  read-write
+    STATUS      current
+        DESCRIPTION
+        "When the percentage of run AP number is larger than this
+        threshold, a notification will be sent."
+    DEFVAL      { 100 }
+    ::= { unisDot11ACObject 4 }
+
+unisDot11MaxNewConnCntPerSecCM OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum count of station connected to AC per second."
+    DEFVAL      { 300 }
+    ::= { unisDot11ACObject 5 }
+
+unisDot11IFNumberCM OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "All intface in AC except console."
+    DEFVAL      { 24 }
+    ::= { unisDot11ACObject 6 }
+
+unisDot11APLicenseWeight OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the license weight of AP connection for one AC."
+    ::= { unisDot11ACObject 7 }
+
+-- *****************************************************************************
+-- *  End of unisDot11ACObject element Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11ACLoadInfo element Definition
+-- *****************************************************************************
+unisDot11APConnectCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of APs which are connecting to AC."
+    ::= { unisDot11ACLoadInfo 1 }
+
+unisDot11StationConnectCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of stations which are accessing the
+        WLAN service through AC."
+    ::= { unisDot11ACLoadInfo 2 }
+
+-- *****************************************************************************
+-- *  unisDot11ACIFLoadInfoTable Definition
+-- *****************************************************************************
+unisDot11ACIFLoadInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11ACIFLoadInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents AP number information of interface."
+    ::= { unisDot11ACLoadInfo 3 }
+
+unisDot11ACIFLoadInfoEntry OBJECT-TYPE
+    SYNTAX      UnisDot11ACIFLoadInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry represents AP number information of an interface"
+    INDEX
+        {
+            unisDot11ACIfIndex
+        }
+    ::= { unisDot11ACIFLoadInfoTable 1 }
+
+UnisDot11ACIFLoadInfoEntry ::= SEQUENCE
+    {
+        unisDot11ACIfIndex       Integer32,
+        unisDot11ACIfApNum       Integer32,
+        unisDot11ACIfStaNum      Integer32,
+        unisDot11ACIfName        OCTET STRING
+    }
+
+unisDot11ACIfIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents index of AC interface."
+    ::= { unisDot11ACIFLoadInfoEntry 1 }
+
+unisDot11ACIfApNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents AP number connected to the AC interface."
+    ::= { unisDot11ACIFLoadInfoEntry 2 }
+
+unisDot11ACIfStaNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents Station number connected to the AC interface."
+    ::= { unisDot11ACIFLoadInfoEntry 3 }
+
+unisDot11ACIfName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents InterfaceName AP number connected to AC interface."
+    ::= { unisDot11ACIFLoadInfoEntry 4 }
+
+-- *****************************************************************************
+-- *  End of unisDot11ACIFLoadInfoTable element Definition
+-- *****************************************************************************
+unisDot11MasterAPCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of AP which have established the
+        master tunnel with AC."
+    ::= { unisDot11ACLoadInfo 4 }
+
+unisDot11SlaveAPCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of AP which have established the
+        slave tunnel with AC."
+    ::= { unisDot11ACLoadInfo 5 }
+
+unisDot11ConnectAutoAPCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of auto APs that are connecting to AC."
+    ::= { unisDot11ACLoadInfo 6 }
+
+unisDot11PersistentAPCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of persistent AP."
+    ::= { unisDot11ACLoadInfo 7 }
+
+unisDot11AcUploadFrameCnt OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of frames that AP sends to AC through LWAPP tunnel."
+    ::= { unisDot11ACLoadInfo 8 }
+
+unisDot11AcDownloadFrameCnt OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of frames that AC sends to AP through LWAPP tunnel."
+    ::= { unisDot11ACLoadInfo 9 }
+
+unisDot11AcUploadFrameBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the bytes of frames that AP sends to AC through LWAPP tunnel."
+    ::= { unisDot11ACLoadInfo 10 }
+
+unisDot11AcDownloadFrameBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the bytes of frames that AC sends to AP through LWAPP tunnel."
+    ::= { unisDot11ACLoadInfo 11 }
+
+unisDot11BackupACRole OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            null(1),
+            master(2),
+            slave(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object represents the Identity of the AC
+         null:   Not configured
+         master: Master AC
+         slave:  Slave AC."
+    DEFVAL      { null }
+    ::= { unisDot11ACLoadInfo 12 }
+
+unisDot11BackupACNMSIP OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This object represents the manger IP address of the slave ac."
+    ::= { unisDot11ACLoadInfo 13 }
+
+unisDot11ACBackupMode OBJECT-TYPE
+        SYNTAX      INTEGER
+        {
+            null(1),
+            hotBackup(2),
+            coldBackup(3)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This object represents the ac backup mode."
+        DEFVAL      { null }
+    ::= { unisDot11ACLoadInfo 14 }
+
+unisDot11ACBackupStatus OBJECT-TYPE
+        SYNTAX      INTEGER
+        {
+            active(1),
+            standby(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This object represents the ac backup status."
+    ::= { unisDot11ACLoadInfo 15 }
+
+unisDot11ACSwitchCnt OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This object represents the ac switch times."
+    ::= { unisDot11ACLoadInfo 16 }
+
+unisDot11ACSouthifPacketOutputCount OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Represents the count of output packets with the down-link interface."
+    ::= { unisDot11ACLoadInfo 17 }
+
+unisDot11ACSouthifPacketOutputBytes OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Represents the bytes of output packets with the down-link interface."
+    ::= { unisDot11ACLoadInfo 18 }
+
+unisDot11ACSouthifPacketInputCount OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Represents the count of input packets with the down-link interface."
+    ::= { unisDot11ACLoadInfo 19 }
+
+unisDot11ACSouthifPacketInputBytes OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Represents the bytes of input packets with the down-link interface."
+    ::= { unisDot11ACLoadInfo 20 }
+
+unisDot11TotalAPconnected OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of AP which are connected to AC."
+    ::= { unisDot11ACLoadInfo 21 }
+
+unisDot11RemainingAPcapacity OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the remaining AP capacity of the AC."
+    ::= { unisDot11ACLoadInfo 22 }
+
+-- *****************************************************************************
+-- *  End of unisDot11ACLoad element Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WLANAssocStatisInfo Definition
+-- *****************************************************************************
+unisDot11StationAssocSum OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of station association."
+    ::= { unisDot11WLANAssocStatisInfo 1 }
+
+unisDot11StationAssocFailSum OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of station association failure."
+    ::= { unisDot11WLANAssocStatisInfo 2 }
+
+unisDot11StationReassocSum OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of station reassociation."
+    ::= { unisDot11WLANAssocStatisInfo 3 }
+
+unisDot11StationAssocRejectedSum OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of station association rejected on
+        account of resource limit."
+    ::= { unisDot11WLANAssocStatisInfo 4 }
+
+unisDot11StationExDeAuthenSum OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of exceptional station deauthentication
+        (Without sending a deauthentication to AP)."
+    ::= { unisDot11WLANAssocStatisInfo 5 }
+
+unisDot11StationCurAssocSum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of current associated stations."
+    ::= { unisDot11WLANAssocStatisInfo 6 }
+
+unisDot11StationAssocReqSum OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of station association request."
+    ::= { unisDot11WLANAssocStatisInfo 7 }
+
+unisDot11StationReassocReqSum OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of station reassociation request."
+    ::= { unisDot11WLANAssocStatisInfo 8 }
+
+unisDot11StationReassocFailSum OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of station reassociation failure."
+    ::= { unisDot11WLANAssocStatisInfo 9 }
+-- *****************************************************************************
+-- *  End of unisDot11WLANAssocStatisInfo Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- * unisDot11ACBASInfo Definition
+-- *****************************************************************************
+unisDot11ACBASSysObjects OBJECT IDENTIFIER  ::= { unisDot11ACBASInfo 1 }
+unisDot11ACBASTableObjects OBJECT IDENTIFIER  ::= { unisDot11ACBASInfo 2 }
+
+unisDot11ACBASIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11ACBASIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the BAS information of interfaces."
+    ::= { unisDot11ACBASTableObjects 3 }
+
+unisDot11ACBASIfEntry OBJECT-TYPE
+    SYNTAX      UnisDot11ACBASIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry represents the BAS information of an interface"
+    INDEX
+        {
+            unisDot11ACBASIfIndex
+        }
+    ::= { unisDot11ACBASIfTable 1 }
+
+UnisDot11ACBASIfEntry ::= SEQUENCE
+    {
+        unisDot11ACBASIfIndex       Integer32,
+        unisDot11ACBASIfDescr       OCTET STRING,
+        unisDot11ACBASIfType        IANAifType
+    }
+
+unisDot11ACBASIfIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The ifIndex of the BAS interface. "
+    ::= { unisDot11ACBASIfEntry 1 }
+
+unisDot11ACBASIfDescr OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "A textual string containing information about the BAS interface. "
+    ::= { unisDot11ACBASIfEntry 2 }
+
+unisDot11ACBASIfType OBJECT-TYPE
+    SYNTAX      IANAifType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The type of the BAS interface. "
+    ::= { unisDot11ACBASIfEntry 3 }
+
+-- *****************************************************************************
+-- *  End of unisDot11ACBASInfo Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11ACStaUserSecAuthStatis element Definition
+-- *****************************************************************************
+unisDot11ACStaUserAuthCurNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the current number of user authenticated with this AC."
+    ::= { unisDot11ACStaUserSecAuthStatis 1 }
+
+unisDot11ACStaUserConnFailCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of user disconnected with this AC."
+    ::= { unisDot11ACStaUserSecAuthStatis 2 }
+
+unisDot11ACStaUserAuthReqCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of user authenticate request with this AC."
+    ::= { unisDot11ACStaUserSecAuthStatis 3 }
+
+unisDot11ACStaUserAuthSuccCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of users authenticated successful with this AC."
+    ::= { unisDot11ACStaUserSecAuthStatis 4 }
+
+unisDot11ACStaUserAuthFailCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of user authenticated failed with this AC."
+    ::= { unisDot11ACStaUserSecAuthStatis 5 }
+
+unisDot11ACStaUserAllAuthCntCM OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of users authenticated with this AC."
+    ::= { unisDot11ACStaUserSecAuthStatis 6 }
+
+unisDot11ACStaUserAuthRespCntCM OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of user authenticate response with this AC."
+    ::= { unisDot11ACStaUserSecAuthStatis 7 }
+
+-- *****************************************************************************
+-- *  End of unisDot11StaUserSecAuthStatis element Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11ACStaSecAuthTypeStatis element Definition
+-- *****************************************************************************
+unisDot11ACStaUserPortalOnlineNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of online portal users authenticated by RADIUS,
+        including MAC-trigger and IMSIAuth users."
+    ::= { unisDot11ACStaSecAuthTypeStatis 1 }
+
+unisDot11ACStaUserFreeAuthOnlineNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Numbers of online user is no need authenticated."
+    ::= { unisDot11ACStaSecAuthTypeStatis 2 }
+
+unisDot11ACStaUserAssociateAuthOnlineNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of online users authenticated by associated authentication,
+        excluding AutoAuth users."
+    ::= { unisDot11ACStaSecAuthTypeStatis 3 }
+
+unisDot11ACStaUserMacAuthOnlineNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The numbers of online user which is launched authentication by MAC address and
+        authenticated by Radius."
+    ::= { unisDot11ACStaSecAuthTypeStatis 4 }
+
+unisDot11ACStaUserPortalLostConnectionCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "For PortalAuth user, represents disconnection count but voluntarily disconnect,
+        it should not delete authenticated user when client roamed."
+    ::= { unisDot11ACStaSecAuthTypeStatis 5 }
+
+unisDot11ACStaUserFreeAuthLostConnectionCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "For FreeAuth user, represents disconnection count but voluntarily disconnect,
+        it should not delete authenticated user when client roamed."
+    ::= { unisDot11ACStaSecAuthTypeStatis 6 }
+
+unisDot11ACStaUserAssociateAuthLostConnectionCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "For AssociateAuth user, represents disconnection count but voluntarily disconnect,
+        it should not delete authenticated user when client roamed."
+    ::= { unisDot11ACStaSecAuthTypeStatis 7 }
+
+unisDot11ACStaUserMacAuthLostConnectionCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "For MacAuth user, represents disconnection count but voluntarily disconnect,
+        it should not delete authenticated user when client roamed."
+    ::= { unisDot11ACStaSecAuthTypeStatis 8 }
+
+unisDot11ACStaPortalAuthReqCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents PortalAuth request count after AP up."
+    ::= { unisDot11ACStaSecAuthTypeStatis 9 }
+
+unisDot11ACStaAssociateAuthReqCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents AssociateAuth request count after AP up."
+    ::= { unisDot11ACStaSecAuthTypeStatis 10 }
+
+unisDot11ACStaMacAuthReqCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents MacAuth request count after AP up."
+    ::= { unisDot11ACStaSecAuthTypeStatis 11 }
+
+unisDot11ACStaPortalAuthSuccCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents count of PortalAuth authenticated successfully after AP up."
+    ::= { unisDot11ACStaSecAuthTypeStatis 12 }
+
+unisDot11ACStaAssociateAuthSuccCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents count of AssociateAuth authenticated successfully after AP up."
+    ::= { unisDot11ACStaSecAuthTypeStatis 13 }
+
+unisDot11ACStaMacAuthSuccCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents count of MacAuth authenticated successfully after AP up."
+    ::= { unisDot11ACStaSecAuthTypeStatis 14 }
+
+unisDot11ACStaPortalAuthReqFailCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents count of PortalAuth failure in request after AP up."
+    ::= { unisDot11ACStaSecAuthTypeStatis 15 }
+
+unisDot11ACStaAssociateAuthReqFailCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents count of AssociateAuth failure in request after AP up."
+    ::= { unisDot11ACStaSecAuthTypeStatis 16 }
+
+unisDot11ACStaMacAuthReqFailCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents count of MacAuth failure in request after AP up."
+    ::= { unisDot11ACStaSecAuthTypeStatis 17 }
+
+unisDot11ACStaUserAutoAuthOnlineNumCM OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of online users authenticated by auto authentication."
+    ::= { unisDot11ACStaSecAuthTypeStatis 18 }
+
+unisDot11ACStaUserAutoAuthLostConnectionCntCM OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the disconnection count of AutoAuth users, excluding the ones
+        who disconnect AP by themselves."
+    ::= { unisDot11ACStaSecAuthTypeStatis 19 }
+
+unisDot11ACStaAutoAuthReqCntCM OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the count of AutoAuth requests after AP up."
+    ::= { unisDot11ACStaSecAuthTypeStatis 20 }
+
+unisDot11ACStaAutoAuthSuccCntCM OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the count of successful AutoAuth authentications after AP up."
+    ::= { unisDot11ACStaSecAuthTypeStatis 21 }
+
+unisDot11ACStaAutoAuthReqFailCntCM OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the count of failed AutoAuth requests after AP is up."
+    ::= { unisDot11ACStaSecAuthTypeStatis 22 }
+-- *****************************************************************************
+-- *  End of unisDot11ACStaSecAuthTypeStatis element Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11ACPortalStatisticCMTable Definition
+-- *****************************************************************************
+unisDot11ACPortalStatisticCMTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11ACPortalStatisticCMEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table describes portal statistics information."
+    ::= { unisDot11ACObjectGroup 7 }
+
+unisDot11ACPortalStatisticCMEntry OBJECT-TYPE
+    SYNTAX      UnisDot11ACPortalStatisticCMEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the portal statistics information of an SSID."
+    INDEX
+        {
+            unisDot11ACPortalStatisticSSIDCM
+        }
+    ::= { unisDot11ACPortalStatisticCMTable 1 }
+
+UnisDot11ACPortalStatisticCMEntry ::= SEQUENCE
+    {
+        unisDot11ACPortalStatisticSSIDCM             OCTET STRING,
+        unisDot11ACPortalStatAuthReqCM                  Counter32,
+        unisDot11ACPortalStatAuthRespCM                 Counter32
+    }
+
+unisDot11ACPortalStatisticSSIDCM OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the service policy name."
+    ::= { unisDot11ACPortalStatisticCMEntry 1 }
+
+unisDot11ACPortalStatAuthReqCM OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of portal authentication requests from
+        portal server to AC."
+    ::= { unisDot11ACPortalStatisticCMEntry 2 }
+
+unisDot11ACPortalStatAuthRespCM OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of portal authentication responses from
+        AC to portal server."
+    ::= { unisDot11ACPortalStatisticCMEntry 3 }
+
+-- *****************************************************************************
+-- *  End of unisDot11ACPortalStatisticCMTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11LocalACModelTable Definition
+-- *****************************************************************************
+unisDot11LocalACModelTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11LocalACModelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table defines the capability information for a specific
+        kind of local AC."
+    ::= { unisDot11ACObjectGroup 8 }
+
+unisDot11LocalACModelEntry OBJECT-TYPE
+    SYNTAX      UnisDot11LocalACModelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains capability information for a specific kind
+        of local AC."
+    INDEX
+        {
+            unisDot11LocalACModelAlias
+        }
+    ::= { unisDot11LocalACModelTable 1 }
+
+UnisDot11LocalACModelEntry ::= SEQUENCE
+    {
+        unisDot11LocalACModelAlias         OCTET STRING,
+        unisDot11LocalACModelName          OCTET STRING,
+        unisDot11LocalACManufacturer       OCTET STRING,
+        unisDot11LocalACCPUType            OCTET STRING,
+        unisDot11LocalACCPUClockSpeed      Unsigned32,
+        unisDot11LocalACMemoryType         OCTET STRING,
+        unisDot11LocalACMemorySize         Unsigned32,
+        unisDot11LocalACFlashType          OCTET STRING,
+        unisDot11LocalACFlashSize          Unsigned32,
+        unisDot11LocalACMemSize            Counter64,
+        unisDot11LocalACFlashSizeInBytes   Counter64
+    }
+
+unisDot11LocalACModelAlias OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents alias of local AC model name."
+    ::= { unisDot11LocalACModelEntry 1 }
+
+unisDot11LocalACModelName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents local AC model name."
+    ::= { unisDot11LocalACModelEntry 2 }
+
+unisDot11LocalACManufacturer OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "'SMI Network Management Private Enterprise Codes'
+        assigned by the IANA, which means the vendor of local AC."
+    ::= { unisDot11LocalACModelEntry 3 }
+
+unisDot11LocalACCPUType OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the CPU type of local AC."
+    ::= { unisDot11LocalACModelEntry 4 }
+
+unisDot11LocalACCPUClockSpeed OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "Hz"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the clock speed of CPU."
+    ::= { unisDot11LocalACModelEntry 5 }
+
+unisDot11LocalACMemoryType OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the memory card type of local AC."
+    ::= { unisDot11LocalACModelEntry 6 }
+
+unisDot11LocalACMemorySize OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "kbytes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the size of local AC memory card."
+    ::= { unisDot11LocalACModelEntry 7 }
+
+unisDot11LocalACFlashType OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the flash card type of local AC."
+    ::= { unisDot11LocalACModelEntry 8 }
+
+unisDot11LocalACFlashSize OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "kbytes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the size of local AC flash card."
+    ::= { unisDot11LocalACModelEntry 9 }
+
+unisDot11LocalACMemSize OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "bytes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the size of local AC memory card."
+    ::= { unisDot11LocalACModelEntry 10 }
+
+unisDot11LocalACFlashSizeInBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "bytes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object represents the size of local AC flash card in bytes."
+    ::= { unisDot11LocalACModelEntry 11 }
+
+-- *****************************************************************************
+-- *  End of unisDot11LocalACModelTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11CAPWAPTunnelTable Definition
+-- *****************************************************************************
+unisDot11CAPWAPTunnelTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11CAPWAPTunnelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table will list all the APs which are connecting to the AC
+        by the CAPWAP tunnel protocol."
+    ::= { unisDot11CAPWAPTunnelGroup 1 }
+
+unisDot11CAPWAPTunnelEntry OBJECT-TYPE
+    SYNTAX      UnisDot11CAPWAPTunnelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of data tunnel and control
+        tunnel of AP which is connecting to AC."
+    INDEX
+        {
+            unisDot11CurrTunnelAPID
+        }
+    ::= { unisDot11CAPWAPTunnelTable 1 }
+
+UnisDot11CAPWAPTunnelEntry ::= SEQUENCE
+    {
+        unisDot11CurrTunnelAPID         UnisDot11ObjectIDType,
+        unisDot11CtrlTunnelCurrSec      UnisDot11TunnelSecSchemType,
+        unisDot11CtrlTunnelUpTime       Integer32,
+        unisDot11DataTunnelCurrSec      UnisDot11TunnelSecSchemType,
+        unisDot11DataTunnelUpTime       Integer32,
+        unisDot11CtrlTunnelUpTimeTicks  TimeTicks
+    }
+
+unisDot11CurrTunnelAPID OBJECT-TYPE
+    SYNTAX      UnisDot11ObjectIDType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "To uniquely identify the CAPWAP tunnel set up between the AP
+        identified by APID and a specific AC."
+    ::= { unisDot11CAPWAPTunnelEntry 1 }
+
+unisDot11CtrlTunnelCurrSec OBJECT-TYPE
+    SYNTAX      UnisDot11TunnelSecSchemType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents what security scheme is in use for
+        control tunnel."
+    DEFVAL      { cleartxt }
+    ::= { unisDot11CAPWAPTunnelEntry 2 }
+
+unisDot11CtrlTunnelUpTime OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents how long for control tunnel up. If the value is zero,
+        then tunnel is not set up."
+    ::= { unisDot11CAPWAPTunnelEntry 3 }
+
+unisDot11DataTunnelCurrSec OBJECT-TYPE
+    SYNTAX      UnisDot11TunnelSecSchemType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents what security scheme is in use for
+        data tunnel."
+    DEFVAL      { cleartxt }
+    ::= { unisDot11CAPWAPTunnelEntry 4 }
+
+unisDot11DataTunnelUpTime OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents how long for data tunnel up.
+        If the value is zero, then tunnel is not set up."
+    ::= { unisDot11CAPWAPTunnelEntry 5 }
+
+unisDot11CtrlTunnelUpTimeTicks OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents how long control tunnel is up.
+         If the value is zero, then tunnel is not set up."
+    ::= { unisDot11CAPWAPTunnelEntry 6 }
+-- *****************************************************************************
+-- *    End of unisDot11CAPWAPTunnelTable  TABLE
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *     Notifications OF unisDot11ACMtNotifyGroup
+-- *****************************************************************************
+-- AC Management Notification
+
+        unisDot11ACMtTraps OBJECT IDENTIFIER
+    ::= { unisDot11ACMtNotifyGroup 0 }
+
+unisDot11ACMtTunnelSetupTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11CurrTunnelAPID,
+            unisDot11ACMtTrapTunlUpInfo,
+            unisDot11ACMtTrapTnlAPName,
+            unisDot11ACMtTrapTnlAPIPAddr,
+            unisDot11ACMtTrapAPIPv6Addr,
+            unisDot11ACMtFirstTrapTime,
+            unisDot11ACMtTrapAPMacAddress
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent by AC when CAPWAP tunnel becomes up.
+        By this way, NMS will immediately know tunnel up event.
+        It is unnecessary to identify whether it is control or data
+        tunnel."
+    ::= { unisDot11ACMtTraps 1 }
+
+unisDot11ACMtTunnelDownTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11CurrTunnelAPID,
+            unisDot11ACMtTrapTunlDwnInfo,
+            unisDot11ACMtTrapTnlAPName,
+            unisDot11ACMtTrapTnlAPIPAddr,
+            unisDot11ACMtTrapAPIPv6Addr,
+            unisDot11ACMtTrapTunlDwnCount,
+            unisDot11ACMtTrapTnlAPSysName,
+            unisDot11ACMtFirstTrapTime,
+            unisDot11ACMtTrapAPMacAddress
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent by AC when CAPWAP tunnel becomes down.
+        By this way, NMS will immediately know tunnel down event.
+        It is unnecessary to identify whether it is control or data
+        tunnel."
+    ::= { unisDot11ACMtTraps 2 }
+
+unisDot11ACMtBackupSwtTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11ACMtTrapBackupSwitchInfo,
+            unisDot11ACMtFirstTrapTime
+        }
+    STATUS      current
+    DESCRIPTION
+        "This trap is sent by AC when AC switches from master to slave
+        or from slave to master."
+    ::= { unisDot11ACMtTraps 3 }
+
+unisDot11ACLoadBalanceTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11LoadBalanceType,
+            unisDot11LoadBalanceThreshold
+        }
+    STATUS      current
+    DESCRIPTION
+        "This trap is sent by AC when load-balance is enabled on AC."
+    ::= { unisDot11ACMtTraps 4 }
+
+unisDot11ACStaFullTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11ACMaxStaNum
+        }
+    STATUS current
+    DESCRIPTION
+        "This notification will be sent when STA is full on AC."
+    ::={ unisDot11ACMtTraps 5 }
+
+unisDot11ACStatusSwitchTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11ACStatusSwitchInfo,
+            unisDot11SourceACNmsIP
+        }
+    STATUS current
+    DESCRIPTION
+        "This notification will be sent when AC switches from standby to active
+        or from standby to active."
+    ::={ unisDot11ACMtTraps 6}
+
+unisDot11RunAPNumOverload NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11MaxAPNumPermitted,
+            unisDot11APConnectCount
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification will be sent by AC when run AP number exceeds the threshold."
+    ::= { unisDot11ACMtTraps 7}
+
+unisDot11RunAPNumOverloadRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11MaxAPNumPermitted,
+            unisDot11APConnectCount
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification will be sent by AC when run AP number
+        recover normal from overload state."
+    ::= { unisDot11ACMtTraps 8 }
+
+
+-- AC Management Notification Variable object
+
+        unisDot11ACMtTrapVarObjects OBJECT IDENTIFIER
+    ::= { unisDot11ACMtNotifyGroup 1 }
+
+unisDot11ACMtTrapTunlDwnInfo OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            tunnelTimeout(1),
+            keyUpdateFailure(2),
+            apReset(3),
+            apCrash(4),
+            apDeleted(5),
+            apCfgChange(6)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the reason for tunnel down.
+        The following values are supported:
+        tunnelTimeout     - When AC detects the tunnel is broken,
+        - it will notify NMS.
+        keyUpdateFailure  - rekey process is failed, tunnel will be broken.
+        apReset           - Administrator reset AP.
+        apCrash           - AP reboot for system crash.
+        apDeleted         - Delete AP from AC and trigger tunnel down.
+        apCfgChange       - The configuration for AP was changed."
+    ::= { unisDot11ACMtTrapVarObjects 1 }
+
+unisDot11ACMtTrapTunlUpInfo OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            up(1)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the reason for tunnel up.
+        The following values are supported:
+        up(1)  - The AP joined AC.
+        "
+    ::= { unisDot11ACMtTrapVarObjects 2 }
+
+unisDot11ACMtTrapBackupSwitchInfo OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            masterToSlave(1),
+            slaveToMaster(2)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents status which the AC switches to.
+        The following values are supported:
+        masterToSlave  - The AC switches from master to slave.
+        slaveToMaster  - The AC switches from slave to master.
+        "
+    ::= { unisDot11ACMtTrapVarObjects 3 }
+
+unisDot11ACMtTrapTnlAPName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents name of the AP which sets up the tunnel with the AC.
+        "
+    ::= { unisDot11ACMtTrapVarObjects 4 }
+
+unisDot11ACMtTrapTnlAPIPAddr OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents IP address of the AP which sets up the tunnel with the AC.
+        "
+    ::= { unisDot11ACMtTrapVarObjects 5 }
+
+unisDot11LoadBalanceType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            traffic(1),
+            session(2)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents which kind load balance is enabled by AC.
+         The following values are supported:
+         traffic mode load-balancing: traffic snapshot is considered.
+         session mode load-balancing: the number of users associated
+                                      with the AP/radio is considered.
+        "
+    ::= { unisDot11ACMtTrapVarObjects 6 }
+
+unisDot11LoadBalanceThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the value of load balance threshold.
+        "
+    ::= { unisDot11ACMtTrapVarObjects 7 }
+
+unisDot11ACMtTrapAPIPv6Addr OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents IPv6 address of the AP which sets up the tunnel with
+        the AC."
+    ::= { unisDot11ACMtTrapVarObjects 8 }
+
+unisDot11ACMtTrapTunlDwnCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents how many times that the tunnel between AC and AP has down."
+    ::= { unisDot11ACMtTrapVarObjects 9 }
+
+unisDot11ACMaxStaNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the max number of STA on AC."
+    ::= { unisDot11ACMtTrapVarObjects 10 }
+
+unisDot11ACMtTrapTnlAPSysName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents system name of the AP which sets up the tunnel with the AC."
+    ::= { unisDot11ACMtTrapVarObjects 11 }
+
+unisDot11ACMtFirstTrapTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the first trap time."
+    ::= { unisDot11ACMtTrapVarObjects 12 }
+
+unisDot11ACStatusSwitchInfo OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            activeToStandby(1),
+            standbyToActive(2)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents status which the AC switches to.
+        The following values are supported:
+        activeToStandby  - The AC switches from active to standby.
+        standbyToActive  - The AC switches from standby to active.
+        "
+    ::= { unisDot11ACMtTrapVarObjects 13 }
+
+unisDot11SourceACNmsIP OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the NMS IP address of master AC.
+        "
+    ::= { unisDot11ACMtTrapVarObjects 14 }
+
+unisDot11ACMtTrapAPMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+         "Represents the MAC address of an AP."
+    ::= { unisDot11ACMtTrapVarObjects 15 }
+
+-- *****************************************************************************
+-- *     End OF NotifyGroup
+-- *****************************************************************************
+END

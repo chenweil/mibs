@@ -1,0 +1,120 @@
+-- ============================================================================
+-- Copyright (c) 2021 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description:  Control Plane disaster recovery Information MIB.
+--               include :1.CPDR statistics information
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2020-11-13 created by tanjidong
+-- ============================================================================
+UNIS-CPDR-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM SNMPv2-TC;
+
+unisCpdr MODULE-IDENTITY
+    LAST-UPDATED "202011130000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The latest baseline."
+    REVISION "202011130000Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 199 }
+
+--
+-- Node definitions
+--
+--
+-- Definitions of significant branches
+--
+unisCpdrObjects         OBJECT IDENTIFIER  ::= { unisCpdr 1 }
+unisCpdrGroup           OBJECT IDENTIFIER  ::= { unisCpdrObjects 1 }
+
+--
+-- The unisCpdrGroupTable table
+--
+
+unisCpdrGroupTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF UnisCpdrGroupEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "A table containing control plane disaster recovery group specific variables
+        for this cp disaster recovery implementation."
+    ::= { unisCpdrGroup 1 }
+
+unisCpdrGroupEntry  OBJECT-TYPE
+    SYNTAX        UnisCpdrGroupEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "Basic information about a particular control plane disaster recovery group."
+    INDEX     {IMPLIED unisCpdrGroupName }
+    ::= { unisCpdrGroupTable 1 }
+
+UnisCpdrGroupEntry ::= SEQUENCE {
+    unisCpdrGroupName
+        DisplayString,
+    unisCpdrGroupRole
+        INTEGER,
+    unisCpdrMode
+        INTEGER
+    }
+
+unisCpdrGroupName  OBJECT-TYPE
+    SYNTAX        DisplayString (SIZE (1..32))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The control plane disaster recovery group name."
+    ::= { unisCpdrGroupEntry 1 }
+
+unisCpdrGroupRole  OBJECT-TYPE
+    SYNTAX        INTEGER
+        {
+            invalid (1),
+            master (2),
+            standBy (3)
+        }
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The control plane disaster recovery group role."
+    ::= { unisCpdrGroupEntry 2 }
+
+unisCpdrMode  OBJECT-TYPE
+    SYNTAX        INTEGER
+        {
+            hot (1),
+            cold (2)
+        }
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The control plane disaster recovery group mode."
+    ::= { unisCpdrGroupEntry 3 }
+
+unisCpdrTraps      OBJECT IDENTIFIER  ::= { unisCpdr 2 }
+unisCpdrTrapsPrefix OBJECT IDENTIFIER ::= { unisCpdrTraps 0 }
+
+--
+-- The unisCpdrTraps trap
+--
+
+unisCpdrTrapRoleChange NOTIFICATION-TYPE
+    OBJECTS { unisCpdrGroupName,
+               unisCpdrGroupRole }
+    STATUS  current
+    DESCRIPTION
+        "This trap is generated when the role of control plane disaster recovery group changes."
+    ::= { unisCpdrTrapsPrefix 1 }
+
+END

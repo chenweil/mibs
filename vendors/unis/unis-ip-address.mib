@@ -1,0 +1,433 @@
+-- ====================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: IPv4 address MIB
+-- Reference:
+-- Version: V1.5
+-- History:
+--   V1.0 2005-11-22 Created by Wang Hui and Liu Jinguang
+--        Initial version
+--   V1.1 2006-03-16 Modify by Yu Hongqiang
+--        Modify the description of some objects.
+--   V1.2 2007-12-18 Modify by Zhangyinfei
+--        Add enmu 'vrrp' for unisIpAddrReadSourceType and unisIpAddrReadCatalog
+--   V1.3 2009-8-11 Modify by lifei
+--        Add ip address change notify trap
+--   V1.4 2010-03-06 Modify by Jianzhuang Ge
+--        Add ipv4 address management table unisIpv4AddrTable
+--   V1.5 2011-11-28 Modify by zhangshuai
+--        Add unisIpAddrFirstTrapTime
+-- ====================================================================
+UNIS-IP-ADDRESS-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        unisCommon
+            FROM UNIS-OID-MIB
+        Integer32, IpAddress, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE,
+        TimeTicks
+            FROM SNMPv2-SMI
+        RowStatus
+            FROM SNMPv2-TC
+        InetAddressType,InetAddress
+            FROM INET-ADDRESS-MIB
+        ifIndex
+            FROM IF-MIB;
+
+    unisIpAddrMIB MODULE-IDENTITY
+        LAST-UPDATED "200511220000Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+            "The MIB module for managing IPv4 address."
+        REVISION "200511220000Z"
+        DESCRIPTION
+            "The initial revision of this MIB module."
+        ::= { unisCommon 67 }
+
+
+--
+-- Node definitions
+--
+    unisIpAddressObjects OBJECT IDENTIFIER ::= { unisIpAddrMIB 1 }
+
+    unisIpAddressConfig OBJECT IDENTIFIER ::= { unisIpAddressObjects 1 }
+
+    unisIpAddrSetTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisIpAddrSetEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The table of address information is relevant to this
+            entity's IPv4 addresses for setting. The address information
+            that can be read and set in this table is a subset of the
+            address information that can be read in unisIpAddrReadTable
+            and ipAddrTable in IP-MIB. This table is used to configure IPv4
+            addresses of an interface identified by unisIpAddrSetIfIndex.
+            When users create or delete an entry in this table, the agent also
+            increases or reduces a corresponding entry in the
+            unisIpAddrReadTable and ipAddrTable in IP-MIB.
+            When an interface which has been assigned IPv6 address is deleted,
+            the agent also deletes the entry corresponding to the interface
+            in this table and unisIpAddrReadTable.
+            All IPv4 addresses in this table will also show in ipAddrTable in
+            IP-MIB.
+            "
+        REFERENCE
+            "RFC 2011"
+        ::= { unisIpAddressConfig 1 }
+
+    unisIpAddrSetEntry OBJECT-TYPE
+        SYNTAX UnisIpAddrSetEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Define the IPv4 address information.
+            "
+        INDEX { unisIpAddrSetIfIndex, unisIpAddrSetAddrType, unisIpAddrSetAddr }
+        ::= { unisIpAddrSetTable 1 }
+
+    UnisIpAddrSetEntry ::=
+        SEQUENCE
+        {
+            unisIpAddrSetIfIndex
+                Integer32,
+            unisIpAddrSetAddrType
+                InetAddressType,
+            unisIpAddrSetAddr
+                InetAddress,
+            unisIpAddrSetMask
+                IpAddress,
+            unisIpAddrSetSourceType
+                INTEGER,
+            unisIpAddrSetCatalog
+                INTEGER,
+            unisIpAddrSetRowStatus
+                RowStatus
+        }
+
+    unisIpAddrSetIfIndex OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The index value which uniquely identifies the interface to
+            which this entry is applicable. The interface identified by
+            a particular value of this index is the same interface as
+            identified by the same value of RFC 1573's ifIndex.
+            "
+        ::= { unisIpAddrSetEntry 1 }
+
+    unisIpAddrSetAddrType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IP address type to which this entry's address information
+            pertains. The value must be ipv4.
+            "
+        ::= { unisIpAddrSetEntry 2 }
+
+    unisIpAddrSetAddr OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IPv4 address to which this entry's address information
+            pertains.
+            "
+        ::= { unisIpAddrSetEntry 3 }
+
+    unisIpAddrSetMask OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The subnet mask associated with the IPv4 address of this
+            entry. The value of the mask is an IPv4 address with all the
+            network bits set to 1 and all the hosts bits set to 0.
+            "
+        ::= { unisIpAddrSetEntry 4 }
+
+    unisIpAddrSetSourceType OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+            assignedIp(1)
+        }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Indicate the type of source of the IPv4 address."
+        DEFVAL { assignedIp }
+        ::= { unisIpAddrSetEntry 5 }
+
+    unisIpAddrSetCatalog OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+            primary(1),
+            sub(2)
+        }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Indicate the category of the IPv4 address."
+        DEFVAL { primary }
+        ::= { unisIpAddrSetEntry 6 }
+
+    unisIpAddrSetRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "This object is used to create a new row or delete an
+            existing row in this table, only support active,
+            createAndGo and destroy.
+            "
+        ::= { unisIpAddrSetEntry 7 }
+
+    unisIpAddrReadTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisIpAddrReadEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The table of address information is relevant to this
+            entity's IP addresses for reading. This is the extension
+            of the ipAddrTable in IP-MIB.
+            All IPv4 addresses in this table will also show in ipAddrTable
+            in IP-MIB.
+            "
+        REFERENCE
+            "RFC 2011"
+        ::= { unisIpAddressConfig 2 }
+
+    unisIpAddrReadEntry OBJECT-TYPE
+        SYNTAX UnisIpAddrReadEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Define the IPv4 address information.
+            "
+        INDEX { unisIpAddrReadIfIndex, unisIpAddrReadAddrType, unisIpAddrReadAddr }
+        ::= { unisIpAddrReadTable 1 }
+
+    UnisIpAddrReadEntry ::=
+        SEQUENCE
+        {
+            unisIpAddrReadIfIndex
+                Integer32,
+            unisIpAddrReadAddrType
+                InetAddressType,
+            unisIpAddrReadAddr
+                InetAddress,
+            unisIpAddrReadMask
+                IpAddress,
+            unisIpAddrReadSourceType
+                INTEGER,
+            unisIpAddrReadCatalog
+                INTEGER
+        }
+
+    unisIpAddrReadIfIndex OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The index value which uniquely identifies the interface to
+            which this entry is applicable. The interface identified by
+            a particular value of this index is the same interface as
+            identified by the same value of RFC 1573's ifIndex.
+            "
+        ::= { unisIpAddrReadEntry 1 }
+
+    unisIpAddrReadAddrType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IP address type to which this entry's address information
+            pertains. The value must be ipv4.
+            "
+        ::= { unisIpAddrReadEntry 2 }
+
+    unisIpAddrReadAddr OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IPv4 address to which this entry's address information
+            pertains.
+            "
+        ::= { unisIpAddrReadEntry 3 }
+
+    unisIpAddrReadMask OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The subnet mask associated with the IPv4 address of this
+            entry. The value of the mask is an IPv4 address with all the
+            network bits set to 1 and all the hosts bits set to 0.
+            "
+        ::= { unisIpAddrReadEntry 4 }
+
+    unisIpAddrReadSourceType OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+            assignedIp(1),
+            cluster(2),
+            dhcp(3),
+            bootp(4),
+            negotiate(5),
+            unnumbered(6),
+            vrrp(7)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Indicate the type of source of the IPv4 address."
+        ::= { unisIpAddrReadEntry 5 }
+
+    unisIpAddrReadCatalog OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+            primary(1),
+            sub(2),
+            cluster(3),
+            vrrp(4)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Indicate the category of the IPv4 address."
+        ::= { unisIpAddrReadEntry 6 }
+
+    unisIpv4AddrTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisIpv4AddrEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table is used to configure primary IPv4 address of an
+             interface identified by ifIndex."
+        ::= { unisIpAddressConfig 3 }
+
+    unisIpv4AddrEntry OBJECT-TYPE
+        SYNTAX UnisIpv4AddrEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Define the IPv4 address information.
+            "
+        INDEX { ifIndex }
+        ::= { unisIpv4AddrTable 1 }
+
+    UnisIpv4AddrEntry ::=
+        SEQUENCE
+        {
+            unisIpv4AddrAddr
+                IpAddress,
+            unisIpv4AddrMask
+                IpAddress,
+            unisIpv4AddrRowStatus
+                RowStatus
+        }
+
+    unisIpv4AddrAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The IPv4 address to which this entry's address information
+            pertains.
+            "
+        ::= { unisIpv4AddrEntry 1 }
+
+    unisIpv4AddrMask OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The subnet mask associated with the IPv4 address of this
+            entry.  The value of the mask is an IPv4 address with all the
+            network bits set to 1 and all the hosts bits set to 0.
+            "
+        ::= { unisIpv4AddrEntry 2 }
+
+    unisIpv4AddrRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "This object is used to create a new row or delete an
+            existing row in this table, only support active,
+            notInService, createAndGo and destroy.
+            "
+        ::= { unisIpv4AddrEntry 3 }
+
+--
+-- Define the IP Address Traps.
+--
+
+unisIpAddrNotify OBJECT IDENTIFIER ::= { unisIpAddrMIB 2 }
+
+-- Scalar Objects for Notify
+unisIpAddrNotifyScalarObjects OBJECT IDENTIFIER ::= { unisIpAddrNotify 1 }
+
+unisIpAddrNotifyIfIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The IP address IfIndex of specified interface on the device."
+    ::= { unisIpAddrNotifyScalarObjects 1 }
+
+unisIpAddrOldIpAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The Old IP address of specified interface on the device."
+    ::= { unisIpAddrNotifyScalarObjects 2 }
+
+unisIpAddrNewIpAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The New IP address of specified interface on the device."
+    ::= { unisIpAddrNotifyScalarObjects 3 }
+
+unisIpAddrFirstTrapTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the first trap time."
+    ::= { unisIpAddrNotifyScalarObjects 4 }
+
+
+-- Notification Objects
+unisIpAddrNotifyObjects OBJECT IDENTIFIER ::= { unisIpAddrNotify 2 }
+
+unisIpAddrNotifyObjectsPrefix OBJECT IDENTIFIER ::= { unisIpAddrNotifyObjects 0 }
+
+unisIpAddressChangeNotify NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisIpAddrNotifyIfIndex,
+            unisIpAddrOldIpAddress,
+            unisIpAddrNewIpAddress,
+            unisIpAddrFirstTrapTime
+         }
+    STATUS      current
+    DESCRIPTION
+        "This notification will be generated when the IP address of interface
+        is changed.  The change maybe originate from NMS, DHCP server or
+        administrator.
+
+        This notification announces useful IP address change.  So it
+        is triggered by significative IP address change."
+
+    ::= { unisIpAddrNotifyObjectsPrefix 1 }
+
+END

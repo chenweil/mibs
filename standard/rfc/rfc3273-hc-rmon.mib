@@ -1,0 +1,1134 @@
+	HC-RMON-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			mib-2			
+				FROM RFC1213-MIB			
+			TimeTicks, Gauge32, Counter32, Counter64, OBJECT-TYPE			
+				FROM SNMPv2-SMI			
+			TEXTUAL-CONVENTION			
+				FROM SNMPv2-TC;
+	
+	
+	
+--
+-- Textual conventions
+--
+	
+		RmonGauge64 ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION 
+				"The RmonGauge64 type represents a non-negative integer, which
+				may increase or decrease, but shall never exceed a maximum value.
+				The maximum value can not be greater than 2^64-1. The value of a
+				Gauge has its maximum value whenever the information being modeled
+				is greater or equal to that maximum value; if the information
+				being modeled subsequently decreases below the maximum value, the
+				Gauge also decreases."
+			SYNTAX Counter64
+
+		ZeroBasedCounter32 ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION 
+				"This TC describes an object which counts events with the
+				following semantics: objects of this type will be set to
+				zero(0) on creation and will thereafter count appropriate
+				events, wrapping back to zero(0) when the value 2^32 is
+				reached.
+				
+				Provided that an application discovers the new object within
+				the minimum time to wrap it can use the initial value as a
+				delta since it last polled the table of which this object is
+				part.  It is important for a management station to be aware of
+				this minimum time and the actual time between polls, and to
+				discard data if the actual time is too long or there is no
+				defined minimum time.
+				
+				Typically this TC is used in tables where the INDEX space is
+				constantly changing and/or the TimeFilter mechanism is in use."
+			SYNTAX Gauge32
+
+		ZeroBasedCounter64 ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION 
+				"This TC describes an object which counts events with the
+				following semantics: objects of this type will be set to
+				zero(0) on creation and will thereafter count appropriate
+				events, wrapping back to zero(0) when the value 2^64 is
+				reached.
+				
+				Provided that an application discovers the new object within
+				the minimum time to wrap it can use the initial value as a
+				delta since it last polled the table of which this object is
+				part.  It is important for a management station to be aware of
+				this minimum time and the actual time between polls, and to
+				discard data if the actual time is too long or there is no
+				defined minimum time.
+				
+				Counter32 and Counter64 values are read by subtracting the
+				values of two polls retrieved at different times, resulting
+				in a count of the number of events that occurred between
+				the first poll and the second poll. There is no defined
+				way to measure the number of events between the time the
+				counter was created and the time of the first poll.
+				Typically this TC is used in tables where entries are added
+				and deleted frequently or tables that are not intended to
+				be downloaded frequently (e.g., because of their size).
+				In such tables, there may be a long time between the
+				creation of the counter and the first possible poll and
+				this may in fact constitute a large portion of the lifetime
+				of the counter."
+			SYNTAX Counter64
+
+		TimeFilter ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION 
+				"To be used for the index to a table.  Allows an application
+				to download only those rows changed since a particular time.
+				A row is considered changed if the value of any object in the
+				row changes or if the row is created or deleted.
+				
+				When sysUpTime is equal to zero, this table shall be empty.
+				
+				One entry exists for each past value of sysUpTime, except that
+				the whole table is purged should sysUpTime wrap.
+				
+				As this basic row is updated new conceptual rows are created
+				(which still share the now updated object values with all
+				other instances).  The number of instances which are created
+				is determined by the value of sysUpTime at which the basic row
+				was last updated.  One instance will exist for each value of
+				sysUpTime at the last update time for the row.  A new
+				timeMark instance is created for each new sysUpTime value.
+				Each new conceptual row will be associated with the timeMark
+				instance which was created at the value of sysUpTime with
+				which the conceptual row is to be associated.
+				
+				By definition all conceptual rows were updated at or after
+				time zero and so at least one conceptual row (associated with
+				timeMark.0) must exist for each underlying (basic) row.
+				
+				See the appendix for further discussion of this variable.
+				
+				Consider the following fooTable:
+				
+				fooTable ...
+				INDEX { fooTimeMark, fooIndex }
+				
+				FooEntry {
+				   fooTimeMark  TimeFilter
+				   fooIndex     INTEGER,
+				   fooCounts    Counter
+				}
+				
+				Should there be two basic rows in this table (fooIndex == 1,
+				fooIndex == 2) and row 1 was updated most recently at time 6,
+				while row 2 was updated most recently at time 8, and both rows
+				had been updated on several earlier occasions such that the
+				current values were 5 and 9 respectively then the following
+				fooCounts instances would exist.
+				
+				fooCounts.0.1  5
+				fooCounts.0.2  9
+				fooCounts.1.1  5
+				fooCounts.1.2  9
+				fooCounts.2.1  5
+				fooCounts.2.2  9
+				fooCounts.3.1  5
+				fooCounts.3.2  9
+				fooCounts.4.1  5
+				fooCounts.4.2  9
+				fooCounts.5.1  5
+				fooCounts.5.2  9
+				fooCounts.6.1  5
+				fooCounts.6.2  9
+				fooCounts.7.2  9    -- note that row 1 doesn't exist for
+				fooCounts.8.2  9    -- times 7 and 8"
+			SYNTAX TimeTicks
+
+		TimeStamp ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION 
+				"The value of the sysUpTime object at which a specific
+				occurrence happened.  The specific occurrence must be
+				defined in the description of any object defined using this
+				type."
+			SYNTAX TimeTicks
+
+		RowStatus ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION 
+				"The RowStatus textual convention is used to manage the
+				creation and deletion of conceptual rows, and is used as the
+				value of the SYNTAX clause for the status column of a
+				conceptual row (as described in Section 7.7.1 of [2].)
+				
+				The status column has six defined values:
+				
+				     - `active', which indicates that the conceptual row is
+				     available for use by the managed device;
+				
+				     - `notInService', which indicates that the conceptual
+				     row exists in the agent, but is unavailable for use by
+				     the managed device (see NOTE below);
+				
+				     - `notReady', which indicates that the conceptual row
+				     exists in the agent, but is missing information
+				     necessary in order to be available for use by the
+				     managed device;
+				
+				     - `createAndGo', which is supplied by a management
+				     station wishing to create a new instance of a
+				     conceptual row and to have its status automatically set
+				     to active, making it available for use by the managed
+				     device;
+				
+				     - `createAndWait', which is supplied by a management
+				     station wishing to create a new instance of a
+				     conceptual row (but not make it available for use by
+				     the managed device); and,
+				
+				     - `destroy', which is supplied by a management station
+				     wishing to delete all of the instances associated with
+				     an existing conceptual row.
+				
+				Whereas five of the six values (all except `notReady') may
+				be specified in a management protocol set operation, only
+				three values will be returned in response to a management
+				protocol retrieval operation:  `notReady', `notInService' or
+				`active'.  That is, when queried, an existing conceptual row
+				has only three states:  it is either available for use by
+				the managed device (the status column has value `active');
+				it is not available for use by the managed device, though
+				the agent has sufficient information to make it so (the
+				status column has value `notInService'); or, it is not
+				available for use by the managed device, and an attempt to
+				make it so would fail because the agent has insufficient
+				information (the state column has value `notReady').
+				
+				                         NOTE WELL
+				
+				     This textual convention may be used for a MIB table,
+				     irrespective of whether the values of that table's
+				     conceptual rows are able to be modified while it is
+				     active, or whether its conceptual rows must be taken
+				     out of service in order to be modified.  That is, it is
+				     the responsibility of the DESCRIPTION clause of the
+				     status column to specify whether the status column must
+				     not be `active' in order for the value of some other
+				     column of the same conceptual row to be modified.  If
+				     such a specification is made, affected columns may be
+				     changed by an SNMP set PDU if the RowStatus would not
+				     be equal to `active' either immediately before or after
+				     processing the PDU.  In other words, if the PDU also
+				     contained a varbind that would change the RowStatus
+				     value, the column in question may be changed if the
+				     RowStatus was not equal to `active' as the PDU was
+				     received, or if the varbind sets the status to a value
+				     other than 'active'.
+				
+				
+				Also note that whenever any elements of a row exist, the
+				RowStatus column must also exist.
+				
+				To summarize the effect of having a conceptual row with a
+				status column having a SYNTAX clause value of RowStatus,
+				consider the following state diagram:
+				
+				
+				                                           STATE
+				                +--------------+-----------+-------------+-------------
+				                |      A       |     B     |      C      |      D
+				                |              |status col.|status column|
+				                |status column |    is     |      is     |status column
+				      ACTION    |does not exist|  notReady | notInService|  is active
+				  --------------+--------------+-----------+-------------+-------------
+				  set status    |noError    ->D|inconsist- |inconsistent-|inconsistent-
+				  column to     |       or     |   entValue|        Value|        Value
+				  createAndGo   |inconsistent- |           |             |
+				                |         Value|           |             |
+				  --------------+--------------+-----------+-------------+-------------
+				  set status    |noError  see 1|inconsist- |inconsistent-|inconsistent-
+				  column to     |       or     |   entValue|        Value|        Value
+				  createAndWait |wrongValue    |           |             |
+				  --------------+--------------+-----------+-------------+-------------
+				  set status    |inconsistent- |inconsist- |noError      |noError
+				  column to     |         Value|   entValue|             |
+				  active        |              |           |             |
+				                |              |     or    |             |
+				                |              |           |             |
+				                |              |see 2   ->D|          ->D|          ->D
+				  --------------+--------------+-----------+-------------+-------------
+				  set status    |inconsistent- |inconsist- |noError      |noError   ->C
+				  column to     |         Value|   entValue|             |
+				  notInService  |              |           |             |
+				                |              |     or    |             |      or
+				                |              |           |             |
+				                |              |see 3   ->C|          ->C|wrongValue
+				  --------------+--------------+-----------+-------------+-------------
+				  set status    |noError       |noError    |noError      |noError
+				  column to     |              |           |             |
+				  destroy       |           ->A|        ->A|          ->A|          ->A
+				  --------------+--------------+-----------+-------------+-------------
+				  set any other |see 4         |noError    |noError      |see 5
+				  column to some|              |           |             |
+				  value         |              |      see 1|          ->C|          ->D
+				  --------------+--------------+-----------+-------------+-------------
+				  
+				(1) goto B or C, depending on information available to the
+				agent.
+				
+				(2) if other variable bindings included in the same PDU,
+				provide values for all columns which are missing but
+				required, then return noError and goto D.
+				
+				(3) if other variable bindings included in the same PDU,
+				provide values for all columns which are missing but
+				required, then return noError and goto C.
+				
+				(4) at the discretion of the agent, the return value may be
+				either:
+				
+				     inconsistentName:  because the agent does not choose to
+				     create such an instance when the corresponding
+				     RowStatus instance does not exist, or
+				
+				     inconsistentValue:  if the supplied value is
+				     inconsistent with the state of some other MIB object's
+				     value, or
+				
+				     noError: because the agent chooses to create the
+				     instance.
+				
+				If noError is returned, then the instance of the status
+				column must also be created, and the new state is B or C,
+				depending on the information available to the agent.  If
+				inconsistentName or inconsistentValue is returned, the row
+				remains in state A.
+				
+				(5) depending on the MIB definition for the column/table,
+				either noError or inconsistentValue may be returned.
+				
+				NOTE: Other processing of the set request may result in a
+				response other than noError being returned, e.g.,
+				wrongValue, noCreation, etc.
+				
+				
+				                  Conceptual Row Creation
+				
+				There are four potential interactions when creating a
+				conceptual row:  selecting an instance-identifier which is
+				not in use; creating the conceptual row; initializing any
+				objects for which the agent does not supply a default; and,
+				making the conceptual row available for use by the managed
+				device.
+				
+				Interaction 1: Selecting an Instance-Identifier
+				
+				The algorithm used to select an instance-identifier varies
+				for each conceptual row.  In some cases, the instance-
+				identifier is semantically significant, e.g., the
+				destination address of a route, and a management station
+				selects the instance-identifier according to the semantics.
+				
+				In other cases, the instance-identifier is used solely to
+				distinguish conceptual rows, and a management station
+				without specific knowledge of the conceptual row might
+				examine the instances present in order to determine an
+				unused instance-identifier.  (This approach may be used, but
+				it is often highly sub-optimal; however, it is also a
+				questionable practice for a naive management station to
+				attempt conceptual row creation.)
+				
+				Alternately, the MIB module which defines the conceptual row
+				might provide one or more objects which provide assistance
+				in determining an unused instance-identifier.  For example,
+				if the conceptual row is indexed by an integer-value, then
+				an object having an integer-valued SYNTAX clause might be
+				defined for such a purpose, allowing a management station to
+				issue a management protocol retrieval operation.  In order
+				to avoid unnecessary collisions between competing management
+				stations, `adjacent' retrievals of this object should be
+				different.
+				
+				Finally, the management station could select a pseudo-random
+				number to use as the index.  In the event that this index
+				was already in use and an inconsistentValue was returned in
+				response to the management protocol set operation, the
+				management station should simply select a new pseudo-random
+				number and retry the operation.
+				
+				A MIB designer should choose between the two latter
+				algorithms based on the size of the table (and therefore the
+				efficiency of each algorithm).  For tables in which a large
+				number of entries are expected, it is recommended that a MIB
+				object be defined that returns an acceptable index for
+				creation.  For tables with small numbers of entries, it is
+				recommended that the latter pseudo-random index mechanism be
+				used.
+				
+				
+				Interaction 2: Creating the Conceptual Row
+				
+				Once an unused instance-identifier has been selected, the
+				management station determines if it wishes to create and
+				activate the conceptual row in one transaction or in a
+				negotiated set of interactions.
+				
+				Interaction 2a: Creating and Activating the Conceptual Row
+				
+				The management station must first determine the column
+				requirements, i.e., it must determine those columns for
+				which it must or must not provide values.  Depending on the
+				complexity of the table and the management station's
+				knowledge of the agent's capabilities, this determination
+				can be made locally by the management station.  Alternately,
+				the management station issues a management protocol get
+				operation to examine all columns in the conceptual row that
+				it wishes to create.  In response, for each column, there
+				are three possible outcomes:
+				
+				     - a value is returned, indicating that some other
+				     management station has already created this conceptual
+				     row.  We return to interaction 1.
+				
+				     - the exception `noSuchInstance' is returned,
+				     indicating that the agent implements the object-type
+				     associated with this column, and that this column in at
+				     least one conceptual row would be accessible in the MIB
+				     view used by the retrieval were it to exist. For those
+				     columns to which the agent provides read-create access,
+				     the `noSuchInstance' exception tells the management
+				     station that it should supply a value for this column
+				     when the conceptual row is to be created.
+				
+				     - the exception `noSuchObject' is returned, indicating
+				     that the agent does not implement the object-type
+				     associated with this column or that there is no
+				     conceptual row for which this column would be
+				     accessible in the MIB view used by the retrieval.  As
+				     such, the management station can not issue any
+				     management protocol set operations to create an
+				     instance of this column.
+				
+				Once the column requirements have been determined, a
+				management protocol set operation is accordingly issued.
+				This operation also sets the new instance of the status
+				column to `createAndGo'.
+				
+				When the agent processes the set operation, it verifies that
+				it has sufficient information to make the conceptual row
+				available for use by the managed device.  The information
+				available to the agent is provided by two sources:  the
+				management protocol set operation which creates the
+				conceptual row, and, implementation-specific defaults
+				supplied by the agent (note that an agent must provide
+				implementation-specific defaults for at least those objects
+				which it implements as read-only).  If there is sufficient
+				information available, then the conceptual row is created, a
+				`noError' response is returned, the status column is set to
+				`active', and no further interactions are necessary (i.e.,
+				interactions 3 and 4 are skipped).  If there is insufficient
+				information, then the conceptual row is not created, and the
+				set operation fails with an error of `inconsistentValue'.
+				On this error, the management station can issue a management
+				protocol retrieval operation to determine if this was
+				because it failed to specify a value for a required column,
+				or, because the selected instance of the status column
+				already existed.  In the latter case, we return to
+				interaction 1.  In the former case, the management station
+				can re-issue the set operation with the additional
+				information, or begin interaction 2 again using
+				`createAndWait' in order to negotiate creation of the
+				conceptual row.
+				
+				                         NOTE WELL
+				
+				     Regardless of the method used to determine the column
+				     requirements, it is possible that the management
+				     station might deem a column necessary when, in fact,
+				     the agent will not allow that particular columnar
+				     instance to be created or written.  In this case, the
+				     management protocol set operation will fail with an
+				     error such as `noCreation' or `notWritable'.  In this
+				     case, the management station decides whether it needs
+				     to be able to set a value for that particular columnar
+				     instance.  If not, the management station re-issues the
+				     management protocol set operation, but without setting
+				     a value for that particular columnar instance;
+				     otherwise, the management station aborts the row
+				     creation algorithm.
+				
+				Interaction 2b: Negotiating the Creation of the Conceptual
+				Row
+				
+				The management station issues a management protocol set
+				operation which sets the desired instance of the status
+				column to `createAndWait'.  If the agent is unwilling to
+				process a request of this sort, the set operation fails with
+				an error of `wrongValue'.  (As a consequence, such an agent
+				must be prepared to accept a single management protocol set
+				operation, i.e., interaction 2a above, containing all of the
+				columns indicated by its column requirements.)  Otherwise,
+				the conceptual row is created, a `noError' response is
+				returned, and the status column is immediately set to either
+				`notInService' or `notReady', depending on whether it has
+				sufficient information to make the conceptual row available
+				for use by the managed device.  If there is sufficient
+				information available, then the status column is set to
+				`notInService'; otherwise, if there is insufficient
+				information, then the status column is set to `notReady'.
+				Regardless, we proceed to interaction 3.
+				
+				Interaction 3: Initializing non-defaulted Objects
+				
+				The management station must now determine the column
+				requirements.  It issues a management protocol get operation
+				to examine all columns in the created conceptual row.  In
+				the response, for each column, there are three possible
+				outcomes:
+				
+				     - a value is returned, indicating that the agent
+				     implements the object-type associated with this column
+				     and had sufficient information to provide a value.  For
+				     those columns to which the agent provides read-create
+				     access (and for which the agent allows their values to
+				     be changed after their creation), a value return tells
+				     the management station that it may issue additional
+				     management protocol set operations, if it desires, in
+				     order to change the value associated with this column.
+				
+				     - the exception `noSuchInstance' is returned,
+				     indicating that the agent implements the object-type
+				     associated with this column, and that this column in at
+				     least one conceptual row would be accessible in the MIB
+				     view used by the retrieval were it to exist. However,
+				     the agent does not have sufficient information to
+				     provide a value, and until a value is provided, the
+				     conceptual row may not be made available for use by the
+				     managed device.  For those columns to which the agent
+				     provides read-create access, the `noSuchInstance'
+				     exception tells the management station that it must
+				     issue additional management protocol set operations, in
+				     order to provide a value associated with this column.
+				
+				     - the exception `noSuchObject' is returned, indicating
+				     that the agent does not implement the object-type
+				     associated with this column or that there is no
+				     conceptual row for which this column would be
+				     accessible in the MIB view used by the retrieval.  As
+				     such, the management station can not issue any
+				     management protocol set operations to create an
+				     instance of this column.
+				
+				If the value associated with the status column is
+				`notReady', then the management station must first deal with
+				all `noSuchInstance' columns, if any.  Having done so, the
+				value of the status column becomes `notInService', and we
+				proceed to interaction 4.
+				
+				Interaction 4: Making the Conceptual Row Available
+				
+				Once the management station is satisfied with the values
+				associated with the columns of the conceptual row, it issues
+				a management protocol set operation to set the status column
+				to `active'.  If the agent has sufficient information to
+				make the conceptual row available for use by the managed
+				device, the management protocol set operation succeeds (a
+				`noError' response is returned).  Otherwise, the management
+				protocol set operation fails with an error of
+				`inconsistentValue'.
+				
+				
+				                         NOTE WELL
+				
+				     A conceptual row having a status column with value
+				     `notInService' or `notReady' is unavailable to the
+				     managed device.  As such, it is possible for the
+				     managed device to create its own instances during the
+				     time between the management protocol set operation
+				     which sets the status column to `createAndWait' and the
+				     management protocol set operation which sets the status
+				     column to `active'.  In this case, when the management
+				     protocol set operation is issued to set the status
+				     column to `active', the values held in the agent
+				     supersede those used by the managed device.
+				
+				If the management station is prevented from setting the
+				status column to `active' (e.g., due to management station
+				or network failure) the conceptual row will be left in the
+				`notInService' or `notReady' state, consuming resources
+				indefinitely.  The agent must detect conceptual rows that
+				have been in either state for an abnormally long period of
+				time and remove them.  It is the responsibility of the
+				DESCRIPTION clause of the status column to indicate what an
+				abnormally long period of time would be.  This period of
+				time should be long enough to allow for human response time
+				(including `think time') between the creation of the
+				conceptual row and the setting of the status to `active'.
+				In the absense of such information in the DESCRIPTION
+				clause, it is suggested that this period be approximately 5
+				minutes in length.  This removal action applies not only to
+				newly-created rows, but also to previously active rows which
+				are set to, and left in, the notInService state for a
+				prolonged period exceeding that which is considered normal
+				for such a conceptual row.
+				
+				
+				                 Conceptual Row Suspension
+				
+				When a conceptual row is `active', the management station
+				may issue a management protocol set operation which sets the
+				instance of the status column to `notInService'.  If the
+				agent is unwilling to do so, the set operation fails with an
+				error of `wrongValue'.  Otherwise, the conceptual row is
+				taken out of service, and a `noError' response is returned.
+				It is the responsibility of the DESCRIPTION clause of the
+				status column to indicate under what circumstances the
+				status column should be taken out of service (e.g., in order
+				for the value of some other column of the same conceptual
+				row to be modified).
+				
+				
+				                  Conceptual Row Deletion
+				
+				For deletion of conceptual rows, a management protocol set
+				operation is issued which sets the instance of the status
+				column to `destroy'.  This request may be made regardless of
+				the current value of the status column (e.g., it is possible
+				to delete conceptual rows which are either `notReady',
+				`notInService' or `active'.)  If the operation succeeds,
+				then all instances associated with the conceptual row are
+				immediately removed."
+			SYNTAX INTEGER
+				{
+				active(1),
+				notInService(2),
+				notReady(3),
+				createAndGo(4),
+				createAndWait(5),
+				destroy(6)
+				}
+
+	
+--
+-- Node definitions
+--
+	
+		-- 1.3.6.1.2.1.16
+		rmon OBJECT IDENTIFIER ::= { mib-2 16 }
+
+		
+		-- 1.3.6.1.2.1.16.1
+		statistics OBJECT IDENTIFIER ::= { rmon 1 }
+
+		
+		-- 1.3.6.1.2.1.16.1.1
+		etherStatsTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF EtherStatsEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"A list of Ethernet statistics entries."
+			::= { statistics 1 }
+
+		
+		-- 1.3.6.1.2.1.16.1.1.1
+		etherStatsEntry OBJECT-TYPE
+			SYNTAX EtherStatsEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"A collection of statistics kept for a particular
+				Ethernet interface.  As an example, an instance of the
+				etherStatsPkts object might be named etherStatsPkts.1"
+			INDEX { etherStatsIndex }
+			::= { etherStatsTable 1 }
+
+		
+		EtherStatsEntry ::=
+			SEQUENCE { 
+				etherStatsIndex
+					INTEGER
+			 }
+
+		-- 1.3.6.1.2.1.16.1.1.1.1
+		etherStatsIndex OBJECT-TYPE
+			SYNTAX INTEGER (1..65535)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The value of this object uniquely identifies this
+				etherStats entry."
+			::= { etherStatsEntry 1 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7
+		etherStatsHighCapacityTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF EtherStatsHighCapacityEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Contains the High Capacity RMON extensions to the RMON-1
+				etherStatsTable."
+			::= { statistics 7 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1
+		etherStatsHighCapacityEntry OBJECT-TYPE
+			SYNTAX EtherStatsHighCapacityEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Contains the High Capacity RMON extensions to the RMON-1
+				etherStatsEntry. These objects will be created by the agent
+				for all etherStatsEntries it deems appropriate."
+			INDEX { etherStatsIndex }
+			::= { etherStatsHighCapacityTable 1 }
+
+		
+		EtherStatsHighCapacityEntry ::=
+			SEQUENCE { 
+				etherStatsHighCapacityOverflowPkts
+					Counter32,
+				etherStatsHighCapacityPkts
+					Counter64,
+				etherStatsHighCapacityOverflowOctets
+					Counter32,
+				etherStatsHighCapacityOctets
+					Counter64,
+				etherStatsHighCapacityOverflowPkts64Octets
+					Counter32,
+				etherStatsHighCapacityPkts64Octets
+					Counter64,
+				etherStatsHighCapacityOverflowPkts65to127Octets
+					Counter32,
+				etherStatsHighCapacityPkts65to127Octets
+					Counter64,
+				etherStatsHighCapacityOverflowPkts128to255Octets
+					Counter32,
+				etherStatsHighCapacityPkts128to255Octets
+					Counter64,
+				etherStatsHighCapacityOverflowPkts256to511Octets
+					Counter32,
+				etherStatsHighCapacityPkts256to511Octets
+					Counter64,
+				etherStatsHighCapacityOverflowPkts512to1023Octets
+					Counter32,
+				etherStatsHighCapacityPkts512to1023Octets
+					Counter64,
+				etherStatsHighCapacityOverflowPkts1024to1518Octets
+					Counter32,
+				etherStatsHighCapacityPkts1024to1518Octets
+					Counter64
+			 }
+
+		-- 1.3.6.1.2.1.16.1.7.1.1
+		etherStatsHighCapacityOverflowPkts OBJECT-TYPE
+			SYNTAX Counter32
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The number of times the associated etherStatsPkts
+				counter has overflowed."
+			::= { etherStatsHighCapacityEntry 1 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.2
+		etherStatsHighCapacityPkts OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad packets,
+				broadcast packets, and multicast packets) received."
+			::= { etherStatsHighCapacityEntry 2 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.3
+		etherStatsHighCapacityOverflowOctets OBJECT-TYPE
+			SYNTAX Counter32
+			UNITS "Octets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The number of times the associated etherStatsOctets
+				counter has overflowed."
+			::= { etherStatsHighCapacityEntry 3 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.4
+		etherStatsHighCapacityOctets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Octets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of octets of data (including
+				those in bad packets) received on the
+				network (excluding framing bits but including
+				FCS octets).
+				
+				If the network is half-duplex Fast Ethernet, this
+				object can be used as a reasonable estimate of
+				utilization. If greater precision is desired, the
+				etherStatsHighCapacityPkts and
+				etherStatsHighCapacityOctets objects should be sampled
+				before and after a common interval.  The differences
+				in the sampled values are Pkts and Octets,
+				respectively, and the number of seconds in the
+				interval is Interval.  These values
+				are used to calculate the Utilization as follows:
+				
+				                Pkts * (.96 + .64) + (Octets * .08)
+				Utilization = -------------------------------------
+				                        Interval * 10,000
+				
+				The result of this equation is the value Utilization
+				which is the percent utilization of the ethernet
+				segment on a scale of 0 to 100 percent.
+				
+				This table is not appropriate for monitoring full-duplex
+				ethernets. If the network is a full-duplex ethernet and the
+				mediaIndependentTable is monitoring that network, the
+				utilization can be calculated as follows:
+				1) Determine the utilization of the inbound path by using
+				   the appropriate equation (for ethernet or fast ethernet)
+				   to determine the utilization, substituting
+				   mediaIndependentInPkts for etherStatsHighCapacityPkts, and
+				   mediaIndependentInOctets for etherStatsHighCapacityOctets.
+				   Call the resulting utilization inUtilization.
+				
+				2) Determine the utilization of the outbound path by using
+				   the same equation to determine the utilization, substituting
+				   mediaIndependentOutPkts for etherStatsHighCapacityPkts, and
+				   mediaIndependentOutOctets for etherStatsHighCapacityOctets.
+				   Call the resulting utilization outUtilization.
+				
+				3) The utilization is the maximum of inUtilization and
+				   outUtilization. This metric shows the amount of percentage
+				   of bandwidth that is left before congestion will be
+				   experienced on the link."
+			::= { etherStatsHighCapacityEntry 4 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.5
+		etherStatsHighCapacityOverflowPkts64Octets OBJECT-TYPE
+			SYNTAX Counter32
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The number of times the associated etherStatsPkts64Octets
+				counter has overflowed."
+			::= { etherStatsHighCapacityEntry 5 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.6
+		etherStatsHighCapacityPkts64Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) received that were 64 octets in length
+				(excluding framing bits but including FCS octets)."
+			::= { etherStatsHighCapacityEntry 6 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.7
+		etherStatsHighCapacityOverflowPkts65to127Octets OBJECT-TYPE
+			SYNTAX Counter32
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The number of times the associated etherStatsPkts65to127Octets
+				counter has overflowed."
+			::= { etherStatsHighCapacityEntry 7 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.8
+		etherStatsHighCapacityPkts65to127Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) received that were between
+				65 and 127 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { etherStatsHighCapacityEntry 8 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.9
+		etherStatsHighCapacityOverflowPkts128to255Octets OBJECT-TYPE
+			SYNTAX Counter32
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The number of times the associated etherStatsPkts128to255Octets
+				counter has overflowed."
+			::= { etherStatsHighCapacityEntry 9 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.10
+		etherStatsHighCapacityPkts128to255Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) received that were between
+				128 and 255 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { etherStatsHighCapacityEntry 10 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.11
+		etherStatsHighCapacityOverflowPkts256to511Octets OBJECT-TYPE
+			SYNTAX Counter32
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The number of times the associated etherStatsPkts256to511Octets
+				counter has overflowed."
+			::= { etherStatsHighCapacityEntry 11 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.12
+		etherStatsHighCapacityPkts256to511Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) received that were between
+				256 and 511 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { etherStatsHighCapacityEntry 12 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.13
+		etherStatsHighCapacityOverflowPkts512to1023Octets OBJECT-TYPE
+			SYNTAX Counter32
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The number of times the associated etherStatsPkts512to1023Octets
+				counter has overflowed."
+			::= { etherStatsHighCapacityEntry 13 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.14
+		etherStatsHighCapacityPkts512to1023Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) received that were between
+				512 and 1023 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { etherStatsHighCapacityEntry 14 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.15
+		etherStatsHighCapacityOverflowPkts1024to1518Octets OBJECT-TYPE
+			SYNTAX Counter32
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The number of times the associated etherStatsPkts1024to1518Octets
+				counter has overflowed."
+			::= { etherStatsHighCapacityEntry 15 }
+
+		
+		-- 1.3.6.1.2.1.16.1.7.1.16
+		etherStatsHighCapacityPkts1024to1518Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) received that were between
+				1024 and 1518 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { etherStatsHighCapacityEntry 16 }
+
+		
+		-- 1.3.6.1.2.1.16.2
+		history OBJECT IDENTIFIER ::= { rmon 2 }
+
+		
+		-- 1.3.6.1.2.1.16.2.2
+		etherHistoryTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF EtherHistoryEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"A list of Ethernet history entries."
+			::= { history 2 }
+
+		
+		-- 1.3.6.1.2.1.16.2.2.1
+		etherHistoryEntry OBJECT-TYPE
+			SYNTAX EtherHistoryEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"An historical sample of Ethernet statistics on a
+				particular Ethernet interface.  This sample is
+				associated with the historyControlEntry which set up
+				the parameters for a regular collection of these
+				samples.  As an example, an instance of the
+				etherHistoryPkts object might be named
+				etherHistoryPkts.2.89"
+			INDEX { etherHistoryIndex, etherHistorySampleIndex }
+			::= { etherHistoryTable 1 }
+
+		
+		EtherHistoryEntry ::=
+			SEQUENCE { 
+				etherHistoryIndex
+					INTEGER,
+				etherHistorySampleIndex
+					INTEGER
+			 }
+
+		-- 1.3.6.1.2.1.16.2.2.1.1
+		etherHistoryIndex OBJECT-TYPE
+			SYNTAX INTEGER (1..65535)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The history of which this entry is a part.  The
+				history identified by a particular value of this
+				index is the same history as identified
+				by the same value of historyControlIndex."
+			::= { etherHistoryEntry 1 }
+
+		
+		-- 1.3.6.1.2.1.16.2.2.1.2
+		etherHistorySampleIndex OBJECT-TYPE
+			SYNTAX INTEGER (1..2147483647)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"An index that uniquely identifies the particular
+				sample this entry represents among all samples
+				associated with the same historyControlEntry.
+				This index starts at 1 and increases by one
+				as each new sample is taken."
+			::= { etherHistoryEntry 2 }
+
+		
+		-- 1.3.6.1.2.1.16.2.6
+		etherHistoryHighCapacityTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF EtherHistoryHighCapacityEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Contains the High Capacity RMON extensions to the RMON-1
+				etherHistoryTable."
+			::= { history 6 }
+
+		
+		-- 1.3.6.1.2.1.16.2.6.1
+		etherHistoryHighCapacityEntry OBJECT-TYPE
+			SYNTAX EtherHistoryHighCapacityEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Contains the High Capacity RMON extensions to the RMON-1
+				etherHistoryEntry. These objects will be created by the agent
+				for all etherHistoryEntries associated with whichever
+				historyControlEntries it deems appropriate. (i.e., either all
+				etherHistoryHighCapacityEntries associated with a particular
+				historyControlEntry will be created, or none of them will
+				be.)"
+			INDEX { etherHistoryIndex, etherHistorySampleIndex }
+			::= { etherHistoryHighCapacityTable 1 }
+
+		
+		EtherHistoryHighCapacityEntry ::=
+			SEQUENCE { 
+				etherHistoryHighCapacityOverflowPkts
+					Gauge32,
+				etherHistoryHighCapacityPkts
+					RmonGauge64,
+				etherHistoryHighCapacityOverflowOctets
+					Gauge32,
+				etherHistoryHighCapacityOctets
+					RmonGauge64
+			 }
+
+		-- 1.3.6.1.2.1.16.2.6.1.1
+		etherHistoryHighCapacityOverflowPkts OBJECT-TYPE
+			SYNTAX Gauge32
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The number of times the associated etherHistoryPkts
+				Gauge overflowed during this sampling interval."
+			::= { etherHistoryHighCapacityEntry 1 }
+
+		
+		-- 1.3.6.1.2.1.16.2.6.1.2
+		etherHistoryHighCapacityPkts OBJECT-TYPE
+			SYNTAX RmonGauge64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad packets,
+				broadcast packets, and multicast packets) received during
+				this sampling interval."
+			::= { etherHistoryHighCapacityEntry 2 }
+
+		
+		-- 1.3.6.1.2.1.16.2.6.1.3
+		etherHistoryHighCapacityOverflowOctets OBJECT-TYPE
+			SYNTAX Gauge32
+			UNITS "Octets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The number of times the associated etherHistoryOctets
+				counter has overflowed during this sampling interval."
+			::= { etherHistoryHighCapacityEntry 3 }
+
+		
+		-- 1.3.6.1.2.1.16.2.6.1.4
+		etherHistoryHighCapacityOctets OBJECT-TYPE
+			SYNTAX RmonGauge64
+			UNITS "Octets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of octets of data (including
+				those in bad packets) received on the
+				network (excluding framing bits but including
+				FCS octets) during this sampling interval."
+			::= { etherHistoryHighCapacityEntry 4 }
+
+		
+	
+	END
+
+--
+-- 
+--
+

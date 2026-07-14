@@ -1,0 +1,2459 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--   The file defines a MIB to provide wireless detection service feature.
+-- Reference:
+-- Version: V1.7
+-- History:
+--   V1.0 created by shiyang (Richard)
+--     Initial version 2006-08-20
+--   V1.1 2007-05-16 modified by shiyang (Richard)
+--     Add new objects of unisDot11UnauthorSSIDName and unisDot11WIDSAPID.
+--   V1.2 2007-06-19 modified by Deepthi
+--        Changed the unisDot11RogueAPVendorOUI to unisDot11RogueAPVendorName,
+--        Type : OCTET STRING and the Size list: 1: 3 should be removed.
+--        Changed the unisDot11RogueStaVendorOUI to unisDot11RogueStaVendorName,
+--        Type : OCTET STRING and the Size list: 1: 3 should be removed.
+--        Changed the field unisDot11DetectMaxAPSigStrength in
+--        unisDot11WIDSRogueAPExtTable to unisDot11DetectCurAPSigStrength to
+--        unisDot11DetectCurAPSigStrength
+--        Changed the field unisDot11DetectMaxStaSigStrength
+--        UnisDot11WIDSRogueStaExtEntry in unisDot11WIDSRogueStaExtTable to
+--        unisDot11DetectCurStaSigStrength
+--        Add new node unisDot11WIDSPermitVendorName in
+--        unisDot11WIDSPermitVendorEntry
+--        Remove the field Country Spec(2), ChannelSpec(3) in
+--        unisDot11WIDSGlobalConfigGroup in unisDot11WIDSScanMode.
+--        Obsolete the node unisDot11WIDSScanChannelList in
+--        unisDot11WIDSGlobalConfigGroup
+--        Add the node unisDot11WIDSScanType to unisDot11WIDSGlobalConfigGroup
+--  V1.3  2008-07-25 modified by heziqi
+--        Add new node unisDot11CntMsrEnable, unisDot11CntMsrMode,
+--        unisDot11DevAgingTime, unisDot11DynBlkListEnable,
+--        unisDot11DynBlkListLifeTime, unisDot11FloodAtkDctEnable,
+--        unisDot11SpoofAtkDctEnable, unisDot11WeakIVAtkDctEnable,
+--        unisDot11ResetWIDSRogueHistory, unisDot11ResetWIDSHistroy,
+--        unisDot11ResetWIDSStatistics, unisDot11ResetAllDynBlkList,
+--        unisDot11ResetAllStcBlkList, unisDot11ResetAllWhtBlkList,
+--        unisDot11ResetAllDctRogueAP, unisDot11ResetAllDctRogueSta,
+--        unisDot11ResetAllDctAdhoc, unisDot11ResetAllDctDevice,
+--        unisDot11ResetAllDctSSID in unisDot11WIDSGlobalConfigGroup.
+--        Add new node unisDot11PermitSSIDDetected
+--        in unisDot11WIDSPermitSSIDTable.
+--        Add new node unisDot11IgnoreMACDetected, unisDot11IgnoreDevType
+--        in unisDot11WIDSIgnoreListTable.
+--        Add new table unisDot11StaticWhiteListTable,
+--        unisDot11StaticBlackListTable, unisDot11WIDSRogueAPTable,
+--        unisDot11WIDSRogueStaTable, unisDot11WIDSDetectedDevTable,
+--        unisDot11WIDSRptAPTable, unisDot11DynBlackListTable,
+--        unisDot11WIDSRogueHistoryTable, unisDot11WIDSAtkHistroyTable
+--        in unisDot11WIDSDetectGroup.
+--        Add unisDot11WIDSAtkStatis in unisDot11WIDSDetectGroup.
+--        Add notification unisDot11WIDSDetectAttack and
+--        unisDot11WIDSDetectWBridge.
+--  V1.4  2009-05-07 modified by Li Yugang, Wang Shaojie, Sun Shuai
+--        Add unisDot11WidsFloodInterval, unisDot11WidsBlackListThreshold,
+--        unisDot11SSIDFilterOnOff, unisDot11BSSIDFilterOnOff to
+--        unisDot11WIDSGlobalConfigGroup.
+--        Add unisDot11WIDSPermitBSSIDTable to unisDot11WIDSConfigGroup.
+--        Add unisDot11WIDSFloodTrap, unisDot11WIDSSpoofTrap,
+--        unisDot11WIDSWeakIVTrap to unisDot11WIDSTraps.
+--        Add unisDot11MonitorAPID,unisDot11MonitorApRadioID,
+--        unisDot11WIDSAtkMac, unisDot11WIDSAtkFrameType
+--        to unisDot11WIDSTrapVarObjects.
+--  V1.5  2009-07-29 modified by heziqi
+--        Add new node unisDot11WIDSDevSnr for unisDot11WIDSDetectedDevTable.
+--  V1.6  2010-01-07 modified by Wang Shaojie
+--        Add new node unisDot11RogueAPFirstDetectTmStr,
+--        unisDot11RogueAPLastDetectTmStr to unisDot11WIDSRogueAPTable
+--        Add new node unisDot11RogueStaFirstDetectTmStr,
+--        unisDot11RogueStaLastDetectTmStr to unisDot11WIDSRogueStaTable
+--        Add unisDot11WIDSAtkChannel, unisDot11WIDSAtkTime,
+--        unisDot11WIDSAtkDestMac to unisDot11WIDSTrapVarObjects.
+--        2010-03-18 Modified by Deng Gaoliang
+--        Add unisDot11BlackListTable
+--        2010-05-31 Modified by LiuChen
+--        Add new node unisDot11DynBlackListTimeTicks to
+--        unisDot11DynBlackListTable.
+--        Add new node unisDot11BlackListTimeTicks to
+--        unisDot11BlackListTable.
+--  V1.7  2011-10-28 modified by jiaolibin
+--        Add unisDot11WIDSFirstTrapTime to unisDot11WIDSTrapVarObjects and
+--        varialbe bingings unisDot11WIDSFirstTrapTime for unisDot11WIDSFloodTrap,
+--        unisDot11WIDSSpoofTrap,unisDot11WIDSWeakIVTrap.
+-- =============================================================================
+UNIS-DOT11-WIDS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        TruthValue,
+        MacAddress,
+        RowStatus,
+        DateAndTime,
+        TEXTUAL-CONVENTION
+    FROM SNMPv2-TC
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE,
+        Integer32,
+        Unsigned32,
+        TimeTicks
+    FROM SNMPv2-SMI
+        unisDot11,
+        UnisDot11SSIDStringType,
+        UnisDot11ChannelScopeType,
+        UnisDot11RadioScopeType,
+        UnisDot11ObjectIDType,
+        UnisDot11RadioType
+    FROM UNIS-DOT11-REF-MIB;
+
+unisDot11WIDS MODULE-IDENTITY
+    LAST-UPDATED "201005311800Z"        -- May 31, 2010 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB provides information about WIDS feature.
+
+        GLOSSARY
+
+        Wireless Intrusion Detection Sensor (WIDS)
+        WIDS is designed to be employed in an area that is serviced
+        by an existing wireless network.
+        It aids in the early detection of malicious outsider attacks
+        and intrusions via wireless networks.
+
+        Rogue AP
+        A rogue access point is any Wi-Fi access point connected to
+        the network without authorization.
+        As it is not authorized, if there is any weakness in
+        the AP, the hacker will have chance to compromise the
+        network.
+
+        Rogue Station
+        It is similiar to Rogue AP, while it is a station.
+
+        Monitor AP
+        An AP will scan or listen to the air, and try to detect
+        wireless attack in the network.
+        Some AP products will work only in monitor role, while some
+        AP products could switch between normal AP role (only
+        provide wireless access service)and monitor AP role.
+
+        Ad Hoc Mode
+        Station could work under Ad hoc mode, then they
+        could directly do peer-to-peer communication without
+        other device support."
+
+    REVISION "201005311800Z"        -- May 31, 2010 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200907291800Z"        -- Jul 29, 2009 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200905072000Z"        -- May 7, 2009 at 20:00 GMT
+    DESCRIPTION
+        "Add new nodes and table to support new featrues of WIDS."
+    REVISION "200807251900Z"        -- July 23, 2008 at 19:00 GMT
+    DESCRIPTION
+        "Add new nodes to support new featrues of WIDS."
+    REVISION "200706191900Z"        -- June 19, 2007 at 19:00 GMT
+    DESCRIPTION
+        "To fix bugs in the MIB file."
+    REVISION "200705161900Z"        -- May 16, 2007 at 19:00 GMT
+    DESCRIPTION
+        "To fix bugs in the MIB file."
+    REVISION "200608201900Z"        -- August 20, 2006 at 19:00 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisDot11 5 }
+
+-- ==================================================================
+-- Textual Conventions
+-- ==================================================================
+
+UnisDot11WIDSDevType ::=  TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The type of device detected."
+    SYNTAX      INTEGER
+        {
+            client(1),
+            ap(2),
+            adhoc(3),
+            wirelessBridge(4),
+            unknown(5)
+        }
+
+UnisDot11WIDSDevPermitType ::=  TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the detected device is permitted or a rogue."
+    SYNTAX      INTEGER
+        {
+            permit(1),
+            rogue(2)
+        }
+
+UnisDot11WIDSAtkType ::=  TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The type of attack.
+         This object has following defined values:
+         'act': Action Frame
+         'asr': Association Request
+         'aur': Authentication Request
+         'daf': Deauthentication Frame
+         'dar': Disassociation Request
+         'ndf': Null Data Frame
+         'pbr': Probe Request
+         'rar': Reassociation Request
+         'saf': Spoofed Disassociation Frame
+         'sdf': Spoofed Deauthentication Frame
+         'wiv': Weak IV Detected"
+    SYNTAX      INTEGER
+        {
+            act(1),
+            asr(2),
+            aur(3),
+            daf(4),
+            dar(5),
+            ndf(6),
+            pbr(7),
+            rar(8),
+            saf(9),
+            sdf(10),
+            wiv(11),
+            unknown(12)
+        }
+
+
+-- *****************************************************************************
+-- *  Major sections
+-- *****************************************************************************
+--  WIDS Configuration Group
+--  DEFINED AS "The group to provide the configuration information
+--  for WIDS."
+unisDot11WIDSConfigGroup OBJECT IDENTIFIER       ::= { unisDot11WIDS 1 }
+--  The Configuration Group has the following children:
+unisDot11WIDSGlobalConfigGroup OBJECT IDENTIFIER
+    ::= { unisDot11WIDSConfigGroup 1 }
+--  unisDot11WIDSPermitVendorTable         ::= { unisDot11WIDSConfigGroup 2 }
+--  unisDot11WIDSPermitSSIDTable           ::= { unisDot11WIDSConfigGroup 3 }
+--  unisDot11WIDSIgnoreListTable           ::= { unisDot11WIDSConfigGroup 4 }
+--  unisDot11WIDSAttackListTable           ::= { unisDot11WIDSConfigGroup 5 }
+
+--  WIDS detection Group
+--  DEFINED AS "The group to provide the detection information
+--  for WIDS."
+unisDot11WIDSDetectGroup OBJECT IDENTIFIER ::= { unisDot11WIDS 2 }
+--  The detection Group has the following children:
+--  unisDot11WIDSRogueAPTable              ::= { unisDot11WIDSDetectGroup 1 }
+--  unisDot11WIDSRogueAPExtTable           ::= { unisDot11WIDSDetectGroup 2 }
+--  unisDot11WIDSRogueStaTable             ::= { unisDot11WIDSDetectGroup 3 }
+--  unisDot11WIDSRogueStaExtTable          ::= { unisDot11WIDSDetectGroup 4 }
+
+--  WIDS Notification
+--  DEFINED AS "The notification for WIDS feature."
+unisDot11WIDSNotifyGroup OBJECT IDENTIFIER ::= { unisDot11WIDS 3 }
+
+-- *****************************************************************************
+-- *  unisDot11WIDSGlobalConfigGroup Definition
+-- *****************************************************************************
+unisDot11WIDSScanMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            all(1),
+            auto(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the scope of channels to be scanned.
+        The following value are supported
+        all(1)            - Do scan on all the channels.
+        auto(2)           - Do scan for the channels that automatically
+        selected by WIDS."
+    DEFVAL      { auto }
+    ::= { unisDot11WIDSGlobalConfigGroup 1 }
+
+unisDot11WIDSScanChannelList OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..128))
+    MAX-ACCESS  read-write
+    STATUS      obsolete
+    DESCRIPTION
+        "Represents the channel scope to be scanned when
+        unisDot11WIDSScanMode is configurated as channelSpec mode.
+        Each channel value will be separated by comma character."
+    ::= { unisDot11WIDSGlobalConfigGroup 2 }
+
+unisDot11CntMsrMode OBJECT-TYPE
+    SYNTAX      BITS
+        {
+            rogue(0),
+            adhoc(1),
+            config(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the countermeasures mode."
+    ::= { unisDot11WIDSGlobalConfigGroup 3 }
+
+unisDot11DevAgingTime OBJECT-TYPE
+    SYNTAX      Integer32(300..1800)
+    UNITS       "second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the age time for entries in the detected device table.
+         If an entry is not detected within the interval, it is deleted from
+         the detected device table.  If the deleted entry is that of a rogue, it
+         is added into the rogue history table."
+    ::= { unisDot11WIDSGlobalConfigGroup 4 }
+
+unisDot11DynBlkListEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the dynamic blacklist feature is enabled or not.
+         'true'  : Enable the dynamic blacklist feature to filter out unwanted
+                   clients, which will not get associated.
+         'false' : Disable the dynamic blacklist feature."
+    ::= { unisDot11WIDSGlobalConfigGroup 5 }
+
+unisDot11DynBlkListLifeTime OBJECT-TYPE
+    SYNTAX      Integer32(60..3600)
+    UNITS       "second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the lifetime for dynamic blacklist entries.
+         If a dynamic blacklist entry is not detected within the lifetime, the
+         entry will be removed from the dynamic blacklist.
+         The lifetime becomes active only if dynamic blacklist feature is
+         enabled."
+    ::= { unisDot11WIDSGlobalConfigGroup 6 }
+
+unisDot11FloodAtkDctEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether detection of flood attack is enabled or not.
+         'true'  : Enable the detection of flood attack.
+         'false' : Disable the detection of flood attack."
+    ::= { unisDot11WIDSGlobalConfigGroup 7 }
+
+unisDot11SpoofAtkDctEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether detection of Spoof attack is enabled or not.
+         'true'  : Enable the detection of Spoof attack.
+         'false' : Disable the detection of Spoof attack."
+    ::= { unisDot11WIDSGlobalConfigGroup 8 }
+
+unisDot11WeakIVAtkDctEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether detection of weak-iv attack is enabled or not.
+         'true'  : Enable the detection of weak-iv attack.
+         'false' : Disable the detection of weak-iv attack."
+    ::= { unisDot11WIDSGlobalConfigGroup 9 }
+
+unisDot11ResetWIDSRogueHistory OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to clear all entries from the rogue history table.
+         It will return false for get operation."
+    ::= { unisDot11WIDSGlobalConfigGroup 10 }
+
+unisDot11ResetWIDSHistroy OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to clear the history information of attacks
+         detected in the WLAN system.
+         It will return false for get operation."
+    ::= { unisDot11WIDSGlobalConfigGroup 11 }
+
+unisDot11ResetWIDSStatistics OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to clear the statistics of attacks detected in the
+         WLAN system.
+         It will return false for get operation."
+    ::= { unisDot11WIDSGlobalConfigGroup 12 }
+
+unisDot11ResetAllDynBlkList OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to remove all entries from the dynamic blacklist.
+         It will return false for get operation."
+    ::= { unisDot11WIDSGlobalConfigGroup 13 }
+
+unisDot11ResetAllStcBlkList OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to remove all entries from the static blacklist.
+         It will return false for get operation."
+    ::= { unisDot11WIDSGlobalConfigGroup 14 }
+
+unisDot11ResetAllWhtBlkList OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to remove all entries from the static whitelist.
+         It will return false for get operation."
+    ::= { unisDot11WIDSGlobalConfigGroup 15 }
+
+unisDot11ResetAllDctRogueAP OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to clear the information of all detected rogue APs.
+         It will return false for get operation."
+    ::= { unisDot11WIDSGlobalConfigGroup 16 }
+
+unisDot11ResetAllDctRogueSta OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to clear the information of all detected rogue
+         clients.
+         It will return false for get operation."
+    ::= { unisDot11WIDSGlobalConfigGroup 17 }
+
+unisDot11ResetAllDctAdhoc OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to clear the information of all detected ad hoc
+         devices.
+         It will return false for get operation."
+    ::= { unisDot11WIDSGlobalConfigGroup 18 }
+
+unisDot11ResetAllDctDevice OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to clear the information of all detected devices.
+         It will return false for get operation."
+    ::= { unisDot11WIDSGlobalConfigGroup 19 }
+
+unisDot11ResetAllDctSSID OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to clear the information of all detected SSIDs.
+         It will return false for get operation."
+    ::= { unisDot11WIDSGlobalConfigGroup 20 }
+
+unisDot11WidsFloodInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The interval of WIDS flood detection."
+    DEFVAL      { 1 }
+    ::= { unisDot11WIDSGlobalConfigGroup 21 }
+
+unisDot11WidsBlackListThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When flood attack exceeds the value of this node,
+         the MAC address will be added into black list."
+    DEFVAL      { 100 }
+    ::= { unisDot11WIDSGlobalConfigGroup 22 }
+
+unisDot11SSIDFilterOnOff OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            on(1),
+            off(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the SSID permit feature is enabled or not."
+    DEFVAL      { on }
+    ::= { unisDot11WIDSGlobalConfigGroup 23 }
+
+unisDot11BSSIDFilterOnOff OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            on(1),
+            off(2)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the BSSID permit feature is enabled or not."
+    DEFVAL      { on }
+    ::= { unisDot11WIDSGlobalConfigGroup 24 }
+
+-- **********************************************************************
+-- * End of unisDot11WIDSGlobalConfigGroup Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSPermitVendorTable Definition
+-- *****************************************************************************
+unisDot11WIDSPermitVendorTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSPermitVendorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table provides the permitted vendor list, and each vendor
+        will be identified by OUI.
+        The legal device should be made by the permitted vendors."
+    ::= { unisDot11WIDSConfigGroup 2 }
+
+unisDot11WIDSPermitVendorEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSPermitVendorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry provides the information of permitted vendor."
+    INDEX
+        {
+            unisDot11VendorOUI
+        }
+    ::= { unisDot11WIDSPermitVendorTable 1 }
+
+UnisDot11WIDSPermitVendorEntry ::= SEQUENCE
+    {
+        unisDot11VendorOUI                OCTET STRING,
+        unisDot11PermitVendorRowStatus    RowStatus,
+        unisDot11VendorName               OCTET STRING
+    }
+
+unisDot11VendorOUI OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(3))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the vendor OUI information of the wireless device."
+    ::= { unisDot11WIDSPermitVendorEntry 1 }
+
+unisDot11PermitVendorRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIDSPermitVendorEntry 2 }
+
+unisDot11VendorName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the vendor name of the wireless device."
+    ::= { unisDot11WIDSPermitVendorEntry 3 }
+-- *****************************************************************************
+-- * End of unisDot11WIDSPermitVendorTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSPermitSSIDTable Definition
+-- *****************************************************************************
+unisDot11WIDSPermitSSIDTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSPermitSSIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table represents the list of SSID could be permitted in
+         the wireless network."
+    ::= { unisDot11WIDSConfigGroup 3 }
+
+unisDot11WIDSPermitSSIDEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSPermitSSIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry provides the information of permitted SSID."
+    INDEX
+        {
+            unisDot11PermitSSID
+        }
+    ::= { unisDot11WIDSPermitSSIDTable 1 }
+
+UnisDot11WIDSPermitSSIDEntry ::= SEQUENCE
+    {
+        unisDot11PermitSSID             UnisDot11SSIDStringType,
+        unisDot11PermitSSIDRowStatus    RowStatus,
+        unisDot11PermitSSIDDetected     TruthValue
+    }
+
+unisDot11PermitSSID OBJECT-TYPE
+    SYNTAX      UnisDot11SSIDStringType(SIZE(0..127))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the permitted SSID in the wireless network."
+    ::= { unisDot11WIDSPermitSSIDEntry 1 }
+
+unisDot11PermitSSIDRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIDSPermitSSIDEntry 2 }
+
+unisDot11PermitSSIDDetected OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the permitted SSID is detected or not."
+    ::= { unisDot11WIDSPermitSSIDEntry 3 }
+-- *****************************************************************************
+-- * End of unisDot11WIDSPermitSSIDTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSIgnoreListTable Definition
+-- *****************************************************************************
+unisDot11WIDSIgnoreListTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSIgnoreListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table provides the MAC address list of stations or APs,
+        and WIDS always take them as legal stations or APs."
+    ::= { unisDot11WIDSConfigGroup 4 }
+
+unisDot11WIDSIgnoreListEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSIgnoreListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the MAC address of station or AP,
+        and WIDS always take it as legal station or AP."
+    INDEX
+        {
+            unisDot11IgnoreMAC
+        }
+    ::= { unisDot11WIDSIgnoreListTable 1 }
+
+UnisDot11WIDSIgnoreListEntry ::= SEQUENCE
+    {
+        unisDot11IgnoreMAC              MacAddress,
+        unisDot11IgnoreListRowStatus    RowStatus,
+        unisDot11IgnoreMACDetected      TruthValue,
+        unisDot11IgnoreDevType          UnisDot11WIDSDevType
+    }
+
+unisDot11IgnoreMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address of station or AP, and WIDS always
+        take it as legal station or AP."
+    ::= { unisDot11WIDSIgnoreListEntry 1 }
+
+unisDot11IgnoreListRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIDSIgnoreListEntry 2 }
+
+unisDot11IgnoreMACDetected OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the MAC address detected or not."
+    ::= { unisDot11WIDSIgnoreListEntry 3 }
+
+unisDot11IgnoreDevType OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSDevType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the type of the MAC address detected.
+         The value of this object always is unknown if the MAC address is not
+         detected."
+    ::= { unisDot11WIDSIgnoreListEntry 4 }
+-- *****************************************************************************
+-- * End of unisDot11WIDSIgnoreListTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSAttackListTable Definition
+-- *****************************************************************************
+unisDot11WIDSAttackListTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSAttackListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table provides the MAC address list of rogue APs or rogue
+        stations, the WIDS will take countermeasure as per the MAC
+        address list."
+    ::= { unisDot11WIDSConfigGroup 5 }
+
+unisDot11WIDSAttackListEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSAttackListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the MAC address of rogue AP or rogue station,
+        and the countermeasure will be taken for it."
+    INDEX
+        {
+            unisDot11AttackDeviceMac
+        }
+    ::= { unisDot11WIDSAttackListTable 1 }
+
+UnisDot11WIDSAttackListEntry ::= SEQUENCE
+    {
+        unisDot11AttackDeviceMac        MacAddress,
+        unisDot11AttackListRowStatus    RowStatus,
+        unisDot11AttackDevDetected      TruthValue,
+        unisDot11AttackDevType          UnisDot11WIDSDevType
+    }
+
+unisDot11AttackDeviceMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address of rogue AP or rogue station,
+        and the countermeasure will be taken for it."
+    ::= { unisDot11WIDSAttackListEntry 1 }
+
+unisDot11AttackListRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11WIDSAttackListEntry 2 }
+
+unisDot11AttackDevDetected OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the assigned MAC address in attack list is detected
+         or not."
+    ::= { unisDot11WIDSAttackListEntry 3 }
+
+unisDot11AttackDevType OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSDevType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the type of detected MAC address in attack list.  If the
+         MAC address is not detected, it will return unknown(5) for get
+         operation."
+    ::= { unisDot11WIDSAttackListEntry 4 }
+-- *****************************************************************************
+-- * End of unisDot11WIDSAttackListTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11StaticWhiteListTable Definition
+-- *****************************************************************************
+unisDot11StaticWhiteListTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11StaticWhiteListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table provides the information of whitelist."
+    ::= { unisDot11WIDSConfigGroup 6 }
+
+unisDot11StaticWhiteListEntry OBJECT-TYPE
+    SYNTAX      UnisDot11StaticWhiteListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the information of whitelist."
+    INDEX
+        {
+            unisDot11StaticWhiteListMAC
+        }
+    ::= { unisDot11StaticWhiteListTable 1 }
+
+UnisDot11StaticWhiteListEntry ::= SEQUENCE
+    {
+        unisDot11StaticWhiteListMAC          MacAddress,
+        unisDot11StaticWhiteListRowStatus    RowStatus
+    }
+
+unisDot11StaticWhiteListMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC addresses in whitelist."
+    ::= { unisDot11StaticWhiteListEntry 1 }
+
+unisDot11StaticWhiteListRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11StaticWhiteListEntry 2 }
+-- *****************************************************************************
+-- * End of unisDot11StaticWhiteListTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11StaticBlackListTable Definition
+-- *****************************************************************************
+unisDot11StaticBlackListTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11StaticBlackListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table provides the information of static blacklist."
+    ::= { unisDot11WIDSConfigGroup 7 }
+
+unisDot11StaticBlackListEntry OBJECT-TYPE
+    SYNTAX      UnisDot11StaticBlackListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the information of static blacklist."
+    INDEX
+        {
+            unisDot11StaticBlackListMAC
+        }
+    ::= { unisDot11StaticBlackListTable 1 }
+
+UnisDot11StaticBlackListEntry ::= SEQUENCE
+    {
+        unisDot11StaticBlackListMAC          MacAddress,
+        unisDot11StaticBlackListRowStatus    RowStatus
+    }
+
+unisDot11StaticBlackListMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC addresses in static blacklist."
+    ::= { unisDot11StaticBlackListEntry 1 }
+
+unisDot11StaticBlackListRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this table entry."
+    ::= { unisDot11StaticBlackListEntry 2 }
+-- *****************************************************************************
+-- * End of unisDot11StaticBlackListTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSPermitBSSIDTable Definition
+-- *****************************************************************************
+unisDot11WIDSPermitBSSIDTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSPermitBSSIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table represents the list of BSSID could be permitted in
+         the wireless network."
+    ::= { unisDot11WIDSConfigGroup 8 }
+
+unisDot11WIDSPermitBSSIDEntry  OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSPermitBSSIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry provides the information of permitted BSSID."
+    INDEX
+        {
+            unisDot11PermitBSSID
+        }
+    ::= { unisDot11WIDSPermitBSSIDTable 1 }
+
+UnisDot11WIDSPermitBSSIDEntry ::= SEQUENCE
+    {
+        unisDot11PermitBSSID                 MacAddress,
+        unisDot11PermitBSSIDDetected         TruthValue,
+        unisDot11PermitBSSIDRowStatus        RowStatus
+    }
+
+unisDot11PermitBSSID  OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the permitted BSSID in the wireless network."
+    ::= { unisDot11WIDSPermitBSSIDEntry 1 }
+
+unisDot11PermitBSSIDDetected  OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the permitted BSSID is detected or not."
+    ::= { unisDot11WIDSPermitBSSIDEntry 2 }
+
+unisDot11PermitBSSIDRowStatus  OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the row status of permit BSSID table."
+    ::= { unisDot11WIDSPermitBSSIDEntry 3 }
+-- *****************************************************************************
+-- * End of unisDot11StaticBlackListTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSRogueAPTable Definition
+-- *****************************************************************************
+unisDot11WIDSRogueAPTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSRogueAPEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table represents the list of possible BSS information for
+        rogue APs detected by the WIDS."
+    ::= { unisDot11WIDSDetectGroup 1 }
+
+unisDot11WIDSRogueAPEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSRogueAPEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains possible BSS information of each rogue AP
+        detected by WIDS."
+    INDEX
+        {
+            unisDot11RogueAPBSSMAC
+        }
+    ::= { unisDot11WIDSRogueAPTable 1 }
+
+UnisDot11WIDSRogueAPEntry ::= SEQUENCE
+    {
+        unisDot11RogueAPBSSMAC            MacAddress,
+        unisDot11RogueAPVendorName        OCTET STRING,
+        unisDot11RogueAPMonitorNum        Integer32,
+        unisDot11RogueAPFirstDetectTm     TimeTicks,
+        unisDot11RogueAPLastDetectTm      TimeTicks,
+        unisDot11RogueAPSSID              UnisDot11SSIDStringType,
+        unisDot11RogueAPMaxSigStrength    Integer32,
+        unisDot11RogueAPChannel           UnisDot11ChannelScopeType,
+        unisDot11RogueAPBeaconInterval    Integer32,
+        unisDot11RogueAPAttackedStatus    TruthValue,
+        unisDot11RogueAPToIgnore          TruthValue,
+        unisDot11RogueAPEncryptStatus     TruthValue,
+        unisDot11RogueAPReset             TruthValue,
+        unisDot11RogueAPFirstDetectTmStr  OCTET STRING,
+        unisDot11RogueAPLastDetectTmStr   OCTET STRING
+    }
+
+unisDot11RogueAPBSSMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the BSS MAC address of rogue AP."
+    ::= { unisDot11WIDSRogueAPEntry 1 }
+
+unisDot11RogueAPVendorName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the vendor name of rogue AP."
+    ::= { unisDot11WIDSRogueAPEntry 2 }
+
+unisDot11RogueAPMonitorNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of monitor APs which detected the
+        rogue AP."
+    ::= { unisDot11WIDSRogueAPEntry 3 }
+
+unisDot11RogueAPFirstDetectTm OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time that AP was detected as a rogue AP for
+        the first time."
+    ::= { unisDot11WIDSRogueAPEntry 4 }
+
+unisDot11RogueAPLastDetectTm OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time that AP was detected as a rogue AP for
+        the last time."
+    ::= { unisDot11WIDSRogueAPEntry 5 }
+
+unisDot11RogueAPSSID OBJECT-TYPE
+    SYNTAX      UnisDot11SSIDStringType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the SSID broadcasted by rogue AP."
+    ::= { unisDot11WIDSRogueAPEntry 6 }
+
+unisDot11RogueAPMaxSigStrength OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximal value of signal strength that WIDS received
+        from the rogue AP."
+    ::= { unisDot11WIDSRogueAPEntry 7 }
+
+unisDot11RogueAPChannel OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents on which radio channel of the rogue AP the maximal signal
+        strength was received."
+    ::= { unisDot11WIDSRogueAPEntry 8 }
+
+unisDot11RogueAPBeaconInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "millisecond"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the interval for Beacon management frame of rogue AP."
+    ::= { unisDot11WIDSRogueAPEntry 9 }
+
+unisDot11RogueAPAttackedStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the countermeasure have taken for the rogue AP."
+    ::= { unisDot11WIDSRogueAPEntry 10 }
+
+unisDot11RogueAPToIgnore OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the rogue AP will be taken as a rogue AP.
+        If the value is true, NMS should not display the rogue AP
+        as NMS display rogue AP list, and the MAC address will be
+        automatically added into unisDot11WIDSIgnoreListTable.
+        If the value is false, NMS will take it as a rogue AP. "
+    DEFVAL      { false }
+    ::= { unisDot11WIDSRogueAPEntry 11 }
+
+unisDot11RogueAPEncryptStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the rogue AP encrypt the frame or not."
+    ::= { unisDot11WIDSRogueAPEntry 12 }
+
+unisDot11RogueAPReset OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to clear information of assigned AP.  The
+         information of AP which detect assigned rogue AP will be cleared
+         together.
+         It will return false for get operation."
+    ::= { unisDot11WIDSRogueAPEntry 13 }
+
+unisDot11RogueAPFirstDetectTmStr OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time that AP was detected as a rogue AP for
+         the first time."
+    ::= { unisDot11WIDSRogueAPEntry 14 }
+
+unisDot11RogueAPLastDetectTmStr OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time that AP was detected as a rogue AP for
+         the last time."
+    ::= { unisDot11WIDSRogueAPEntry 15 }
+-- *****************************************************************************
+-- * end of unisDot11WIDSRogueAPTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSRogueAPExtTable Definition
+-- *****************************************************************************
+unisDot11WIDSRogueAPExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSRogueAPExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "As each rogue AP could be detected by multiple monitor APs, each
+        monitor AP could have some kind of detailed information about
+        a specific rogue AP.
+        In the unisDot11WIDSRogueAPTable table, the detailed
+        information for a specific rogue AP will be summarized from
+        information in the unisDot11WIDSRogueAPExtTable table.
+        For example, multiple monitor APs could receive RF signal of
+        one rogue AP, and each monitor AP has its maximum signal strength by
+        itself. The information will be kept as
+        unisDot11DetectMaxAPSigStrength in the unisDot11WIDSRogueAPExtTable
+        table. While only the maximum value among all the
+        unisDot11DetectMaxAPSigStrength for each monitor AP will be
+        kept in the unisDot11WIDSRogueAPTable as
+        unisDot11RogueAPMaxSigStrength."
+    ::= { unisDot11WIDSDetectGroup 2 }
+
+unisDot11WIDSRogueAPExtEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSRogueAPExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of the rogue AP detected
+        by each monitor AP."
+    INDEX
+        {
+            unisDot11RogueAPBSSMAC,
+            unisDot11WIDSAPID
+        }
+    ::= { unisDot11WIDSRogueAPExtTable 1 }
+
+UnisDot11WIDSRogueAPExtEntry ::= SEQUENCE
+    {
+        unisDot11WIDSAPID                  UnisDot11ObjectIDType,
+        unisDot11DetectCurAPSigStrength    Integer32,
+        unisDot11DetectAPByChannel         UnisDot11ChannelScopeType,
+        unisDot11DetectAPByRadioID         UnisDot11RadioScopeType,
+        unisDot11AttackAPStatus            TruthValue,
+        unisDot11DetectAPFirstTm           TimeTicks,
+        unisDot11DetectAPLastTm            TimeTicks
+    }
+
+unisDot11WIDSAPID OBJECT-TYPE
+    SYNTAX      UnisDot11ObjectIDType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "To uniquely identify each AP, and relation-ship between
+        unisDot11WIDSAPID and AP device will be static."
+    ::= { unisDot11WIDSRogueAPExtEntry 1 }
+
+unisDot11DetectCurAPSigStrength OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the current value of signal strength that WIDS monitor
+        AP received from the rogue AP."
+    ::= { unisDot11WIDSRogueAPExtEntry 2 }
+
+unisDot11DetectAPByChannel OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents on which radio channel that WIDS monitor AP detected
+        the rogue AP."
+    ::= { unisDot11WIDSRogueAPExtEntry 3 }
+
+unisDot11DetectAPByRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents on which radio the monitor AP has detected the rogue
+        AP."
+    ::= { unisDot11WIDSRogueAPExtEntry 4 }
+
+unisDot11AttackAPStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents whether monitor AP have taken countermeasure on the
+        rogue AP."
+    ::= { unisDot11WIDSRogueAPExtEntry 5 }
+
+unisDot11DetectAPFirstTm OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time that monitor AP detected the rogue AP for
+        the first time."
+    ::= { unisDot11WIDSRogueAPExtEntry 6 }
+
+unisDot11DetectAPLastTm OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time that monitor AP detected the rogue AP for
+        the last time."
+    ::= { unisDot11WIDSRogueAPExtEntry 7 }
+-- *****************************************************************************
+-- * end of unisDot11WIDSRogueAPExtTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSRogueStaTable Definition
+-- *****************************************************************************
+unisDot11WIDSRogueStaTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSRogueStaEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table represents the list of rogue stations detected by
+        the WIDS."
+    ::= { unisDot11WIDSDetectGroup 3 }
+
+unisDot11WIDSRogueStaEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSRogueStaEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of each rogue station."
+    INDEX
+        {
+            unisDot11RogueStaMAC
+        }
+    ::= { unisDot11WIDSRogueStaTable 1 }
+
+UnisDot11WIDSRogueStaEntry ::= SEQUENCE
+    {
+        unisDot11RogueStaMAC               MacAddress,
+        unisDot11RogueStaVendorName        OCTET STRING,
+        unisDot11RogueStaMonitorNum        Integer32,
+        unisDot11RogueStaFirstDetectTm     TimeTicks,
+        unisDot11RogueStaLastDetectTm      TimeTicks,
+        unisDot11RogueStaAccessBSSID       MacAddress,
+        unisDot11RogueStaMaxSigStrength    Integer32,
+        unisDot11RogueStaChannel           UnisDot11ChannelScopeType,
+        unisDot11RogueStaAttackedStatus    TruthValue,
+        unisDot11RogueStaToIgnore          TruthValue,
+        unisDot11RogueStaAdHocStatus       TruthValue,
+        unisDot11RogueStaReset             TruthValue,
+        unisDot11RogueStaFirstDetectTmStr  OCTET STRING,
+        unisDot11RogueStaLastDetectTmStr   OCTET STRING
+    }
+
+unisDot11RogueStaMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address of rogue station."
+    ::= { unisDot11WIDSRogueStaEntry 1 }
+
+unisDot11RogueStaVendorName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the vendor name of rogue station."
+    ::= { unisDot11WIDSRogueStaEntry 2 }
+
+unisDot11RogueStaMonitorNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of monitor APs which detected the
+         rogue station."
+    ::= { unisDot11WIDSRogueStaEntry 3 }
+
+unisDot11RogueStaFirstDetectTm OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time that station was detected as a rogue station for
+         the first time."
+    ::= { unisDot11WIDSRogueStaEntry 4 }
+
+unisDot11RogueStaLastDetectTm OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time that station was detected as a rogue station for
+         the last time."
+    ::= { unisDot11WIDSRogueStaEntry 5 }
+
+unisDot11RogueStaAccessBSSID OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents BSS MAC address that rogue station try to access."
+    ::= { unisDot11WIDSRogueStaEntry 6 }
+
+unisDot11RogueStaMaxSigStrength OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximal value of signal strength that WIDS received
+         from the rogue station."
+    ::= { unisDot11WIDSRogueStaEntry 7 }
+
+unisDot11RogueStaChannel OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents on which radio channel the maximal signal strength
+         was received."
+    ::= { unisDot11WIDSRogueStaEntry 8 }
+
+unisDot11RogueStaAttackedStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the countermeasure have taken for the rogue
+         station."
+    ::= { unisDot11WIDSRogueStaEntry 9 }
+
+unisDot11RogueStaToIgnore OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the rogue AP will be taken as a rogue station.
+         If the value is true, NMS should not display the rogue station
+         as NMS display rogue station list, and the MAC address will be
+         automatically added into unisDot11WIDSIgnoreListTable.
+         If the value is false, NMS will take it as a rogue station. "
+    DEFVAL      { false }
+    ::= { unisDot11WIDSRogueStaEntry 10 }
+
+unisDot11RogueStaAdHocStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the rogue station work on the Ad Hoc mode
+         or not."
+    ::= { unisDot11WIDSRogueStaEntry 11 }
+
+unisDot11RogueStaReset OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to clear information of assigned station.  The
+         information of AP which detects assigned rogue station will be cleared
+         together.
+         It will return false for get operation."
+    ::= { unisDot11WIDSRogueStaEntry 12 }
+
+unisDot11RogueStaFirstDetectTmStr OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time that station was detected as a rogue station for
+         the first time."
+    ::= { unisDot11WIDSRogueStaEntry 13 }
+
+unisDot11RogueStaLastDetectTmStr OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time that station was detected as a rogue station for
+         the last time."
+    ::= { unisDot11WIDSRogueStaEntry 14 }
+-- *****************************************************************************
+-- * End of unisDot11WIDSRogueStaTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSRogueStaExtTable Definition
+-- *****************************************************************************
+unisDot11WIDSRogueStaExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSRogueStaExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "As each rogue station could be detected by multiple monitor APs, each
+        monitor AP could have some kind of detailed information about
+        a specific rogue station.
+        In the unisDot11WIDSRogueStaTable table, the detailed
+        information for a specific rogue station will be summarized from
+        information in the unisDot11WIDSRogueStaExtTable table.
+        For example, multiple monitor APs could receive RF signal of one rogue
+        station, and each monitor AP has its maximum signal strength by
+        itself. The information will be kept as
+        unisDot11DetectMaxStaSigStrength in the unisDot11WIDSRogueStaExtTable
+        table. While only the maximum value among all the
+        unisDot11DetectMaxStaSigStrength for each monitor AP will be
+        kept in the unisDot11WIDSRogueStaTable as
+        unisDot11RogueStaMaxSigStrength."
+    ::= { unisDot11WIDSDetectGroup 4 }
+
+unisDot11WIDSRogueStaExtEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSRogueStaExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of rogue station detected
+        by each monitor AP."
+    INDEX
+        {
+            unisDot11RogueStaMAC,
+            unisDot11WIDSAPID
+        }
+    ::= { unisDot11WIDSRogueStaExtTable 1 }
+
+UnisDot11WIDSRogueStaExtEntry ::= SEQUENCE
+    {
+        unisDot11DetectCurStaSigStrength    Integer32,
+        unisDot11DetectStaByChannel         UnisDot11ChannelScopeType,
+        unisDot11DetectStaByRadioID         UnisDot11RadioScopeType,
+        unisDot11AttackStaStatus            TruthValue,
+        unisDot11DetectStaFirstTm           TimeTicks,
+        unisDot11DetectStaLastTm            TimeTicks
+    }
+
+unisDot11DetectCurStaSigStrength OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the current value of signal strength that WIDS monitor
+        AP received from the rogue station."
+    ::= { unisDot11WIDSRogueStaExtEntry 1 }
+
+unisDot11DetectStaByChannel OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents on which radio channel the maximal signal strength
+        was received."
+    ::= { unisDot11WIDSRogueStaExtEntry 2 }
+
+unisDot11DetectStaByRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents which radio on the monitor AP has detected the
+        rogue station."
+    ::= { unisDot11WIDSRogueStaExtEntry 3 }
+
+unisDot11AttackStaStatus OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents whether monitor AP have taken countermeasure for the
+        rogue station."
+    ::= { unisDot11WIDSRogueStaExtEntry 4 }
+
+unisDot11DetectStaFirstTm OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time that monitor AP detected the rogue station
+        for the first time."
+    ::= { unisDot11WIDSRogueStaExtEntry 5 }
+
+unisDot11DetectStaLastTm OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time that monitor AP detected the rogue station
+        for the last time."
+    ::= { unisDot11WIDSRogueStaExtEntry 6 }
+-- *****************************************************************************
+-- * end of unisDot11WIDSRogueStaExtTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSDetectedDevTable Definition
+-- *****************************************************************************
+unisDot11WIDSDetectedDevTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSDetectedDevEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This Table contains information of detected devices."
+    ::= { unisDot11WIDSDetectGroup 5 }
+
+unisDot11WIDSDetectedDevEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSDetectedDevEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of detected devices."
+    INDEX
+        {
+            unisDot11WIDSDevMAC
+        }
+    ::= { unisDot11WIDSDetectedDevTable 1 }
+
+UnisDot11WIDSDetectedDevEntry ::= SEQUENCE
+    {
+        unisDot11WIDSDevMAC           MacAddress,
+        unisDot11WIDSDevType          UnisDot11WIDSDevType,
+        unisDot11WIDSDevPermitType    UnisDot11WIDSDevPermitType,
+        unisDot11WIDSDevVendor        OCTET STRING,
+        unisDot11WIDSDevMonitorNum    Integer32,
+        unisDot11WIDSDevSSID          OCTET STRING,
+        unisDot11WIDSDevBSSID         MacAddress,
+        unisDot11WIDSDevChannel       UnisDot11ChannelScopeType,
+        unisDot11WIDSDevMaxRSSI       Integer32,
+        unisDot11WIDSDevBeaconIntvl   Integer32,
+        unisDot11WIDSDevFstDctTime    DateAndTime,
+        unisDot11WIDSDevLstDctTime    DateAndTime,
+        unisDot11WIDSDevReset         TruthValue,
+        unisDot11WIDSDevSnr           Integer32
+    }
+
+unisDot11WIDSDevMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents MAC address of the device detected."
+    ::= { unisDot11WIDSDetectedDevEntry 1 }
+
+unisDot11WIDSDevType OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSDevType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents type of the device detected."
+    ::= { unisDot11WIDSDetectedDevEntry 2 }
+
+unisDot11WIDSDevPermitType OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSDevPermitType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the device detected is a rogue device or not."
+    ::= { unisDot11WIDSDetectedDevEntry 3 }
+
+unisDot11WIDSDevVendor OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents Vendor of the detected device."
+    ::= { unisDot11WIDSDetectedDevEntry 4 }
+
+unisDot11WIDSDevMonitorNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of active APs that detect the device."
+    ::= { unisDot11WIDSDetectedDevEntry 5 }
+
+unisDot11WIDSDevSSID OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the service set identifier for the ESS of the device."
+    ::= { unisDot11WIDSDetectedDevEntry 6 }
+
+unisDot11WIDSDevBSSID OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the basic service set identifier of the detected device."
+    ::= { unisDot11WIDSDetectedDevEntry 7 }
+
+unisDot11WIDSDevChannel OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the channel in which the device was last detected."
+    ::= { unisDot11WIDSDetectedDevEntry 8 }
+
+unisDot11WIDSDevMaxRSSI OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dbm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum detected RSSI of the device."
+    ::= { unisDot11WIDSDetectedDevEntry 9 }
+
+unisDot11WIDSDevBeaconIntvl OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "millionsecond"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the beacon interval for the detected AP."
+    ::= { unisDot11WIDSDetectedDevEntry 10 }
+
+unisDot11WIDSDevFstDctTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time at which the device was first detected."
+    ::= { unisDot11WIDSDetectedDevEntry 11 }
+
+unisDot11WIDSDevLstDctTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time at which the rogue AP was detected last time."
+    ::= { unisDot11WIDSDetectedDevEntry 12 }
+
+unisDot11WIDSDevReset OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to clears the information of the device detected
+         in the WLAN.
+         It will return false for get operation."
+    ::= { unisDot11WIDSDetectedDevEntry 13 }
+
+unisDot11WIDSDevSnr OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents SNR of the device detected."
+    ::= { unisDot11WIDSDetectedDevEntry 14 }
+
+-- *****************************************************************************
+-- * end of unisDot11WIDSDetectedDevTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSRptAPTable Definition
+-- *****************************************************************************
+unisDot11WIDSRptAPTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSRptAPEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This Table contains information of the AP which detected device in the
+         WLAN."
+    ::= { unisDot11WIDSDetectGroup 6 }
+
+unisDot11WIDSRptAPEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSRptAPEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of the AP which detected device in the
+         WLAN."
+    INDEX
+        {
+            unisDot11WIDSDevMAC,
+            unisDot11WIDSRptAPMAC
+        }
+    ::= { unisDot11WIDSRptAPTable 1 }
+
+UnisDot11WIDSRptAPEntry ::= SEQUENCE
+    {
+        unisDot11WIDSRptAPMAC           MacAddress,
+        unisDot11WIDSRptAPName          OCTET STRING,
+        unisDot11WIDSRptAPRadioID       UnisDot11RadioScopeType,
+        unisDot11WIDSRptAPMaxRSSI       Integer32,
+        unisDot11WIDSRptAPFstDctTime    DateAndTime,
+        unisDot11WIDSRptAPLstDctTime    DateAndTime
+    }
+
+unisDot11WIDSRptAPMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address of the AP that detected the device."
+    ::= { unisDot11WIDSRptAPEntry 1 }
+
+unisDot11WIDSRptAPName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the name of the AP that detected the device."
+    ::= { unisDot11WIDSRptAPEntry 2 }
+
+unisDot11WIDSRptAPRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the radio index of the AP that detected the device."
+    ::= { unisDot11WIDSRptAPEntry 3 }
+
+unisDot11WIDSRptAPMaxRSSI OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the maximum detected RSSI of the device."
+    ::= { unisDot11WIDSRptAPEntry 4 }
+
+unisDot11WIDSRptAPFstDctTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time at which the rogue AP was detected first time."
+    ::= { unisDot11WIDSRptAPEntry 5 }
+
+unisDot11WIDSRptAPLstDctTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time at which the rogue AP was detected last time."
+    ::= { unisDot11WIDSRptAPEntry 6 }
+-- *****************************************************************************
+-- * end of unisDot11WIDSRptAPTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11DynBlackListTable Definition
+-- *****************************************************************************
+unisDot11DynBlackListTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11DynBlackListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains information of dynamic blacklist entries."
+    ::= { unisDot11WIDSDetectGroup 7 }
+
+unisDot11DynBlackListEntry OBJECT-TYPE
+    SYNTAX      UnisDot11DynBlackListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of dynamic blacklist."
+    INDEX
+        {
+            unisDot11DynBlackListMAC
+        }
+    ::= { unisDot11DynBlackListTable 1 }
+
+UnisDot11DynBlackListEntry ::= SEQUENCE
+    {
+        unisDot11DynBlackListMAC        MacAddress,
+        unisDot11DynBlackListTime       Unsigned32,
+        unisDot11DynBlackListReason     OCTET STRING,
+        unisDot11DynBlackListReset      TruthValue,
+        unisDot11DynBlackListTimeTicks  TimeTicks
+    }
+
+unisDot11DynBlackListMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address of the device inserted into the dynamic
+         blacklist."
+    ::= { unisDot11DynBlackListEntry 1 }
+
+unisDot11DynBlackListTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time elapsed since the entry was last updated."
+    ::= { unisDot11DynBlackListEntry 2 }
+
+unisDot11DynBlackListReason OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the reason why the entry was added into the dynamic
+         blacklist."
+    ::= { unisDot11DynBlackListEntry 3 }
+
+unisDot11DynBlackListReset OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to remove designated entry from the dynamic
+         blacklist.
+         The value which read from this object always is false."
+    ::= { unisDot11DynBlackListEntry 4 }
+
+unisDot11DynBlackListTimeTicks OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time elapsed since the entry was last updated in units TimeTicks."
+    ::= { unisDot11DynBlackListEntry 5 }
+
+-- *****************************************************************************
+-- * end of unisDot11DynBlackListTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSRogueHistoryTable Definition
+-- *****************************************************************************
+unisDot11WIDSRogueHistoryTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSRogueHistoryEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains information of all expired rogue devices which
+         have been deleted from the list of detected rogue devices because
+         they could not be detected within the device aging duration."
+    ::= { unisDot11WIDSDetectGroup 8 }
+
+unisDot11WIDSRogueHistoryEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSRogueHistoryEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of an expired rogue device which
+         has been deleted from the list of detected rogue devices because
+         they could not be detected within the device aging duration."
+    INDEX
+        {
+            unisDot11WIDSRogueHisIndex
+        }
+    ::= { unisDot11WIDSRogueHistoryTable 1 }
+
+UnisDot11WIDSRogueHistoryEntry ::= SEQUENCE
+    {
+        unisDot11WIDSRogueHisIndex        Integer32,
+        unisDot11WIDSRogueHisMAC          MacAddress,
+        unisDot11WIDSRogueHisVendor       OCTET STRING,
+        unisDot11WIDSRogueHisType         UnisDot11WIDSDevType,
+        unisDot11WIDSRogueHisChl          UnisDot11ChannelScopeType,
+        unisDot11WIDSRogueHisSSID         OCTET STRING,
+        unisDot11WIDSRogueHisLastDctTime  DateAndTime
+    }
+
+unisDot11WIDSRogueHisIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents index of this entry."
+    ::= { unisDot11WIDSRogueHistoryEntry 1 }
+
+unisDot11WIDSRogueHisMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address of the device."
+    ::= { unisDot11WIDSRogueHistoryEntry 2 }
+
+unisDot11WIDSRogueHisVendor OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the vendor for the device."
+    ::= { unisDot11WIDSRogueHistoryEntry 3 }
+
+unisDot11WIDSRogueHisType OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSDevType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the type of the device."
+    ::= { unisDot11WIDSRogueHistoryEntry 4 }
+
+unisDot11WIDSRogueHisChl OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the channel in which the device was last detected."
+    ::= { unisDot11WIDSRogueHistoryEntry 5 }
+
+unisDot11WIDSRogueHisSSID OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the service set identifier for the ESS of the device."
+    ::= { unisDot11WIDSRogueHistoryEntry 6 }
+
+unisDot11WIDSRogueHisLastDctTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time at which the device was last detected."
+    ::= { unisDot11WIDSRogueHistoryEntry 7 }
+-- *****************************************************************************
+-- * end of unisDot11WIDSRogueHistoryTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSAtkHistroyTable Definition
+-- *****************************************************************************
+unisDot11WIDSAtkHistroyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSAtkHistroyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains information of the history of attacks detected in
+         the WLAN system."
+    ::= { unisDot11WIDSDetectGroup 9 }
+
+unisDot11WIDSAtkHistroyEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSAtkHistroyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of the history of attacks detected in
+         the WLAN system."
+    INDEX
+        {
+            unisDot11WIDSAtkHisIndex
+        }
+    ::= { unisDot11WIDSAtkHistroyTable 1 }
+
+UnisDot11WIDSAtkHistroyEntry ::= SEQUENCE
+    {
+        unisDot11WIDSAtkHisIndex       Integer32,
+        unisDot11WIDSAtkHisMAC         MacAddress,
+        unisDot11WIDSAtkHisType        UnisDot11WIDSAtkType,
+        unisDot11WIDSAtkHisChl         UnisDot11ChannelScopeType,
+        unisDot11WIDSAtkHisRSSI        Integer32,
+        unisDot11WIDSAtkHisDctTime     DateAndTime,
+        unisDot11WIDSAtkHisAPName      OCTET STRING
+    }
+
+unisDot11WIDSAtkHisIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents index of this entry."
+    ::= { unisDot11WIDSAtkHistroyEntry 1 }
+
+unisDot11WIDSAtkHisMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the Mac address.  In case of spoof attacks, this field
+         provides the BSSID which was spoofed.  In case of other attacks,
+         this field provides the MAC address of the device which initiated
+         the attack."
+    ::= { unisDot11WIDSAtkHistroyEntry 2 }
+
+unisDot11WIDSAtkHisType OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSAtkType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the type of attack."
+    ::= { unisDot11WIDSAtkHistroyEntry 3 }
+
+unisDot11WIDSAtkHisChl OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the channel in which the attack was detected."
+    ::= { unisDot11WIDSAtkHistroyEntry 4 }
+
+unisDot11WIDSAtkHisRSSI OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the average RSSI of the designated attack."
+    ::= { unisDot11WIDSAtkHistroyEntry 5 }
+
+unisDot11WIDSAtkHisDctTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time at which this attack was detected."
+    ::= { unisDot11WIDSAtkHistroyEntry 6 }
+
+unisDot11WIDSAtkHisAPName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the name of the AP which detected this attack."
+    ::= { unisDot11WIDSAtkHistroyEntry 7 }
+-- *****************************************************************************
+-- * end of unisDot11WIDSAtkHistroyTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11WIDSAtkStatis Definition
+-- *****************************************************************************
+unisDot11WIDSAtkStatis OBJECT IDENTIFIER       ::= { unisDot11WIDSDetectGroup 10 }
+
+unisDot11WIDSAtkStasStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents current attack tracking time.  It is started at the system
+         startup and is refreshed each hour subsequently."
+    ::= { unisDot11WIDSAtkStatis 1 }
+
+-- *****************************************************************************
+-- *  unisDot11WIDSAtkStasTable Definition
+-- *****************************************************************************
+unisDot11WIDSAtkStasTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11WIDSAtkStasEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains information of the counts of attacks detected."
+    ::= { unisDot11WIDSAtkStatis 2 }
+
+unisDot11WIDSAtkStasEntry OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSAtkStasEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of the counts of attacks detected."
+    INDEX
+        {
+            unisDot11WIDSAtkStasType
+        }
+    ::= { unisDot11WIDSAtkStasTable 1 }
+
+UnisDot11WIDSAtkStasEntry ::= SEQUENCE
+    {
+        unisDot11WIDSAtkStasType       UnisDot11WIDSAtkType,
+        unisDot11WIDSAtkStasCurCnt     Unsigned32,
+        unisDot11WIDSAtkStasTotalCnt   Unsigned32
+    }
+
+unisDot11WIDSAtkStasType OBJECT-TYPE
+    SYNTAX      UnisDot11WIDSAtkType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the type of attack."
+    ::= { unisDot11WIDSAtkStasEntry 1 }
+
+unisDot11WIDSAtkStasCurCnt OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the count of attacks detected since the time
+         specified by the current attack tracking time.  The current
+         attack tracking time is started at the system startup and
+         is refreshed each hour subsequently."
+    ::= { unisDot11WIDSAtkStasEntry 2 }
+
+unisDot11WIDSAtkStasTotalCnt OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total count of the attacks detected since
+         the system startup."
+    ::= { unisDot11WIDSAtkStasEntry 3 }
+-- *****************************************************************************
+-- *  end of unisDot11WIDSAtkStasTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11BlackListTable Definition
+-- *****************************************************************************
+unisDot11BlackListTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11BlackListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains information of blacklist entries, including
+         dynamic and static."
+    ::= { unisDot11WIDSDetectGroup 11 }
+
+unisDot11BlackListEntry OBJECT-TYPE
+    SYNTAX      UnisDot11BlackListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information of blacklist."
+    INDEX
+        {
+            unisDot11BlackListMAC
+        }
+    ::= { unisDot11BlackListTable 1 }
+
+UnisDot11BlackListEntry ::= SEQUENCE
+    {
+        unisDot11BlackListMAC        MacAddress,
+        unisDot11BlackListTime       Unsigned32,
+        unisDot11BlackListReason     OCTET STRING,
+        unisDot11BlackListRowStatus  RowStatus,
+        unisDot11BlackListTimeTicks  TimeTicks
+    }
+
+unisDot11BlackListMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object represents the MAC address of the device inserted into
+         the table."
+    ::= { unisDot11BlackListEntry 1 }
+
+unisDot11BlackListTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "minutes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time elapsed since the entry was last updated.
+         If it is static blacklist, the value is always 0."
+    ::= { unisDot11BlackListEntry 2 }
+
+unisDot11BlackListReason OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the reason why the entry was added into the blacklist."
+    ::= { unisDot11BlackListEntry 3 }
+
+unisDot11BlackListRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object represents the status of this table entry."
+    ::= { unisDot11BlackListEntry 4 }
+
+unisDot11BlackListTimeTicks OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time elapsed since the entry was last updated in timetick.
+         If it is static blacklist, the value is always 0."
+    ::= { unisDot11BlackListEntry 5 }
+-- *****************************************************************************
+-- * end of unisDot11BlackListTable Definition
+-- *****************************************************************************
+
+
+-- *****************************************************************************
+-- * end of unisDot11WIDSAtkStatis Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *     Notifications OF unisDot11WIDSNotifyGroup
+-- *****************************************************************************
+-- WIDS Notification
+        unisDot11WIDSTraps OBJECT IDENTIFIER
+    ::= { unisDot11WIDSNotifyGroup 1 }
+
+unisDot11WIDSDetectRogueTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11WIDSRogueMAC,
+            unisDot11WIDSRogueType,
+            unisDot11WIDSMonitorMAC,
+            unisDot11MonitorAPID,
+            unisDot11MonitorApRadioID
+        }
+    STATUS      current
+    DESCRIPTION
+        "The notification represents that a rogue AP or a station was
+        detected by WIDS.
+        The NMS would refer to MIB table under unisDot11WIDSDetectGroup
+        group to get more detailed information."
+    ::= { unisDot11WIDSTraps 1 }
+
+unisDot11WIDSAdHocTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11WIDSAdHocMAC,
+            unisDot11WIDSMonitorMAC
+        }
+    STATUS      current
+    DESCRIPTION
+        "The notification represents a rogue Ad hoc station was detected."
+    ::= { unisDot11WIDSTraps 2 }
+
+unisDot11WIDSUnauthorSSIDTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11UnauthorSSIDName,
+            unisDot11WIDSMonitorMAC,
+            unisDot11MonitorAPID,
+            unisDot11MonitorApRadioID
+        }
+    STATUS      current
+    DESCRIPTION
+        "The notification represents which unauthorized SSID are
+        accessed in the network.
+        The notification will be sent to NMS when an
+        unauthorized SSID is detected on the network for the
+        first time."
+    ::= { unisDot11WIDSTraps 3 }
+
+unisDot11WIDSDisappearRogueTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11WIDSRogueMAC
+        }
+    STATUS      current
+    DESCRIPTION
+        "The notification represents that a rogue device has aged out
+        and moved to history table or the device type has been changed
+        to friendly.
+        The notification will be sent to NMS whenever a rogue disappears."
+    ::= { unisDot11WIDSTraps 4 }
+
+unisDot11WIDSDetectAttack NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDot11WIDSAtkHisType,
+        unisDot11WIDSAtkHisChl,
+        unisDot11WIDSAtkHisDctTime,
+        unisDot11WIDSAtkHisAPName
+    }
+    STATUS current
+    DESCRIPTION
+        "This notification occurs when some type of attack is detected.
+        "
+    ::= { unisDot11WIDSTraps 5 }
+
+unisDot11WIDSDetectWBridge NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDot11WIDSRptAPName,
+        unisDot11WIDSRptAPRadioID,
+        unisDot11WIDSRptAPLstDctTime
+    }
+    STATUS current
+    DESCRIPTION
+        "This notification occurs whenever a detected device is classified
+        as rogue wireless-bridge.
+        "
+    ::= { unisDot11WIDSTraps 6 }
+
+unisDot11WIDSFloodTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDot11WIDSAtkMac,
+        unisDot11WIDSAtkFrameType,
+        unisDot11WIDSFirstTrapTime
+    }
+    STATUS current
+    DESCRIPTION
+        "This notification occurs when flood attack is detected.
+        "
+    ::= { unisDot11WIDSTraps 7 }
+
+unisDot11WIDSSpoofTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDot11WIDSAtkMac,
+        unisDot11WIDSAtkFrameType,
+        unisDot11WIDSAtkChannel,
+        unisDot11WIDSAtkTime,
+        unisDot11WIDSAtkDestMac,
+        unisDot11WIDSFirstTrapTime
+    }
+    STATUS current
+    DESCRIPTION
+        "This notification occurs when spoof attack is detected.
+        "
+    ::= { unisDot11WIDSTraps 8 }
+
+unisDot11WIDSWeakIVTrap NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisDot11WIDSAtkMac,
+        unisDot11WIDSAtkChannel,
+        unisDot11WIDSAtkTime,
+        unisDot11WIDSAtkDestMac,
+        unisDot11WIDSFirstTrapTime
+    }
+    STATUS current
+    DESCRIPTION
+        "This notification occurs when weak IV attack is detected.
+        "
+    ::= { unisDot11WIDSTraps 9 }
+
+-- WIDS Notification variable object
+
+        unisDot11WIDSTrapVarObjects OBJECT IDENTIFIER
+    ::= { unisDot11WIDSNotifyGroup 2 }
+
+unisDot11WIDSRogueMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents which rogue AP or station."
+    ::= { unisDot11WIDSTrapVarObjects 1 }
+
+unisDot11WIDSRogueType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            rogueAp(1),
+            rogueStation(2)
+        }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the rogue type.
+        The following value are supported
+        rogueAp(1)        - A rogue AP
+        rogueStation(2)   - A rogue Station"
+    ::= { unisDot11WIDSTrapVarObjects 2 }
+
+unisDot11WIDSMonitorMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents which monitor detected the rogue AP or station."
+    ::= { unisDot11WIDSTrapVarObjects 3 }
+
+unisDot11WIDSAdHocMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address of Ad hoc station."
+    ::= { unisDot11WIDSTrapVarObjects 4 }
+
+unisDot11UnauthorSSIDName OBJECT-TYPE
+    SYNTAX      UnisDot11SSIDStringType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents an unauthorized SSID."
+    ::= { unisDot11WIDSTrapVarObjects 5 }
+
+unisDot11MonitorAPID OBJECT-TYPE
+    SYNTAX      UnisDot11ObjectIDType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents monitor AP's APID."
+    ::= { unisDot11WIDSTrapVarObjects 6 }
+
+unisDot11MonitorApRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents monitor AP's radio ID"
+    ::= { unisDot11WIDSTrapVarObjects 7 }
+
+unisDot11WIDSAtkMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents mac address of attack source."
+    ::= { unisDot11WIDSTrapVarObjects 8 }
+
+unisDot11WIDSAtkFrameType OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents attack frame type."
+    ::= { unisDot11WIDSTrapVarObjects 9 }
+
+unisDot11WIDSAtkChannel OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents attack channel."
+    ::= { unisDot11WIDSTrapVarObjects 10 }
+
+unisDot11WIDSAtkTime OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents when attacking happened."
+    ::= { unisDot11WIDSTrapVarObjects 11 }
+
+unisDot11WIDSAtkDestMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents mac address of attack destination."
+    ::= { unisDot11WIDSTrapVarObjects 12 }
+
+unisDot11WIDSFirstTrapTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the first trap time."
+    ::= { unisDot11WIDSTrapVarObjects 13 }
+-- *****************************************************************************
+-- *     End OF unisDot11WIDSNotifyGroup
+-- *****************************************************************************
+END

@@ -1,0 +1,382 @@
+-- =================================================================
+-- Copyright (c) 2004-2023 New H3C Tech. Co., Ltd. All rights reserved.
+--
+-- Description: Alarm MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--     V1.0 Initial version 2023-10-31
+-- =================================================================
+HH3C-ALARM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, Unsigned32, Counter64, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString, TruthValue, RowStatus, DateAndTime
+        FROM SNMPv2-TC
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB
+    snmpTargetAddrName
+        FROM SNMP-TARGET-MIB
+    hh3cCommon
+        FROM HH3C-OID-MIB;
+
+hh3cAlarm MODULE-IDENTITY
+    LAST-UPDATED "202208030000Z"
+    ORGANIZATION
+        "New H3C Tech. Co., Ltd."
+    CONTACT-INFO
+        "Platform Team New H3C Tech. Co., Ltd.
+         Hai-Dian District Beijing P.R. China
+         http://www.h3c.com
+         Zip:100085"
+    DESCRIPTION
+        "This MIB contains objects for alarm info"
+    REVISION "202208030000Z"
+    DESCRIPTION
+        "Initial version."
+    ::= { hh3cCommon 243 }
+
+--
+-- Node definitions
+--
+
+hh3cAlarmObjects OBJECT IDENTIFIER ::= { hh3cAlarm 1 }
+
+hh3cAlarmScalarGroup OBJECT IDENTIFIER ::= { hh3cAlarmObjects 1 }
+
+hh3cAlarmGroup OBJECT IDENTIFIER ::= { hh3cAlarmObjects 2 }
+
+hh3cAlarmUuid OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(1..255))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "
+        Alarm UUID.
+        Format:xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+        x:0-9, a-f.  y:8, 9, a or b
+        E.g.412f7b66-0090-475f-bc87-936ab2d127e1
+        "
+    ::= { hh3cAlarmScalarGroup 1 }
+
+hh3cAlarmTrap OBJECT IDENTIFIER ::= { hh3cAlarm 2 }
+
+hh3cAlarmTrapPrex OBJECT IDENTIFIER ::= { hh3cAlarmTrap 0 }
+
+hh3cAlarmClearedReportTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cAlarmClearedNum,
+            hh3cAlarmClearedSnList
+        }
+    STATUS current
+    DESCRIPTION
+        "Send the alarm cleared report trap."
+    ::= { hh3cAlarmTrapPrex 1 }
+
+-- Begin define Alarm SyncIndex range table
+hh3cAlarmSyncIndexRangeTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Hh3cAlarmSyncIndexRangeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Alarm retransmission index range table."
+    ::= { hh3cAlarmGroup 1 }
+
+hh3cAlarmSyncIndexRangeEntry OBJECT-TYPE
+    SYNTAX Hh3cAlarmSyncIndexRangeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Alarm retransmission index range entry."
+    INDEX { snmpTargetAddrName }
+    ::= { hh3cAlarmSyncIndexRangeTable 1 }
+
+Hh3cAlarmSyncIndexRangeEntry ::=
+    SEQUENCE {
+        hh3cAlarmSyncIndexMin         Counter64,
+        hh3cAlarmSyncIndexMax         Counter64
+    }
+
+hh3cAlarmSyncIndexMin OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Minimum retransmission index."
+    ::= { hh3cAlarmSyncIndexRangeEntry 1 }
+
+hh3cAlarmSyncIndexMax OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Maximum retransmission index."
+    ::= { hh3cAlarmSyncIndexRangeEntry 2 }
+
+-- End define  Alarm SyncIndex range table
+
+-- Begin define Alarm operate table
+hh3cAlarmOperateTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Hh3cAlarmOperateEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Alarm retransmission request table."
+    ::= { hh3cAlarmGroup 2 }
+
+hh3cAlarmOperateEntry OBJECT-TYPE
+    SYNTAX Hh3cAlarmOperateEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Alarm retransmission request entry."
+    INDEX { hh3cAlarmOperateIndex }
+    ::= { hh3cAlarmOperateTable 1 }
+
+Hh3cAlarmOperateEntry ::=
+    SEQUENCE
+        {
+            hh3cAlarmOperateIndex                    Integer32,
+            hh3cAlarmOperateTargetAddress            SnmpAdminString,
+            hh3cAlarmOperateType                     INTEGER,
+            hh3cAlarmOperateStartSynIdxHi            Unsigned32,
+            hh3cAlarmOperateStartSynIdxLo            Unsigned32,
+            hh3cAlarmOperateEndSynIdxHi              Unsigned32,
+            hh3cAlarmOperateEndSynIdxLo              Unsigned32,
+            hh3cAlarmOperateRowStatus                RowStatus
+        }
+
+hh3cAlarmOperateIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "Index of the alarm retransmission request table."
+    ::= { hh3cAlarmOperateEntry 1 }
+
+hh3cAlarmOperateTargetAddress OBJECT-TYPE
+    SYNTAX SnmpAdminString (SIZE(1..255))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Alarm retransmission target host address, which must be specified in the alarm retransmission request table."
+    ::= { hh3cAlarmOperateEntry 2 }
+
+hh3cAlarmOperateType OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        resendSyncAlarm(1),
+        resendActiveAlarm(2)
+    }
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Alarm retransmission method."
+    ::= { hh3cAlarmOperateEntry 3 }
+
+hh3cAlarmOperateStartSynIdxHi OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The highest 32 bits of the minimum alarm retransmission index."
+    ::= { hh3cAlarmOperateEntry 4 }
+
+hh3cAlarmOperateStartSynIdxLo OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The lowest 32 bits of the minimum alarm retransmission index."
+    ::= { hh3cAlarmOperateEntry 5 }
+
+hh3cAlarmOperateEndSynIdxHi OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The highest 32 bits of the maximum alarm retransmission index."
+    ::= { hh3cAlarmOperateEntry 6 }
+
+hh3cAlarmOperateEndSynIdxLo OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The lowest 32 bits of the maximum alarm retransmission index."
+    ::= { hh3cAlarmOperateEntry 7 }
+
+hh3cAlarmOperateRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Row status of this table entry."
+    ::= { hh3cAlarmOperateEntry 8 }
+
+hh3cAlarmTrapObjects OBJECT IDENTIFIER ::= { hh3cAlarmTrap 1 }
+
+hh3cAlarmSyncIndex OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Alarm retransmission index."
+    ::= { hh3cAlarmTrapObjects 1 }
+
+hh3cAlarmDateAndTime OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "
+        Time when the alarm was triggered.
+        "
+    ::= { hh3cAlarmTrapObjects 2 }
+
+hh3cAlarmActiveIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Number of the active alarm."
+    ::= { hh3cAlarmTrapObjects 3 }
+
+hh3cAlarmOrEventFlag OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        alarm(1),
+        event(2)
+    }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Alarm or event flag."
+    ::= { hh3cAlarmTrapObjects 4 }
+
+hh3cAlarmSeverity OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "
+        Alarm severity.
+        E.g.Critical
+        E.g.Major
+        "
+    ::= { hh3cAlarmTrapObjects 5 }
+
+hh3cAlarmPVFlag OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Alarm PV flag."
+    ::= { hh3cAlarmTrapObjects 6 }
+
+hh3cAlarmSyncFlag OBJECT-TYPE
+    SYNTAX INTEGER
+    {
+        realTime(1),
+        syncResend(2)
+    }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "
+        Trap transmission status:
+        realTime: The trap is transmitted in real time.
+        syncResend: The trap is retransmitted.
+        "
+    ::= { hh3cAlarmTrapObjects 7 }
+
+hh3cAlarmStatus OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "
+        Alarm status.
+        True:alarm active
+        False:alarm recover
+        "
+    ::= { hh3cAlarmTrapObjects 8 }
+
+hh3cAlarmObjectID OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Name and unique identifier of the device that reported the alarm."
+    ::= { hh3cAlarmTrapObjects 9 }
+
+hh3cAlarmCode OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Unique ID of the alarm type."
+    ::= { hh3cAlarmTrapObjects 10 }
+
+hh3cAlarmType OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "
+        Alarm type.
+        E.g.CommunicationAlarm
+        "
+    ::= { hh3cAlarmTrapObjects 11 }
+
+hh3cAlarmSource OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Alarm source information."
+    ::= { hh3cAlarmTrapObjects 12 }
+
+hh3cAlarmSpecificProblem OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..1024))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Specific reason for the alarm."
+    ::= { hh3cAlarmTrapObjects 13 }
+
+hh3cAlarmAdditionalText OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Additional information for the alarm."
+    ::= { hh3cAlarmTrapObjects 14 }
+
+hh3cAlarmTargetAddress OBJECT-TYPE
+    SYNTAX SnmpAdminString (SIZE(1..255))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Alarm target host address."
+    ::= { hh3cAlarmTrapObjects 15 }
+
+hh3cAlarmClearedNum OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Number of the cleared alarm."
+    ::= { hh3cAlarmTrapObjects 16 }
+
+hh3cAlarmClearedSnList OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..1024))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "List of the cleared alarm."
+    ::= { hh3cAlarmTrapObjects 17 }
+END
+

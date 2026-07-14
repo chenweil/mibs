@@ -1,0 +1,268 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This MIB file is used for querying MP (Multilink PPP)
+--              link status information.
+-- Reference:
+-- Version: V1.1
+-- History:
+--   V1.0 Initial version 2013-07-15
+--   V1.1 2013-10-08 updated by jinlei 07761
+--        Added enum active(1) and inactive(2) to unisMpMemberlinkMpStatusV2
+-- =================================================================
+UNIS-MP-V2-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    ifIndex
+        FROM IF-MIB
+    Integer32, Counter32, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM SNMPv2-TC;
+
+unisMultilinkPPPV2 MODULE-IDENTITY
+    LAST-UPDATED "201307150000Z"            -- July 15, 2013 at 00:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+         "The UNIS-MP-V2-MIB provides read access to MP(Multilink PPP) link
+          status information. The information available through this MIB includes:
+          the father channel, the bundled son channel, the slot on which son channels
+          are bundled,
+          the number of son channels, the bundle name,
+          the statistics for lost fragments, reordered packets, unassigned packets,
+          interleaved packets, and the received/sent sequence number, etc."
+    REVISION "201307150000Z"        -- July 15, 2013 at 00:00 GMT
+    DESCRIPTION
+        "UNIS-MP-V2-MIB module for managing MP(Multilink PPP)."
+    ::= { unisCommon 140 }
+
+
+unisMpObjectsV2 OBJECT IDENTIFIER ::= { unisMultilinkPPPV2  1 }
+
+unisMpMultilinkV2Table OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisMpMultilinkV2Entry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table describes the information of MP link.
+         The index of this table is the interface index of MP group or
+         VA (Virtual Access) interface."
+    ::= { unisMpObjectsV2 1 }
+
+unisMpMultilinkV2Entry OBJECT-TYPE
+    SYNTAX UnisMpMultilinkV2Entry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry in this table describes the information of MP link.
+         The available information includes:
+         the father channel, the slot on which son channels are bundled,
+         the number of bundled son channels,
+         the statistics for lost fragments, reordered packets,
+         unassigned packets, interleaved packets,
+         and received/sent sequence number."
+    INDEX { ifIndex }
+    ::= { unisMpMultilinkV2Table 1 }
+
+UnisMpMultilinkV2Entry ::=
+    SEQUENCE {
+        unisMpMultilinkDescrV2
+            DisplayString,
+        unisMpBundleNameV2
+            DisplayString,
+        unisMpBundledSlotV2
+            Integer32,
+        unisMpBundledMemberCntV2
+            Integer32,
+        unisMpLostFragmentsV2
+            Counter32,
+        unisMpReorderedPktsV2
+            Counter32,
+        unisMpUnassignedPktsV2
+            Counter32,
+        unisMpInterleavedPktsV2
+            Counter32,
+        unisMpRcvdSequenceV2
+            Integer32,
+        unisMpSentSequenceV2
+            Integer32
+        }
+
+unisMpMultilinkDescrV2 OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The interface name of the father interface on which son channels are bundled.
+        It is the name of a Virtual Access or an MP group."
+    ::= { unisMpMultilinkV2Entry 1 }
+
+unisMpBundleNameV2 OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The bundle name of the multilink.
+        When authentication is configured, the bundle name is the authenticated
+        user name; when authentication is not configured, the bundle name is
+        multilink.
+        "
+    ::= { unisMpMultilinkV2Entry 2 }
+
+unisMpBundledSlotV2 OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The slot on which son channels are bundled.
+        "
+    ::= { unisMpMultilinkV2Entry 3 }
+
+unisMpBundledMemberCntV2 OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of the bundled son channel of the MP link. "
+    ::= { unisMpMultilinkV2Entry 4 }
+
+unisMpLostFragmentsV2 OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of fragments of the MP link discarded because
+        bad fragments were received, or assembling the packet failed, etc."
+    ::= { unisMpMultilinkV2Entry 5 }
+
+unisMpReorderedPktsV2 OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of reordered incoming packets of the MP link.
+        "
+    ::= { unisMpMultilinkV2Entry 6 }
+
+unisMpUnassignedPktsV2 OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of received packets of the MP link waiting for reordering.
+        "
+    ::= { unisMpMultilinkV2Entry 7 }
+
+unisMpInterleavedPktsV2 OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of received packets of the MP link interleaved by the
+        packets queued in RTPQ (Real-time Transport Protocol Queue) or
+        LLQ (Low Latency Queue).
+        "
+    ::= { unisMpMultilinkV2Entry 8 }
+
+unisMpRcvdSequenceV2 OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The current sequence number for the MP link to receive.
+        "
+    ::= { unisMpMultilinkV2Entry 9 }
+
+unisMpSentSequenceV2 OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The current sequence number for the MP link to send.
+        "
+    ::= { unisMpMultilinkV2Entry 10 }
+
+
+unisMpMemberlinkV2Table OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisMpMemberlinkV2Entry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table describes the information of son channels of the MP link.
+        The index of this table is the interface index of MP group or
+        VA (Virtual Access) interface.
+        "
+    ::= { unisMpObjectsV2 2 }
+
+unisMpMemberlinkV2Entry OBJECT-TYPE
+    SYNTAX UnisMpMemberlinkV2Entry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry in this table describes the information of the bundled
+        son channels of MP link. The available information includes:
+        the interface index of the son channel,
+        the interface name of the son channel.
+        "
+    INDEX { ifIndex, unisMpMemberlinkSeqNumberV2 }
+    ::= { unisMpMemberlinkV2Table 1 }
+
+UnisMpMemberlinkV2Entry ::=
+    SEQUENCE {
+        unisMpMemberlinkSeqNumberV2
+            Integer32,
+        unisMpMemberlinkIfIndexV2
+            Integer32,
+        unisMpMemberlinkDescrV2
+            DisplayString,
+        unisMpMemberlinkMpStatusV2
+            INTEGER
+    }
+
+unisMpMemberlinkSeqNumberV2 OBJECT-TYPE
+    SYNTAX Integer32 (1..128)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The bundled sequence number of the son channels of the MP link.
+        This object is one of the index of the table.
+        "
+    ::= { unisMpMemberlinkV2Entry 1 }
+
+unisMpMemberlinkIfIndexV2 OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The interface index of the son channels of the MP link.
+        "
+    ::= { unisMpMemberlinkV2Entry 2 }
+
+unisMpMemberlinkDescrV2 OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The interface name of the son channels of the MP link.
+        "
+    ::= { unisMpMemberlinkV2Entry 3 }
+
+unisMpMemberlinkMpStatusV2 OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            active(1),
+            inactive(2)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The MP status of the son channels of the MP link.
+        "
+    ::= { unisMpMemberlinkV2Entry 4 }
+
+END

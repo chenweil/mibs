@@ -1,0 +1,127 @@
+-- ==========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The MIB contains the managed objects definitions for the Virtual
+--              Private Network (VPN) peer on devices supporting this feature.
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2016-03-09 Initial version created by qujin
+-- ==========================================================================
+UNIS-VPN-PEER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, Counter64
+        FROM SNMPv2-SMI;
+
+unisVpnPeer MODULE-IDENTITY
+    LAST-UPDATED "201603091600Z"        -- 9th March, 2016 at 16:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB provides information about VPN peers.  This MIB is applicable to PE devices.
+        Some objects in this MIB may be used only for some specific products,
+        so users should refer to the related documents to acquire more
+        detailed information.
+        "
+    REVISION "201603091600Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 165 }
+
+
+-- =================================================================
+-- Note that a scalar group should be defined firstly and all
+-- scalar objects are placed under that group.
+-- =================================================================
+unisVpnPeerGroup OBJECT IDENTIFIER ::= { unisVpnPeer 1 }
+
+-- =================================================================
+-- The section below describes statistics of VPN peer on a device.
+-- =================================================================
+unisVpnPeerStat OBJECT IDENTIFIER ::= { unisVpnPeerGroup 1 }
+
+-- =============================================================================
+-- unisVpnPeerStatTable Definition
+-- =============================================================================
+unisVpnPeerStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVpnPeerStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains objects to get statistic information
+         of a VPN peer on a device."
+    ::= { unisVpnPeerStat 1 }
+
+unisVpnPeerStatEntry OBJECT-TYPE
+    SYNTAX      UnisVpnPeerStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Entry items"
+    INDEX
+        {
+            unisVpnPeerName
+        }
+    ::= { unisVpnPeerStatTable 1 }
+
+UnisVpnPeerStatEntry ::=
+    SEQUENCE {
+        unisVpnPeerName
+            OCTET STRING,
+        unisVpnPeerOutPassPkts
+            Counter64,
+        unisVpnPeerOutPassBytes
+            Counter64,
+        unisVpnPeerOutDropPkts
+            Counter64,
+        unisVpnPeerOutDropBytes
+            Counter64
+             }
+
+unisVpnPeerName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..31))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A unique human-readable value for each VPN peer."
+    ::= { unisVpnPeerStatEntry 1 }
+
+unisVpnPeerOutPassPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of packets transmitted out of the VPN peer."
+    ::= { unisVpnPeerStatEntry 2 }
+
+unisVpnPeerOutPassBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of bytes transmitted out of the VPN peer."
+    ::= { unisVpnPeerStatEntry 3 }
+
+unisVpnPeerOutDropPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of dropped packets transmitted out of the VPN peer."
+    ::= { unisVpnPeerStatEntry 4 }
+
+unisVpnPeerOutDropBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of dropped bytes transmitted out of the VPN peer."
+    ::= { unisVpnPeerStatEntry 5 }
+
+
+END

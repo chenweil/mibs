@@ -1,0 +1,82 @@
+-- =================================================================
+-- Copyright (c) 2004-2023 New H3C Tech. Co., Ltd. All rights reserved.
+--
+-- Description: International Electrotechnical Commission
+--              Media Redundancy Protocol (IECMRP) MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 created by zhengjun
+--     Initial version 2023-06-10
+-- =================================================================
+-- =================================================================
+--
+-- Import and definition
+--
+-- =================================================================
+HH3C-IECMRP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    hh3cCommon
+        FROM HH3C-OID-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    MacAddress
+            FROM SNMPv2-TC;
+
+hh3cIecmrp MODULE-IDENTITY
+    LAST-UPDATED
+        "202306101131Z"
+    ORGANIZATION
+        "New H3C Tech. Co., Ltd."
+    CONTACT-INFO
+        "No.466 Changhe Road, Binjiang District, Hangzhou, Zhejiang
+        http://www.h3c.com
+        Zip: 310052"
+    DESCRIPTION
+        "This MIB defines objects for managing IECMRP.
+        IECMRP is a feature developed to address the slow convergence
+        issue with STP.
+        It provides link redundancy and fast convergence in
+        a ring network, allowing the backup link to take over quickly
+        when the primary link fails."
+
+    REVISION
+        "202306101131Z"
+    DESCRIPTION
+        "Initial revision of the IECMRP MIB module."
+    ::= { hh3cCommon  263 }
+
+hh3cIecmrpTrap            OBJECT IDENTIFIER ::= { hh3cIecmrp 1 }
+hh3cIecmrpTrapPrefix      OBJECT IDENTIFIER ::= { hh3cIecmrpTrap 0 }
+hh3cIecmrpMultiMangers NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cIecmrpSrcMacInPdu,
+            hh3cIecmrpDomainID
+        }
+    STATUS      current
+    DESCRIPTION
+        "A trap message is generated when an IECMRP ring detect
+        multiple managers."
+    ::= { hh3cIecmrpTrapPrefix 1 }
+
+hh3cIecmrpTrapObjects OBJECT IDENTIFIER ::= { hh3cIecmrpTrap 1 }
+
+hh3cIecmrpSrcMacInPdu OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The source mac address in pdu."
+    ::= { hh3cIecmrpTrapObjects 1 }
+
+hh3cIecmrpDomainID OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "Iecmrp domain ID."
+    ::= { hh3cIecmrpTrapObjects 2 }
+
+END

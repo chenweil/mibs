@@ -1,0 +1,295 @@
+-- =====================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--      This MIB module is for the management of the Fibre Channel
+--      Trace Route functionality.
+-- Reference:
+-- Version: V1.0
+-- History:
+--      V1.0 Initial version created by liuyanchao 2013-02-27
+-- =====================================================================
+UNIS-FC-TRACE-ROUTE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, Unsigned32
+        FROM SNMPv2-SMI
+    RowStatus, TruthValue
+        FROM SNMPv2-TC
+    UnisFcVsanIndex, UnisFcAddressType, UnisFcAddress, UnisFcNameId,
+    UnisFcStartOper
+        FROM UNIS-FC-TC-MIB
+    unisSan
+        FROM UNIS-VSAN-MIB;
+
+
+unisFcTraceRoute  MODULE-IDENTITY
+    LAST-UPDATED "201302270000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB module is for the management of the Fibre Channel
+         Trace Route functionality."
+    REVISION "201302270000Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { unisSan 4 }
+
+unisFcTraceRouteObjects             OBJECT IDENTIFIER
+    ::= { unisFcTraceRoute 1 }
+unisFcTraceRouteConfigurations      OBJECT IDENTIFIER
+    ::= { unisFcTraceRouteObjects 1 }
+unisFcTraceRouteResults             OBJECT IDENTIFIER
+    ::= { unisFcTraceRouteObjects 2 }
+unisFcTraceRouteNotifications       OBJECT IDENTIFIER
+    ::= { unisFcTraceRouteObjects 3 }
+unisFcTraceRouteNotifyPrefix        OBJECT IDENTIFIER
+    ::= { unisFcTraceRouteNotifications 0 }
+
+-- Trace Route table.
+
+unisFcTraceRouteTable OBJECT-TYPE
+    SYNTAX        SEQUENCE OF UnisFcTraceRouteEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "A table of trace route entries containing a group
+         of trace route requests that need to be executed
+         at the agent."
+    ::= { unisFcTraceRouteConfigurations 1 }
+
+unisFcTraceRouteEntry OBJECT-TYPE
+    SYNTAX        UnisFcTraceRouteEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "A trace route request entry that needs to be executed
+         at the agent."
+    INDEX         { unisFcTraceRouteIndex }
+    ::= { unisFcTraceRouteTable 1 }
+
+
+UnisFcTraceRouteEntry ::= SEQUENCE {
+    unisFcTraceRouteIndex              Unsigned32,
+    unisFcTraceRouteVsan               UnisFcVsanIndex,
+    unisFcTraceRouteAddressType        UnisFcAddressType,
+    unisFcTraceRouteAddress            UnisFcAddress,
+    unisFcTraceRouteTimeout            Unsigned32,
+    unisFcTraceRouteAdminStatus        UnisFcStartOper,
+    unisFcTraceRouteOperStatus         INTEGER,
+    unisFcTraceRouteAgeInterval        Unsigned32,
+    unisFcTraceRouteTrapOnCompletion   TruthValue,
+    unisFcTraceRouteRowStatus          RowStatus
+}
+
+unisFcTraceRouteIndex OBJECT-TYPE
+    SYNTAX        Unsigned32 (1..65535)
+    MAX-ACCESS    accessible-for-notify
+    STATUS        current
+    DESCRIPTION
+        "The index of the current trace route entry.  This object
+         uniquely identifies a trace route request entry in a
+         specified VSAN (Virtual Storage Area Network)."
+    ::= { unisFcTraceRouteEntry 1 }
+
+unisFcTraceRouteVsan OBJECT-TYPE
+    SYNTAX        UnisFcVsanIndex
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "The VSAN on which the trace route request will be
+         executed.  If the corresponding instance value of
+         unisFcTraceRouteOperStatus is 'inProgress', the
+         object cannot be modified."
+    ::= { unisFcTraceRouteEntry 2 }
+
+unisFcTraceRouteAddressType OBJECT-TYPE
+    SYNTAX        UnisFcAddressType
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "The type of the corresponding instance of
+         unisFcTraceRouteAddress object."
+    DEFVAL        { fcid }
+    ::= { unisFcTraceRouteEntry 3 }
+
+unisFcTraceRouteAddress OBJECT-TYPE
+    SYNTAX        UnisFcAddress
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "The address to which the route will be traced.
+         This object will contain an 8-octet WWN (World Wide Name),
+         if the value of the associated instance of
+         unisFcTraceRouteAddressType object is 'wwn'.
+         This object will contain a 3-octet Fibre Channel ID,
+         if the value of the associated instance of
+         unisFcTraceRouteAddressType object is 'fcid'."
+    ::= { unisFcTraceRouteEntry 4 }
+
+unisFcTraceRouteTimeout OBJECT-TYPE
+    SYNTAX        Unsigned32 (1..10)
+    UNITS         "seconds"
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "The value of timeout for this trace route request.
+         If the corresponding instance value of
+         unisFcTraceRouteOperStatus object is 'inProgress',
+         this object cannot be modified."
+    DEFVAL        { 5 }
+    ::= { unisFcTraceRouteEntry 5 }
+
+unisFcTraceRouteAdminStatus OBJECT-TYPE
+    SYNTAX        UnisFcStartOper
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "The administrative status of each unisFcTraceRouteEntry.
+
+         The object has two values:
+         enable   -  Activate the entry.
+         disable  -  Deactivate the entry.
+
+         When the trace route entry is being executed, this object
+         cannot be modified.  If this object is being read, a value
+         of 'enable' will be returned.  When the execution finishes,
+         the value of this object will be set to 'disable'."
+    DEFVAL        { disable }
+    ::= { unisFcTraceRouteEntry 6 }
+
+unisFcTraceRouteOperStatus OBJECT-TYPE
+    SYNTAX        INTEGER {
+      inProgress(1),     -- trace route in progress
+      success(2),        -- trace route success
+      partialSuccess(3), -- trace route partial success
+      failure(4),        -- trace route failure
+      disabled(5)        -- trace route is disabled
+                  }
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "This object indicates the operational status
+         of this unisFcTraceRouteEntry.
+
+         The value specifications are listed as follows:
+         inProgress     - Trace route is in progress.
+         success        - Trace route has succeeded.
+         partialSuccess - Trace route has partially succeeded.
+         failure        - Trace route has failed due to resource limitations.
+         disabled       - Trace route is disabled."
+    ::= { unisFcTraceRouteEntry 7 }
+
+unisFcTraceRouteAgeInterval OBJECT-TYPE
+    SYNTAX        Unsigned32 (500..900)
+    UNITS         "seconds"
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "The interval time for an entry to age out
+         after a trace route test is completed."
+    DEFVAL        { 500 }
+    ::= { unisFcTraceRouteEntry 8 }
+
+unisFcTraceRouteTrapOnCompletion OBJECT-TYPE
+    SYNTAX        TruthValue
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "This object indicates whether a unisFcTraceRouteCompletionNotify
+         notification should be generated when this trace route test
+         completes."
+    DEFVAL        { false }
+    ::= { unisFcTraceRouteEntry 9 }
+
+unisFcTraceRouteRowStatus OBJECT-TYPE
+    SYNTAX        RowStatus
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "The status of this conceptual row."
+    ::= { unisFcTraceRouteEntry 10 }
+
+
+-- Trace Route Hops Table
+-- The unisFcTraceRouteHopsTable contains the hop-by-hop result
+-- of a trace route test performed for an entry in the
+-- unisFcTraceRouteTable.
+
+unisFcTraceRouteHopsTable OBJECT-TYPE
+    SYNTAX        SEQUENCE OF UnisFcTraceRouteHopsEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "A table of trace route hop results.
+         This table indicates the hop-by-hop result of a trace route test
+         associated with an entry in the unisFcTraceRouteTable."
+    ::= { unisFcTraceRouteResults 1 }
+
+unisFcTraceRouteHopsEntry OBJECT-TYPE
+    SYNTAX        UnisFcTraceRouteHopsEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "A trace route hop entry.
+
+         The first index member specifies the unisFcTraceRouteEntry
+         that an unisFcTraceRouteHopsEntry is associated with.  The
+         second index element identifies a hop in a trace route path.
+
+         In the case of a complete path being traced, entries
+         corresponding to an unisFcTraceRouteEntry are created
+         automatically in this table.
+
+         Each hop in the complete path will be listed in this table.
+
+         When an unisFcTraceRouteEntry is deleted or aged out, the
+         entries corresponding to the unisFcTraceRouteEntry in this
+         table are also deleted."
+    INDEX         { unisFcTraceRouteIndex, unisFcTraceRouteHopsIndex }
+    ::= { unisFcTraceRouteHopsTable 1 }
+
+UnisFcTraceRouteHopsEntry ::= SEQUENCE {
+    unisFcTraceRouteHopsIndex           Unsigned32,
+    unisFcTraceRouteHopsAddr            UnisFcNameId
+}
+
+unisFcTraceRouteHopsIndex OBJECT-TYPE
+    SYNTAX        Unsigned32 (1..65535)
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "This object indicates the hop index for a trace route hop.
+
+         Values for this object associated with the same
+         unisFcTraceRouteIndex MUST begin with 1 and
+         automatically increase by 1."
+    ::= { unisFcTraceRouteHopsEntry 1 }
+
+unisFcTraceRouteHopsAddr OBJECT-TYPE
+    SYNTAX        UnisFcNameId
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "This object specifies the WWN of the device associated
+         with this hop."
+    ::= { unisFcTraceRouteHopsEntry 2 }
+
+-- Notifications
+
+unisFcTraceRouteCompletionNotify NOTIFICATION-TYPE
+    OBJECTS       { unisFcTraceRouteIndex,
+                    unisFcTraceRouteVsan,
+                    unisFcTraceRouteAddressType,
+                    unisFcTraceRouteAddress,
+                    unisFcTraceRouteOperStatus }
+    STATUS        current
+    DESCRIPTION
+        "When a trace route test is finished and the instance of
+         unisFcTraceRouteTrapOnCompletion associated with the test
+         is set to 'true', this notification occurred."
+    ::= { unisFcTraceRouteNotifyPrefix 1 }
+
+END

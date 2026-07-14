@@ -1,0 +1,878 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Network Time Protocol (NTP) Version 3, is used to synchronize
+--              timekeeping among a set of distributed time servers and clients.
+-- Reference:
+-- Version: V1.8
+-- History:
+-- V1.0   <sunhaipeng>, <2003-03-19>, <initial>
+-- V1.1   jinyi, 2004-12-02,
+--        Fix syntax bugs and adjust format of the whole file.
+-- V1.2  sunkai, 2006-03-23
+--       Modified SYNTAX of unisNTPPeerKeyId.
+-- V1.3  2010-03-05
+--       Added unisNTPServerIP.
+-- V1.4  2011-01-27
+--       Added unisNTPSysPollSec, unisNTPSysClockSec.  Modified unisNTPServerIP.
+-- V1.5  2012-04-13 by huangshengliang
+--       change seconds to milliseconds.
+-- V1.6  2013-05-29 by niuxuning
+--       Modified local clock of unisNTPPeerStratum.
+-- V1.7  2014-03-03 by wangjianming
+--       Changed the state of unisNTPSysPeer to obsolete.
+--       Added unisNTPSysSrcPeer.
+-- V1.8  2016-09-14 by chenzichao
+--       Corrected spelling of the word 'message'.
+-- =================================================================
+UNIS-NTP-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        IpAddress, Integer32, MODULE-IDENTITY, OBJECT-TYPE, Counter32, Unsigned32
+            FROM SNMPv2-SMI
+        RowStatus, TruthValue
+            FROM SNMPv2-TC
+        unisRhw
+            FROM UNIS-OID-MIB;
+
+        unisNTP MODULE-IDENTITY
+            LAST-UPDATED "200303150000Z"
+            ORGANIZATION
+                "Unisyue Technologies Co., Ltd."
+            CONTACT-INFO
+                ""
+            DESCRIPTION
+                "This MIB provides mechanisms to monitor a NTP server."
+            REVISION "200303150000Z"
+            DESCRIPTION
+                "The initial revision of this MIB module."
+            ::= { unisRhw 22 }
+
+        unisNTPSystemMIB OBJECT IDENTIFIER ::= { unisNTP 1 }
+
+    unisNTPSystemMIBObjects OBJECT IDENTIFIER ::= { unisNTPSystemMIB 1 }
+
+    unisNTPSysLeap OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                noWarning(0),
+                addSecond(1),
+                subtractSecond(2),
+                alarm(3)
+            }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Leap Indicator (LI): This is a two-bit code warning of an impending
+            leap second to be inserted/deleted in the last minute of the current
+            day, with bit 0 and bit 1, respectively, coded as follows:
+            00, no warning
+            01, last minute has 61 seconds
+            10, last minute has 59 seconds)
+            11, alarm condition (clock not synchronized)."
+        ::= { unisNTPSystemMIBObjects 1 }
+
+    unisNTPSysStratum OBJECT-TYPE
+        SYNTAX      Integer32(1..16)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is an eight-bit integer indicating the stratum level
+            of the local clock, with values defined as follows:
+            0, unspecified
+            1, primary reference (e.g.,, radio clock)
+            2-255, secondary reference (via NTP)"
+        ::= { unisNTPSystemMIBObjects 2 }
+
+    unisNTPSysPrecision OBJECT-TYPE
+        SYNTAX      Integer32(-20..20)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Precision : This is a signed integer indicating the
+            precision of the various clocks, in seconds to the nearest
+            power of two.  The value must be rounded to the next larger
+            power of two; for instance, a 50-Hz (20 ms) or 60-Hz (16.67ms)
+            power-frequency clock would be assigned the value -5 (31.25 ms),
+            while a 1000-Hz (1 ms) crystal-controlled clock would be assigned
+            the value -9 (1.95 ms)."
+        ::= { unisNTPSystemMIBObjects 3 }
+
+    unisNTPSysRootdelay OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Root Delay : This is a signed fixed-point number indicating
+            the total roundtrip delay to the primary reference source
+            at the root of the synchronization subnet, in milliseconds.  Note
+            that this variable can take on both positive and negative
+            values, depending on clock precision and skew."
+        ::= { unisNTPSystemMIBObjects 4 }
+
+    unisNTPSysRootdispersion OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Root Dispersion : This is a signed fixed-point number
+            indicating the maximum error relative to the primary
+            reference source at the root of the synchronization
+            subnet, in milliseconds.  Only positive values greater than
+            zero are possible."
+        ::= { unisNTPSystemMIBObjects 5 }
+
+    unisNTPSysRefid OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Reference Clock Identifier : This is a 32-bit code
+            identifying the particular reference clock.  In the
+            case of stratum 0 (unspecified) or stratum 1 (primary
+            reference source), this is a four-octet, left-justified,
+            zero-padded ASCII string.
+            Stratum, Code, Meaning
+            0,       DCN,  DCN routing protocol
+            0,       TSP,  TSP time protocol
+            1,       ATOM, Atomic clock (calibrated)
+            1,       WWVB, WWVB LF (band 5) radio
+            1,       GOES, GOES UHF (band 9) satellite
+            1,       WWV,  WWV HF (band 7) radio"
+        ::= { unisNTPSystemMIBObjects 6 }
+
+    unisNTPSysReftime OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Reference Timestamp : This is the local time, in
+            timestamp format, when the local clock was last
+            updated.  If the local clock has never been synchronized,
+            the value is zero."
+        ::= { unisNTPSystemMIBObjects 7 }
+
+    unisNTPSysPoll OBJECT-TYPE
+        SYNTAX      Integer32(-20..20)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Poll Interval : This is a signed integer indicating
+            the minimum interval between transmitted messages,
+            in seconds as a power of two.  For instance, a value
+            of six indicates a minimum interval of 64 seconds."
+        ::= { unisNTPSystemMIBObjects 8 }
+
+    unisNTPSysPeer OBJECT-TYPE
+        SYNTAX      Integer32(0..2147483647)
+        MAX-ACCESS  read-only
+        STATUS      obsolete
+        DESCRIPTION
+            "This is a selector identifying the current synchronization
+            source.  Usually this will be a pointer to a structure
+            containing the peer variables.  The special value NULL indicates
+            There is no currently valid synchronization source.
+            unisNTPSysPeer is replaced by unisNTPSysSrcPeer.  Reading
+            unisNTPSysPeer might fail because the syntax value range is limited,
+            for example, when the synchronization source IP address is a Class C
+            address."
+        ::= { unisNTPSystemMIBObjects 9 }
+
+    unisNTPSysState OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                noUpdateClock(0),
+                getfreqInfo(1),
+                clockBySet(2),
+                clockBySetAndNoFreq(3),
+                clockBySyns(4),
+                findError(5)
+            }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a integer indicating the state of local clock."
+        ::= { unisNTPSystemMIBObjects 10 }
+
+    unisNTPSysOffset OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The offset of two clocks is the time difference between them, in milliseconds."
+        ::= { unisNTPSystemMIBObjects 11 }
+
+    unisNTPSysDrift OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Real clocks exhibit some variation in skew (second derivative of
+            offset with time), which is called drift."
+        ::= { unisNTPSystemMIBObjects 12 }
+
+    unisNTPSysCompliance OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a string indicating the system error."
+        ::= { unisNTPSystemMIBObjects 13 }
+
+    unisNTPSysClock OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is the current local time, in timestamp
+            format.  Local time is derived from the hardware clock of the particular
+            machine and increments at intervals depending on the design used."
+        ::= { unisNTPSystemMIBObjects 14 }
+
+    unisNTPSysStabil OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a indicating that stability of a clock is how well
+            it can maintain a constant frequency."
+        ::= { unisNTPSystemMIBObjects 15 }
+
+    unisNTPSysAuthenticate OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+                noAuthenticate(0),
+                authenticate(1)
+            }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "This is a integer indicating that system support authentication."
+        ::= { unisNTPSystemMIBObjects 16 }
+
+    unisNTPSysPollSec OBJECT-TYPE
+        SYNTAX      Integer32 (2..1048576)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "PollSec Interval : This is a integer indicating the minimum
+            interval between transmitted messages.  For instance, a value of
+            six indicates a minimum interval of 6 seconds."
+        ::= { unisNTPSystemMIBObjects 17 }
+
+    unisNTPSysClockSec OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is the current local time, in integer format.
+            Local time is derived from the hardware clock of the particular
+            machine and increments at intervals depending on the design used."
+        ::= { unisNTPSystemMIBObjects 18 }
+
+    unisNTPServerIP OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP server ip address.  It must be a unicast address,
+            rather than a broadcast address, a multicast address or
+            the IP address of the local clock.  To delete a configured
+            NTP server ip address, please set unisNTPServerIP to 0."
+        ::= { unisNTPSystemMIBObjects 19 }
+
+    unisNTPSysSrcPeer OBJECT-TYPE
+        SYNTAX      Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a selector identifying the current synchronization
+            source.  Usually this will be a unsigned integer containing
+            the peer variables.  The special value 0 indicates
+            There is no currently valid synchronization source.
+            This node will replace unisNTPSysPeer, because
+            its value range is unlimited, and data type is changed from
+            Integer32 to Unsigned32."
+        ::= { unisNTPSystemMIBObjects 20 }
+
+    unisNTPPeerMIB OBJECT IDENTIFIER ::= { unisNTP 2 }
+
+    unisNTPPeerMIBObjects OBJECT IDENTIFIER ::= { unisNTPPeerMIB 1 }
+
+    unisNTPPeerTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UnisNTPPeerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table provides information on the peers with
+            which the local NTP server has associations.  The peers
+            are also NTP servers but running on different hosts."
+        ::= { unisNTPPeerMIBObjects 1 }
+
+    unisNTPPeerEntry OBJECT-TYPE
+        SYNTAX UnisNTPPeerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Each peers' entry provides NTP information retrieved
+            from a particular peer NTP server.  Each peer is
+            identified by a unique association identifier.
+            Entries are automatically created when the user
+            configures the NTP server to be associated with remote
+            peers.  Similarly entries are deleted when the user
+            removes the peer association from the NTP server.
+            Entries can also be created by the management station
+            by setting values for the following objects:
+            unisNTPPeerRemAdr and making the unisNTPPeerRowStatus as
+            'active'.  At the least, the management station has
+            to set a value for unisNTPPeerRemAdr to make the
+            row active."
+    INDEX { unisNTPPeerRemAdr, unisNTPPeerHMode }
+    ::= { unisNTPPeerTable 1 }
+
+    UnisNTPPeerEntry ::=
+        SEQUENCE
+            {
+                unisNTPPeerConfig            TruthValue,
+                unisNTPPeerAuthenable        TruthValue,
+                unisNTPPeerAuthentic         TruthValue,
+                unisNTPPeerRemAdr            IpAddress,
+                unisNTPPeerRemPort           Integer32,
+                unisNTPPeerLocAdr            IpAddress,
+                unisNTPPeerLocPort           Integer32,
+                unisNTPPeerLeap              INTEGER,
+                unisNTPPeerHMode             INTEGER,
+                unisNTPPeerStratum           Integer32,
+                unisNTPPeerPPoll             Integer32,
+                unisNTPPeerHPoll             Integer32,
+                unisNTPPeerPrecision         Integer32,
+                unisNTPPeerRootDelay         OCTET STRING,
+                unisNTPPeerRootDispersion    OCTET STRING,
+                unisNTPPeerRefId             OCTET STRING,
+                unisNTPPeerRefTime           OCTET STRING,
+                unisNTPPeerOrg               OCTET STRING,
+                unisNTPPeerRec               OCTET STRING,
+                unisNTPPeerXmt               OCTET STRING,
+                unisNTPPeerReach             Integer32,
+                unisNTPPeerValid             Integer32,
+                unisNTPPeerTimer             Integer32,
+                unisNTPPeerDelay             OCTET STRING,
+                unisNTPPeerOffset            OCTET STRING,
+                unisNTPPeerJitter            OCTET STRING,
+                unisNTPPeerDispersion        OCTET STRING,
+                unisNTPPeerKeyId             Unsigned32,
+                unisNTPPeerFiltDelay         OCTET STRING,
+                unisNTPPeerFiltOffset        OCTET STRING,
+                unisNTPPeerFiltError         OCTET STRING,
+                unisNTPPeerPMode             INTEGER,
+                unisNTPPeerReceived          Counter32,
+                unisNTPPeerSent              Counter32,
+                unisNTPPeerFlash             BITS,
+                unisNTPPeerRowStatus         RowStatus
+            }
+
+    unisNTPPeerConfig OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a bit indicating that the association was created
+            from configuration information and should not be demobilized
+            if the peer becomes unreachable."
+        ::= { unisNTPPeerEntry 1 }
+
+    unisNTPPeerAuthenable OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a bit indicating that system support authentication."
+        ::= { unisNTPPeerEntry 2 }
+
+    unisNTPPeerAuthentic OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a bit indicating that message pass authentication which is authentic."
+        ::= { unisNTPPeerEntry 3 }
+
+    unisNTPPeerRemAdr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The IP address of the peer.  When creating a new
+            association, a value for this object should be set
+            before the row is made active."
+        ::= { unisNTPPeerEntry 4 }
+
+    unisNTPPeerRemPort OBJECT-TYPE
+        SYNTAX Integer32 (1..65535)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The UDP port number on which the peer receives NTP messages."
+        ::= { unisNTPPeerEntry 5 }
+
+    unisNTPPeerLocAdr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The IP address of the local host.  Multi-homing can
+             be supported using this object."
+        ::= { unisNTPPeerEntry 6 }
+
+    unisNTPPeerLocPort OBJECT-TYPE
+        SYNTAX Integer32(1..65535)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The UDP port number on which the local host receives NTP messages."
+        ::= { unisNTPPeerEntry 7 }
+
+    unisNTPPeerLeap OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                noWarning(0),
+                addSecond(1),
+                subtractSecond(2),
+                alarm(3)
+            }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a two-bit code warning of an impending leap
+            second to be inserted in the NTP timescale.  The bits
+            are set before 23:59 on the day of insertion and reset
+            after 00:00 on the following day.  This causes the
+            number of seconds (rollover interval) in the day of
+            insertion to be increased or decreased by one.  The two
+            bits are coded as below,
+            00, no warning
+            01, last minute has 61 seconds
+            10, last minute has 59 seconds
+            11, alarm condition (clock not synchronized)"
+        ::= { unisNTPPeerEntry 8 }
+
+    unisNTPPeerHMode OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                unspecified (0),
+                symmetricActive (1),
+                symmetricPassive (2),
+                client (3),
+                server(4),
+                broadcast (5),
+                reservedControl (6),
+                reservedPrivate (7),
+                broadcastclient (8),
+                multicastclient (9)
+            }
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This is an integer indicating the association mode,
+            with values coded as follows,
+            0, unspecified
+            1, symmetric active - A host operating in this mode
+                    sends periodic messages regardless of the
+                    reach ability state or stratum of its peer.  By
+                    operating in this mode the host announces its
+                    willingness to synchronize and be synchronized
+                    by the peer
+            2, symmetric passive - This type of association is
+                    ordinarily created upon arrival of a message
+                    from a peer operating in the symmetric active
+                    mode and persists only as long as the peer is
+                    reachable and operating at a stratum level
+                    less than or equal to the host; otherwise, the
+                    association is dissolved.  However, the
+                    association will always persist until at least
+                    one message has been sent in reply.  By
+                    operating in this mode the host announces its
+                    willingness to synchronize and be synchronized
+                    by the peer
+            3, client -  A host operating in this mode sends
+                    periodic messages regardless of the
+                    reach ability state or stratum of its peer.  By
+                    operating in this mode the host, usually a LAN
+                    workstation, announces its willingness to be
+                    synchronized by, but not to synchronize the peer
+            4, server - This type of association is ordinarily
+                    created upon arrival of a client request message
+                    and exists only in order to reply to that
+                    request, after which the association is
+                    dissolved.  By operating in this mode the host,
+                    usually a LAN time server, announces its
+                    willingness to synchronize, but not to be
+                    synchronized by the peer
+            5, broadcast - A host operating in this mode sends
+                    periodic messages regardless of the
+                    reach ability state or stratum of the peers.
+                    By operating in this mode the host, usually a
+                    LAN time server operating on a high-speed
+                    broadcast medium, announces its willingness to
+                    synchronize all of the peers, but not to be
+                    synchronized by any of them
+            6, reserved for NTP control messages
+            7, reserved for private use
+            8, broadcastclient
+            9, multicastclient"
+        ::= { unisNTPPeerEntry 9 }
+
+    unisNTPPeerStratum OBJECT-TYPE
+        SYNTAX      Integer32(0..255)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a integer indicating the stratum level
+            of the peer clock, with values defined as follows:
+            0, unspecified
+            1, primary reference (e.g.,, radio clock)
+            2-255, secondary reference (via NTP)"
+        ::= { unisNTPPeerEntry 10 }
+
+    unisNTPPeerPPoll OBJECT-TYPE
+        SYNTAX      Integer32(-20..20)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The interval at which the peer polls the local host."
+        ::= { unisNTPPeerEntry 11 }
+
+    unisNTPPeerHPoll OBJECT-TYPE
+        SYNTAX      Integer32(-20..20)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The interval at which the local host polls the peer."
+        ::= { unisNTPPeerEntry 12 }
+
+    unisNTPPeerPrecision OBJECT-TYPE
+        SYNTAX      Integer32(-20..20)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a signed integer indicating the precision of
+            the peer clock, in seconds to the nearest power of two.
+            The value must be rounded to the next larger power of
+            two; for instance, a 50-Hz (20 ms) or 60-Hz (16.67 ms)
+            power-frequency clock would be assigned the value -5 (31.25 ms),
+            while a 1000-Hz (1 ms) crystal-controlled clock would be assigned
+            the value -9 (1.95 ms)."
+        ::= { unisNTPPeerEntry 13 }
+
+    unisNTPPeerRootDelay OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a signed fixed-point number indicating
+            the total roundtrip delay to the primary reference source
+            at the root of the synchronization subnet, in milliseconds.
+            Note that this variable can take on both positive and negative
+            values, depending on clock precision and skew."
+        ::= { unisNTPPeerEntry 14 }
+
+    unisNTPPeerRootDispersion OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a signed fixed-point number indicating
+            the maximum error of the peer clock relative to
+            the primary reference source at the root of the
+            synchronization subnet, in milliseconds.  Only
+            positive values greater than zero are possible."
+        ::= { unisNTPPeerEntry 15 }
+
+    unisNTPPeerRefId OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The reference identifier of the peer.
+            This is a 32-bit code identifying the particular reference clock.
+            In the case of stratum 0 (unspecified) or stratum 1 (primary
+            reference source), this is a four-octet, left-justified,
+            zero-padded ASCII string.
+            Stratum, Code, Meaning
+            0,       DCN,  DCN routing protocol
+            0,       TSP,  TSP time protocol
+            1,       ATOM, Atomic clock (calibrated)
+            1,       WWVB, WWVB LF (band 5) radio
+            1,       GOES, GOES UHF (band 9) satellite
+            1,       WWV,  WWV HF (band 7) radio"
+        ::= { unisNTPPeerEntry 16 }
+
+    unisNTPPeerRefTime OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is the local time at the peer, in timestamp format,
+            when the local clock was last updated.  If the local clock has
+            never been synchronized, the value is zero."
+        ::= { unisNTPPeerEntry 17 }
+
+    unisNTPPeerOrg OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is the local time, in timestamp format,
+            at the peer when it's latest NTP message was sent.
+            If the peer becomes unreachable the value is set to zero"
+        ::= { unisNTPPeerEntry 18 }
+
+    unisNTPPeerRec OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is the local time, in timestamp format,
+            when the latest NTP message from the peer arrived.
+            If the peer becomes unreachable the value is set to zero."
+        ::= { unisNTPPeerEntry 19 }
+
+    unisNTPPeerXmt OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is the local time, in timestamp format,
+            at which the NTP message departed the sender."
+        ::= { unisNTPPeerEntry 20 }
+
+    unisNTPPeerReach OBJECT-TYPE
+        SYNTAX      Integer32(0..2147483647)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a shift register of NTP.WINDOW bits used to
+            determine the reach ability status of the peer,
+            with bits entering from the least significant (rightmost) end.
+            A peer is considered reachable if at least
+            one bit in this register is set to one"
+        ::= { unisNTPPeerEntry 21 }
+
+    unisNTPPeerValid  OBJECT-TYPE
+        SYNTAX      Integer32(0..255)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is an integer counter indicating the valid samples
+            remaining in the filter register.  It is used to
+            determine the reach ability state and when the
+            poll interval should be increased or decreased."
+        ::= { unisNTPPeerEntry 22 }
+
+    unisNTPPeerTimer  OBJECT-TYPE
+        SYNTAX      Integer32(0..2147483647)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is an integer counter used to control the
+            interval of transmitted NTP messages from the local host to the peer."
+        ::= { unisNTPPeerEntry 23 }
+
+    unisNTPPeerDelay  OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a signed fixed-point number indicating
+            the roundtrip delay of the peer clock relative to
+            the local clock over the network path between them,
+            in milliseconds.  Note that this variable can take on
+            both positive and negative values, depending on
+            clock precision and skew-error accumulation."
+        ::= { unisNTPPeerEntry 24 }
+
+    unisNTPPeerOffset OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a signed, fixed-point number indicating the offset
+            of the peer clock relative to the local clock, in milliseconds."
+        ::= { unisNTPPeerEntry 25 }
+
+    unisNTPPeerJitter OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is an indicating that peer of sample Variance"
+        ::= { unisNTPPeerEntry 26 }
+
+    unisNTPPeerDispersion OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is a signed fixed-point number indicating the
+            maximum error of the peer clock relative to the local
+            clock over the network path between them, in milliseconds.
+            Only positive values greater than zero are possible."
+        ::= { unisNTPPeerEntry 27 }
+
+    unisNTPPeerKeyId OBJECT-TYPE
+        SYNTAX      Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is an unsigned integer identifying the cryptographic
+            key used to generate the message-authentication code."
+        ::= { unisNTPPeerEntry 28 }
+
+    unisNTPPeerFiltDelay OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Round-trip delay of the peer clock relative to the
+            local clock over the network path between them, in
+            milliseconds.  This variable can take on both positive
+            and negative values, depending on clock precision
+            and skew-error accumulation."
+        ::= { unisNTPPeerEntry 29 }
+
+    unisNTPPeerFiltOffset OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The offset of the peer clock relative to the local clock in milliseconds."
+        ::= { unisNTPPeerEntry 30 }
+
+    unisNTPPeerFiltError OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(1..128))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The maximum error of the peer clock relative to the
+            local clock over the network path between them, in
+            milliseconds.  Only positive values greater than zero
+            are possible."
+        ::= { unisNTPPeerEntry 31 }
+
+    unisNTPPeerPMode OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                unspecified (0),
+                symmetricActive (1),
+                symmetricPassive (2),
+                client (3),
+                server(4),
+                broadcast (5),
+                reservedControl (6),
+                reservedPrivate (7),
+                broadcastclient (8),
+                multicastclient (9)
+            }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This is an integer indicating the association mode,
+            with values coded as follows,
+            0, unspecified
+            1, symmetric active - A host operating in this mode
+                    sends periodic messages regardless of the
+                    reach ability state or stratum of its peer.  By
+                    operating in this mode the host announces its
+                    willingness to synchronize and be synchronized
+                    by the peer
+            2, symmetric passive - This type of association is
+                    ordinarily created upon arrival of a message
+                    from a peer operating in the symmetric active
+                    mode and persists only as long as the peer is
+                    reachable and operating at a stratum level
+                    less than or equal to the host; otherwise, the
+                    association is dissolved.  However, the
+                    association will always persist until at least
+                    one message has been sent in reply.  By
+                    operating in this mode the host announces its
+                    willingness to synchronize and be synchronized
+                    by the peer
+            3, client -  A host operating in this mode sends
+                    periodic messages regardless of the
+                    reach ability state or stratum of its peer.  By
+                    operating in this mode the host, usually a LAN
+                    workstation, announces its willingness to be
+                    synchronized by, but not to synchronize the peer
+            4, server - This type of association is ordinarily
+                    created upon arrival of a client request message
+                    and exists only in order to reply to that
+                    request, after which the association is
+                    dissolved.  By operating in this mode the host,
+                    usually a LAN time server, announces its
+                    willingness to synchronize, but not to be
+                    synchronized by the peer
+            5, broadcast - A host operating in this mode sends
+                    periodic messages regardless of the
+                    reach ability state or stratum of the peers.
+                    By operating in this mode the host, usually a
+                    LAN time server operating on a high-speed
+                    broadcast medium, announces its willingness to
+                    synchronize all of the peers, but not to be
+                    synchronized by any of them
+            6, reserved for NTP control messages
+            7, reserved for private use
+            8, broadcastclient
+            9, multicastclient
+            When creating a new peer association, if no value
+            is specified for this object, it defaults to
+            'symmetricActive'."
+        ::= { unisNTPPeerEntry 32 }
+
+    unisNTPPeerReceived OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of received messages."
+        ::= { unisNTPPeerEntry 33 }
+
+    unisNTPPeerSent OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of send messages."
+        ::= { unisNTPPeerEntry 34 }
+
+    unisNTPPeerFlash OBJECT-TYPE
+        SYNTAX      BITS
+            {
+                recvRepeatMsg(0),              -- received repeated message
+                recvremanMsg(1),               -- received remanufactured message
+                unSynMsg(2),                   -- unsynchronized message
+                dispBeyond(3),                 -- the peer dispersion beyond the mark
+                unauthenticate(4),             -- the peer unauthenticate
+                unSynClock(5),                 -- the peer clock is unsynchronized
+                straBeyond(6),                 -- the peer stratum beyond the mark
+                rootDispBeyond(7),             -- the peer rootdispersion beyond the mark
+                noAuthen(8),                   -- the peer no authentication
+                refuOperate(9)                 -- refuse operate
+            }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The information about the message."
+        ::= { unisNTPPeerEntry 35 }
+
+
+    unisNTPPeerRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The status object for this row.  When a management
+            station is creating a new row, it should set the
+            value for cntpPeersPeerAddress at least, before the
+            row can be made 'active'."
+        ::= { unisNTPPeerEntry 36 }
+END

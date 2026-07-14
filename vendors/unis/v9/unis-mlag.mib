@@ -1,0 +1,855 @@
+-- =====================================================================
+-- Copyright (c) 2024 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: MLAG MIB
+-- Reference:
+-- Version: V1.2
+-- History:
+--   V1.0 Initial version, created by liuyafang
+--   V1.1 2023-05-31 Add unisMLagVmacInEffective trap by zhengjun
+--   V1.2 2024-02-23 Modify unisMLagVirtualMac MAX-ACCESS by nanyuanyu
+-- =====================================================================
+UNIS-MLAG-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, OBJECT-TYPE, NOTIFICATION-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    MacAddress, TruthValue, RowStatus
+        FROM SNMPv2-TC
+    InetAddressIPv4, InetAddressIPv6
+        FROM INET-ADDRESS-MIB
+    PortList
+        FROM Q-BRIDGE-MIB
+    InterfaceIndex,ifIndex,ifDescr
+        FROM IF-MIB;
+
+unisMLag MODULE-IDENTITY
+    LAST-UPDATED "202402231156Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "
+        This MIB defines objects for
+        Multichassis Link Aggregation Group (M-LAG).
+        "
+    REVISION
+        "202402231156Z"
+    DESCRIPTION
+        "Modify unisMLagVirtualMac MAX-ACCESS."
+    REVISION
+        "202305311156Z"
+    DESCRIPTION
+        "Add the trap for virtual mac ineffective."
+    REVISION
+        "202204131707Z"
+    DESCRIPTION
+        "MLAG MIB."
+    ::= { unisCommon 176 }
+
+
+--
+-- Node definitions
+--
+
+unisMLagObjects OBJECT IDENTIFIER ::= { unisMLag 1 }
+
+
+unisMLagBaseGroup OBJECT IDENTIFIER ::= { unisMLagObjects 1 }
+
+unisMLagRoleGroup OBJECT IDENTIFIER ::= { unisMLagObjects 2 }
+
+unisMLagKeepaliveGroup OBJECT IDENTIFIER ::= { unisMLagObjects 3 }
+
+unisMLagTables OBJECT IDENTIFIER ::= { unisMLagObjects 4 }
+
+
+unisMLagSystemMac OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Multichassis Link Aggregation Group (M-LAG) system MAC address.
+         The default value is six octets of zero."
+    ::= { unisMLagBaseGroup 1 }
+
+unisMLagSystemPriority OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "M-LAG system priority.  The default value is 32768."
+    DEFVAL { 32768 }
+    ::= { unisMLagBaseGroup 2 }
+
+unisMLagSystemNumber OBJECT-TYPE
+    SYNTAX Integer32 (0..2)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        " M-LAG system number."
+    DEFVAL { 0 }
+    ::= { unisMLagBaseGroup 3 }
+
+unisMLagRestoreDelay OBJECT-TYPE
+    SYNTAX Integer32 (1..3600)
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Data restoration interval in seconds."
+    DEFVAL { 30 }
+    ::= { unisMLagBaseGroup 4 }
+
+unisMLagAutoRecoveryReloadDelay OBJECT-TYPE
+    SYNTAX Integer32 (0|240..3600)
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Reload delay timer for M-LAG system auto-recovery."
+    DEFVAL { 0 }
+    ::= { unisMLagBaseGroup 5 }
+
+
+unisMLagRoleLocalRolePriority OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "M-LAG role priority of the local M-LAG member device."
+    DEFVAL { 32768 }
+    ::= { unisMLagRoleGroup 1 }
+
+unisMLagRolePeerRolePriority OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "M-LAG role priority of the peer M-LAG member device."
+    ::= { unisMLagRoleGroup 2 }
+
+unisMLagRoleLocalBridgeMac OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Bridge MAC address of the local M-LAG member device.
+         The default value is six octets of zero."
+    ::= { unisMLagRoleGroup 3 }
+
+unisMLagRolePeerBridgeMac OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Bridge MAC address of the peer M-LAG member device.  If this address
+         is unknown, the default value is six octets of zero."
+    ::= { unisMLagRoleGroup 4 }
+
+unisMLagRoleLocalConfiguredRole OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        none(0),
+        primary(1),
+        secondary(2)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "M-LAG role calculated based on the role priority and bridge MAC
+         address of the local M-LAG member device."
+    ::= { unisMLagRoleGroup 5 }
+
+unisMLagRolePeerConfiguredRole OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        none(0),
+        primary(1),
+        secondary(2)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "M-LAG role calculated based on the role priority and bridge MAC
+         address of the peer M-LAG member device."
+    ::= { unisMLagRoleGroup 6 }
+
+unisMLagRoleLocalEffectiveRole OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        none(0),
+        primary(1),
+        secondary(2)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Current role of the local M-LAG member device."
+    ::= { unisMLagRoleGroup 7 }
+
+unisMLagRolePeerEffectiveRole OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        none(0),
+        primary(1),
+        secondary(2)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Current role of the peer M-LAG member device."
+    ::= { unisMLagRoleGroup 8 }
+
+
+unisMLagKeepaliveDestIpv4 OBJECT-TYPE
+    SYNTAX InetAddressIPv4
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Destination IPv4 address of the keepalive link.
+         The default value is 0.0.0.0."
+    ::= { unisMLagKeepaliveGroup 1 }
+
+unisMLagKeepaliveSourceIpv4 OBJECT-TYPE
+    SYNTAX InetAddressIPv4
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Source IPv4 address of the keepalive link.
+         The default value is 0.0.0.0.
+         This object must be used with the KeepaliveDestIpv4 object."
+    ::= { unisMLagKeepaliveGroup 2 }
+
+unisMLagKeepaliveDestIpv6 OBJECT-TYPE
+    SYNTAX InetAddressIPv6
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Destination IPv6 address of the keepalive link.
+         The default value is 0::0."
+    ::= { unisMLagKeepaliveGroup 3 }
+
+unisMLagKeepaliveSourceIpv6 OBJECT-TYPE
+    SYNTAX InetAddressIPv6
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Source IPv6 address of the keepalive link.
+         The default value is 0::0.
+         This object must be used with the KeepaliveDestIpv6 object."
+    ::= { unisMLagKeepaliveGroup 4 }
+
+unisMLagKeepaliveUdpPort OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Keepalive destination UDP port."
+    DEFVAL { 6400 }
+    ::= { unisMLagKeepaliveGroup 5 }
+
+unisMLagKeepaliveInterval OBJECT-TYPE
+    SYNTAX Integer32 (100..10000)
+    UNITS "milliseconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Keepalive interval."
+    DEFVAL { 1000 }
+        ::= { unisMLagKeepaliveGroup 6 }
+
+unisMLagKeepaliveTimeout OBJECT-TYPE
+    SYNTAX Integer32 (3..20)
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Keepalive timeout time."
+    DEFVAL { 5 }
+        ::= { unisMLagKeepaliveGroup 7 }
+
+unisMLagKeepaliveHoldTime OBJECT-TYPE
+    SYNTAX Integer32 (3..10)
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Keepalive hold time."
+    DEFVAL { 3 }
+        ::= { unisMLagKeepaliveGroup 8 }
+
+unisMLagKeepaliveLinkStatus OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        unknown(1),
+        up(2),
+        down(3)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Keepalive link status."
+        ::= { unisMLagKeepaliveGroup 9 }
+
+unisMLagKeepaliveVrf OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..31))
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "VPN instance name.  A zero-length string represents that the
+         local device is on the public network."
+    ::= { unisMLagKeepaliveGroup 10 }
+
+unisMLagPeerLinkTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisMLagPeerLinkEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The M-LAG peer-link table."
+    ::= { unisMLagTables 1 }
+
+unisMLagPeerLinkEntry OBJECT-TYPE
+    SYNTAX UnisMLagPeerLinkEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The entry of unisMLagPeerLinkTable."
+    INDEX { unisMLagPeerLinkNumber }
+    ::= { unisMLagPeerLinkTable 1 }
+
+UnisMLagPeerLinkEntry ::=
+    SEQUENCE {
+        unisMLagPeerLinkNumber
+            Integer32,
+        unisMLagPeerLinkIfIndex
+            InterfaceIndex,
+        unisMLagPeerLinkRowStatus
+            RowStatus
+     }
+
+unisMLagPeerLinkNumber OBJECT-TYPE
+    SYNTAX Integer32 (1..2)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The number of a peer link."
+    ::= { unisMLagPeerLinkEntry 1 }
+
+unisMLagPeerLinkIfIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Interface index."
+    ::= { unisMLagPeerLinkEntry 2 }
+
+unisMLagPeerLinkRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "This object is responsible for managing creation,
+         deletion, and modification of rows.  The rows support active
+         status and destroy operations."
+    ::= { unisMLagPeerLinkEntry 3 }
+
+unisMLagPortTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisMLagPortEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The M-LAG interface table."
+    ::= { unisMLagTables 2 }
+
+unisMLagPortEntry OBJECT-TYPE
+    SYNTAX UnisMLagPortEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The entry of unisMLagInfoTable."
+    INDEX { unisMLagGroupId }
+    ::= { unisMLagPortTable 1 }
+
+UnisMLagPortEntry ::=
+    SEQUENCE {
+        unisMLagGroupId
+            Integer32,
+        unisMLagPortIfIndex
+            InterfaceIndex,
+        unisMLagPortRowStatus
+            RowStatus
+     }
+
+unisMLagGroupId OBJECT-TYPE
+    SYNTAX Integer32 (1..1024)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "M-LAG group identifier."
+    ::= { unisMLagPortEntry 1 }
+
+unisMLagPortIfIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Interface index of the Layer 2 aggregate interface."
+    ::= { unisMLagPortEntry 2 }
+
+unisMLagPortRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "This object is responsible for managing creation,
+         deletion, and modification of rows.  The rows support active
+         status and destroy operations."
+    ::= { unisMLagPortEntry 3 }
+
+
+unisMLagAllPortTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisMLagAllPortEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The M-LAG port table."
+    ::= { unisMLagTables 3 }
+
+unisMLagAllPortEntry OBJECT-TYPE
+    SYNTAX UnisMLagAllPortEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The entry of unisMLagAllPortTable."
+    INDEX { unisMLagAllPortIfIndex }
+    ::= { unisMLagAllPortTable 1 }
+
+UnisMLagAllPortEntry ::=
+    SEQUENCE {
+        unisMLagAllPortIfIndex
+            InterfaceIndex,
+        unisMLagPortDrcpIsShortPeriod
+            TruthValue,
+        unisMLagPortPortStatus
+            INTEGER,
+        unisMLagPortLocalDRCPState
+            OCTET STRING,
+        unisMLagPortPeerDRCPState
+            OCTET STRING,
+        unisMLagPortLocalMemberList
+            PortList,
+        unisMLagPortPeerMemberList
+            PortList
+     }
+
+unisMLagAllPortIfIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Interface index."
+    ::= { unisMLagAllPortEntry 1 }
+
+unisMLagPortDrcpIsShortPeriod OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "
+        Short Distributed Relay Control Protocol (DRCP)
+        timeout timer flag, true or false.
+        "
+    ::= { unisMLagAllPortEntry 2 }
+
+unisMLagPortPortStatus OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        up(1),
+        down(2)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Port status."
+    ::= { unisMLagAllPortEntry 3 }
+
+unisMLagPortLocalDRCPState OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "DRCP state flags on the local port.
+         The flag field is one byte long,represented by ABCDEFGH
+         from the lowest bit to the highest bit.A letter is displayed
+         when its bit is 1 and is not displayed when its bit is 0.
+         A-Indicates whether DRCP is enabled on the local device.
+           1 indicates enabled.0 indicates disabled.
+         B-Indicates whether DRCP is enabled on the M-LAG peer device.
+           1 indicates enabled.0 indicates disabled.
+         C-Indicates whether DRCP is enabled on a third M-LAG member device.
+           1 indicates enabled.0 indicates disabled.
+         D-Indicates whether the local peer-link interface has determined that
+           DRCP is enabled on the M-LAG peer device.
+           1 indicates yes.0 indicates no.
+         E-Indicates the DRCP timeout timer.
+           1 indicates the short timeout timer.
+           0 indicates the long timeout timer.
+         F-Indicates whether the local peer-link interface permits the packets
+           that contain the negotiated gateway conversation IDs.
+           1 indicates yes.0 indicates no.
+         G-Indicates whether the local peer-link interface permits the packets that
+           contain the negotiated port conversation IDs.
+           1 indicates yes.0 indicates no.
+         H-Indicates whether the local DRCPDU receive machine is in
+           default or expired state.
+           1 indicates yes.0 indicates no."
+    ::= { unisMLagAllPortEntry 4 }
+
+unisMLagPortPeerDRCPState OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "DRCP state flags on the local port.
+         The flag field is one byte long,represented by ABCDEFGH
+         from the lowest bit to the highest bit.A letter is displayed
+         when its bit is 1 and is not displayed when its bit is 0.
+         A-Indicates whether DRCP is enabled on the local device.
+           1 indicates enabled.0 indicates disabled.
+         B-Indicates whether DRCP is enabled on the M-LAG peer device.
+           1 indicates enabled.0 indicates disabled.
+         C-Indicates whether DRCP is enabled on a third M-LAG member device.
+           1 indicates enabled.0 indicates disabled.
+         D-Indicates whether the local peer-link interface has determined that
+           DRCP is enabled on the M-LAG peer device.
+           1 indicates yes.0 indicates no.
+         E-Indicates the DRCP timeout timer.
+           1 indicates the short timeout timer.
+           0 indicates the long timeout timer.
+         F-Indicates whether the local peer-link interface permits the packets
+           that contain the negotiated gateway conversation IDs.
+           1 indicates yes.0 indicates no.
+         G-Indicates whether the local peer-link interface permits the packets that
+           contain the negotiated port conversation IDs.
+           1 indicates yes.0 indicates no.
+         H-Indicates whether the local DRCPDU receive machine is in
+           default or expired state.
+           1 indicates yes.0 indicates no."
+    ::= { unisMLagAllPortEntry 5 }
+
+unisMLagPortLocalMemberList OBJECT-TYPE
+    SYNTAX PortList
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Local M-LAG member device's Selected aggregation member ports in
+         an M-LAG interface or peer-link interface."
+    ::= { unisMLagAllPortEntry 6 }
+
+unisMLagPortPeerMemberList OBJECT-TYPE
+    SYNTAX PortList
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Peer M-LAG member device's Selected aggregation member ports in
+         an M-LAG interface or peer-link interface."
+    ::= { unisMLagAllPortEntry 7 }
+
+-- trap --
+unisMLagTrap      OBJECT IDENTIFIER ::= { unisMLag 2 }
+
+unisMLagTrapPrex OBJECT IDENTIFIER ::= { unisMLagTrap 0 }
+
+unisMLagGlobalCheckConsistency NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMLagConsistencyType
+        }
+    STATUS       current
+    DESCRIPTION
+        "Finished global configuration consistency check.  No inconsistency exists."
+    ::= { unisMLagTrapPrex 1 }
+
+unisMLagGlobalCheckInConsistency NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMLagConsistencyType
+        }
+    STATUS       current
+    DESCRIPTION
+        "Finished global configuration consistency check.  Inconsistency exists."
+    ::= { unisMLagTrapPrex 2 }
+
+unisMLagIfCheckConsistency NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMLagConsistencyType,
+            ifIndex,
+            ifDescr
+        }
+    STATUS       current
+    DESCRIPTION
+        "Finished M-LAG interface configuration consistency check.  No inconsistency exists."
+    ::= { unisMLagTrapPrex 3 }
+
+unisMLagIfCheckInConsistency NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMLagConsistencyType,
+            ifIndex,
+            ifDescr
+        }
+    STATUS       current
+    DESCRIPTION
+        "Finished M-LAG interface configuration consistency check.  Inconsistency exists."
+    ::= { unisMLagTrapPrex 4 }
+
+unisMLagPortGlobalDown NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMLagGroupIdForNotify
+        }
+    STATUS       current
+    DESCRIPTION
+        "The state of the M-LAG group changed to global down."
+    ::= { unisMLagTrapPrex 5 }
+
+unisMLagPortGlobalUp NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMLagGroupIdForNotify
+        }
+    STATUS       current
+    DESCRIPTION
+        "The state of the M-LAG group changed to global up."
+    ::= { unisMLagTrapPrex 6 }
+
+unisMLagPortSelected NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisMLagGroupIdForNotify
+        }
+    STATUS       current
+    DESCRIPTION
+        "The local M-LAG interface has selected member ports."
+    ::= { unisMLagTrapPrex 7 }
+
+unisMLagPortNoSelected NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisMLagGroupIdForNotify,
+            unisMLagPortNotSelectedReason
+        }
+    STATUS       current
+    DESCRIPTION
+        "The local M-LAG interface does not have selected member ports."
+    ::= { unisMLagTrapPrex 8 }
+
+unisMLagPortPeerNoSelected NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMLagGroupIdForNotify
+        }
+    STATUS       current
+    DESCRIPTION
+        "The peer M-LAG interface does not have selected member ports."
+    ::= { unisMLagTrapPrex 9 }
+
+unisMLagPortPeerSelected NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMLagGroupIdForNotify
+        }
+    STATUS       current
+    DESCRIPTION
+        "The peer M-LAG interface has selected member ports."
+    ::= { unisMLagTrapPrex 10 }
+
+unisMLagPeerLinkUp NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS       current
+    DESCRIPTION
+        "The peer link came up."
+    ::= { unisMLagTrapPrex 11 }
+
+unisMLagPeerLinkDown NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS       current
+    DESCRIPTION
+        "The peer link went down."
+    ::= { unisMLagTrapPrex 12 }
+
+unisMLagKeepaliveDown NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMLagKeepAliveDownReason
+        }
+    STATUS       current
+    DESCRIPTION
+        "The keepalive link went down."
+    ::= { unisMLagTrapPrex 13 }
+
+unisMLagKeepaliveUp NOTIFICATION-TYPE
+    STATUS       current
+    DESCRIPTION
+        "The keepalive link came up."
+    ::= { unisMLagTrapPrex 14 }
+
+unisMLagDeviceMadDown NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMLagMadDownReason
+        }
+    STATUS       current
+    DESCRIPTION
+        "The device changed to M-LAG MAD DOWN state."
+    ::= { unisMLagTrapPrex 15 }
+
+unisMLagDeviceMadRecovery NOTIFICATION-TYPE
+    STATUS       current
+    DESCRIPTION
+        "The device recovered from M-LAG MAD DOWN state."
+    ::= { unisMLagTrapPrex 16 }
+
+unisMLagDeviceRoleChange NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisMLagOldRole,
+            unisMLagNewRole,
+            unisMLagRoleChangeReason
+        }
+    STATUS       current
+    DESCRIPTION
+        "The device role has changed."
+    ::= { unisMLagTrapPrex 17 }
+
+unisMLagVmacInEffective NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisMLagVirtualMac,
+            unisMLagVmacInEffectiveReason
+        }
+    STATUS       current
+    DESCRIPTION
+        "The device virtual MAC address is ineffective."
+    ::= { unisMLagTrapPrex 18 }
+
+unisMLagTrapOjbects OBJECT IDENTIFIER ::= { unisMLagTrap 1 }
+
+unisMLagConsistencyType OBJECT-TYPE
+    SYNTAX  INTEGER {
+         type1(1),
+         type2(2)
+     }
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The consistency check type.
+        type1: Type 1 configuration consistency check.
+        type2: Type 2 configuration consistency check."
+    ::= { unisMLagTrapOjbects 1 }
+
+unisMLagGroupIdForNotify OBJECT-TYPE
+    SYNTAX Integer32 (1..1024)
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "M-LAG group identifier."
+    ::= { unisMLagTrapOjbects 2 }
+
+unisMLagPortNotSelectedReason OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..255))
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The M-LAG interface unselected reason."
+    ::= { unisMLagTrapOjbects 3 }
+
+unisMLagKeepAliveDownReason OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..255))
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The keepalive link down reason."
+    ::= { unisMLagTrapOjbects 4 }
+
+unisMLagMadDownReason OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..255))
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The M-LAG MAD DOWN reason."
+    ::= { unisMLagTrapOjbects 5 }
+
+unisMLagOldRole OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        none(0),
+        primary(1),
+        secondary(2)
+        }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Old role of the local M-LAG member device."
+    ::= { unisMLagTrapOjbects 6 }
+
+unisMLagNewRole OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        none(0),
+        primary(1),
+        secondary(2)
+        }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "New role of the local M-LAG member device."
+    ::= { unisMLagTrapOjbects 7 }
+
+unisMLagRoleChangeReason OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..255))
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "The M-LAG role change reason."
+    ::= { unisMLagTrapOjbects 8 }
+
+unisMLagVmacInEffectiveReason OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..255))
+    MAX-ACCESS   accessible-for-notify
+    STATUS       current
+    DESCRIPTION
+        "Why the M-LAG virtual MAC address is ineffective."
+    ::= { unisMLagTrapOjbects 9 }
+
+unisMLagVirtualMac OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The M-LAG virtual MAC address."
+    ::= { unisMLagTrapOjbects 10 }
+END
+
+--
+-- unis-mlag.mib
+--

@@ -1,0 +1,718 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This MIB is designed for IP Accounting Software
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 created by kongfanhua.
+-- ============================================================================
+UNIS-IPA-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Counter32, Counter64,
+    Integer32, IpAddress
+        FROM SNMPv2-SMI
+    RowStatus, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+
+unisIpa MODULE-IDENTITY
+       LAST-UPDATED "200411010000Z"
+       ORGANIZATION
+           "Unisyue Technologies Co., Ltd."
+       CONTACT-INFO
+           ""
+       DESCRIPTION
+            "
+            This MIB is used to acquire ip accounting information.
+
+            The unisIpaAccountListTable is set by user to define the group of ip address
+            which they want to account.
+            This module can be enabled in each port,
+            which was defined in the unisIpaIfConfigTable.
+
+            If this module has been enabled, the packets will be accounted
+            when crossing the router from the ports having been enabled by user,
+            according to whether the source/destination ip address is in unisIpaAccountListTable
+            and what kinds of function(in/out/both/fw) are enabled
+            and also whether it is denied by the firewall.
+            If it is denied by the firewall, it will be accounted in unisIpaFWListTable
+            If it is accepted by the firewall, and ip source or ip destination is in unisIpaAccountListTable,
+            it will be accounted in unisIpaIntListTable, otherwise it will be accounted
+            in unisIpaExtListTable.
+
+            And IP Accounting function also differentiates the packets by direction.
+            If the packet is inbound, the accounting information can be seen as
+              unisIpaIntListInPackets/unisIpaIntListInBytes in unisIpaIntListTable,
+              unisIpaExtListInPackets/unisIpaExtListInBytes in unisIpaExtListTable,
+              unisIpaFWListInPackets/unisIpaFWListInBytes in unisIpaFWListTable.
+
+            or else the accounting information can be seen as
+              unisIpaIntListOutPackets/unisIpaIntListOutBytes in unisIpaIntListTable,
+              unisIpaExtListOutPackets/unisIpaExtListOutBytes in unisIpaExtListTable,
+              unisIpaFWListOutPackets/unisIpaFWListOutBytes in unisIpaFWListTable.
+            "
+        ::= { unisCommon 25 }
+
+   InterfaceIndex ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "A unique value, greater than zero, for each interface
+               or interface sub-layer in the managed system.  It is
+               recommended that values are assigned contiguously
+               starting from 1.  The value for each interface sub-
+               layer must remain constant at least from one re-
+               initialization of the entity's network management
+               system to the next re-initialization."
+       SYNTAX       Integer32 (1..2147483647)
+
+
+-- =============================================================================
+   -- unisIpaGlobalConfigTable
+   --  The Global Data Set By User of IPA
+
+    unisIpaGlobalStats OBJECT IDENTIFIER ::= { unisIpa 1 }
+
+    unisIpaGlobalEnable OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        disabled(1),  -- the IPA function is disabled
+                        enabled(2)    -- the IPA function is enabled
+                       }
+           MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+               "
+               The indication of whether Ip Accounting function is enabled.
+               If it is disabled, ip packets will not be accounted.
+               "
+        DEFVAL        { disabled }
+        ::= { unisIpaGlobalStats 1 }
+
+    unisIpaTimeOutSeconds OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+               "
+               The value of List aging timeout.
+               The unit is second.
+               If exceeding the interval, the item in unisIpaIntListTable, unisIpaExtListTable
+               and unisIpaFWListTable will be removed automaticlly.
+               The range is (3600..604800).
+               "
+        DEFVAL        { 43200 }
+        ::= { unisIpaGlobalStats 2 }
+
+    unisIpaIntListMaxItemNum OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+               "
+               The max number of items in unisIpaIntListTable.
+               The range is (0..16384).
+               "
+        DEFVAL        { 512 }
+        ::= { unisIpaGlobalStats 3 }
+
+    unisIpaExtListMaxItemNum OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+               "
+               The max number of items in unisIpaExtListTable.
+               The range is (0..8192).
+               "
+        DEFVAL        { 0 }
+        ::= { unisIpaGlobalStats 4 }
+
+    unisIpaFWListMaxItemNum OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+               "
+               The max number of items in unisIpaFWListTable.
+               "
+        ::= { unisIpaGlobalStats 5 }
+
+     unisIpaAccountListMaxItemNum OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+               "
+               The max number of items in unisIpaAccountListTable.
+               "
+        ::= { unisIpaGlobalStats 6 }
+
+     unisIpaAccountListNextIndex OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+               "
+               The next available index for creating rows of unisIpaAccountListTable.
+               If the value is zero, it means the table is full and no available index
+               can be used.
+               "
+        ::= { unisIpaGlobalStats 7 }
+
+    unisIpaListCleaningFlag OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        idle(1),             -- idling
+                        cleaningAll(2),      -- clearing all of the tables below.
+                        cleaningIntList(3),  -- clearing unisIpaIntListTable
+                        cleaningExtList(4),  -- clearing unisIpaExtListTable
+                        cleaningFWList(5)    -- clearing unisIpaFWListTable
+                    }
+          MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+               "
+               Cleaning List in this module.
+               The default value is idle. If user wants to clean some lists, he
+               can set the value to 2, 3, 4 and 5 to clean the corresponding list.
+               After the operation, the value will return to idle.
+               "
+        DEFVAL        { idle }
+        ::= { unisIpaGlobalStats 8 }
+
+
+-- =============================================================================
+   -- unisIpaIfConfigTable
+   --  enable or disable and show ip accounting function under interface
+
+     unisIpaIfConfigTable OBJECT-TYPE
+         SYNTAX   SEQUENCE OF UnisIpaIfConfigEntry
+         MAX-ACCESS   not-accessible
+         STATUS   current
+         DESCRIPTION
+            "
+            Enable or disable the ip accounting inbound/outbound
+            function under a particular interface.
+            "
+         ::= { unisIpa 2 }
+
+    unisIpaIfConfigEntry OBJECT-TYPE
+         SYNTAX   UnisIpaIfConfigEntry
+         MAX-ACCESS   not-accessible
+         STATUS   current
+         DESCRIPTION
+            "
+            Entry of the table.
+            "
+         INDEX { unisIpaIfConfigIfIndex }
+         ::= { unisIpaIfConfigTable 1 }
+
+    UnisIpaIfConfigEntry ::=
+        SEQUENCE {
+            unisIpaIfConfigIfIndex
+                InterfaceIndex,
+            unisIpaIfConfigInEnable
+                INTEGER,
+            unisIpaIfConfigOutEnable
+                INTEGER,
+            unisIpaIfConfigFWEnable
+                INTEGER
+        }
+
+    unisIpaIfConfigIfIndex OBJECT-TYPE
+        SYNTAX   InterfaceIndex
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+            "It equals to ifIndex"
+        ::= { unisIpaIfConfigEntry 1 }
+
+    unisIpaIfConfigInEnable OBJECT-TYPE
+        SYNTAX      INTEGER {
+            disabled(1),  -- inbound packets are not accounted in this interface
+            enabled(2)    -- inbound packets are accounted in this interface
+        }
+        MAX-ACCESS  read-write
+        STATUS      current
+
+        DESCRIPTION
+            "
+            This object is applicable to unisIpaIntListTable and unisIpaExtListTable.
+            If the value is disabled, inbound ip packets are not accounted.
+            "
+        DEFVAL        { disabled }
+        ::= { unisIpaIfConfigEntry 2 }
+
+    unisIpaIfConfigOutEnable OBJECT-TYPE
+        SYNTAX      INTEGER {
+            disabled(1),  -- outbound packets are not accounted in this interface
+            enabled(2)    -- outbound packets are accounted in this interface
+        }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "
+            This object is applicable to unisIpaIntListTable and unisIpaExtListTable.
+            If the value is disabled, outbound ip packets are not accounted.
+            "
+        DEFVAL        { disabled }
+        ::= { unisIpaIfConfigEntry 3 }
+
+    unisIpaIfConfigFWEnable OBJECT-TYPE
+        SYNTAX      INTEGER {
+            nodirection(1),
+            inbound(2),
+            outbound(3),
+            bidirection(4)
+        }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "
+            This object is applicable to unisIpaFWListTable only.
+
+            If the value is 'inbound', then inbound ip packets which are denied by firewall
+            are accounted.
+            If the value is 'outbound', then outbound ip packets which were denied by firewall
+            are accounted.
+            If the value is 'nodirection', neither inbound nor outbound ip packets
+            which were denied by firewall are accounted.
+            If the value is 'bidirection', both inbound and outbound ip packets which
+            were denied by firewall are accounted.
+            "
+        DEFVAL        { nodirection }
+        ::= { unisIpaIfConfigEntry 4 }
+
+-- =============================================================================
+     -- unisIpaAccountListTable
+     -- The function of unisIpaAccountListTable is to classify the ip packets
+     -- unisIpaAccountListTable is set and deleted by user
+
+    unisIpaAccountListTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF UnisIpaAccountListEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+            "
+            The List is used by user to sort packets into two groups
+            by source or destination ip address.
+            When source/destination ip address of a packet matches a item in this table,
+            the packet is accounted in unisIpaIntListTable.
+            When source/destination ip address of a packet does not match any item
+            in this table, the packet is accounted in unisIpaExtListTable.
+            "
+         ::= { unisIpa 3 }
+
+    unisIpaAccountListEntry OBJECT-TYPE
+        SYNTAX   UnisIpaAccountListEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+            "
+            Entry of the table.
+            "
+        INDEX { unisIpaAccountListIndex }
+        ::= { unisIpaAccountListTable 1 }
+
+    UnisIpaAccountListEntry ::=
+        SEQUENCE {
+            unisIpaAccountListIndex
+                Integer32,
+            unisIpaAccountListIpAddr
+                IpAddress,
+            unisIpaAccountListIpMask
+                IpAddress,
+            unisIpaAccountListRowStatus
+                RowStatus
+        }
+
+    unisIpaAccountListIndex OBJECT-TYPE
+        SYNTAX   Integer32(1..2147483647)
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+            "
+            The Index of the table.
+            "
+        ::= { unisIpaAccountListEntry 1 }
+
+    unisIpaAccountListIpAddr OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "
+            The IP address to which this entry's addressing information
+            pertains.
+            "
+        ::= { unisIpaAccountListEntry 2 }
+
+    unisIpaAccountListIpMask OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "
+            The subnet mask associated with the IP address of this
+            entry.  The value of the mask is an IP address with all the
+            network bits set to 1 and all the hosts bits set to 0.
+            "
+        ::= { unisIpaAccountListEntry 3 }
+
+    unisIpaAccountListRowStatus  OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+           "
+           The row status of the entry,
+           Supporting CreateAndGo and Destroy operation.
+           "
+        ::= { unisIpaAccountListEntry 4 }
+
+
+-- =============================================================================
+     -- unisIpaIntListTable
+     -- for showing accounting information of packet not match unisIpaAccountListTable
+
+    unisIpaIntListTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF UnisIpaIntListEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+            "
+            If matching the ip address recorded in unisIpaAccountListTable
+            and not denied by the firewall, the packets will be accounted
+            in this list.
+            "
+        ::= { unisIpa 4 }
+
+    unisIpaIntListEntry OBJECT-TYPE
+        SYNTAX   UnisIpaIntListEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+            "
+            Entry of the table.
+            "
+        INDEX { unisIpaIntListIpSrc,
+                unisIpaIntListIpDst,
+                unisIpaIntListProtocol
+              }
+        ::= { unisIpaIntListTable 1 }
+
+    UnisIpaIntListEntry ::=
+        SEQUENCE {
+            unisIpaIntListIpSrc
+                IpAddress,
+            unisIpaIntListIpDst
+                IpAddress,
+            unisIpaIntListProtocol
+                Integer32,
+            unisIpaIntListInPackets
+                Counter32,
+            unisIpaIntListInBytes
+                Counter64,
+            unisIpaIntListOutPackets
+                Counter32,
+            unisIpaIntListOutBytes
+                Counter64
+        }
+
+    unisIpaIntListIpSrc OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "
+            Source IP-address of these accounted packets.
+            "
+        ::= { unisIpaIntListEntry 1 }
+
+    unisIpaIntListIpDst OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "
+            Destination IP-address of these accounted packets.
+            "
+        ::= { unisIpaIntListEntry 2 }
+
+    unisIpaIntListProtocol OBJECT-TYPE
+        SYNTAX Integer32(0..2147483647)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "
+            The type of these accounted IP packets defined in RFC 1700.
+            "
+        ::= { unisIpaIntListEntry 3 }
+
+    unisIpaIntListInPackets OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "
+            The number of inbound packets in unisIpaIntListTable.
+            "
+        ::= { unisIpaIntListEntry 4 }
+
+    unisIpaIntListInBytes OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "
+            The number of inbound bytes in unisIpaIntListTable.
+            "
+        ::= { unisIpaIntListEntry 5 }
+
+    unisIpaIntListOutPackets OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "
+            The number of outbound Packets in unisIpaIntListTable.
+            "
+        ::= { unisIpaIntListEntry 6 }
+
+    unisIpaIntListOutBytes OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "
+            The number of outbound bytes in unisIpaIntListTable.
+            "
+        ::= { unisIpaIntListEntry 7 }
+
+-- =============================================================================
+    -- unisIpaExtListTable
+    -- for showing accounting information of packet not match unisIpaAccountListTable
+
+    unisIpaExtListTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF UnisIpaExtListEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+            "
+            If mismatching the ip address recorded in the unisIpaAccountListTable
+            and not denied by the firewall, the packets will be accounted
+            in this list.
+            "
+        ::= { unisIpa 5 }
+
+    unisIpaExtListEntry OBJECT-TYPE
+        SYNTAX   UnisIpaExtListEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "
+           Entry of the table.
+           "
+        INDEX { unisIpaExtListIpSrc,
+                unisIpaExtListIpDst,
+                unisIpaExtListProtocol
+              }
+        ::= { unisIpaExtListTable 1 }
+
+    UnisIpaExtListEntry ::=
+        SEQUENCE {
+            unisIpaExtListIpSrc
+                IpAddress,
+            unisIpaExtListIpDst
+                IpAddress,
+            unisIpaExtListProtocol
+                Integer32,
+            unisIpaExtListInPackets
+                Counter32,
+            unisIpaExtListInBytes
+                Counter64,
+            unisIpaExtListOutPackets
+                Counter32,
+            unisIpaExtListOutBytes
+                Counter64
+        }
+
+    unisIpaExtListIpSrc OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "
+            Source IP-address of these accounted packets.
+            "
+        ::= { unisIpaExtListEntry 1 }
+
+    unisIpaExtListIpDst OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "
+            Destination IP-address of these accounted packets.
+            "
+        ::= { unisIpaExtListEntry 2 }
+
+    unisIpaExtListProtocol OBJECT-TYPE
+        SYNTAX Integer32(0..2147483647)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "
+            The value indicates the value of the 'protocol' field
+            which is part of ip packet header.
+            "
+        ::= { unisIpaExtListEntry 3 }
+
+    unisIpaExtListInPackets OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "
+            The number of inbound packets in unisIpaExtListTable.
+            "
+        ::= { unisIpaExtListEntry 4 }
+
+    unisIpaExtListInBytes OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "
+            The number of inbound bytes in unisIpaExtListTable.
+            "
+        ::= { unisIpaExtListEntry 5 }
+
+    unisIpaExtListOutPackets OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "
+            The number of outbound packets in unisIpaExtListTable.
+            "
+        ::= { unisIpaExtListEntry 6 }
+
+    unisIpaExtListOutBytes OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "
+            The number of outbound bytes in unisIpaExtListTable.
+            "
+        ::= { unisIpaExtListEntry 7 }
+
+-- =============================================================================
+    -- unisIpaFWListTable
+    -- for showing accounting information of packet denied by the firewall
+
+    unisIpaFWListTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF UnisIpaFWListEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+            "
+            If the packet is denied by the firewall,
+            it will be accounted in this list.
+            "
+        ::= { unisIpa 6 }
+
+    unisIpaFWListEntry OBJECT-TYPE
+        SYNTAX   UnisIpaFWListEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+            "
+            Entry of the table.
+            "
+        INDEX { unisIpaFWListIpSrc,
+                unisIpaFWListIpDst
+              }
+        ::= { unisIpaFWListTable 1 }
+
+    UnisIpaFWListEntry ::=
+        SEQUENCE {
+            unisIpaFWListIpSrc
+                IpAddress,
+            unisIpaFWListIpDst
+                IpAddress,
+            unisIpaFWListInPackets
+                Counter32,
+            unisIpaFWListInBytes
+                Counter64,
+            unisIpaFWListOutPackets
+                Counter32,
+            unisIpaFWListOutBytes
+                Counter64
+        }
+
+    unisIpaFWListIpSrc OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+             "
+             Source IP-address of these accounted packets.
+             "
+        ::= { unisIpaFWListEntry 1 }
+
+    unisIpaFWListIpDst OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+             "
+             Destination IP-address of these accounted packets.
+             "
+        ::= { unisIpaFWListEntry 2 }
+
+    unisIpaFWListInPackets OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+             "
+             The number of outbound packets in unisIpaFWListTable.
+             "
+        ::= { unisIpaFWListEntry 3 }
+
+    unisIpaFWListInBytes OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "
+            The number of inbound bytes in unisIpaFWListTable.
+            "
+        ::= { unisIpaFWListEntry 4 }
+
+    unisIpaFWListOutPackets OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "
+            The number of outbound packets in unisIpaFWListTable.
+            "
+        ::= { unisIpaFWListEntry 5 }
+
+   unisIpaFWListOutBytes OBJECT-TYPE
+       SYNTAX      Counter64
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+           "
+           The number of outbound bytes in unisIpaFWListTable.
+           "
+       ::= { unisIpaFWListEntry 6 }
+
+END

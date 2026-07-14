@@ -1,0 +1,68 @@
+-- ==========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: AAA Nas-id mib
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 2011-03-09 created by wangbin
+-- ==========================================================================
+UNIS-AAA-NASID-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE
+        FROM SNMPv2-SMI
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisAAANasId MODULE-IDENTITY
+    LAST-UPDATED "201103090945Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB contains objects to
+        manage configuration for AAA Nas-id feature.
+        AAA presents authentication, authorization and accouting.
+        NAS acts as the Network Access Server.
+        Nas-id is an identifier that contains some strings identifying the NAS."
+    REVISION "201103090945Z"
+    DESCRIPTION
+        "Initial version."
+    ::= { unisCommon 114 }
+
+unisAAANasIdObjects OBJECT IDENTIFIER ::= { unisAAANasId 1 }
+
+-- ==========================================================================
+-- unisAAANasIdTable OBJECT
+-- ==========================================================================
+unisAAANasIdTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisAAANasIdEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "The AAA Nas-id table."
+::= { unisAAANasIdObjects 1 }
+
+unisAAANasIdEntry OBJECT-TYPE
+    SYNTAX UnisAAANasIdEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "The AAA Nas-id entry."
+    INDEX { unisAAANasIdName }
+::= { unisAAANasIdTable 1 }
+
+UnisAAANasIdEntry ::= SEQUENCE {
+    unisAAANasIdName             OCTET STRING }
+
+unisAAANasIdName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(1..64))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "The Nas-id name."
+::= { unisAAANasIdEntry 1 }
+
+END

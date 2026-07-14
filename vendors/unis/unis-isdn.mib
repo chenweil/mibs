@@ -1,0 +1,626 @@
+-- ==========================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This file describes the mib implementation of ISDN
+-- Reference:
+-- Version: V1.4
+-- History:
+--  V1.0 Initial version
+--  V1.1 2004-10-27 updated by gaolong
+--       Modify IMPORTS clause.
+--       Remove object oid comments from MIB
+--       Correct DEFVAL value of unisChanbIsdnPermit
+--  V1.2 2005-03-22 updated by songjie
+--       Add table: unisQ931IsdnTable.
+--       Add traps: unisQ931IsdnCallSetup, unisQ931IsdnCallClear.
+--  V1.3 2009-05-22 updated by chengtiesheng
+--       Add table: unisLapdIsdnTable.
+--  V1.4 2009-10-15 updated by chengtiesheng
+--       Modify leaf node: unisLapdIsdnProtocol, add value ni(9).
+--       Change MAX-ACCESS of unisLapdIsdnIf.
+--       Add leaf node: unisLapdStatusTrapEnable.
+--       Add trap:  unisLapdIsdnStatusChange.
+-- ==============================================================
+UNIS-ISDN-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS
+            unismlsr
+                FROM UNIS-OID-MIB
+            Integer32, Counter32, OBJECT-TYPE, MODULE-IDENTITY,
+            NOTIFICATION-TYPE
+                FROM SNMPv2-SMI
+            DisplayString, TimeStamp, DateAndTime, RowStatus
+                FROM SNMPv2-TC;
+
+--
+-- Node definitions
+--
+
+        unisIsdnMib MODULE-IDENTITY
+            LAST-UPDATED "200112200000Z"
+            ORGANIZATION
+                "Unisyue Technologies Co., Ltd."
+            CONTACT-INFO
+                ""
+            DESCRIPTION
+                "This file describes the MIB implementation of ISDN"
+            ::= { unismlsr 9 }
+
+--  Isdn Mib objects definitions
+        unisIsdnMibObjects OBJECT IDENTIFIER ::= { unisIsdnMib 1 }
+
+        unisisdnChannelB OBJECT IDENTIFIER ::= { unisIsdnMibObjects 1 }
+
+        unisChanbIsdnTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UNISChanbIsdnEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "This table is used to describe the router's B Channels
+                 infomation"
+            ::= { unisisdnChannelB 1 }
+
+        unisChanbIsdnEntry OBJECT-TYPE
+            SYNTAX UNISChanbIsdnEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                " A single B channels"
+            INDEX { unisChanbIsdnIf }
+            ::= { unisChanbIsdnTable 1 }
+
+        UNISChanbIsdnEntry ::=
+            SEQUENCE {
+                unisChanbIsdnIf
+                    INTEGER,
+                unisChanbIsdnPermit
+                    INTEGER,
+                unisChanbIsdnAddr
+                    DisplayString,
+                unisChanbIsdnCallerAddr
+                    DisplayString,
+                unisChanbIsdnCallType
+                    INTEGER,
+                unisChanbIsdnInfoType
+                    INTEGER,
+                unisChanbIsdnState
+                    INTEGER,
+                unisChanbIsdnCallFreeReason
+                    DisplayString,
+                unisChanbIsdnCallFreeCode
+                    INTEGER,
+                unisChanbIsdnCallAccept
+                    Counter32,
+                unisChanbIsdnCallReject
+                    Counter32,
+                unisChanbIsdnCallSuccess
+                    Counter32,
+                unisChanbIsdnCallFailure
+                    Counter32,
+                unisChanbIsdnMaxKeepTime
+                    Integer32,
+                unisChanbIsdnLastKeepTime
+                    Integer32,
+                unisChanbIsdnLastCallTime
+                    TimeStamp
+             }
+
+        unisChanbIsdnIf OBJECT-TYPE
+            SYNTAX INTEGER
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                " this object is used to describe the virtual
+                interface value associated with one neighbor.   "
+            ::= { unisChanbIsdnEntry 1 }
+
+        unisChanbIsdnPermit OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                callOut(1),
+                callIn(2),
+                callBidirection(3)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                " this object is used to describe the call permissions."
+            DEFVAL { callBidirection }
+            ::= { unisChanbIsdnEntry 2 }
+
+        unisChanbIsdnAddr OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "this object is used to descirbe the call address
+                by which we call one nieghbor."
+            ::= { unisChanbIsdnEntry 3 }
+
+        unisChanbIsdnCallerAddr OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "this object is used to describe the callser address
+                which will be known by B channels."
+            ::= { unisChanbIsdnEntry 4 }
+
+        unisChanbIsdnCallType OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                nocall(0),
+                call(1),
+                answer(2)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "this object is used to describe that whether it is an
+                incoming call or an outging call."
+            ::= { unisChanbIsdnEntry 5 }
+
+        unisChanbIsdnInfoType OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                unknown(1),
+                speech(2),
+                unrestrDigit(3),
+                unrestrDigit56(4),
+                restrictDigit(5),
+                audio31(6),
+                audio7(7),
+                video(8),
+                swithchedPacket(9)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "this object is used to describe the information type
+                on the call"
+            ::= { unisChanbIsdnEntry 6 }
+
+        unisChanbIsdnState OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                idle(1),
+                connecting(2),
+                active(3)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "this object is used to manage the call by NMS"
+            ::= { unisChanbIsdnEntry 7 }
+
+        unisChanbIsdnCallFreeReason OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "this object is used to describe the reason why last
+                call is cleard"
+            ::= { unisChanbIsdnEntry 8 }
+
+        unisChanbIsdnCallFreeCode OBJECT-TYPE
+            SYNTAX INTEGER
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "this object is used to describe the reason code for
+                the last call down."
+            ::= { unisChanbIsdnEntry 9 }
+
+        unisChanbIsdnCallAccept OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "this object is used to describe the accepted call
+                number from the B channels"
+            ::= { unisChanbIsdnEntry 10 }
+
+        unisChanbIsdnCallReject OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "this object is used to describe the refused call
+                number from B channels ."
+            ::= { unisChanbIsdnEntry 11 }
+
+        unisChanbIsdnCallSuccess OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "this object is used to describe the successful call
+                number to B channels after
+                system restart."
+            ::= { unisChanbIsdnEntry 12 }
+
+        unisChanbIsdnCallFailure OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "this object is used to describe the failing call number
+                 to B channels after system restart"
+            ::= { unisChanbIsdnEntry 13 }
+
+        unisChanbIsdnMaxKeepTime OBJECT-TYPE
+            SYNTAX Integer32
+            UNITS "milliseconds"
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object is used to descirbe the maximum duration
+                time in milliseconds."
+            DEFVAL { 2147483647 }
+            ::= { unisChanbIsdnEntry 14 }
+
+        unisChanbIsdnLastKeepTime OBJECT-TYPE
+            SYNTAX Integer32
+            UNITS "milliseconds"
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "this object is used to describe the last call duration
+                 time in milliseconds"
+            ::= { unisChanbIsdnEntry 15 }
+
+        unisChanbIsdnLastCallTime OBJECT-TYPE
+            SYNTAX TimeStamp
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "this object is used to describe the sysUpTime after
+                last call attempt was made."
+            ::= { unisChanbIsdnEntry 16 }
+
+        unisChanbTrapEnable OBJECT-TYPE
+            SYNTAX INTEGER { enabled(1), disabled(2) }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "This object is used to control  sending trap"
+            ::= { unisisdnChannelB 2 }
+
+        unisisdnQ931 OBJECT IDENTIFIER ::= { unisIsdnMibObjects 2 }
+
+        unisQ931IsdnControl OBJECT IDENTIFIER ::= { unisisdnQ931 1 }
+
+        unisQ931CallSetupTrapEnable OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                enabled(1),
+                disabled(2)
+            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "This object is used to control sending callsetup trap."
+            ::= { unisQ931IsdnControl 1 }
+
+        unisQ931CallClearTrapEnable OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                enabled(1),
+                disabled(2)
+            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "This object is used to control sending callclear trap"
+            ::= { unisQ931IsdnControl 2 }
+
+        unisQ931IsdnTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisQ931IsdnEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "This table describes B channel information for the
+                use of Q931"
+            ::= { unisisdnQ931 2 }
+
+        unisQ931IsdnEntry OBJECT-TYPE
+            SYNTAX UnisQ931IsdnEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A B channel entry in the Q931."
+            INDEX {  unisQ931IsdnOpIndex }
+            ::= { unisQ931IsdnTable 1 }
+
+        UnisQ931IsdnEntry ::=
+            SEQUENCE
+            {
+                unisQ931IsdnOpIndex
+                    Integer32,
+                unisQ931IsdnLastCalled
+                    DisplayString,
+                unisQ931IsdnLastCalling
+                    DisplayString,
+                unisQ931IsdnLastCauseDisc
+                    INTEGER,
+                unisQ931IsdnCallDirection
+                    INTEGER,
+                unisQ931IsdnCallTimeOpen
+                    DateAndTime,
+                unisQ931IsdnCallTimeClose
+                    DateAndTime
+            }
+
+        unisQ931IsdnOpIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "Index of the B ISDN channel interface managed by Q93"
+            ::= { unisQ931IsdnEntry 1 }
+
+        unisQ931IsdnLastCalled OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object describes the called ISDN number.
+                When an outgoing call is established successfully, the
+                value of this node is the call number of this device,
+                otherwise the value is null string"
+            ::= { unisQ931IsdnEntry 2 }
+
+        unisQ931IsdnLastCalling OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object describes the calling ISDN number.
+                When an incoming call is established successfully, the
+                value of this node is the call number of peer device,
+                otherwise the value is null string."
+            ::= { unisQ931IsdnEntry 3 }
+
+        unisQ931IsdnLastCauseDisc OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                unknown(1),
+                normCallClr(2),
+                noRouteToTransNet(3),
+                noRouteToDest(4),
+                switchEquCongest(5),
+                netOutofOrder(6)
+            }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object describes last cause of disconnection.
+                In unisQ931IsdnCallClear trap, the value of this node is
+                the reason of disconnection, this node is only valid
+                for unisQ931IsdnCallClear trap, the value of this node
+                is unknown in other situation.
+                unknown:            unknown error.
+                normCallClr:        normal call clearing.
+                noRouteToTransNet:  no route to specified transit network.
+                noRouteToDest:      no route to destination.
+                switchEquCongest:   switching equipment congestion.
+                netOutofOrder:      network out of order."
+            ::= { unisQ931IsdnEntry 4 }
+
+        unisQ931IsdnCallDirection OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                incoming(1),
+                outgoing(2)
+            }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object describes the direction of the current call."
+            ::= { unisQ931IsdnEntry 5 }
+
+        unisQ931IsdnCallTimeOpen OBJECT-TYPE
+            SYNTAX DateAndTime
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object describes the start time of this call.
+                start time is the time of an existent call that
+                has just been established."
+            ::= { unisQ931IsdnEntry 6 }
+
+        unisQ931IsdnCallTimeClose OBJECT-TYPE
+            SYNTAX DateAndTime
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object describes the close time of this call.
+                This node is only vaild for unisQ931IsdnCallClear trap.
+                In other situation the value of this node is zero.
+                In unisQ931IsdnCallClear trap, this node provides the
+                time of an existent call that the call has just been
+                cleared."
+            ::= { unisQ931IsdnEntry 7 }
+
+-- Define unisLapdIsdnTable
+
+        unisIsdnLapd OBJECT IDENTIFIER ::= { unisIsdnMibObjects 3 }
+
+        unisLapdIsdnTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisLapdIsdnEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "This table is used to describe the config of ISDN D channel."
+            ::= { unisIsdnLapd 1 }
+
+        unisLapdIsdnEntry OBJECT-TYPE
+            SYNTAX UnisLapdIsdnEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "ISDN D channel config"
+            INDEX { unisLapdIsdnIf }
+            ::= { unisLapdIsdnTable 1 }
+
+        UnisLapdIsdnEntry ::=
+            SEQUENCE {
+                unisLapdIsdnIf
+                    Integer32,
+                unisLapdIsdnProtocol
+                    INTEGER,
+                unisLapdIsdnIfMode
+                    INTEGER,
+                unisLapdIsdnLinkStatus
+                    INTEGER
+             }
+
+        unisLapdIsdnIf OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "This object is used to describe the D channel
+                interface value associated with one neighbor."
+            ::= { unisLapdIsdnEntry 1 }
+
+        unisLapdIsdnProtocol OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                dss1(1),
+                qsig(2),
+                etsi(3),
+                ess5(4),
+                ansi(5),
+                ni2(6),
+                ntt(7),
+                att(8),
+                ni(9)
+                }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "This object is used to describe the protocol D channel applied.
+                For E1, the protocol may be dss1, qsig, etsi.
+                For T1, the protocol may be ess5, ansi, att, dss1, etsi, ni2,
+                ntt, qsig.
+                For BRI, the protocol may be ansi, dss1, etsi, ni, ntt."
+            DEFVAL { dss1 }
+            ::= { unisLapdIsdnEntry 2 }
+
+        unisLapdIsdnIfMode OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                userSide(1),
+                networkSide(2)
+                }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The physical interface mode.  For TE mode, the value
+                of this object is userSide.  For NT mode, the value of this
+                object is networkSide."
+            ::= { unisLapdIsdnEntry 3 }
+
+        unisLapdIsdnLinkStatus OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                inactive(1),
+                l1Active(2),
+                l2Active(3)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The operational status of this interface:
+                 inactive  all layers are inactive.
+                 l1Active  layer 1 is activated,
+                           layer 2 datalink not established.
+                 l2Active  layer 1 is activated,
+                           layer 2 datalink established.
+               "
+            ::= { unisLapdIsdnEntry 4 }
+
+        unisLapdIsdnControl OBJECT IDENTIFIER ::= { unisIsdnLapd 2 }
+        unisLapdStatusTrapEnable OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                enabled(1),
+                disabled(2)
+            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "This object is used to control sending unisLapdIsdnStatusChange
+                trap."
+            DEFVAL { enabled }
+            ::= { unisLapdIsdnControl 1 }
+
+--  Traps related to Connection management
+        unisIsdnMibTraps OBJECT IDENTIFIER ::= { unisIsdnMib 2 }
+
+        unisChanbIsdnCall NOTIFICATION-TYPE
+        OBJECTS { unisChanbIsdnIf,
+            unisChanbIsdnAddr,
+            unisChanbIsdnCallType,
+            unisChanbIsdnCallerAddr,
+            unisChanbIsdnInfoType,
+            unisChanbIsdnLastKeepTime,
+            unisChanbIsdnCallFreeReason,
+            unisChanbIsdnCallFreeCode
+            }
+        STATUS current
+        DESCRIPTION
+        "When one call is setup ,cleard or determined , the trap
+        is sent to NMS"
+        ::= { unisIsdnMibTraps 1 }
+
+        unisQ931IsdnCallSetup NOTIFICATION-TYPE
+            OBJECTS {
+                unisQ931IsdnOpIndex,
+                unisQ931IsdnLastCalled,
+                unisQ931IsdnLastCalling,
+                unisQ931IsdnCallDirection,
+                unisQ931IsdnCallTimeOpen
+            }
+            STATUS      current
+            DESCRIPTION
+                "This trap/inform is sent to the manager whenever a call
+                is established successfully."
+            ::= { unisIsdnMibTraps 2 }
+
+        unisQ931IsdnCallClear NOTIFICATION-TYPE
+            OBJECTS {
+                unisQ931IsdnOpIndex,
+                unisQ931IsdnLastCalled,
+                unisQ931IsdnLastCalling,
+                unisQ931IsdnLastCauseDisc,
+                unisQ931IsdnCallDirection,
+                unisQ931IsdnCallTimeOpen,
+                unisQ931IsdnCallTimeClose
+            }
+            STATUS current
+            DESCRIPTION
+                "This trap/inform is sent to the manager under the following
+                conditions:
+                - an existent call is normally cleared.
+                - an existent call is determined to have ultimately
+                  failed, and has been cleared.
+                - the existent call is cleared when the BRI/PRI port is
+                  down.
+                - the existent call is cleared when the dialer rule is
+                  down."
+            ::= { unisIsdnMibTraps 3 }
+
+        unisLapdIsdnStatusChange NOTIFICATION-TYPE
+            OBJECTS {
+                unisLapdIsdnIf,
+                unisLapdIsdnLinkStatus
+            }
+            STATUS current
+            DESCRIPTION
+                "This trap/inform is sent to the manager whenever the
+                 D-channel of an interface changes state."
+            ::= { unisIsdnMibTraps 4 }
+
+    END

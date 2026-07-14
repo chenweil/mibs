@@ -1,0 +1,94 @@
+-- ============================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The purpose of this MIB file is to provide the definition of
+--              the IP netstream trap.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2022-11-16
+--   Initial version, created by wangyuqing
+-- ============================================================================
+UNIS-NETSTREAM4-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI;
+
+-- Node definitions
+unisNetstream4 MODULE-IDENTITY
+    LAST-UPDATED "202211231800Z"        -- Nov 23, 2022 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file is to provide the definition of the IP netstream."
+    REVISION "202211231800Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 256}
+
+-- unisNetstream4TrapEntry
+unisNetstream4TrapEntry OBJECT IDENTIFIER ::= { unisNetstream4 1 }
+
+unisNetstream4TrapEntrys OBJECT IDENTIFIER  ::= { unisNetstream4TrapEntry 0 }
+
+unisNetstream4TrapEntryTHAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNetstream4TrapEntrySpec,
+            unisNetstream4TrapEntryChassis,
+            unisNetstream4TrapEntrySlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the number of netstream4 tables exceeds the maximum value of the board by 80%,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisNetstream4TrapEntrys 1 }
+
+unisNetstream4TrapEntryTHResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNetstream4TrapEntrySpec,
+            unisNetstream4TrapEntryChassis,
+            unisNetstream4TrapEntrySlot
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the number of Netstream4 tables drops below 70% of the board maximum,
+         a trap message is generated and sent to the remote monitoring device."
+    ::= { unisNetstream4TrapEntrys 2 }
+
+unisNetstream4TrapEntryObjects OBJECT IDENTIFIER  ::= { unisNetstream4TrapEntry 1 }
+
+-- unisNetstream4TrapEntryObjects
+
+unisNetstream4TrapEntrySpec OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The Maximum number of entries in the IP netStream cache."
+    ::= { unisNetstream4TrapEntryObjects 1 }
+
+unisNetstream4TrapEntryChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+        not a stacked device ."
+    ::= { unisNetstream4TrapEntryObjects 2 }
+
+unisNetstream4TrapEntrySlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of slot."
+    ::= { unisNetstream4TrapEntryObjects 3 }
+
+END

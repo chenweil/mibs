@@ -1,0 +1,477 @@
+-- =====================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: SAVAP MIB
+-- Reference:
+-- Version: V1.1
+-- History:
+--   V1.0 2021-10-9
+--     Initial version
+--   V1.1 2021-12-31 updated by ys3886
+--     Add the following MIB nodes:
+--       unisSavapPrefixVpn
+-- =====================================================================
+UNIS-SAVAP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, Unsigned32, Counter64,IpAddress
+        FROM SNMPv2-SMI
+    TruthValue
+        FROM SNMPv2-TC
+    InterfaceIndex
+        FROM IF-MIB                         --RFC2863
+    InetVersion,InetAddressType
+        FROM INET-ADDRESS-MIB               --RFC4001
+    Ipv6AddressPrefix
+        FROM IPV6-TC                         --RFC2465
+        ;
+
+
+unisSavap MODULE-IDENTITY
+    LAST-UPDATED "202112310000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is for configuring and monitoring of
+         the Source Address Validation Architecture protocol (SAVAP) module.
+        "
+    REVISION "202112310000Z"
+    DESCRIPTION
+        "Add MIB nodes unisSavapPrefixVpn."
+    REVISION "202110090000Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisCommon 210 }
+--
+-- Node definitions
+--
+unisSavapObjects OBJECT IDENTIFIER ::= { unisSavap 1 }
+
+-- Enable spoofing log for SAVAP
+
+unisSavapLogEnableTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UnisSavapLogEnableEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The table is for enabling SAVAP spoofing logging."
+    ::= { unisSavapObjects 1 }
+
+
+unisSavapLogEnableEntry OBJECT-TYPE
+    SYNTAX     UnisSavapLogEnableEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry containing SAVAP spoofing log parameters for a
+            particular IP version.
+           "
+    INDEX { unisSavapLogEnableIPVersion  }
+    ::=   { unisSavapLogEnableTable 1 }
+
+UnisSavapLogEnableEntry ::=
+    SEQUENCE {
+        unisSavapLogEnableIPVersion        InetVersion,
+        unisSavapLogEnable                 TruthValue
+    }
+
+unisSavapLogEnableIPVersion OBJECT-TYPE
+    SYNTAX     InetVersion
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The IP version."
+    ::= { unisSavapLogEnableEntry 1 }
+
+
+unisSavapLogEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+          "A log switch for spoofing notification.
+            true: The attribute is set.
+            false: The attribute is not set.
+          "
+    ::= { unisSavapLogEnableEntry 2 }
+
+-- Config spoofing log for SAVAP
+
+unisSavapLogConfigTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UnisSavapLogConfigEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The table contains SAVAP spoofing log parameters."
+    ::= { unisSavapObjects 2 }
+
+
+unisSavapLogConfigEntry OBJECT-TYPE
+    SYNTAX     UnisSavapLogConfigEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry containing SAVAP spoofing log parameters for a
+            particular IP version.
+           "
+    INDEX { unisSavapLogConfigIPVersion  }
+    ::=   { unisSavapLogConfigTable 1 }
+
+UnisSavapLogConfigEntry ::=
+    SEQUENCE {
+        unisSavapLogConfigIPVersion        InetVersion,
+        unisSavapLogNotifyInterval         Unsigned32,
+        unisSavapLogNotifyNumber           Unsigned32
+    }
+
+unisSavapLogConfigIPVersion OBJECT-TYPE
+    SYNTAX     InetVersion
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The IP version."
+    ::= { unisSavapLogConfigEntry 1 }
+
+unisSavapLogNotifyInterval OBJECT-TYPE
+    SYNTAX     Unsigned32 (0|5..3600)
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+          "Interval for logging."
+    ::= { unisSavapLogConfigEntry 2 }
+
+
+unisSavapLogNotifyNumber OBJECT-TYPE
+    SYNTAX     Unsigned32 (1..128)
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+          "Maximum number of SAVAP spoofing logs."
+    ::= { unisSavapLogConfigEntry 3 }
+
+-- Enable system SAVAP
+
+unisSavapSystemEnableTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UnisSavapSystemEnableEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The table enables system SAVAP."
+    ::= { unisSavapObjects 3 }
+
+
+unisSavapSystemEnableEntry OBJECT-TYPE
+    SYNTAX     UnisSavapSystemEnableEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry containing SAVAP system-wide parameters for a
+            particular IP version.
+           "
+    INDEX { unisSavapSystemEnableIPVersion  }
+    ::=   { unisSavapSystemEnableTable 1 }
+
+UnisSavapSystemEnableEntry ::=
+    SEQUENCE {
+        unisSavapSystemEnableIPVersion        InetVersion,
+        unisSavapSystemEnable                 TruthValue
+    }
+
+unisSavapSystemEnableIPVersion OBJECT-TYPE
+    SYNTAX     InetVersion
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The IP version."
+    ::= { unisSavapSystemEnableEntry 1 }
+
+
+unisSavapSystemEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+          "An attribute defined in SAVAP.
+            true: The attribute is set.
+            false: The attribute is not set.
+          "
+    ::= { unisSavapSystemEnableEntry 2 }
+
+-- System parameters for SAVAP
+
+unisSavapSystemConfigTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UnisSavapSystemConfigEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The table contains SAVAP system-wide parameters."
+    ::= { unisSavapObjects 4 }
+
+
+unisSavapSystemConfigEntry OBJECT-TYPE
+    SYNTAX     UnisSavapSystemConfigEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry containing SAVAP system-wide parameters for a
+            particular IP version.
+           "
+    INDEX { unisSavapSystemConfigIPVersion  }
+    ::=   { unisSavapSystemConfigTable 1 }
+
+UnisSavapSystemConfigEntry ::=
+    SEQUENCE {
+        unisSavapSystemConfigIPVersion        InetVersion,
+        unisSavapSystemID                     IpAddress,
+        unisSavapSystemTransportAddress       Ipv6AddressPrefix
+    }
+
+unisSavapSystemConfigIPVersion OBJECT-TYPE
+    SYNTAX     InetVersion
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The IP version."
+    ::= { unisSavapSystemConfigEntry 1 }
+
+unisSavapSystemID OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+          "The Router ID."
+    ::= { unisSavapSystemConfigEntry 2 }
+
+
+unisSavapSystemTransportAddress OBJECT-TYPE
+    SYNTAX     Ipv6AddressPrefix
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+          "The transport address."
+    ::= { unisSavapSystemConfigEntry 3 }
+
+-- interface parameters for SAVAP
+
+unisSavapPortTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UnisSavapPortEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The table contains SAVAP parameters for each interface."
+    ::= { unisSavapObjects 5 }
+
+unisSavapPortEntry OBJECT-TYPE
+    SYNTAX     UnisSavapPortEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry containing SAVAP running parameters of an interface."
+    INDEX {
+            unisSavapPortIPVersion,
+            unisSavapPortIfIndex
+          }
+    ::= { unisSavapPortTable 1 }
+
+
+UnisSavapPortEntry ::=
+    SEQUENCE {
+        unisSavapPortIPVersion          InetVersion,
+        unisSavapPortIfIndex            InterfaceIndex,
+        unisSavapPortType               INTEGER
+    }
+
+unisSavapPortIPVersion      OBJECT-TYPE
+    SYNTAX     InetVersion
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The IP version."
+    ::= { unisSavapPortEntry 1 }
+
+unisSavapPortIfIndex  OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The index value that uniquely identifies the interface to
+            which this entry is applicable. The interface identified by
+            a particular value of this index is the same interface as
+            identified by the same value of the IF-MIB's ifIndex.
+           "
+    ::= { unisSavapPortEntry 2 }
+
+unisSavapPortType OBJECT-TYPE
+    SYNTAX      INTEGER  {
+                   normal(1),
+                   nni(2),
+                   uni(3)
+              }
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+           "The interface type of SAVAP."
+    ::= { unisSavapPortEntry 3 }
+
+-- prefix Table for SAVAP
+
+unisSavapPrefixTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UnisSavapPrefixEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The table contains prefix information for SAVAP.
+           "
+    ::= { unisSavapObjects 6 }
+
+unisSavapPrefixEntry OBJECT-TYPE
+    SYNTAX     UnisSavapPrefixEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry containing the prefix for SAVAP.
+            Entries are keyed on the source IP address type,
+            binding type, anchor, and source IP address.
+           "
+    INDEX {
+            unisSavapPrefixAddressType,
+            unisSavapPrefixIfIndex,
+            unisSavapPrefixAddress,
+            unisSavapPrefixLength,
+            unisSavapPrefixVpn
+          }
+    ::= { unisSavapPrefixTable 1 }
+
+UnisSavapPrefixEntry ::=
+    SEQUENCE {
+        unisSavapPrefixAddressType  InetAddressType,
+        unisSavapPrefixIfIndex      InterfaceIndex,
+        unisSavapPrefixAddress      Ipv6AddressPrefix,
+        unisSavapPrefixLength       Unsigned32,
+        unisSavapPrefixVpn          Unsigned32,
+        unisSavapPrefixStatus       INTEGER
+     }
+
+unisSavapPrefixAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "IP address type of the prefix."
+    ::= { unisSavapPrefixEntry 1 }
+
+unisSavapPrefixIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The index value that uniquely identifies the interface to
+            which this entry is applicable. The interface identified by
+            a particular value of this index is the same interface as
+            identified by the same value of the IF-MIB's ifIndex.
+           "
+    ::= { unisSavapPrefixEntry 2 }
+
+unisSavapPrefixAddress OBJECT-TYPE
+    SYNTAX     Ipv6AddressPrefix
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The prefix's IP address."
+    ::= { unisSavapPrefixEntry 3 }
+
+unisSavapPrefixLength OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "Length of prefix."
+    ::= { unisSavapPrefixEntry 4 }
+
+unisSavapPrefixVpn OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "VPN of the prefix."
+    ::= { unisSavapPrefixEntry 5 }
+
+unisSavapPrefixStatus OBJECT-TYPE
+    SYNTAX      INTEGER  {
+                   deactive(1),
+                   active(2),
+                   reload(3)
+              }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "Status of prefix."
+    ::= { unisSavapPrefixEntry 6 }
+
+-- Count of packets dropped because of validation failure for each interface.
+
+unisSavapStatisticsTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UnisSavapStatisticsEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The table contains statistics on the packets dropped because of validation failure."
+    ::= { unisSavapObjects 7 }
+
+unisSavapStatisticsEntry OBJECT-TYPE
+    SYNTAX     UnisSavapStatisticsEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry containing the number of packets dropped because of validation failure on an interface."
+    INDEX { unisSavapStatisticsIPVersion,
+            unisSavapStatisticsIfIndex
+          }
+    ::= { unisSavapStatisticsTable 1 }
+
+UnisSavapStatisticsEntry ::=
+    SEQUENCE {
+        unisSavapStatisticsIPVersion          InetVersion,
+        unisSavapStatisticsIfIndex            InterfaceIndex,
+        unisSavapStatisticsPkt                Counter64,
+        unisSavapStatisticsByte               Counter64
+    }
+
+unisSavapStatisticsIPVersion      OBJECT-TYPE
+    SYNTAX     InetVersion
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The IP version."
+    ::= { unisSavapStatisticsEntry 1 }
+
+unisSavapStatisticsIfIndex            OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "The interface."
+    ::= { unisSavapStatisticsEntry 2 }
+
+
+unisSavapStatisticsPkt OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "Number of packets dropped."
+    ::= { unisSavapStatisticsEntry 3 }
+
+
+unisSavapStatisticsByte  OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "Number of octets of packets dropped."
+    ::= { unisSavapStatisticsEntry 4 }
+END

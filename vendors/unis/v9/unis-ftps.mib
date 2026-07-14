@@ -1,0 +1,76 @@
+-- =================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: ftps mib
+-- Reference:
+-- Version: V1.0
+-- History:
+--  V1.0 Created by zhangfeng
+--      2022-08-24 Initial version
+-- =================================================================
+UNIS-FTPS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Unsigned32
+        FROM SNMPv2-SMI;
+
+unisFtps MODULE-IDENTITY
+    LAST-UPDATED "202208240000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for ftp server."
+    REVISION    "202208240000Z"
+    DESCRIPTION    "The initial version."
+    ::= { unisCommon 248 }
+
+-- ==================================================================
+--
+-- FTPS trap parameters
+--
+-- ==================================================================
+unisFtpsObjForTrap OBJECT IDENTIFIER ::= { unisFtps 1 }
+
+unisFtpsLoginFailedTimes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Users login failed times."
+    ::= { unisFtpsObjForTrap 1 }
+
+unisFtpsLoginFailedStatPeriod OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "minutes"
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Users login failed statistic period."
+    ::= { unisFtpsObjForTrap 2 }
+
+-- ==================================================================
+--
+-- FTPS traps
+--
+-- ==================================================================
+unisFtpsTraps OBJECT IDENTIFIER ::= { unisFtps 2 }
+unisFtpsTrapsPrefix OBJECT IDENTIFIER ::= { unisFtpsTraps 0 }
+
+unisFtpsLoginFailed NOTIFICATION-TYPE
+    OBJECTS { unisFtpsLoginFailedTimes, unisFtpsLoginFailedStatPeriod }
+    STATUS  current
+    DESCRIPTION
+        "Users failed to login ftp server too frequently."
+    ::= { unisFtpsTrapsPrefix 1 }
+
+unisFtpsLoginFailedClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+        "The ftp user login-failed alarm was cleared."
+    ::= { unisFtpsTrapsPrefix 2 }
+
+END

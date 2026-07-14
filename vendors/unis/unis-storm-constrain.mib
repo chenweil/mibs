@@ -1,0 +1,294 @@
+-- ==================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Storm-Constrain MIB
+-- Reference:
+-- Version: V1.2
+-- History:
+-- V1.0 2005-11-19 Created by XueCong
+-- V1.1 2008-06-06 Modified the description of UnisStormConstrainUnit
+--                 Added unisStormCtrlPortMode by jinyi
+-- V1.2 2015-06-17 Modified the description of UnisStormConstrainUnit
+--                 Added knownUnicast to unisStormTrapType by yangyiquan
+-- ==================================================================
+UNIS-STORM-CONSTRAIN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32,
+    NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+
+    RowStatus, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+
+    ifIndex
+        FROM IF-MIB
+
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisStormConstrain MODULE-IDENTITY
+    LAST-UPDATED "201506170000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The Storm-Constrain function is used to avoid the
+         packet-storm on a port.  Three types of flux can be
+         set observed respectively: broadcast, multicast and
+         unicast.  If an observed flux exceeds its upper limit,
+         this kind of flux will be recognized as over-upper-flux.
+         This kind of flux will be considered as normal-flux
+         until it falls below its lower limit.  If any type of
+         observed flux is over-upper-flux, the port will change
+         its status to controlled-status, that is to stop packet
+         forwarding to avoid storm.  Only when all the observed
+         fluxes are not over-upper-flux, will the port return to
+         normal(forwarding) status."
+    REVISION        "201506170000Z"
+    DESCRIPTION
+        "To add knownUnicast to unisStormTrapType."
+    ::= { unisCommon  66 }
+
+UnisStormConstrainUnit ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The unit of the flux.
+         none: not define.
+         packetsPerSecond: packets per second.
+         ratio: unit is 1%.  For example, if the value is 40, it means 40%.
+         bytesPerSecond: bytes per second.
+         kbitsPerSecond: kilobits per second."
+    SYNTAX INTEGER
+        {
+        none(1),
+        packetsPerSecond(2),
+        ratio(3),
+        bytesPerSecond(4),
+        kbitsPerSecond(5)
+        }
+
+-- ==================================================================
+--
+-- ======================= definition begin =========================
+--
+-- ==================================================================
+
+unisStormScalarGroup OBJECT IDENTIFIER ::= {  unisStormConstrain 1  }
+
+unisStormTrapType OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        broadcast(1),
+        multicast(2),
+        unicast(3),
+        knownUnicast(4)
+        }
+    MAX-ACCESS      accessible-for-notify
+    STATUS          current
+    DESCRIPTION
+        "This value is used to identify the type of trap.
+         broadcast: Trap message generated when broadcast traffic exceeds
+                    the upper limit or falls below the lower limit on a port.
+         multicast: Trap message generated when multicast traffic exceeds
+                    the upper limit or falls below the lower limit on a port.
+         unicast  : Trap message generated when unknown unicast traffic exceeds
+                    the upper limit or falls below the lower limit on a port.
+         knownUnicast: Trap message generated when known unicast traffic exceeds
+                    the upper limit or falls below the lower limit on a port."
+    ::= { unisStormScalarGroup 1 }
+
+unisStormTrapThreshold OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      accessible-for-notify
+    STATUS          current
+    DESCRIPTION
+        "This value is used to figure the threshold of flux in
+         trap message.
+         For example, when the trap is generated for broadcast
+         flux exceeds upper limit on a port, this value is
+         equal to upper limit value configured.  And when the
+         trap is generated for broadcast flux fell under lower
+         limit, this value is equal to lower limit value configured."
+    ::= { unisStormScalarGroup 2 }
+
+unisStormTableGroup OBJECT IDENTIFIER ::= {  unisStormConstrain 2  }
+
+unisStormCtrlTable  OBJECT-TYPE
+    SYNTAX          SEQUENCE OF UnisStormCtrlEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "A table containing configurations of storm-constrain."
+    ::= { unisStormTableGroup  1 }
+
+unisStormCtrlEntry  OBJECT-TYPE
+    SYNTAX          UnisStormCtrlEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Detailed information of storm-constrain configurations."
+    INDEX { ifIndex }
+    ::= { unisStormCtrlTable 1 }
+
+UnisStormCtrlEntry  ::=
+    SEQUENCE {
+        unisStormCtrlPortStatus                      INTEGER,
+        unisStormCtrlBroadcastUnit                   UnisStormConstrainUnit,
+        unisStormCtrlBroadcastUpper                  Integer32,
+        unisStormCtrlBroadcastLower                  Integer32,
+        unisStormCtrlMulticastUnit                   UnisStormConstrainUnit,
+        unisStormCtrlMulticastUpper                  Integer32,
+        unisStormCtrlMulticastLower                  Integer32,
+        unisStormCtrlUnicastUnit                     UnisStormConstrainUnit,
+        unisStormCtrlUnicastUpper                    Integer32,
+        unisStormCtrlUnicastLower                    Integer32,
+        unisStormCtrlRowStatus                       RowStatus,
+        unisStormCtrlPortMode                        INTEGER
+             }
+
+unisStormCtrlPortStatus OBJECT-TYPE
+    SYNTAX          INTEGER{ controlled(1), normal(2)}
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Status of the port:
+         controlled: indicate that the port is in controlled status.
+                     Port which is in this status will not forward some type
+                     of packet.
+         normal    : indicate that the port is in normal status."
+    ::= { unisStormCtrlEntry 1 }
+
+unisStormCtrlBroadcastUnit OBJECT-TYPE
+    SYNTAX          UnisStormConstrainUnit
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The unit of the broadcast flux.
+         This value must be set together with unisStormCtrlBroadcastUpper
+         and unisStormCtrlBroadcastLower."
+    ::= { unisStormCtrlEntry 2 }
+
+unisStormCtrlBroadcastUpper  OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The upper-limit of incoming broadcast taffic at a port
+         within 1 second interval.
+         Its unit depends on unisStormCtrlBroadcastUnit value."
+    ::= { unisStormCtrlEntry 3 }
+
+unisStormCtrlBroadcastLower  OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The lower-limit of incoming broadcast taffic at a port
+         within 1 second interval.
+         This value must be lower than unisStormCtrlBroadcastUpper value.
+         Its unit depends on unisStormCtrlBroadcastUnit value."
+    ::= { unisStormCtrlEntry 4 }
+
+unisStormCtrlMulticastUnit  OBJECT-TYPE
+    SYNTAX          UnisStormConstrainUnit
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The unit of the multicast flux.
+         This value must be set together with unisStormCtrlMulticastUpper
+         and unisStormCtrlMulticastLower."
+    ::= { unisStormCtrlEntry 5 }
+
+unisStormCtrlMulticastUpper  OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The upper-limit of incoming multicast taffic at a port
+         within 1 second interval.
+         Its unit depends on unisStormCtrlMulticastUnit value."
+    ::= { unisStormCtrlEntry 6 }
+
+unisStormCtrlMulticastLower  OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The lower-limit of incoming multicast taffic at a port
+         within 1 second interval.
+         This value must be lower than unisStormCtrlMulticastUpper value.
+         Its unit depends on unisStormCtrlMulticastUnit value."
+    ::= { unisStormCtrlEntry 7 }
+
+unisStormCtrlUnicastUnit  OBJECT-TYPE
+    SYNTAX          UnisStormConstrainUnit
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The unit of the unicast flux.
+         This value must be set together with unisStormCtrlUnicastUpper
+         and unisStormCtrlUnicastLower."
+    ::= { unisStormCtrlEntry 8 }
+
+unisStormCtrlUnicastUpper  OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The upper-limit of incoming unicast taffic at a port
+         within 1 second interval.
+         Its unit depends on unisStormCtrlUnicastUnit value."
+    ::= { unisStormCtrlEntry 9 }
+
+unisStormCtrlUnicastLower  OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The lower-limit of incoming unicast taffic at a port
+         within 1 second interval.
+         This value must be lower than unisStormCtrlUnicastUpper value.
+         Its unit depends on unisStormCtrlUnicastUnit value."
+    ::= { unisStormCtrlEntry 10 }
+
+unisStormCtrlRowStatus OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "This object is responsible for managing the creation,
+         deletion and modification of rows, which supports active
+         status and CreatAndGo, destroy operation."
+    ::= { unisStormCtrlEntry 11 }
+
+unisStormCtrlPortMode OBJECT-TYPE
+    SYNTAX          INTEGER{ none(1), block(2), shutdown(3) }
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The storm control mode of the port."
+    ::= { unisStormCtrlEntry 12 }
+
+unisStormNotifications OBJECT IDENTIFIER ::= {  unisStormConstrain 3  }
+
+unisStormRising NOTIFICATION-TYPE
+    OBJECTS  { ifIndex, unisStormTrapType, unisStormTrapThreshold, unisStormCtrlPortStatus }
+    STATUS          current
+    DESCRIPTION
+        "This trap message is generated when any type of the
+         flux exceeds its upper limit on a port."
+    ::= { unisStormNotifications 1 }
+
+unisStormFalling NOTIFICATION-TYPE
+    OBJECTS  { ifIndex, unisStormTrapType, unisStormTrapThreshold, unisStormCtrlPortStatus }
+    STATUS          current
+    DESCRIPTION
+        "This trap message is generated when a flux which used
+         to overflow its upper limit, falls below its lower
+         limit on a port."
+    ::= { unisStormNotifications 2 }
+
+END

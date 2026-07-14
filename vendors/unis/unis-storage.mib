@@ -1,0 +1,994 @@
+-- ===========================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description: The MIB is designed to manage the storage system.
+-- Reference:
+-- Version: V1.1
+-- History:
+--   V1.0 2007-09-04 created by lizhicheng
+--   V1.1 2010-01-20 modified by zhanglei
+--        In IMPORTS, add entPhysicalName, entPhysicalDescr, PhysicalIndex,
+--        unisSoftwareInfoString, SnmpAdminString, unisEntityExtOperStatus,
+--        unisEntityExtPhysicalIndex, unisEntityExtTemperature,
+--        unisEntityExtCriticalLowerTemperatureThreshold, unisRaidUuid,
+--        unisRaidName, unisRaidHideState, unisRaidRunState
+--        Add unisExtVoltageTable to unisStoragePhysicalInfo
+--        Add unisStorageTraps to unisStorageMibObjects
+--        Add unisStorageTrapsPrefix and unisStorageTrapsObjects to unisStorageTraps
+--        Add unisSoftwareInfoString to unisStorageTrapsObjects
+--        Add notification objects:
+--            unisStorCriticalLowerTemperatureThresholdNotification
+--            unisStorTemperatureTooLow
+--            unisExtVoltageLowThresholdNotification
+--            unisExtVoltageHighThresholdNotification
+--            unisExtCriticalVoltageLowThresholdNotification
+--            unisExtCriticalVoltageHighThresholdNotification
+--            unisExtVoltageTooLow
+--            unisExtVoltageTooHigh
+--            unisExtBatteryStateNotification
+--            unisDiskIOErrorNotification
+--            unisRaidCreateNotification
+--            unisRaidDeleteNotification
+--            unisRaidHideStateNotification
+--            unisRaidRunStateNotification
+--            unisRaidImportNotification
+--            unisRaidRebuildStartNotification
+--            unisRaidRebuildFinishNotification
+--            unisRaidRebuildPauseNotification
+--            unisRaidRebuildInterruptNotification
+--            unisSoftwareModuleFailNotification
+--            unisRaidBatteryExpiredNotification
+--            unisRaidBatteryWillExpireNotification
+--            unisLvOnlineFailNotification
+--            unisLvOfflineFailNotification
+--            unisRaidRunNotification
+--            unisExtVoltageNormal
+--            unisDiskPowerOnNotification
+--            unisDiskPowerOffNotification
+-- =================================================================
+UNIS-STORAGE-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+        Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        InetAddressType, InetAddress
+    FROM INET-ADDRESS-MIB
+        entPhysicalIndex, entPhysicalName, entPhysicalDescr, PhysicalIndex
+    FROM ENTITY-MIB
+        UnisStorageCapableState, UnisStorageEnableState, UnisStorageActionType,
+        UnisStorageLedStateType, UnisWwpnListType, unisStorageRef, UnisSoftwareInfoString
+    FROM UNIS-STORAGE-REF-MIB
+        SnmpAdminString
+    FROM SNMP-FRAMEWORK-MIB
+        unisEntityExtOperStatus, unisEntityExtPhysicalIndex, unisEntityExtTemperature,
+        unisEntityExtCriticalLowerTemperatureThreshold, unisEntityExtShutdownLowerTemperatureThreshold
+    FROM UNIS-ENTITY-EXT-MIB
+        unisRaidUuid, unisRaidName, unisRaidHideState, unisRaidRunState
+    FROM UNIS-RAID-MIB
+        unisDiskPowerOffReason
+    FROM UNIS-DISK-MIB;
+
+unisStorageMIB MODULE-IDENTITY
+    LAST-UPDATED "200709041452Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB describes the general information of storage device,
+        such as the property, configuration and management."
+    ::= { unisStorageRef 1 }
+
+unisStorageMibObjects OBJECT IDENTIFIER ::= { unisStorageMIB 1 }
+
+unisStorageServerInfo    OBJECT IDENTIFIER ::= { unisStorageMibObjects 1 }
+
+unisStoragePhysicalInfo  OBJECT IDENTIFIER ::= { unisStorageMibObjects 2 }
+
+-- The storage server's information are described here.
+unisStorageServerCapability  OBJECT IDENTIFIER ::= { unisStorageServerInfo 1 }
+
+
+unisRaidCapability OBJECT-TYPE
+    SYNTAX      UnisStorageCapableState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the agent support raid management."
+    ::={ unisStorageServerCapability 1 }
+
+unisFcCapability OBJECT-TYPE
+    SYNTAX      UnisStorageCapableState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the agent support FC(fiber channel) management."
+    ::={ unisStorageServerCapability 2 }
+
+unisNasCapability OBJECT-TYPE
+    SYNTAX      UnisStorageCapableState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the agent support NAS(Network Attached Storage)."
+    ::={ unisStorageServerCapability 3 }
+
+unisAdaptiveRepCapability OBJECT-TYPE
+    SYNTAX      UnisStorageCapableState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the agent support adaptive replication.
+        With adaptive replication option, data from the primary resource is continuously
+        replicated to a replication resource unless the system determines it is not practical
+        or possible, such as when there is insufficient bandwidth.
+        For continuous replication to occur, a continuous replication resource is used to
+        stage the data being replicated from the primary resource.
+        Similar to a cache, as soon as data comes into the continuous replication resource,
+        it is written to the replication resource."
+    ::={ unisStorageServerCapability 4 }
+
+unisRemoteRepCapability OBJECT-TYPE
+    SYNTAX      UnisStorageCapableState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the agent support remote replication."
+    ::={ unisStorageServerCapability 5 }
+
+unisSafeCacheCapability OBJECT-TYPE
+    SYNTAX      UnisStorageCapableState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the agent support safe cache."
+    ::={ unisStorageServerCapability 6 }
+
+unisSyncMirrorCapability OBJECT-TYPE
+    SYNTAX      UnisStorageCapableState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the agent support synchronized mirror."
+    ::={ unisStorageServerCapability 7 }
+
+unisAsyncMirrorCapability OBJECT-TYPE
+    SYNTAX      UnisStorageCapableState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the agent support asynchronous mirror."
+    ::={ unisStorageServerCapability 8 }
+
+unisTimeMarkCapability OBJECT-TYPE
+    SYNTAX      UnisStorageCapableState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the agent support time mark."
+    ::={ unisStorageServerCapability 9 }
+
+unisSseCapability OBJECT-TYPE
+    SYNTAX      UnisStorageCapableState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the agent support SSE(Storage Service Enable)."
+    ::={ unisStorageServerCapability 10 }
+
+
+-- The storage server's target config information are described here.
+unisStorageTargetConfig  OBJECT IDENTIFIER ::= { unisStorageServerInfo 2 }
+
+unisiSCSITargetEnable OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the agent support iSCSI target."
+    DEFVAL { disable }
+    ::={ unisStorageTargetConfig 1 }
+
+unisFcTargetEnable OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the agent support FC target."
+    ::={ unisStorageTargetConfig 2 }
+
+
+-- The server's physical information are described.
+unisStorageServerPhysInfo  OBJECT IDENTIFIER ::= { unisStorageServerInfo 3 }
+
+unisServerLocationLedState OBJECT-TYPE
+    SYNTAX      UnisStorageLedStateType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of storage device's location led."
+    ::={ unisStorageServerPhysInfo 1 }
+
+unisServerResetButtonState OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the reset button is enable."
+    DEFVAL { enable }
+    ::={ unisStorageServerPhysInfo 2 }
+
+unisServerPowerButtonState OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the power button is enable."
+    DEFVAL { enable }
+    ::={ unisStorageServerPhysInfo 3 }
+
+unisServerPowerState OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            online(1),
+            onlinebypass(2),
+            onbattery(3),
+            unknown(4)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of power supply in the server,
+        and is valid when UPS has been configured successful.
+        The value 'online' means power supply is well-balanced.
+        The value 'onlinebypass' means supply power without ups.
+        The value 'onbattery' means supply power with battery.
+        The value 'unknown' means the power supply state is unknown."
+    ::={ unisStorageServerPhysInfo 4 }
+
+
+-- DEU Entity Extend Table
+-- This table described some information about the DEU.
+unisDeuTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDeuEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some information of a particular DEU(Disk Enclosure
+        Unit)."
+    ::= { unisStoragePhysicalInfo 1 }
+
+unisDeuEntry OBJECT-TYPE
+    SYNTAX      UnisDeuEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to a particular DEU."
+    INDEX
+        {
+            unisDeuIndex
+        }
+
+    ::= { unisDeuTable 1 }
+
+UnisDeuEntry ::= SEQUENCE
+    {
+        unisDeuIndex         Integer32,
+        unisDeuIDLed         UnisStorageLedStateType,
+        unisDeuDiskScan      UnisStorageActionType
+    }
+
+unisDeuIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the index of unisDeuTable. The DEU identified
+        by a particular value of this index is the same object as identified
+        by the same value of entPhysicalIndex."
+    ::= { unisDeuEntry 1 }
+
+unisDeuIDLed OBJECT-TYPE
+    SYNTAX      UnisStorageLedStateType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of storage DEU's led."
+    DEFVAL { off }
+    ::= { unisDeuEntry 2 }
+
+unisDeuDiskScan OBJECT-TYPE
+    SYNTAX      UnisStorageActionType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The operation of scanning the table. When the value of this object
+        is set to 'action', the operation of disk scanning is touched off."
+    ::= { unisDeuEntry 3 }
+
+-- Storage Server Network Interface Table
+-- This table described the interface information of the network.
+unisStorageInterfaceTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisStorageInterfaceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes the interface information of the network."
+    ::= { unisStoragePhysicalInfo 2 }
+
+unisStorageInterfaceEntry OBJECT-TYPE
+    SYNTAX      UnisStorageInterfaceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to a particular interface."
+    INDEX
+        {
+            unisStorageInterfaceIndex
+        }
+
+    ::= { unisStorageInterfaceTable 1 }
+
+UnisStorageInterfaceEntry ::= SEQUENCE
+    {
+        unisStorageInterfaceIndex          Integer32,
+        unisStorageInterfaceGateway        InetAddress,
+        unisStorageInterfaceGatewayType    InetAddressType,
+        unisStorageInterfaceMTU            INTEGER
+    }
+
+unisStorageInterfaceIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the index of UnisStorageInterfaceEntry. The
+        interface identified by this index is the same interface as identified
+        by the same value of ifIndex."
+    ::= { unisStorageInterfaceEntry 1 }
+
+
+unisStorageInterfaceGateway OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the gateway address of interface."
+    ::= { unisStorageInterfaceEntry 2 }
+
+unisStorageInterfaceGatewayType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the gateway address type of interface."
+    ::= { unisStorageInterfaceEntry 3 }
+
+unisStorageInterfaceMTU OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            mtu1(1500),
+            mtu2(9000)
+        }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the MTU of interface."
+    ::= { unisStorageInterfaceEntry 4 }
+
+
+-- Storage Server Bonding Interface Table
+-- This table described the information of the bonding interface.
+unisBondingTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisBondingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table describes the information of the Bonding interface."
+    ::= { unisStoragePhysicalInfo 3 }
+
+unisBondingEntry OBJECT-TYPE
+    SYNTAX      UnisBondingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable to a particular
+        Bonding interface."
+    INDEX
+        {
+            unisBondingIndex
+        }
+
+    ::= { unisBondingTable 1 }
+
+UnisBondingEntry ::= SEQUENCE
+    {
+        unisBondingIndex       Integer32,
+        unisBondingPortList    OCTET STRING
+    }
+
+unisBondingIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the index of unisBondingEntry. The interface
+        identified by this index is the same interface as identified by the
+        same value of ifIndex."
+    ::= { unisBondingEntry 1 }
+
+unisBondingPortList OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "An entry contains management information applicable to a particular bonding interface.
+         Every two bytes describe the ifIndex of an interface, and an interface belongs
+         to one bonding group only. An interface should be deleted from the portlist
+         of the bonding group it belongs to before it is added to another bonding group."
+    ::= { unisBondingEntry 2 }
+
+-- SCSI Adapter Table
+-- This table described some information of the SCSI adapter.
+unisScsiAdapterTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisScsiAdapterEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table containing some information of the SCSI(Small Computer
+        System interface) adapter."
+    ::= { unisStoragePhysicalInfo 4 }
+
+unisScsiAdapterEntry OBJECT-TYPE
+    SYNTAX      UnisScsiAdapterEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable
+        to a particular SCSI adapter."
+    INDEX
+        {
+            entPhysicalIndex,
+            unisAdapterNumber
+        }
+    ::= { unisScsiAdapterTable 1 }
+
+UnisScsiAdapterEntry ::= SEQUENCE
+    {
+        unisAdapterNumber              Integer32,
+        unisAdapterDesc                OCTET STRING,
+        unisAdapterType                INTEGER,
+        unisFcAdapterMode              INTEGER,
+        unisFcAdapterInitiatorWwpnName UnisWwpnListType,
+        unisFcAdapterTargetWwpnName    UnisWwpnListType,
+        unisFcAdapterPortState         INTEGER,
+        unisFcAdapterModeSwitch        UnisStorageEnableState
+    }
+
+unisAdapterNumber OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the index of the adapter ."
+    ::= { unisScsiAdapterEntry 1 }
+
+unisAdapterDesc OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes some information of the adapter."
+    ::= { unisScsiAdapterEntry 2 }
+
+unisAdapterType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            scsi(1),
+            fc(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the type of adapter. If the value of this
+        object is not equal to 'fc', the associated object(such as unisFcAdapterMode,
+        unisFcAdapterIWWPNs,unisFcAdapterTWWPNs,unisFcAdapterPortState,unisFcAdapterModeSwitch)
+        will be invalid."
+    ::= { unisScsiAdapterEntry 3 }
+
+unisFcAdapterMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            initiator(1),
+            target(2),
+            dual(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the mode type of adapter."
+    ::= { unisScsiAdapterEntry 4 }
+
+unisFcAdapterInitiatorWwpnName OBJECT-TYPE
+    SYNTAX      UnisWwpnListType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the FC's adapter WWPN(World Wide Port
+        Name) numbers."
+    ::= { unisScsiAdapterEntry 5 }
+
+unisFcAdapterTargetWwpnName OBJECT-TYPE
+    SYNTAX      UnisWwpnListType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object describes the FC's target WWPN numbers."
+    ::= { unisScsiAdapterEntry 6 }
+
+unisFcAdapterPortState OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            linkup(1),
+            linkdown(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the state of adapter's interface."
+    ::= { unisScsiAdapterEntry 7 }
+
+unisFcAdapterModeSwitch OBJECT-TYPE
+    SYNTAX      UnisStorageEnableState
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the adapter work on a target mode."
+    DEFVAL { disable }
+    ::= { unisScsiAdapterEntry 8 }
+
+-- Voltage Entity Extend Table
+-- This table described some entity extend information about the Voltage.
+unisExtVoltageTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisExtVoltageEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains some entity extend information of the voltage."
+    ::= { unisStoragePhysicalInfo 5 }
+
+unisExtVoltageEntry OBJECT-TYPE
+    SYNTAX      UnisExtVoltageEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing management information applicable to the voltage."
+    INDEX
+        {
+            unisExtVoltagePhysicalIndex
+        }
+    ::= { unisExtVoltageTable 1 }
+
+UnisExtVoltageEntry ::= SEQUENCE
+    {
+        unisExtVoltagePhysicalIndex          PhysicalIndex,
+        unisExtVoltagePhysicalName           SnmpAdminString,
+        unisExtVoltage                       Integer32,
+        unisExtVoltageLowThreshold           Integer32,
+        unisExtVoltageHighThreshold          Integer32,
+        unisExtCriticalVoltageLowThreshold   Integer32,
+        unisExtCriticalVoltageHighThreshold  Integer32,
+        unisExtShutdownVoltageLowThreshold   Integer32,
+        unisExtShutdownVoltageHighThreshold  Integer32
+    }
+
+unisExtVoltagePhysicalIndex OBJECT-TYPE
+    SYNTAX      PhysicalIndex
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the entity index of voltage."
+    ::= { unisExtVoltageEntry 1 }
+
+unisExtVoltagePhysicalName OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies the entity name of voltage."
+    ::= { unisExtVoltageEntry 2 }
+
+unisExtVoltage OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The voltage for the entity."
+    ::= { unisExtVoltageEntry 3 }
+
+unisExtVoltageLowThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The low-threshold for the voltage.
+            When voltage is lower than low-threshold, a notification will be
+            sent."
+    ::= { unisExtVoltageEntry 4 }
+
+unisExtVoltageHighThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The high-threshold for the voltage.
+            When voltage is higher than high-threshold, a notification will be
+            sent."
+    ::= { unisExtVoltageEntry 5 }
+
+unisExtCriticalVoltageLowThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The critical low threshold for voltage.
+            If the voltage is lower too much than the entity needs,
+            the entity will halt."
+    ::= { unisExtVoltageEntry 6 }
+
+unisExtCriticalVoltageHighThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The critical high threshold for voltage.
+            If the voltage is higher too much than the entity needs,
+            the entity will halt."
+    ::= { unisExtVoltageEntry 7 }
+
+unisExtShutdownVoltageLowThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The voltage is lower than the critical low threshold.
+            If the voltage is lower too much than the entity needs,
+            the entity halts now."
+    ::= { unisExtVoltageEntry 8 }
+
+unisExtShutdownVoltageHighThreshold OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The voltage is higher than the critical high threshold.
+            If the voltage is higher too much than the entity needs,
+            the entity halts now."
+    ::= { unisExtVoltageEntry 9 }
+
+unisStorageTraps OBJECT IDENTIFIER ::= { unisStorageMibObjects 3 }
+
+unisStorageTrapsPrefix OBJECT IDENTIFIER ::= { unisStorageTraps 0 }
+
+unisStorageTrapsObjects OBJECT IDENTIFIER ::= { unisStorageTraps 1 }
+
+unisSoftwareInfoString OBJECT-TYPE
+    SYNTAX      UnisSoftwareInfoString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object identifies if the software's information."
+    ::= { unisStorageTrapsObjects 1 }
+
+unisStorCriticalLowerTemperatureThresholdNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisEntityExtPhysicalIndex,
+        entPhysicalName,
+        unisEntityExtTemperature,
+        unisEntityExtCriticalLowerTemperatureThreshold
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisStorCriticalLowerTemperatureThresholdNotification indicates
+        the temperature is lower than the threshold.
+
+        If the temperature is lower too much than the entity needs,
+        the entity will halt."
+    ::= { unisStorageTrapsPrefix 1 }
+
+unisStorTemperatureTooLow NOTIFICATION-TYPE
+    OBJECTS {
+        unisEntityExtPhysicalIndex,
+        entPhysicalName,
+        unisEntityExtTemperature,
+        unisEntityExtShutdownLowerTemperatureThreshold
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisStorTemperatureTooLow indicates the temperature is
+        lower than the threshold.
+
+        If the temperature is lower too much than the entity needs,
+        the entity halts now."
+    ::= { unisStorageTrapsPrefix 2 }
+
+unisExtVoltageLowThresholdNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisExtVoltagePhysicalIndex,
+        unisExtVoltagePhysicalName,
+        unisExtVoltage,
+        unisExtVoltageLowThreshold
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisExtVoltageLowThresholdNotification indicates
+        the Voltage is lower than the low-threshold."
+    ::= { unisStorageTrapsPrefix 3 }
+
+unisExtVoltageHighThresholdNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisExtVoltagePhysicalIndex,
+        unisExtVoltagePhysicalName,
+        unisExtVoltage,
+        unisExtVoltageHighThreshold
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisExtVoltageHighThresholdNotification indicates
+        the Voltage is lower than the high-threshold."
+    ::= { unisStorageTrapsPrefix 4 }
+
+unisExtCriticalVoltageLowThresholdNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisExtVoltagePhysicalIndex,
+        unisExtVoltagePhysicalName,
+        unisExtVoltage,
+        unisExtCriticalVoltageLowThreshold
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisExtCriticalVoltageLowThresholdNotification indicates
+        the Voltage is lower than the critical low threshold."
+    ::= { unisStorageTrapsPrefix 5 }
+
+unisExtCriticalVoltageHighThresholdNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisExtVoltagePhysicalIndex,
+        unisExtVoltagePhysicalName,
+        unisExtVoltage,
+        unisExtCriticalVoltageHighThreshold
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisExtCriticalVoltageHighThresholdNotification indicates
+        the Voltage is higher than the critical high threshold."
+    ::= { unisStorageTrapsPrefix 6 }
+
+unisExtVoltageTooLow NOTIFICATION-TYPE
+    OBJECTS {
+        unisExtVoltagePhysicalIndex,
+        unisExtVoltagePhysicalName,
+        unisExtVoltage,
+        unisExtShutdownVoltageLowThreshold
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisExtVoltageTooLowNotification indicates
+        the Voltage is lower than the critical low threshold,
+        and the entity halt now!"
+    ::= { unisStorageTrapsPrefix 7 }
+
+unisExtVoltageTooHigh NOTIFICATION-TYPE
+    OBJECTS {
+        unisExtVoltagePhysicalIndex,
+        unisExtVoltagePhysicalName,
+        unisExtVoltage,
+        unisExtShutdownVoltageHighThreshold
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisExtVoltageTooHighNotification indicates
+        the Voltage is higher than the critical high threshold,
+        and the entity halt now!"
+    ::= { unisStorageTrapsPrefix 8 }
+
+unisExtBatteryStateNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisEntityExtPhysicalIndex,
+        entPhysicalName,
+        unisEntityExtOperStatus
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisExtBatteryStateNotification indicates
+        the raid battery entity's state changes."
+    ::= { unisStorageTrapsPrefix 9 }
+
+unisDiskIOErrorNotification NOTIFICATION-TYPE
+    OBJECTS { entPhysicalDescr }
+    STATUS current
+    DESCRIPTION
+        "The unisDiskIOErrorNotification indicates that a disk occurred I/O error."
+    ::= { unisStorageTrapsPrefix 10 }
+
+unisRaidCreateNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisRaidUuid,
+        unisRaidName
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisRaidCreateNotification indicates that a array is created."
+    ::= { unisStorageTrapsPrefix 11 }
+
+unisRaidDeleteNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisRaidUuid,
+        unisRaidName
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisRaidDeleteStateNotification indicates that a array is deleted."
+    ::= { unisStorageTrapsPrefix 12 }
+
+unisRaidHideStateNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisRaidUuid,
+        unisRaidName,
+        unisRaidHideState
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisRaidFailedNotification indicates that a array hide or unhide."
+    ::= { unisStorageTrapsPrefix 13 }
+
+unisRaidRunStateNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisRaidUuid,
+        unisRaidName,
+        unisRaidRunState
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisRaidDegradeNotification indicates that a array state change."
+    ::= { unisStorageTrapsPrefix 14 }
+
+unisRaidImportNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisRaidUuid,
+        unisRaidName
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisRaidFailedNotification indicates that a thrid array is imported."
+    ::= { unisStorageTrapsPrefix 15 }
+
+unisRaidRebuildStartNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisRaidUuid,
+        unisRaidName
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisRaidRebuildStartNotification indicates that
+        a array start to rebuild."
+    ::= { unisStorageTrapsPrefix 16 }
+
+unisRaidRebuildFinishNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisRaidUuid,
+        unisRaidName
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisRaidRebuildStartNotification indicates that
+        a array fininsh rebuild."
+    ::= { unisStorageTrapsPrefix 17 }
+
+unisRaidRebuildPauseNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisRaidUuid,
+        unisRaidName
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisRaidRebuildPauseNotification indicates that
+        pause a array rebuilding."
+    ::= { unisStorageTrapsPrefix 18 }
+
+unisRaidRebuildInterruptNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisRaidUuid,
+        unisRaidName
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisRaidRebuildInterruptNotification indicates that
+        interrupt a array rebuilding."
+    ::= { unisStorageTrapsPrefix 19 }
+
+unisSoftwareModuleFailNotification NOTIFICATION-TYPE
+    OBJECTS {  unisSoftwareInfoString }
+    STATUS current
+    DESCRIPTION
+        "The unisSoftwareModuleFailNotification indicates that software module(s) fail."
+    ::= { unisStorageTrapsPrefix 20 }
+
+unisRaidBatteryExpiredNotification NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+        "The unisRaidBatteryExpiredNotification indicates
+        RAID Battery lifetime had expired."
+    ::= { unisStorageTrapsPrefix 21 }
+
+unisRaidBatteryWillExpireNotification NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+        "The unisRaidBatteryWillExpireNotification indicates
+        RAID Battery lifetime will expire."
+    ::= { unisStorageTrapsPrefix 22 }
+
+unisLvOnlineFailNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisRaidUuid,
+        unisRaidName
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisLvOnlineFailNotification indicates lv(s) on vd fail to online."
+    ::= { unisStorageTrapsPrefix 23 }
+
+unisLvOfflineFailNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisRaidUuid,
+        unisRaidName
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisLvOfflineFailNotification indicates lv(s) on vd fail to offline."
+    ::= { unisStorageTrapsPrefix 24 }
+
+unisRaidRunNotification NOTIFICATION-TYPE
+    OBJECTS {
+        unisRaidUuid,
+        unisRaidName
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisRaidRunNotification indicates that a array is running."
+    ::= { unisStorageTrapsPrefix 25 }
+
+unisExtVoltageNormal NOTIFICATION-TYPE
+    OBJECTS {
+        unisExtVoltagePhysicalIndex,
+        unisExtVoltagePhysicalName,
+        unisExtVoltage,
+        unisExtVoltageLowThreshold,
+        unisExtVoltageHighThreshold
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisStorVoltageRecoveryNotification indicates
+        the Voltage has recovered in reference."
+    ::= { unisStorageTrapsPrefix 26 }
+
+unisDiskPowerOnNotification NOTIFICATION-TYPE
+    OBJECTS { entPhysicalDescr }
+    STATUS current
+    DESCRIPTION
+        "The unisDiskPowerOnNotification indicates that
+         a disk is power on."
+    ::= { unisStorageTrapsPrefix 27 }
+
+unisDiskPowerOffNotification NOTIFICATION-TYPE
+    OBJECTS {
+        entPhysicalDescr,
+        unisDiskPowerOffReason
+        }
+    STATUS current
+    DESCRIPTION
+        "The unisDiskPowerOffNotification indicates that
+         a disk is power off."
+    ::= { unisStorageTrapsPrefix 28 }
+
+END

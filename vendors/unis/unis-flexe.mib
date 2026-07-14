@@ -1,0 +1,614 @@
+-- =============================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: flexe interface mib
+-- Reference: Extension of RFC 1213 and RFC 2233
+-- Version: V1.1
+-- History:
+--   V1.0 2018-08-06
+--        Initial Version by mazhixing
+--   V1.1 2019-4-3
+--        Modify nodename by mazhixing
+-- =============================================================
+UNIS-FLEXE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        ifIndex, ifDescr
+    FROM IF-MIB
+        Integer32,
+        OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        RowStatus
+    FROM SNMPv2-TC;
+
+
+unisFlexE  MODULE-IDENTITY
+        LAST-UPDATED    "201904031936Z"
+        ORGANIZATION
+            "Unisyue Technologies Co., Ltd."
+        CONTACT-INFO
+            ""
+        DESCRIPTION
+             "This MIB provides FlexE interface information that is
+             excluded by RFC 1213 and RFC 2233"
+        REVISION        "201904031936Z"
+        DESCRIPTION
+                "Modify trapnode name"
+        REVISION        "201808031436Z"
+        DESCRIPTION
+                "Initial version of this MIB module,
+                 including unisFlexEGroupTable,unisFlexESubTimeSlotGranularTable,
+                 unisFlexEPhyIfTable,unisFlexEIfTable,unisFlexETrap"
+        ::= { unisCommon 177 }
+
+-- unisFlexESubSlotInfo:
+
+unisFlexESubSlotInfo OBJECT IDENTIFIER ::= { unisFlexE 1 }
+
+unisFlexESubSlotTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF  UnisFlexESubSlotEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+         "A list of FlexE subslot entries."
+        ::= { unisFlexESubSlotInfo 1 }
+
+unisFlexESubSlotEntry     OBJECT-TYPE
+        SYNTAX         UnisFlexESubSlotEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+         "This entry contains FlexE subslot information."
+        INDEX {
+                unisFlexEFrameIndex,
+                unisFlexESlotIndex,
+                unisFlexESubslotIndex
+        }
+        ::= { unisFlexESubSlotTable 1 }
+
+UnisFlexESubSlotEntry ::= SEQUENCE  {
+        unisFlexEFrameIndex                   Integer32,
+        unisFlexESlotIndex                    Integer32,
+        unisFlexESubslotIndex                 Integer32,
+        unisFlexESubTimeSlotGranular          Integer32
+        }
+
+unisFlexEFrameIndex       OBJECT-TYPE
+        SYNTAX          Integer32 (0..65535)
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+         "Frame index."
+        ::= { unisFlexESubSlotEntry 1 }
+
+unisFlexESlotIndex       OBJECT-TYPE
+        SYNTAX          Integer32 (0..65535)
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+         "Slot index."
+        ::= { unisFlexESubSlotEntry 2 }
+
+unisFlexESubslotIndex       OBJECT-TYPE
+        SYNTAX          Integer32 (0..65535)
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+         "Subslot index."
+        ::= { unisFlexESubSlotEntry 3 }
+
+unisFlexESubTimeSlotGranular     OBJECT-TYPE
+        SYNTAX          Integer32
+        MAX-ACCESS      read-write
+        STATUS          current
+        DESCRIPTION
+         "Specify the sub-time-slot granularity of the FlexE subslot."
+        ::= { unisFlexESubSlotEntry 4 }
+
+-- unisFlexEGroupTable:
+
+unisFlexEGroupTable     OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisFlexEGroupEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+         "A list of FlexE groups."
+        ::= { unisFlexESubSlotInfo 2 }
+
+unisFlexEGroupEntry     OBJECT-TYPE
+        SYNTAX         UnisFlexEGroupEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+         "This entry contains the FlexE group information."
+        INDEX {
+                unisFlexEFrameIndex,
+                unisFlexESlotIndex,
+                unisFlexESubslotIndex,
+                unisFlexEGroupID
+        }
+        ::= { unisFlexEGroupTable 1 }
+
+UnisFlexEGroupEntry ::= SEQUENCE  {
+        unisFlexEGroupID                   Integer32,
+        unisFlexEGroupRowStatus            RowStatus
+        }
+
+unisFlexEGroupID      OBJECT-TYPE
+        SYNTAX          Integer32 (1..1048574)
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+         "Specify the group ID of the FlexE interface."
+        ::= { unisFlexEGroupEntry 1 }
+
+unisFlexEGroupRowStatus       OBJECT-TYPE
+        SYNTAX          RowStatus
+        MAX-ACCESS      read-create
+        STATUS          current
+        DESCRIPTION
+         "Only active, createAndGo and destroy are supported."
+        ::= { unisFlexEGroupEntry 2 }
+
+-- unisFlexEPhyIfTable:
+
+unisFlexEPhyIfTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisFlexEPhyIfEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+         "A list of FlexE interface entries."
+        ::= { unisFlexE 2 }
+
+unisFlexEPhyIfEntry     OBJECT-TYPE
+        SYNTAX         UnisFlexEPhyIfEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+         "This entry contains the information of FlexE physical interface management."
+        INDEX { ifIndex }
+        ::= { unisFlexEPhyIfTable 1 }
+
+UnisFlexEPhyIfEntry ::= SEQUENCE  {
+        unisFlexEPhyGroupID             Integer32,
+        unisFlexEPhyNumber            Integer32,
+        unisFlexEClockPort             OCTET STRING
+        }
+
+unisFlexEPhyGroupID             OBJECT-TYPE
+        SYNTAX          Integer32 (1..1048574)
+        MAX-ACCESS      read-write
+        STATUS          current
+        DESCRIPTION
+         "Specify the group ID of the FlexE physical interface."
+        ::= { unisFlexEPhyIfEntry 1 }
+
+unisFlexEPhyNumber       OBJECT-TYPE
+        SYNTAX          Integer32 (0|1..254)
+        MAX-ACCESS      read-write
+        STATUS          current
+        DESCRIPTION
+         "Specify the physical number of the FlexE physical interface."
+        ::= { unisFlexEPhyIfEntry 2 }
+
+unisFlexEClockPort          OBJECT-TYPE
+        SYNTAX          OCTET STRING (SIZE (0..48))
+        MAX-ACCESS      read-write
+        STATUS          current
+        DESCRIPTION
+         "Specify the clock FlexE interface."
+        ::= { unisFlexEPhyIfEntry 3 }
+
+-- unisFlexEIfTable:
+
+unisFlexEIfTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF UnisFlexEIfEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+         "A list of FlexE interface entries."
+        ::= { unisFlexE 3 }
+
+unisFlexEIfEntry OBJECT-TYPE
+        SYNTAX         UnisFlexEIfEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+         "This entry contains the information of FlexE interface management."
+        INDEX { ifIndex }
+        ::= { unisFlexEIfTable 1 }
+
+UnisFlexEIfEntry ::= SEQUENCE  {
+        unisFlexEIfGroupID               Integer32,
+        unisFlexEBandwidth               Integer32,
+        unisFlexEClientID                Integer32,
+        unisFlexEMinAvailableBandwidth   Integer32
+        }
+
+unisFlexEIfGroupID        OBJECT-TYPE
+        SYNTAX                Integer32 (1..1048574)
+        MAX-ACCESS            read-write
+        STATUS                current
+        DESCRIPTION
+         "Specify the group ID of the FlexE interface."
+        ::= { unisFlexEIfEntry 1 }
+
+unisFlexEBandwidth      OBJECT-TYPE
+        SYNTAX                Integer32
+        MAX-ACCESS            read-write
+        STATUS                current
+        DESCRIPTION
+         "Specify the bandwidth of the FlexE interface."
+        ::= { unisFlexEIfEntry 2 }
+
+unisFlexEClientID      OBJECT-TYPE
+        SYNTAX                Integer32 (1..65534)
+        MAX-ACCESS            read-write
+        STATUS                current
+        DESCRIPTION
+         "Specify the client ID of the FlexE interface."
+        ::= { unisFlexEIfEntry 3 }
+
+unisFlexEMinAvailableBandwidth      OBJECT-TYPE
+        SYNTAX                Integer32 (0|1..100)
+        MAX-ACCESS            read-write
+        STATUS                current
+        DESCRIPTION
+         "Specifies the minimum available bandwidth of the FlexE interface."
+        ::= { unisFlexEIfEntry 4 }
+
+-- Notification definitions
+-- =================================================================
+-- Traps are defined below.
+
+-- Nodes of unisFlexETrapObjects
+
+unisFlexETrapObjects OBJECT IDENTIFIER ::= { unisFlexE 4 }
+
+unisFlexERemotePhyNumber OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS             accessible-for-notify
+    STATUS                 current
+    DESCRIPTION
+        "The physical number of Remote FLEXPhyIf."
+    ::= { unisFlexETrapObjects 1 }
+
+unisFlexERemotePhyGroupID OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The physical group ID of Remote FLEXPhyIf."
+    ::= { unisFlexETrapObjects 2 }
+
+unisFlexEGroupMemberCount OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The number of group members."
+    ::= { unisFlexETrapObjects 3 }
+
+unisFlexEPortList OBJECT-TYPE
+    SYNTAX OCTET STRING
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The interface list."
+    ::= { unisFlexETrapObjects 4 }
+
+
+
+-- Nodes of unisFlexETrap
+
+unisFlexETrap OBJECT IDENTIFIER ::= { unisFlexE 5 }
+unisFlexETrapPrex OBJECT IDENTIFIER ::= { unisFlexETrap 0 }
+-- All trap definitions should be placed under this object.
+
+unisFlexEPhyNumberMismatch NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisFlexEPhyNumber,
+            unisFlexERemotePhyNumber
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the physical number of the FlexE interface doesn't
+         match the other."
+    ::= { unisFlexETrapPrex 1 }
+
+unisFlexEPhyNumberMismatchRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisFlexEPhyNumber,
+            unisFlexERemotePhyNumber
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the physical number of the FlexE interface
+        matches the other."
+    ::= { unisFlexETrapPrex 2 }
+
+unisFlexEPhyGroupMismatch NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisFlexEPhyGroupID,
+            unisFlexERemotePhyGroupID
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the group ID of the FlexE interface doesn't
+         matches the other."
+    ::= { unisFlexETrapPrex 3 }
+
+unisFlexEPhyGroupMismatchRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisFlexEPhyGroupID,
+            unisFlexERemotePhyGroupID
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the group ID of the FlexE interface
+        matches the other."
+    ::= { unisFlexETrapPrex 4 }
+
+unisFlexEClientIDMismatch NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the client ID of the FlexE interface doesn't
+         match the other."
+    ::= { unisFlexETrapPrex 5 }
+
+unisFlexEClientIDMismatchRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the client ID of the FlexE interface
+        matches the other."
+    ::= { unisFlexETrapPrex 6 }
+
+unisFlexEBandwidthReduce NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisFlexEBandwidth
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the bandwidth of the FlexE interface becomes
+         smaller."
+    ::= { unisFlexETrapPrex 7 }
+
+unisFlexEBandwidthReduceRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisFlexEBandwidth
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the bandwidth of the FlexE interface recovers."
+    ::= { unisFlexETrapPrex 8 }
+
+unisFlexEPhyFcsSdAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the error code fault happens."
+    ::= { unisFlexETrapPrex 9 }
+
+unisFlexEPhyFcsSdAlarmRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the error code fault recovers."
+    ::= { unisFlexETrapPrex 10 }
+
+unisFlexEPhyLocalFault NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the fault happens in the near_end."
+    ::= { unisFlexETrapPrex 11 }
+
+unisFlexEPhyLocalFaultRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the fault in the near_end recovers."
+    ::= { unisFlexETrapPrex 12 }
+
+unisFlexEPhyRemoteFault NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the fault happens in the far_end"
+    ::= { unisFlexETrapPrex 13 }
+
+unisFlexEPhyRemoteFaultRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the fault in the far_end recovers."
+    ::= { unisFlexETrapPrex 14 }
+
+unisFlexEBandwidthMismatch NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the bandwidth of the FlexE interface
+        doesn't match the other."
+    ::= { unisFlexETrapPrex 15 }
+
+unisFlexEBandwidthMismatchRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the bandwidth of the FlexE interface
+        matches the other."
+    ::= { unisFlexETrapPrex 16 }
+
+unisFlexEPhyDelayOverAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisFlexEPortList
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the TimeDelay is oversize."
+    ::= { unisFlexETrapPrex 17 }
+
+unisFlexEPhyDelayOverAlarmRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisFlexEPortList
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the TimeDelay becomes normal."
+    ::= { unisFlexETrapPrex 18 }
+
+unisFlexESTSGMismatch NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisFlexESubTimeSlotGranular
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the granularity of the FlexE interface
+        doesn't match the other."
+    ::= { unisFlexETrapPrex 19 }
+
+unisFlexESTSGMismatchRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr,
+            unisFlexESubTimeSlotGranular
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the granularity of the FlexE interface
+        matches the other."
+    ::= { unisFlexETrapPrex 20 }
+
+
+unisFlexEGroupMemberFault NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFlexEFrameIndex,
+            unisFlexESlotIndex,
+            unisFlexESubslotIndex,
+            unisFlexEGroupID,
+            unisFlexEGroupMemberCount,
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the fault happens on group members."
+    ::= { unisFlexETrapPrex 21 }
+
+unisFlexEGroupMemberFaultRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFlexEFrameIndex,
+            unisFlexESlotIndex,
+            unisFlexESubslotIndex,
+            unisFlexEGroupID,
+            unisFlexEGroupMemberCount,
+            ifIndex,
+            ifDescr
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the fault on group members recovers."
+    ::= { unisFlexETrapPrex 22 }
+
+unisFlexEGroupFaultAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFlexEFrameIndex,
+            unisFlexESlotIndex,
+            unisFlexESubslotIndex,
+            unisFlexEGroupID
+        }
+      STATUS current
+    DESCRIPTION
+        "The notification is generated when the fault happens on the last group member."
+    ::= { unisFlexETrapPrex 23 }
+
+unisFlexEGroupFaultAlarmRecover NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisFlexEFrameIndex,
+            unisFlexESlotIndex,
+            unisFlexESubslotIndex,
+            unisFlexEGroupID
+        }
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the fault on the first group member recovers."
+    ::= { unisFlexETrapPrex 24 }
+
+END

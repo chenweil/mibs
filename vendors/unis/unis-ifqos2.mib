@@ -1,0 +1,5170 @@
+-- ============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Interface QoS Management Information Base.
+-- Reference: RFC 3291
+-- Version: 1.12
+-- History:
+-- V1.0 created by tangshun.
+-- V1.1 2006/02/24 modified by changhuifeng
+--  Add  object unisIfQoSWFQType in unisIfQoSWFQTable.
+--  Add unisIfQoSL3PlusObjects and unisIfQoSPortBindingTable.
+--  Modify property of unisIfQoSPortWredPreID to "not-accessible".
+--  Add the  enumeration ipall to unisIfQoSPQClassRuleType in unisIfQoSPQClassRuleTable.
+--  Modify some text errors in this file.
+-- V1.2 2006/03/29 modified by xialei
+--  Modify the ipv4acl value in description of unisIfQoSPQClassRuleValue and unisIfQoSCQClassRuleValue
+--  Add the enumeration mpls to unisIfQoSPQClassRuleType in unisIfQoSPQClassRuleTable.
+--  Add the enumeration ipall, mpls to unisIfQoSCQClassRuleType in unisIfQoSCQClassRuleTable.
+-- V1.3 2006/05/24 add by cuichuanjin
+--  Add unisIfQoSCarlTable
+-- V1.4 2007/11/12 modified by mouxuanli
+--  Modify the description of the object unisIfQoSPassPackets.
+--  Add 18 objects in unisIfQoSHardwareQueueRunInfoTable.
+--  Add unisIfQoSHQueueTcpRunInfoTable.
+-- V1.5 2008/9/25 modified by yueting
+--  Add unisQoSIfTraStaConfigInfoTable.
+--  Add unisQoSIfTraStaRunInfoTable.
+-- V1.6 2011/12/14 modified by mouxuanli
+--  Add the enumeration byteCountWrr, byteCountWfq to unisIfQoSQSMode in unisIfQoSQSModeTable.
+--  Add unisIfQoSQSMinBandwidth in unisIfQoSQSWeightTable.
+--  Add unisIfQoSLRPir in unisIfQoSLRConfigTable.
+-- V1.7 2012/04/28 modified by mouxuanli
+--  Add the enumeration ipPrecedence, dot11e, auto to unisIfQoSPortPriorityTrustTrustType.
+--  Add the enumeration overcast to unisIfQoSPortPriorityTrustOvercastType.
+--  Add unisIfQoSPrePriMapTable.
+-- V1.8 2013/10/25 modified by mouxuanli
+--  Add the enumeration gmb to unisIfQoSQSMode.
+--  Add unisIfQoSQSMinBandwidthPercent in unisIfQoSQSWeightTable.
+--  Add unisIfQoSLRUnit in unisIfQoSLRConfigTable.
+--  Add unisQoSGlobalPriorityObject.
+-- V1.9 2014/11/25 modified by zhaixiaoxiang & xunzhi
+--  Modify the name of CarAction to UnisIfCarAction.
+--  Add the enumeration remarkLocalPreContinue, remarkLocalPrePass, remarkDropPreContinue
+--  and remarkDropPrePass to UnisIfCarAction and modify the related descriptions.
+--  Add the enumeration hierarchy to unisIfQoSAggregativeCarType.
+--  Add unisIfQoSTricolorCarUnitType in unisIfQoSTricolorCarConfigTable.
+--  Add unisIfQoSGTSPir and unisIfQoSGTSUnitType in unisIfQoSGTSConfigTable.
+--  Add unisIfQoSProcessingStatus node.
+-- V1.10 2016/10/25 modified by gaomengfei
+--  Add the enumeration group3 and group4 to unisIfQoSQueueGroupType
+--  2017/05/20 modified by gaomengfei
+--  Add the unisIfQoSQueueName in unisIfQoSHardwareQueueRunInfoEntry
+--  Add unisIfQoSHardwareQueueTotalRunInfoTable
+--  2018/02/28 modified by hulifang
+--  Add unisIfQoSCoppFlowStatTable
+-- V1.11 2018/12/12 modified by meixixue
+--  2018/12/12 modified by meixixue
+--  Add the unisIfQoSDropPPS and unisIfQoSDropBPS in unisIfQoSHardwareQueueRunInfoEntry
+-- V1.12 2019/06/20 modified by wangqian
+--  2019/06/20 modified by wangqian
+--  Add the unisIfQoSPeakPassPPS and unisIfQoSPeakPassBPS in unisIfQoSHardwareQueueRunInfoEntry
+-- ============================================================================
+UNIS-IFQOS2-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS
+            unisCommon
+                FROM UNIS-OID-MIB
+            OBJECT-TYPE, MODULE-IDENTITY, Integer32, Counter64, Unsigned32, IpAddress
+                FROM SNMPv2-SMI
+            ifIndex
+                FROM IF-MIB
+            InetAddressIPv6, InetAddressPrefixLength
+                FROM INET-ADDRESS-MIB
+            RowStatus, TruthValue, TEXTUAL-CONVENTION
+                FROM SNMPv2-TC;
+--
+-- Nodes definitions
+--
+
+        unisIfQos2 MODULE-IDENTITY
+            LAST-UPDATED "201906200000Z"
+            ORGANIZATION
+                "Unisyue Technologies Co., Ltd."
+            CONTACT-INFO
+                ""
+            DESCRIPTION
+                "Add the unisIfQoSPeakPassPPS and unisIfQoSPeakPassBPS in unisIfQoSHardwareQueueRunInfoEntry."
+            REVISION "201906200000Z"        --June 20, 2019 at 00:00 GMT
+            DESCRIPTION
+                "Add the unisIfQoSDropPPS and unisIfQoSDropBPS in unisIfQoSHardwareQueueRunInfoEntry."
+            REVISION "201812120000Z"        --December 12, 2018 at 00:00 GMT
+            DESCRIPTION
+                "Interface QoS management information base."
+            REVISION "201802280000Z"        --February 28, 2018 at 00:00 GMT
+            DESCRIPTION
+                "Add unisIfQoSCoppFlowStatTable."
+            REVISION "201705200000Z"        --May 20, 2017 at 00:00 GMT
+            DESCRIPTION
+                "Add the unisIfQoSQueueName in unisIfQoSHardwareQueueRunInfoEntry and
+                add unisIfQoSHardwareQueueTotalRunInfoTable."
+            REVISION "201610250000Z"        --October 25, 2016 at 00:00 GMT
+            DESCRIPTION
+                "Add the enumeration group3 and group4 to unisIfQoSQueueGroupType."
+            REVISION "201411250000Z"        --November 25, 2014 at 00:00 GMT
+            DESCRIPTION
+                "Add the unit type node in unisIfQoSTricolorCarConfigTable and
+                unisIfQoSGTSConfigTable, and add object unisIfQoSProcessingStatus."
+            REVISION "201311280000Z"        --November 28, 2013 at 00:00 GMT
+            DESCRIPTION
+                "Interface QoS management information base."
+            ::= { unisQos2 1 }
+
+        unisQos2     OBJECT IDENTIFIER ::= { unisCommon 65 }
+
+-- IfCar Action
+        UnisIfCarAction ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                "The actions taken when packets conforming or exceeding the configured CIR."
+            SYNTAX  INTEGER
+            {
+                invalid(0),
+                pass(1),
+                continue(2),
+                discard(3),
+                remark(4),
+                remark-ip-continue(5),
+                remark-ip-pass(6),
+                remark-mplsexp-continue(7),
+                remark-mplsexp-pass(8),
+                remark-dscp-continue(9),
+                remark-dscp-pass(10),
+                remark-dot1p-continue(11),
+                remark-dot1p-pass(12),
+                remark-atm-clp-continue(13),
+                remark-atm-clp-pass(14),
+                remark-fr-de-continue(15),
+                remark-fr-de-pass(16),
+                remarkLocalPreContinue(17),
+                remarkLocalPrePass(18),
+                remarkDropPreContinue(19),
+                remarkDropPrePass(20)
+            }
+
+--
+-- priority queue
+--
+        PriorityQueue ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                "The type of priority queue."
+            SYNTAX INTEGER
+            {
+                top(1),
+                middle(2),
+                normal(3),
+                bottom(4)
+            }
+--
+-- direction
+--
+        Direction ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                "Inbound or outbound."
+            SYNTAX INTEGER
+            {
+                inbound(1),
+                outbound(2)
+            }
+--
+-- node of unisIfQoSHardwareQueueObjects
+--
+        unisIfQoSHardwareQueueObjects OBJECT IDENTIFIER ::= { unisIfQos2 1 }
+--
+-- nodes of unisIfQoSHardwareQueueConfigGroup
+--
+        unisIfQoSHardwareQueueConfigGroup OBJECT IDENTIFIER ::= { unisIfQoSHardwareQueueObjects 1 }
+
+        unisIfQoSQSModeTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSQSModeEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of queue schedule mode information."
+            ::= { unisIfQoSHardwareQueueConfigGroup 1 }
+
+        unisIfQoSQSModeEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSQSModeEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Queue schedule mode information entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSQSModeTable 1 }
+
+        UnisIfQoSQSModeEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSQSMode
+                    INTEGER
+            }
+
+        unisIfQoSQSMode OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                sp(1),
+                sp0(2),
+                sp1(3),
+                sp2(4),
+                wrr(5),
+                unisfq(6),
+                wrr-sp(7),
+                byteCountWrr(8),
+                byteCountWfq(9),
+                gmb(10)
+            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The mode of schedule."
+            ::= { unisIfQoSQSModeEntry 1 }
+
+--
+-- notes of unisIfQoSQSWeightTable
+--
+        unisIfQoSQSWeightTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSQSWeightEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of queue schedule weight configuration information."
+            ::= { unisIfQoSHardwareQueueConfigGroup 2 }
+
+        unisIfQoSQSWeightEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSQSWeightEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Queue schedule weight configuration information entry."
+            INDEX { ifIndex, unisIfQoSQueueID }
+            ::= { unisIfQoSQSWeightTable 1 }
+
+        UnisIfQoSQSWeightEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSQueueID
+                    Integer32,
+                unisIfQoSQueueGroupType
+                    INTEGER,
+                unisIfQoSQSType
+                    INTEGER,
+                unisIfQoSQSValue
+                    Integer32,
+                unisIfQoSQSMaxDelay
+                    Integer32,
+                unisIfQoSQSMinBandwidth
+                    Integer32,
+                unisIfQoSQSMinBandwidthPercent
+                    Unsigned32
+            }
+
+        unisIfQoSQueueID OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Queue ID"
+            ::= { unisIfQoSQSWeightEntry 1 }
+
+        unisIfQoSQueueGroupType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                group0(1),
+                group1(2),
+                group2(3),
+                group3(4),
+                group4(5)
+            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Group type of WRR and WFQ."
+            ::= { unisIfQoSQSWeightEntry 2 }
+
+        unisIfQoSQSType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                weight(1),
+                byte-count(2)
+            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Schedule type."
+            ::= { unisIfQoSQSWeightEntry 3 }
+
+        unisIfQoSQSValue OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Schedule value."
+            ::= { unisIfQoSQSWeightEntry 4 }
+
+        unisIfQoSQSMaxDelay OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Max delay."
+            DEFVAL { 9 }
+            ::= { unisIfQoSQSWeightEntry 5 }
+
+        unisIfQoSQSMinBandwidth OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Min bandwidth.  Unit: kbps."
+            ::= { unisIfQoSQSWeightEntry 6 }
+
+        unisIfQoSQSMinBandwidthPercent OBJECT-TYPE
+            SYNTAX Unsigned32  (0..100 | 255)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Percent of min bandwidth.  Unit: %.
+                 The value is 255 when the schedule mode of the queue is strict queuing.
+                "
+            ::= { unisIfQoSQSWeightEntry 7 }
+
+--
+-- nodes of unisIfQoSHardwareQueueRunInfoGroup
+--
+        unisIfQoSHardwareQueueRunInfoGroup OBJECT IDENTIFIER ::= { unisIfQoSHardwareQueueObjects 2 }
+
+        unisIfQoSHardwareQueueRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSHardwareQueueRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of queue statistic information."
+            ::= { unisIfQoSHardwareQueueRunInfoGroup 1 }
+
+        unisIfQoSHardwareQueueRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSHardwareQueueRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Queue statistic information entry."
+            INDEX { ifIndex, unisIfQoSQueueID }
+            ::= { unisIfQoSHardwareQueueRunInfoTable 1 }
+
+        UnisIfQoSHardwareQueueRunInfoEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSPassPackets
+                    Counter64,
+                unisIfQoSDropPackets
+                    Counter64,
+                unisIfQoSPassBytes
+                    Counter64,
+                unisIfQoSPassPPS
+                    Unsigned32,
+                unisIfQoSPassBPS
+                    Unsigned32,
+                unisIfQoSDropBytes
+                    Counter64,
+                unisIfQoSQueueLengthInPkts
+                    Unsigned32,
+                unisIfQoSQueueLengthInBytes
+                    Unsigned32,
+                unisIfQoSCurQueuePkts
+                    Unsigned32,
+                unisIfQoSCurQueueBytes
+                    Unsigned32,
+                unisIfQoSCurQueuePPS
+                    Unsigned32,
+                unisIfQoSCurQueueBPS
+                    Unsigned32,
+                unisIfQoSTailDropPkts
+                    Counter64,
+                unisIfQoSTailDropBytes
+                    Counter64,
+                unisIfQoSTailDropPPS
+                    Unsigned32,
+                unisIfQoSTailDropBPS
+                    Unsigned32,
+                unisIfQoSWredDropPkts
+                    Counter64,
+                unisIfQoSWredDropBytes
+                    Counter64,
+                unisIfQoSWredDropPPS
+                    Unsigned32,
+                unisIfQoSWredDropBPS
+                    Unsigned32,
+                unisIfQoSQueueName
+                    OCTET STRING,
+                unisIfQoSDropPPS
+                    Unsigned32,
+                unisIfQoSDropBPS
+                    Unsigned32,
+                unisIfQoSPeakPassPPS
+                    Unsigned32,
+                unisIfQoSPeakPassBPS
+                    Unsigned32
+            }
+
+        unisIfQoSPassPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of forwarded packets."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 1 }
+
+        unisIfQoSDropPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of dropped packets."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 2 }
+
+        unisIfQoSPassBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The bytes of forwarded packets."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 3 }
+
+        unisIfQoSPassPPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The PPS of forwarded packets.  PPS: packets per second."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 4 }
+
+        unisIfQoSPassBPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The BPS of forwarded packets.  BPS: bytes per second."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 5 }
+
+        unisIfQoSDropBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The bytes of dropped packets."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 6 }
+
+        unisIfQoSQueueLengthInPkts OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The max number of packets which the queue can hold."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 7 }
+
+        unisIfQoSQueueLengthInBytes OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The max bytes of packets which the queue can hold."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 8 }
+
+        unisIfQoSCurQueuePkts OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of packets in the current queue."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 9 }
+
+        unisIfQoSCurQueueBytes OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The bytes of packets in the current queue."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 10 }
+
+        unisIfQoSCurQueuePPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The PPS of packets in the current queue."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 11 }
+
+        unisIfQoSCurQueueBPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The BPS of packets in the current queue."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 12 }
+
+        unisIfQoSTailDropPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of packets dropped by tail dropping."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 13 }
+
+        unisIfQoSTailDropBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The bytes of packets dropped by tail dropping."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 14 }
+
+        unisIfQoSTailDropPPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The PPS of packets dropped by tail dropping."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 15 }
+
+        unisIfQoSTailDropBPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The BPS of packets dropped by tail dropping."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 16 }
+
+        unisIfQoSWredDropPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of packets dropped by WRED."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 17 }
+
+        unisIfQoSWredDropBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The bytes of packets dropped by WRED."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 18 }
+
+        unisIfQoSWredDropPPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The PPS of packets dropped by WRED."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 19 }
+
+        unisIfQoSWredDropBPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The BPS of packets dropped by WRED."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 20 }
+
+        unisIfQoSQueueName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE(2..3))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Name of Queue."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 21 }
+
+        unisIfQoSDropPPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The PPS of dropped packets.  PPS: packets per second."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 22 }
+
+        unisIfQoSDropBPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The BPS of dropped packets.  BPS: bytes per second."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 23 }
+
+        unisIfQoSPeakPassPPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The max rate of forwarded packets in bytes per second (pps)
+                 during the period from the time when the reset command was executed
+                 to the current time."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 24 }
+
+        unisIfQoSPeakPassBPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The max rate of forwarded packets in bytes per second (Bps)
+                 during the period from the time when the reset command was executed
+                 to the current time."
+            ::= { unisIfQoSHardwareQueueRunInfoEntry 25 }
+
+--
+-- nodes of unisIfQoSHQueueTcpRunInfoTable
+--
+
+        unisIfQoSHQueueTcpRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSHQueueTcpRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of queue statistic information
+                 about TCP and non-TCP packets."
+            ::= { unisIfQoSHardwareQueueRunInfoGroup 2 }
+
+        unisIfQoSHQueueTcpRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSHQueueTcpRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Queue statistic information entry
+                 about TCP and non-TCP packets."
+            INDEX { ifIndex, unisIfQoSQueueID }
+            ::= { unisIfQoSHQueueTcpRunInfoTable 1 }
+
+        UnisIfQoSHQueueTcpRunInfoEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSWredDropLPreNTcpPkts
+                    Counter64,
+                unisIfQoSWredDropLPreNTcpBytes
+                    Counter64,
+                unisIfQoSWredDropLPreNTcpPPS
+                    Unsigned32,
+                unisIfQoSWredDropLPreNTcpBPS
+                    Unsigned32,
+                unisIfQoSWredDropLPreTcpPkts
+                    Counter64,
+                unisIfQoSWredDropLPreTcpBytes
+                    Counter64,
+                unisIfQoSWredDropLPreTcpPPS
+                    Unsigned32,
+                unisIfQoSWredDropLPreTcpBPS
+                    Unsigned32,
+                unisIfQoSWredDropHPreNTcpPkts
+                    Counter64,
+                unisIfQoSWredDropHPreNTcpBytes
+                    Counter64,
+                unisIfQoSWredDropHPreNTcpPPS
+                    Unsigned32,
+                unisIfQoSWredDropHPreNTcpBPS
+                    Unsigned32,
+                unisIfQoSWredDropHPreTcpPkts
+                    Counter64,
+                unisIfQoSWredDropHPreTcpBytes
+                    Counter64,
+                unisIfQoSWredDropHPreTcpPPS
+                    Unsigned32,
+                unisIfQoSWredDropHPreTcpBPS
+                    Unsigned32
+            }
+
+        unisIfQoSWredDropLPreNTcpPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of low-precedence non-TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 1 }
+
+        unisIfQoSWredDropLPreNTcpBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The bytes of low-precedence non-TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 2 }
+
+        unisIfQoSWredDropLPreNTcpPPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The PPS of low-precedence non-TCP packets dropped by WRED.
+                 PPS: packets per second."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 3 }
+
+        unisIfQoSWredDropLPreNTcpBPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The BPS of low-precedence non-TCP packets dropped by WRED.
+                 BPS: bytes per second."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 4 }
+
+        unisIfQoSWredDropLPreTcpPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of low-precedence TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 5 }
+
+        unisIfQoSWredDropLPreTcpBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The bytes of low-precedence TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 6 }
+
+        unisIfQoSWredDropLPreTcpPPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The PPS of low-precedence TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 7 }
+
+        unisIfQoSWredDropLPreTcpBPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The BPS of low-precedence TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 8 }
+
+        unisIfQoSWredDropHPreNTcpPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of high-precedence non-TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 9 }
+
+        unisIfQoSWredDropHPreNTcpBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The bytes of high-precedence non-TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 10 }
+
+        unisIfQoSWredDropHPreNTcpPPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The PPS of high-precedence non-TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 11 }
+
+        unisIfQoSWredDropHPreNTcpBPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The BPS of high-precedence non-TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 12 }
+
+        unisIfQoSWredDropHPreTcpPkts OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of high-precedence TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 13 }
+
+        unisIfQoSWredDropHPreTcpBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The bytes of high-precedence TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 14 }
+
+        unisIfQoSWredDropHPreTcpPPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The PPS of high-precedence TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 15 }
+
+        unisIfQoSWredDropHPreTcpBPS OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The BPS of high-precedence TCP packets dropped by WRED."
+            ::= { unisIfQoSHQueueTcpRunInfoEntry 16 }
+
+--
+-- nodes of unisIfQoSHardwareQueueTotalRunInfoTable
+--
+
+        unisIfQoSHardwareQueueTotalRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSHardwareQueueTotalRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of queue statistic total information."
+            ::= { unisIfQoSHardwareQueueRunInfoGroup 3 }
+
+        unisIfQoSHardwareQueueTotalRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSHardwareQueueTotalRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Queue statistic information entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSHardwareQueueTotalRunInfoTable 1 }
+
+        UnisIfQoSHardwareQueueTotalRunInfoEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSQueueLength
+                    Unsigned32,
+                unisIfQoSPeakQueueBytes
+                    Unsigned32
+            }
+
+        unisIfQoSQueueLength OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The length of queues."
+            ::= { unisIfQoSHardwareQueueTotalRunInfoEntry 1 }
+
+        unisIfQoSPeakQueueBytes OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The max bytes of packets in the current queues in the last 10 seconds."
+            ::= { unisIfQoSHardwareQueueTotalRunInfoEntry 2 }
+
+--
+-- nodes of unisIfQoSSoftwareQueueObjects
+--
+        unisIfQoSSoftwareQueueObjects OBJECT IDENTIFIER ::= { unisIfQos2 2 }
+
+--
+-- nodes of unisIfQoSFIFOObject
+--
+        unisIfQoSFIFOObject OBJECT IDENTIFIER ::= { unisIfQoSSoftwareQueueObjects 1 }
+
+        unisIfQoSFIFOConfigTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSFIFOConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of FIFO queue information."
+            ::= { unisIfQoSFIFOObject 1 }
+
+        unisIfQoSFIFOConfigEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSFIFOConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "FIFO queue information entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSFIFOConfigTable 1 }
+
+        UnisIfQoSFIFOConfigEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSFIFOMaxQueueLen
+                    Integer32
+            }
+
+        unisIfQoSFIFOMaxQueueLen OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The maximum length of FIFO queue."
+            ::= { unisIfQoSFIFOConfigEntry 1 }
+
+--
+-- nodes of unisIfQoSFifoRunfoTable
+--
+
+        unisIfQoSFIFORunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSFIFORunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of FIFO queue statistic information."
+            ::= { unisIfQoSFIFOObject 2 }
+
+        unisIfQoSFIFORunInfoEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSFIFORunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "FIFO queue statistic information entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSFIFORunInfoTable 1 }
+
+        UnisIfQoSFIFORunInfoEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSFIFOSize
+                    Integer32,
+                unisIfQoSFIFODiscardPackets
+                    Counter64
+            }
+
+        unisIfQoSFIFOSize OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of packet in FIFO queue."
+            ::= { unisIfQoSFIFORunInfoEntry 1 }
+
+        unisIfQoSFIFODiscardPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of discard packet."
+            ::= { unisIfQoSFIFORunInfoEntry 2 }
+
+--
+-- nodes of
+--
+        unisIfQoSPQObject OBJECT IDENTIFIER ::= { unisIfQoSSoftwareQueueObjects 2 }
+
+        unisIfQoSPQConfigGroup OBJECT IDENTIFIER ::= { unisIfQoSPQObject 1 }
+
+        unisIfQoSPQDefaultTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPQDefaultEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of priority queue default configuration information."
+            ::= { unisIfQoSPQConfigGroup 1 }
+
+        unisIfQoSPQDefaultEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPQDefaultEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Priority queue default configuration information entry."
+            INDEX { unisIfQoSPQListNumber }
+            ::= { unisIfQoSPQDefaultTable 1 }
+
+        UnisIfQoSPQDefaultEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSPQListNumber
+                    Integer32,
+                unisIfQoSPQDefaultQueueType
+                    PriorityQueue
+            }
+
+        unisIfQoSPQListNumber OBJECT-TYPE
+            SYNTAX Integer32 (1..16)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Priority queue list number."
+            ::= { unisIfQoSPQDefaultEntry 1 }
+
+        unisIfQoSPQDefaultQueueType OBJECT-TYPE
+            SYNTAX PriorityQueue
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Specify priority queue that packets put into by default."
+            ::= { unisIfQoSPQDefaultEntry 2 }
+--
+-- nods of unisIfQoSPQQueueLengthTable
+--
+        unisIfQoSPQQueueLengthTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPQQueueLengthEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of queue length of priority queue configuration information."
+            ::= { unisIfQoSPQConfigGroup 2 }
+
+        unisIfQoSPQQueueLengthEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPQQueueLengthEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Queue length of priority queue configuration information entry."
+            INDEX { unisIfQoSPQListNumber, unisIfQoSPQQueueLengthType }
+            ::= { unisIfQoSPQQueueLengthTable 1 }
+
+        UnisIfQoSPQQueueLengthEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSPQQueueLengthType
+                    PriorityQueue,
+                unisIfQoSPQQueueLengthValue
+                    Integer32
+            }
+
+        unisIfQoSPQQueueLengthType OBJECT-TYPE
+            SYNTAX PriorityQueue
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Type of priority queue."
+            ::= { unisIfQoSPQQueueLengthEntry 1 }
+
+        unisIfQoSPQQueueLengthValue OBJECT-TYPE
+            SYNTAX Integer32 (1..1024)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The size of priority queue."
+            ::= { unisIfQoSPQQueueLengthEntry 2 }
+
+--
+-- nodes of unisIfQoSPQClassRuleTable
+--
+        unisIfQoSPQClassRuleTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPQClassRuleEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of class rule of priority queue information."
+            ::= { unisIfQoSPQConfigGroup 3 }
+
+        unisIfQoSPQClassRuleEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPQClassRuleEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of class rule of priority queue information."
+            INDEX { unisIfQoSPQListNumber,
+                    unisIfQoSPQClassRuleType,
+                    unisIfQoSPQClassRuleValue }
+            ::= { unisIfQoSPQClassRuleTable 1 }
+
+        UnisIfQoSPQClassRuleEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSPQClassRuleType
+                    INTEGER,
+                unisIfQoSPQClassRuleValue
+                    Integer32,
+                unisIfQoSPQClassRuleQueueType
+                    PriorityQueue,
+                unisIfQoSPQClassRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSPQClassRuleType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                interface(1),
+                ipv4acl(2),
+                ipv6acl(3),
+                fragments(4),
+                greater-than(5),
+                less-than(6),
+                tcp(7),
+                udp(8),
+                ipall(9),
+                mpls(10)
+            }
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Type of class rule.
+                'ipall' means all ip packets."
+            ::= { unisIfQoSPQClassRuleEntry 1 }
+
+        unisIfQoSPQClassRuleValue OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Value of class rule.
+                 interface : ifIndex
+                 ipv4acl : 2000..3999
+                 ipv6acl : 2000..3999, 10000..42767
+                 greater-than : 0..65535
+                 less-than : 0..65535
+                 tcp : 0..65535
+                 udp : 0..65535
+                 mpls(exp-mask) : 1..255
+                 other types: 0
+                "
+            ::= { unisIfQoSPQClassRuleEntry 2 }
+
+        unisIfQoSPQClassRuleQueueType OBJECT-TYPE
+            SYNTAX PriorityQueue
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Specify the queue for matched packets."
+            ::= { unisIfQoSPQClassRuleEntry 3 }
+
+        unisIfQoSPQClassRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSPQClassRuleEntry 4 }
+--
+-- nodes of unisIfQoSPQApplyTable
+--
+        unisIfQoSPQApplyTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPQApplyEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of priority queue instance."
+            ::= { unisIfQoSPQConfigGroup 4 }
+
+        unisIfQoSPQApplyEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPQApplyEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Priority queue instance information."
+            INDEX { ifIndex }
+            ::= { unisIfQoSPQApplyTable 1 }
+
+        UnisIfQoSPQApplyEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSPQApplyListNumber
+                    Integer32,
+                unisIfQoSPQApplyRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSPQApplyListNumber OBJECT-TYPE
+            SYNTAX Integer32 (1..16)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Priority queue list number."
+            ::= { unisIfQoSPQApplyEntry 1 }
+
+        unisIfQoSPQApplyRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSPQApplyEntry 2 }
+
+--
+-- Nodes of unisIfQoSPQRunInfoGroup
+--
+        unisIfQoSPQRunInfoGroup OBJECT IDENTIFIER ::= { unisIfQoSPQObject 2 }
+--
+-- nodes of unisIfQoSPQRunInfoTable
+--
+        unisIfQoSPQRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPQRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of priority queue statistic information."
+            ::= { unisIfQoSPQRunInfoGroup 1 }
+
+        unisIfQoSPQRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPQRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Priority queue statistic information entry."
+            INDEX { ifIndex, unisIfQoSPQType }
+            ::= { unisIfQoSPQRunInfoTable 1 }
+
+        UnisIfQoSPQRunInfoEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSPQType
+                    PriorityQueue,
+                unisIfQoSPQSize
+                    Integer32,
+                unisIfQoSPQLength
+                    Integer32,
+                unisIfQoSPQDiscardPackets
+                    Counter64
+            }
+
+        unisIfQoSPQType OBJECT-TYPE
+            SYNTAX PriorityQueue
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The type of priority queue."
+            ::= { unisIfQoSPQRunInfoEntry 1 }
+
+        unisIfQoSPQSize OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of packets in the priority queue."
+            ::= { unisIfQoSPQRunInfoEntry 2 }
+
+        unisIfQoSPQLength OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The maximum length of priority queue."
+            ::= { unisIfQoSPQRunInfoEntry 3 }
+
+        unisIfQoSPQDiscardPackets    OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The packet number of priority queue discard."
+            ::= { unisIfQoSPQRunInfoEntry 4 }
+--
+-- nodes of unisIfQoSCQObject
+
+        unisIfQoSCQObject OBJECT IDENTIFIER ::= { unisIfQoSSoftwareQueueObjects 3 }
+
+        unisIfQoSCQConfigGroup OBJECT IDENTIFIER ::= { unisIfQoSCQObject 1 }
+
+--
+-- nodes of unisIfQoSCQDefaultTable
+--
+        unisIfQoSCQDefaultTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSCQDefaultEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of custom queue default configuration information."
+            ::= { unisIfQoSCQConfigGroup 1 }
+
+        unisIfQoSCQDefaultEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSCQDefaultEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Custom queue default configuration information entry."
+            INDEX { unisIfQoSCQListNumber }
+            ::= { unisIfQoSCQDefaultTable 1 }
+
+        UnisIfQoSCQDefaultEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSCQListNumber
+                    Integer32,
+                unisIfQoSCQDefaultQueueID
+                    Integer32
+            }
+
+        unisIfQoSCQListNumber OBJECT-TYPE
+            SYNTAX Integer32 (1..16)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Custom queue list number."
+            ::= { unisIfQoSCQDefaultEntry 1 }
+
+        unisIfQoSCQDefaultQueueID OBJECT-TYPE
+            SYNTAX Integer32 (0..16)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Default queue ID."
+            DEFVAL { 1 }
+            ::= { unisIfQoSCQDefaultEntry 2 }
+--
+-- nods of unisIfQoSCQQueueLengthTable
+--
+        unisIfQoSCQQueueLengthTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSCQQueueLengthEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of queue length of custom queue configuration information."
+            ::= { unisIfQoSCQConfigGroup 2 }
+
+        unisIfQoSCQQueueLengthEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSCQQueueLengthEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Queue length of custom queue configuration information entry."
+            INDEX { unisIfQoSCQListNumber, unisIfQoSCQQueueID }
+            ::= { unisIfQoSCQQueueLengthTable 1 }
+
+        UnisIfQoSCQQueueLengthEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSCQQueueID
+                    Integer32,
+                unisIfQoSCQQueueLength
+                    Integer32,
+                unisIfQoSCQQueueServing
+                    Integer32
+            }
+
+        unisIfQoSCQQueueID OBJECT-TYPE
+            SYNTAX Integer32 (1..16)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Custom queue index."
+            ::= { unisIfQoSCQQueueLengthEntry 1 }
+
+        unisIfQoSCQQueueLength OBJECT-TYPE
+            SYNTAX Integer32 (1..1024)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The size of custom queue."
+            DEFVAL { 20 }
+            ::= { unisIfQoSCQQueueLengthEntry 2 }
+
+        unisIfQoSCQQueueServing OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The maximum bytes that the specified queue can transmit in each turn."
+            DEFVAL { 1500 }
+            ::= { unisIfQoSCQQueueLengthEntry 3 }
+
+--
+-- nodes of unisIfQoSCQClassRuleTable
+--
+        unisIfQoSCQClassRuleTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSCQClassRuleEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of class rule of custom queue information."
+            ::= { unisIfQoSCQConfigGroup 3 }
+
+        unisIfQoSCQClassRuleEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSCQClassRuleEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of class rule of custom queue information."
+            INDEX { unisIfQoSCQListNumber,
+                    unisIfQoSCQClassRuleType,
+                    unisIfQoSCQClassRuleValue }
+            ::= { unisIfQoSCQClassRuleTable 1 }
+
+        UnisIfQoSCQClassRuleEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSCQClassRuleType
+                    INTEGER,
+                unisIfQoSCQClassRuleValue
+                    Integer32,
+                unisIfQoSCQClassRuleQueueID
+                    Integer32,
+                unisIfQoSCQClassRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSCQClassRuleType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                interface(1),
+                ipv4acl(2),
+                ipv6acl(3),
+                fragments(4),
+                greater-than(5),
+                less-than(6),
+                tcp(7),
+                udp(8),
+                ipall(9),
+                mpls(10)
+            }
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Type of class rule.
+                'ipall' means all ip packets."
+            ::= { unisIfQoSCQClassRuleEntry 1 }
+
+        unisIfQoSCQClassRuleValue OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Value of class rule.
+                 interface : ifIndex
+                 ipv4acl : 2000..3999
+                 ipv6acl : 2000..42767
+                 greater-than : 0..65535
+                 less-than : 0..65535
+                 tcp : 0..65535
+                 udp : 0..65535
+                 mpls(exp-mask) : 1..255
+                 other types: 0.
+                "
+            ::= { unisIfQoSCQClassRuleEntry 2 }
+
+        unisIfQoSCQClassRuleQueueID OBJECT-TYPE
+            SYNTAX Integer32( 1..16)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Specify the queue for matched packets."
+            ::= { unisIfQoSCQClassRuleEntry 3 }
+
+        unisIfQoSCQClassRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSCQClassRuleEntry 4 }
+--
+-- nodes of unisIfQoSCQApplyTable
+--
+
+        unisIfQoSCQApplyTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSCQApplyEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of custom queue instance."
+            ::= { unisIfQoSCQConfigGroup 4 }
+
+        unisIfQoSCQApplyEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSCQApplyEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Custom queue instance information."
+            INDEX { ifIndex }
+            ::= { unisIfQoSCQApplyTable 1 }
+
+        UnisIfQoSCQApplyEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSCQApplyListNumber
+                    Integer32,
+                unisIfQoSCQApplyRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSCQApplyListNumber OBJECT-TYPE
+            SYNTAX Integer32 (1..16)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Custom queue list number."
+            ::= { unisIfQoSCQApplyEntry 1 }
+
+        unisIfQoSCQApplyRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSCQApplyEntry 2 }
+--
+-- Nodes of unisIfQoSCQRunInfoGroup
+--
+        unisIfQoSCQRunInfoGroup OBJECT IDENTIFIER ::= { unisIfQoSCQObject 2 }
+
+        unisIfQoSCQRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSCQRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of custom queue statistic information."
+            ::= { unisIfQoSCQRunInfoGroup 1 }
+
+        unisIfQoSCQRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSCQRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Custom queue statistic information entry."
+            INDEX { ifIndex,
+                    unisIfQoSCQQueueID }
+            ::= { unisIfQoSCQRunInfoTable 1 }
+
+        UnisIfQoSCQRunInfoEntry    ::=
+            SEQUENCE
+            {
+                unisIfQoSCQRunInfoSize
+                    Integer32,
+                unisIfQoSCQRunInfoLength
+                    Integer32,
+                unisIfQoSCQRunInfoDiscardPackets
+                    Counter64
+            }
+
+        unisIfQoSCQRunInfoSize OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of packets in the custom queue."
+            ::= { unisIfQoSCQRunInfoEntry 1 }
+
+        unisIfQoSCQRunInfoLength OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The maximum length of custom queue."
+            ::= { unisIfQoSCQRunInfoEntry 2 }
+
+        unisIfQoSCQRunInfoDiscardPackets    OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The packet number of custom queue discard."
+            ::= { unisIfQoSCQRunInfoEntry 3 }
+--
+-- nodes of unisIfQoSWFQObject
+--
+        unisIfQoSWFQObject OBJECT IDENTIFIER ::= { unisIfQoSSoftwareQueueObjects 4 }
+
+        unisIfQoSWFQConfigGroup OBJECT IDENTIFIER ::= { unisIfQoSWFQObject 1 }
+
+        unisIfQoSWFQTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSWFQEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of weighted fair queue information."
+            ::= { unisIfQoSWFQConfigGroup 1 }
+
+        unisIfQoSWFQEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSWFQEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Weighted fair queue information entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSWFQTable 1 }
+
+        UnisIfQoSWFQEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSWFQQueueLength
+                    Integer32,
+                unisIfQoSWFQQueueNumber
+                    INTEGER,
+                unisIfQoSWFQRowStatus
+                    RowStatus,
+                unisIfQoSWFQType
+                    INTEGER
+            }
+
+        unisIfQoSWFQQueueLength OBJECT-TYPE
+            SYNTAX Integer32 (1..1024)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The length of weighted fair queue."
+            DEFVAL { 64 }
+            ::= { unisIfQoSWFQEntry 1 }
+
+        unisIfQoSWFQQueueNumber OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                size16(1),
+                size32(2),
+                size64(3),
+                size128(4),
+                size256(5),
+                size512(6),
+                size1024(7),
+                size2048(8),
+                size4096(9)
+            }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The number of weighted fair queue."
+            DEFVAL { 5 }
+            ::= { unisIfQoSWFQEntry 2 }
+
+        unisIfQoSWFQRowStatus  OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSWFQEntry 3 }
+
+        unisIfQoSWFQType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                ip-precedence(1),
+                dscp(2)
+            }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The type of weighted fair queue."
+            DEFVAL { 1 }
+            ::= { unisIfQoSWFQEntry 4 }
+--
+-- nodes of unisIfQoSWFQRunInfoGroup
+--
+        unisIfQoSWFQRunInfoGroup OBJECT IDENTIFIER ::= { unisIfQoSWFQObject 2 }
+
+        unisIfQoSWFQRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSWFQRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of weighted fair queue statistic information."
+            ::= { unisIfQoSWFQRunInfoGroup 1 }
+
+        unisIfQoSWFQRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSWFQRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Weighted fair queue statistic information entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSWFQRunInfoTable 1 }
+
+        UnisIfQoSWFQRunInfoEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSWFQSize
+                    Integer32,
+                unisIfQoSWFQLength
+                    Integer32,
+                unisIfQoSWFQDiscardPackets
+                    Counter64,
+                unisIfQoSWFQHashedActiveQueues
+                    Integer32,
+                unisIfQoSWFQHashedMaxActiveQueues
+                    Integer32,
+                unisIfQosWFQhashedTotalQueues
+                    Integer32
+            }
+
+        unisIfQoSWFQSize OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of packets in all the queues"
+            ::= { unisIfQoSWFQRunInfoEntry 1 }
+
+        unisIfQoSWFQLength OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The length of weighted fair queue."
+            ::= { unisIfQoSWFQRunInfoEntry 2 }
+
+        unisIfQoSWFQDiscardPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of discarded packets in all the queues."
+            ::= { unisIfQoSWFQRunInfoEntry 3 }
+
+        unisIfQoSWFQHashedActiveQueues OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of active queues."
+            ::= { unisIfQoSWFQRunInfoEntry 4 }
+
+        unisIfQoSWFQHashedMaxActiveQueues OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of maximum active queues."
+            ::= { unisIfQoSWFQRunInfoEntry 5 }
+
+        unisIfQosWFQhashedTotalQueues   OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of queues."
+            ::= { unisIfQoSWFQRunInfoEntry 6 }
+--
+-- nodes of unisIfQoSBandwidthGroup
+--
+        unisIfQoSBandwidthGroup OBJECT IDENTIFIER ::= { unisIfQoSSoftwareQueueObjects 5 }
+
+        unisIfQoSBandwidthTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSBandwidthEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of bandwidth of interface information."
+            ::= { unisIfQoSBandwidthGroup 1 }
+
+        unisIfQoSBandwidthEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSBandwidthEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Bandwidth information entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSBandwidthTable 1 }
+
+        UnisIfQoSBandwidthEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSMaxBandwidth
+                    Integer32,
+                unisIfQoSReservedBandwidthPct
+                    Integer32,
+                unisIfQoSBandwidthRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSMaxBandwidth OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The maximum bandwidth of interface.  Unit : Kbps"
+            ::= { unisIfQoSBandwidthEntry 1 }
+
+        unisIfQoSReservedBandwidthPct OBJECT-TYPE
+            SYNTAX Integer32 (1..100)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Max reserved bandwidth of the interface for QoS."
+            DEFVAL { 75 }
+            ::= { unisIfQoSBandwidthEntry 2 }
+
+        unisIfQoSBandwidthRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSBandwidthEntry 3 }
+--
+-- nodes of unisIfQoSQmtokenGroup
+--
+        unisIfQoSQmtokenGroup OBJECT IDENTIFIER ::= { unisIfQoSSoftwareQueueObjects 6 }
+
+        unisIfQoSQmtokenTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSQmtokenEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of qmtoken information."
+            ::= { unisIfQoSQmtokenGroup 1 }
+
+        unisIfQoSQmtokenEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSQmtokenEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Qmtoken information entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSQmtokenTable 1 }
+
+        UnisIfQoSQmtokenEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSQmtokenNumber
+                    Integer32,
+                unisIfQoSQmtokenRosStatus
+                    RowStatus
+            }
+
+        unisIfQoSQmtokenNumber OBJECT-TYPE
+            SYNTAX Integer32 (1..50)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The number of tokens."
+            ::= { unisIfQoSQmtokenEntry 1 }
+
+        unisIfQoSQmtokenRosStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus"
+            ::= { unisIfQoSQmtokenEntry 2 }
+
+--
+-- nodes of unisIfQoSRTPQObject
+--
+        unisIfQoSRTPQObject OBJECT IDENTIFIER ::= { unisIfQoSSoftwareQueueObjects 7 }
+
+        unisIfQoSRTPQConfigGroup OBJECT IDENTIFIER ::= { unisIfQoSRTPQObject 1 }
+
+        unisIfQoSRTPQConfigTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSRTPQConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of Real-time protocol queue information."
+            ::= { unisIfQoSRTPQConfigGroup 1 }
+
+        unisIfQoSRTPQConfigEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSRTPQConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The information of Real-time protocol queue entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSRTPQConfigTable 1 }
+
+        UnisIfQoSRTPQConfigEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSRTPQStartPort
+                    Integer32,
+                unisIfQoSRTPQEndPort
+                    Integer32,
+                unisIfQoSRTPQReservedBandwidth
+                    Integer32,
+                unisIfQoSRTPQCbs
+                    Unsigned32,
+                unisIfQoSRTPQRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSRTPQStartPort OBJECT-TYPE
+            SYNTAX Integer32 (2000..65535)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Minimum threshold of UDP destination port."
+            ::= { unisIfQoSRTPQConfigEntry 1 }
+
+        unisIfQoSRTPQEndPort OBJECT-TYPE
+            SYNTAX Integer32 (2000..65535)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Maximum threshold of UDP destination port."
+            ::= { unisIfQoSRTPQConfigEntry 2 }
+
+        unisIfQoSRTPQReservedBandwidth OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Maximum bandwidth.  unit : kbps"
+            ::= { unisIfQoSRTPQConfigEntry 3 }
+
+        unisIfQoSRTPQCbs OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Committed Burst Size. Unit: byte"
+            ::= { unisIfQoSRTPQConfigEntry 4 }
+
+        unisIfQoSRTPQRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSRTPQConfigEntry 5 }
+--
+-- nodes of unisIfQoSRTPQRunInfoGroup
+--
+        unisIfQoSRTPQRunInfoGroup OBJECT IDENTIFIER ::= { unisIfQoSRTPQObject 2 }
+
+        unisIfQoSRTPQRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSRTPQRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of statistic information of Real-time protocol information."
+            ::= { unisIfQoSRTPQRunInfoGroup 1 }
+
+        unisIfQoSRTPQRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSRTPQRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Statistic information of Real-time protocol information entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSRTPQRunInfoTable 1 }
+
+        UnisIfQoSRTPQRunInfoEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSRTPQPacketNumber
+                    Integer32,
+                unisIfQoSRTPQPacketSize
+                    Integer32,
+                unisIfQoSRTPQOutputPackets
+                    Counter64,
+                unisIfQoSRTPQDiscardPackets
+                    Counter64
+            }
+
+        unisIfQoSRTPQPacketNumber OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of packets in the Real-time protocol queue."
+            ::= { unisIfQoSRTPQRunInfoEntry 1 }
+
+        unisIfQoSRTPQPacketSize OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The size of Real-time protocol queue."
+            ::= { unisIfQoSRTPQRunInfoEntry 2 }
+
+        unisIfQoSRTPQOutputPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of output packets."
+            ::= { unisIfQoSRTPQRunInfoEntry 3 }
+
+        unisIfQoSRTPQDiscardPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of discard packets."
+            ::= { unisIfQoSRTPQRunInfoEntry 4 }
+
+--
+-- nodes of unisIfQoSCarListObject
+--
+       unisIfQoSCarListObject OBJECT IDENTIFIER ::= { unisIfQoSSoftwareQueueObjects 8 }
+
+       unisIfQoCarListGroup OBJECT IDENTIFIER ::= { unisIfQoSCarListObject 1 }
+
+       unisIfQoSCarlTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSCarlEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                   "Committed Access Rate List(CARL) table."
+            ::= { unisIfQoCarListGroup 1 }
+
+        unisIfQoSCarlEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSCarlEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "CARL configuration information."
+            INDEX { unisIfQoSCarlListNum }
+            ::= { unisIfQoSCarlTable 1 }
+
+        UnisIfQoSCarlEntry ::=
+            SEQUENCE {
+                         unisIfQoSCarlListNum
+                             Integer32,
+                         unisIfQoSCarlParaType
+                             INTEGER,
+                         unisIfQoSCarlParaValue
+                             OCTET STRING,
+                         unisIfQoSCarlRowStatus
+                             RowStatus
+                     }
+
+        unisIfQoSCarlListNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                    "The index of the table, which is the CARL number."
+            ::= { unisIfQoSCarlEntry 1 }
+
+        unisIfQoSCarlParaType OBJECT-TYPE
+            SYNTAX INTEGER
+                    {
+                        macAddress(1),
+                        precMask(2),
+                        dscpMask(3)
+                    }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                    "Parameter type of the CARL number."
+            ::= { unisIfQoSCarlEntry 2 }
+
+        unisIfQoSCarlParaValue OBJECT-TYPE
+            SYNTAX OCTET STRING
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                    "Parameter value of the CARL table."
+            ::= { unisIfQoSCarlEntry 3 }
+
+        unisIfQoSCarlRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+               "RowStatus."
+            ::= { unisIfQoSCarlEntry 4 }
+
+--
+-- nodes of unisIfQoSLineRateObject
+--
+        unisIfQoSLineRateObjects OBJECT IDENTIFIER ::= { unisIfQos2 3 }
+
+        unisIfQoSLRConfigTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSLRConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of line rate configuration information."
+            ::= { unisIfQoSLineRateObjects 1 }
+
+        unisIfQoSLRConfigEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSLRConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Line rate configuration information entry."
+            INDEX { ifIndex, unisIfQoSLRDirection }
+            ::= { unisIfQoSLRConfigTable 1 }
+
+        UnisIfQoSLRConfigEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSLRDirection
+                    Direction,
+                unisIfQoSLRCir
+                    Unsigned32,
+                unisIfQoSLRCbs
+                    Unsigned32,
+                unisIfQoSLREbs
+                    Unsigned32,
+                unisIfQoSRowStatus
+                    RowStatus,
+                unisIfQoSLRPir
+                    Unsigned32,
+                unisIfQoSLRUnit
+                    INTEGER
+            }
+
+        unisIfQoSLRDirection OBJECT-TYPE
+            SYNTAX Direction
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Line rate on the inbound or outbound of data stream."
+            ::= { unisIfQoSLRConfigEntry 1 }
+
+        unisIfQoSLRCir OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Committed Information Rate."
+            ::= { unisIfQoSLRConfigEntry 2 }
+
+        unisIfQoSLRCbs  OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Committed Burst Size."
+            ::= { unisIfQoSLRConfigEntry 3 }
+
+        unisIfQoSLREbs  OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Excess Burst Size."
+            ::= { unisIfQoSLRConfigEntry 4 }
+
+        unisIfQoSRowStatus  OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSLRConfigEntry 5 }
+
+        unisIfQoSLRPir OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Peak Information Rate."
+            ::= { unisIfQoSLRConfigEntry 6 }
+
+        unisIfQoSLRUnit OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                unitAbsolute(1),
+                unitPercent(2)
+            }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "LR Unit:
+                 Absolute, Unit Kbps (1)
+                 Percent, Unit % (2)
+                "
+            DEFVAL { unitAbsolute }
+            ::= { unisIfQoSLRConfigEntry 7 }
+
+--
+-- nodes of unisIfQoSLRRunInfoTable
+--
+        unisIfQoSLRRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSLRRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of line rate run info information."
+            ::= { unisIfQoSLineRateObjects 2 }
+
+        unisIfQoSLRRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSLRRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Line rate run info information entry."
+            INDEX { ifIndex, unisIfQoSLRDirection }
+            ::= { unisIfQoSLRRunInfoTable 1 }
+
+        UnisIfQoSLRRunInfoEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSLRRunInfoPassedPackets
+                    Counter64,
+                unisIfQoSLRRunInfoPassedBytes
+                    Counter64,
+                unisIfQoSLRRunInfoDelayedPackets
+                    Counter64,
+                unisIfQoSLRRunInfoDelayedBytes
+                    Counter64,
+                unisIfQoSLRRunInfoActiveShaping
+                    INTEGER
+            }
+
+        unisIfQoSLRRunInfoPassedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of passed packets."
+            ::= { unisIfQoSLRRunInfoEntry 1 }
+
+        unisIfQoSLRRunInfoPassedBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of passed bytes."
+            ::= { unisIfQoSLRRunInfoEntry 2 }
+
+        unisIfQoSLRRunInfoDelayedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of delayed packets."
+            ::= { unisIfQoSLRRunInfoEntry 3 }
+
+        unisIfQoSLRRunInfoDelayedBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of delayed bytes."
+            ::= { unisIfQoSLRRunInfoEntry 4 }
+
+        unisIfQoSLRRunInfoActiveShaping OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                active(1),
+                inactive(2)
+            }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The flag of shaping."
+            ::= { unisIfQoSLRRunInfoEntry 5 }
+
+--
+-- nodes of car group
+--
+        unisIfQoSCARObjects OBJECT IDENTIFIER ::= { unisIfQos2 4 }
+--
+-- nodes of unisIfQoSAggregativeCarGroup
+--
+        unisIfQoSAggregativeCarGroup OBJECT IDENTIFIER ::= { unisIfQoSCARObjects 1 }
+--
+-- nodes of unisIfQoSAggregativeCarConfigTable
+--
+        unisIfQoSAggregativeCarNextIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object contains an appropriate value to be used for unisIfQoSAggregativeCarIndex
+                 when creating rows in the unisIfQoSAggregativeCarConfigTable.
+                 Begin with 1.
+                "
+            ::= { unisIfQoSAggregativeCarGroup 1 }
+
+        unisIfQoSAggregativeCarConfigTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSAggregativeCarConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of aggregative car information."
+            ::= { unisIfQoSAggregativeCarGroup 2 }
+
+        unisIfQoSAggregativeCarConfigEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSAggregativeCarConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Aggregative car information."
+            INDEX { unisIfQoSAggregativeCarIndex }
+            ::= { unisIfQoSAggregativeCarConfigTable 1 }
+
+        UnisIfQoSAggregativeCarConfigEntry     ::=
+            SEQUENCE
+            {
+                unisIfQoSAggregativeCarIndex
+                    Integer32,
+                unisIfQoSAggregativeCarName
+                    OCTET STRING,
+                unisIfQoSAggregativeCarCir
+                    Unsigned32,
+                unisIfQoSAggregativeCarCbs
+                    Unsigned32,
+                unisIfQoSAggregativeCarEbs
+                    Unsigned32,
+                unisIfQoSAggregativeCarPir
+                    Unsigned32,
+                unisIfQoSAggregativeCarGreenActionType
+                    UnisIfCarAction,
+                unisIfQoSAggregativeCarGreenActionValue
+                    Integer32,
+                unisIfQoSAggregativeCarYellowActionType
+                    UnisIfCarAction,
+                unisIfQoSAggregativeCarYellowActionValue
+                    Integer32,
+                unisIfQoSAggregativeCarRedActionType
+                    UnisIfCarAction,
+                unisIfQoSAggregativeCarRedActionValue
+                    Integer32,
+                unisIfQoSAggregativeCarType
+                    INTEGER,
+                unisIfQoSAggregativeCarRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSAggregativeCarIndex OBJECT-TYPE
+            SYNTAX Integer32 (1..65534)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The index of aggregative car."
+            ::= { unisIfQoSAggregativeCarConfigEntry 1 }
+
+        unisIfQoSAggregativeCarName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE(1..31))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The name of aggregative car."
+            ::= { unisIfQoSAggregativeCarConfigEntry 2 }
+
+        unisIfQoSAggregativeCarCir OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Committed-information-rate.  Unit : kbps"
+            ::= { unisIfQoSAggregativeCarConfigEntry 3 }
+
+        unisIfQoSAggregativeCarCbs OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Committed-burst-size.  Unit : byte"
+            ::= { unisIfQoSAggregativeCarConfigEntry 4 }
+
+        unisIfQoSAggregativeCarEbs OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Excess-burst-size.  Unit : byte"
+            ::= { unisIfQoSAggregativeCarConfigEntry 5 }
+
+        unisIfQoSAggregativeCarPir OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Peak-information-rate.  Unit : kbps"
+            DEFVAL { 4294967295 }
+            ::= { unisIfQoSAggregativeCarConfigEntry 6 }
+
+        unisIfQoSAggregativeCarGreenActionType OBJECT-TYPE
+            SYNTAX UnisIfCarAction
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Supported green action:
+                 invalid(0),
+                 pass(1),
+                 discard(3),
+                 remark(4),
+                 remark-ip-pass(6),
+                 remark-mplsexp-pass(8),
+                 remark-dscp-pass(10),
+                 remark-dot1p-pass(12),
+                 remark-atm-clp-pass(14),
+                 remark-fr-de-pass(16),
+                 remarkLocalPrePass(18),
+                 remarkDropPrePass(20).
+                 Hardware QoS : pass, discard, remark.
+                 Software QoS : pass, discard, remark-ip-pass(6),
+                 remark-mplsexp-pass(8), remark-dscp-pass(10).
+                 'invalid' is returned when getting value from software QoS.
+                 "
+            DEFVAL { pass }
+            ::= { unisIfQoSAggregativeCarConfigEntry 7 }
+
+        unisIfQoSAggregativeCarGreenActionValue OBJECT-TYPE
+            SYNTAX Integer32 (0..63|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The value is to remark When green action is remarking.
+                 For remark-dscp-pass, the range is 0 to 63;
+                 For remark-ip-pass, remark-mplsexp-pass, remark-dot1p-pass and
+                 remarkLocalPrePass, the range is 0 to 7;
+                 For remark-fr-de-pass and remark-atm-clp-pass, the range is 0 to 1;
+                 For remarkDropPrePass, the range is 0 to 2.
+                 Only software QoS support this node.
+                 255 is returned only when getting value from hardware QoS or
+                 when action being pass, discard of software QoS.
+                 255 can't be set.
+                "
+            ::= { unisIfQoSAggregativeCarConfigEntry 8 }
+
+        unisIfQoSAggregativeCarYellowActionType OBJECT-TYPE
+            SYNTAX UnisIfCarAction
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Supported yellow action:
+                 invalid(0),
+                 pass(1),
+                 discard(3),
+                 remark(4),
+                 remark-ip-pass(6),
+                 remark-mplsexp-pass(8),
+                 remark-dscp-pass(10),
+                 remark-dot1p-pass(12),
+                 remark-atm-clp-pass(14),
+                 remark-fr-de-pass(16),
+                 remarkLocalPrePass(18),
+                 remarkDropPrePass(20).
+                 Hardware QoS : pass, discard, remark.
+                 Software QoS : pass, discard, remark-ip-pass(6),
+                 remark-mplsexp-pass(8), remark-dscp-pass(10).
+                 'invalid' is returned when getting value from software QoS.
+                "
+            ::= { unisIfQoSAggregativeCarConfigEntry 9 }
+
+        unisIfQoSAggregativeCarYellowActionValue OBJECT-TYPE
+            SYNTAX Integer32 (0..63|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The value is to remark When yellow action is remarking.
+                 For remark-dscp-pass, the range is 0 to 63;
+                 For remark-ip-pass, remark-mplsexp-pass, remark-dot1p-pass and
+                 remarkLocalPrePass, the range is 0 to 7;
+                 For remark-fr-de-pass and remark-atm-clp-pass, the range is 0 to 1;
+                 For remarkDropPrePass, the range is 0 to 2.
+                 Only software QoS support this node.
+                 255 is returned only when getting value from hardware QoS or
+                 when action being pass, discard of software QoS.
+                 255 can't be set.
+                "
+            ::= { unisIfQoSAggregativeCarConfigEntry 10 }
+
+        unisIfQoSAggregativeCarRedActionType OBJECT-TYPE
+            SYNTAX UnisIfCarAction
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Supported red action:
+                 invalid(0),
+                 pass(1),
+                 discard(3),
+                 remark(4),
+                 remark-ip-pass(6),
+                 remark-mplsexp-pass(8),
+                 remark-dscp-pass(10),
+                 remark-dot1p-pass(12),
+                 remark-atm-clp-pass(14),
+                 remark-fr-de-pass(16),
+                 remarkLocalPrePass(18),
+                 remarkDropPrePass(20).
+                 Hardware QoS : pass, discard, remark.
+                 Software QoS : pass, discard, remark-ip-pass(6),
+                 remark-mplsexp-pass(8), remark-dscp-pass(10).
+                 'invalid' is returned when getting value from software QoS.
+                "
+            ::= { unisIfQoSAggregativeCarConfigEntry 11 }
+
+        unisIfQoSAggregativeCarRedActionValue OBJECT-TYPE
+            SYNTAX Integer32 (0..63|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The value is to remark When red action is remarking.
+                 For remark-dscp-pass, the range is 0 to 63;
+                 For remark-ip-pass, remark-mplsexp-pass, remark-dot1p-pass and
+                 remarkLocalPrePass, the range is 0 to 7;
+                 For remark-fr-de-pass and remark-atm-clp-pass, the range is 0 to 1;
+                 For remarkDropPrePass, the range is 0 to 2.
+                 Only software QoS support this node.
+                 255 is returned only when getting value from hardware QoS or
+                 when action being pass, discard of software QoS.
+                 255 can't be set.
+                "
+            ::= { unisIfQoSAggregativeCarConfigEntry 12 }
+
+        unisIfQoSAggregativeCarType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                aggregative(1),
+                notAggregative(2),
+                hierarchy(3)
+            }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The type of aggregative CAR.
+                 The enumeration 'aggregative' indicates that the ports
+                 with a same aggregative CAR use one token bulk.
+
+                 The enumeration 'notAggregative' indicates that each port
+                 uses one token bulk.
+
+                 The enumeration 'hierarchy' indicates that each object uses one
+                 token bulk after processed first by some other token bulk.
+                "
+            ::= { unisIfQoSAggregativeCarConfigEntry 13 }
+
+        unisIfQoSAggregativeCarRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSAggregativeCarConfigEntry 14 }
+--
+-- nodes of unisIfQoSAggregativeCarApplyGroup
+--
+        unisIfQoSAggregativeCarApplyTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSAggregativeCarApplyEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of aggregative car instance."
+            ::= { unisIfQoSAggregativeCarGroup 3 }
+
+        unisIfQoSAggregativeCarApplyEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSAggregativeCarApplyEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Aggregative car instance information."
+            INDEX { ifIndex,
+                    unisIfQoSAggregativeCarApplyDirection,
+                    unisIfQoSAggregativeCarApplyRuleType,
+                    unisIfQoSAggregativeCarApplyRuleValue
+                  }
+            ::= { unisIfQoSAggregativeCarApplyTable 1 }
+
+        UnisIfQoSAggregativeCarApplyEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSAggregativeCarApplyDirection
+                    Direction,
+                unisIfQoSAggregativeCarApplyRuleType
+                    INTEGER,
+                unisIfQoSAggregativeCarApplyRuleValue
+                    Integer32,
+                unisIfQoSAggregativeCarApplyCarIndex
+                    Integer32,
+                unisIfQoSAggregativeCarApplyRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSAggregativeCarApplyDirection OBJECT-TYPE
+            SYNTAX Direction
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Direction."
+            ::= { unisIfQoSAggregativeCarApplyEntry 1 }
+
+        unisIfQoSAggregativeCarApplyRuleType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                ipv4acl(1),
+                ipv6acl(2),
+                carl(3),
+                any(4)
+            }
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The type of class rule."
+            ::= { unisIfQoSAggregativeCarApplyEntry 2 }
+
+        unisIfQoSAggregativeCarApplyRuleValue OBJECT-TYPE
+            SYNTAX Integer32 (0..2147483647)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The number of class rule.
+                 ipv4acl : 2000..5999
+                 ipv6acl : 2000..42767
+                 carl : 1..199
+                 other types: 0.
+                "
+            ::= { unisIfQoSAggregativeCarApplyEntry 3 }
+
+        unisIfQoSAggregativeCarApplyCarIndex OBJECT-TYPE
+            SYNTAX Integer32 (1..65534)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The index of aggregative car."
+            ::= { unisIfQoSAggregativeCarApplyEntry 4 }
+
+        unisIfQoSAggregativeCarApplyRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSAggregativeCarApplyEntry 5 }
+--
+-- nodes of unisIfQoSAggregativeCarRunInfoTable
+--
+        unisIfQoSAggregativeCarRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSAggregativeCarRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of aggregative car statistic information."
+            ::= { unisIfQoSAggregativeCarGroup 4 }
+
+        unisIfQoSAggregativeCarRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSAggregativeCarRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Aggregative car statistic information."
+            INDEX { unisIfQoSAggregativeCarIndex }
+            ::= { unisIfQoSAggregativeCarRunInfoTable 1 }
+
+        UnisIfQoSAggregativeCarRunInfoEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSAggregativeCarGreenPackets
+                    Counter64,
+                unisIfQoSAggregativeCarGreenBytes
+                    Counter64,
+                unisIfQoSAggregativeCarYellowPackets
+                    Counter64,
+                unisIfQoSAggregativeCarYellowBytes
+                    Counter64,
+                unisIfQoSAggregativeCarRedPackets
+                    Counter64,
+                unisIfQoSAggregativeCarRedBytes
+                    Counter64
+            }
+
+        unisIfQoSAggregativeCarGreenPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of packets conforming CIR."
+            ::= { unisIfQoSAggregativeCarRunInfoEntry 1 }
+
+        unisIfQoSAggregativeCarGreenBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of bytes conforming CIR"
+            ::= { unisIfQoSAggregativeCarRunInfoEntry 2 }
+
+        unisIfQoSAggregativeCarYellowPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of yellow packets."
+            ::= { unisIfQoSAggregativeCarRunInfoEntry 3 }
+
+        unisIfQoSAggregativeCarYellowBytes  OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of yellow bytes."
+            ::= { unisIfQoSAggregativeCarRunInfoEntry 4 }
+
+        unisIfQoSAggregativeCarRedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of packets exceeding CIR."
+            ::= { unisIfQoSAggregativeCarRunInfoEntry 5 }
+
+        unisIfQoSAggregativeCarRedBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of bytes exceeding CIR."
+            ::= { unisIfQoSAggregativeCarRunInfoEntry 6 }
+
+--
+-- nodes of unisIfQoSTricolorCARGroup
+--
+        unisIfQoSTricolorCarGroup OBJECT IDENTIFIER ::= { unisIfQoSCARObjects 2 }
+--
+-- nodes of
+
+        unisIfQoSTricolorCarConfigTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSTricolorCarConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of tricolor car configuration information."
+            ::= { unisIfQoSTricolorCarGroup 1 }
+
+        unisIfQoSTricolorCarConfigEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSTricolorCarConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Tricolor car configuration information entry."
+            INDEX { ifIndex,
+                    unisIfQoSTricolorCarDirection,
+                    unisIfQoSTricolorCarType,
+                    unisIfQoSTricolorCarValue
+                  }
+            ::= { unisIfQoSTricolorCarConfigTable 1 }
+
+        UnisIfQoSTricolorCarConfigEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSTricolorCarDirection
+                    Direction,
+                unisIfQoSTricolorCarType
+                    INTEGER,
+                unisIfQoSTricolorCarValue
+                    Integer32,
+                unisIfQoSTricolorCarCir
+                    Unsigned32,
+                unisIfQoSTricolorCarCbs
+                    Unsigned32,
+                unisIfQoSTricolorCarEbs
+                    Unsigned32,
+                unisIfQoSTricolorCarPir
+                    Unsigned32,
+                unisIfQoSTricolorCarGreenActionType
+                    UnisIfCarAction,
+                unisIfQoSTricolorCarGreenActionValue
+                    Integer32,
+                unisIfQoSTricolorCarYellowActionType
+                    UnisIfCarAction,
+                unisIfQoSTricolorCarYellowActionValue
+                    Integer32,
+                unisIfQoSTricolorCarRedActionType
+                    UnisIfCarAction,
+                unisIfQoSTricolorCarRedActionValue
+                    Integer32,
+                unisIfQoSTricolorCarRowStatus
+                    RowStatus,
+                unisIfQoSTricolorCarUnitType
+                    INTEGER
+            }
+
+        unisIfQoSTricolorCarDirection OBJECT-TYPE
+            SYNTAX Direction
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Direction."
+            ::= { unisIfQoSTricolorCarConfigEntry 1 }
+
+        unisIfQoSTricolorCarType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                ipv4acl(1),
+                ipv6acl(2),
+                carl(3),
+                any(4)
+            }
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The index of the table, which is the matching type for the
+                 packets on interface: ipv4acl, ipv6acl, carl, any."
+            ::= { unisIfQoSTricolorCarConfigEntry 2 }
+
+        unisIfQoSTricolorCarValue OBJECT-TYPE
+            SYNTAX Integer32 (0..2147483647)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The index of the table.
+                 ipv4acl: the number is ipv4 acl number;
+                 ipv6acl: the number is ipv6 acl number;
+                 carl: the number is CARL number;
+                 any: the number is 0;
+                "
+            ::= { unisIfQoSTricolorCarConfigEntry 3 }
+
+        unisIfQoSTricolorCarCir OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Committed Information Rate.  The unit of this parameter depends
+                on the unisIfQoSTricolorCarUnitType node.
+                +-----------+----------+------------+
+                | Unit type | absolute | percent    |
+                +-----------+----------+------------+
+                | CIR unit  | kbps     | percentage |
+                +-----------+----------+------------+
+                "
+            ::= { unisIfQoSTricolorCarConfigEntry 4 }
+
+        unisIfQoSTricolorCarCbs OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Committed Burst Size.  The unit of this parameter depends
+                on the unisIfQoSTricolorCarUnitType node.
+                +-----------+----------+--------------+
+                | Unit type | absolute | percent      |
+                +-----------+----------+--------------+
+                | CBS unit  | bytes    | milliseconds |
+                +-----------+----------+--------------+
+                "
+            ::= { unisIfQoSTricolorCarConfigEntry 5 }
+
+        unisIfQoSTricolorCarEbs OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Excess Burst Size.  The unit of this parameter depends
+                on the unisIfQoSTricolorCarUnitType node.
+                +-----------+----------+--------------+
+                | Unit type | absolute | percent      |
+                +-----------+----------+--------------+
+                | EBS unit  | bytes    | milliseconds |
+                +-----------+----------+--------------+
+                "
+            ::= { unisIfQoSTricolorCarConfigEntry 6 }
+
+        unisIfQoSTricolorCarPir OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Peak Information Rate.  The unit of this parameter depends
+                on the unisIfQoSTricolorCarUnitType node.
+                +-----------+----------+------------+
+                | Unit type | absolute | percent    |
+                +-----------+----------+------------+
+                | PIR unit  | kbps     | percentage |
+                +-----------+----------+------------+
+                "
+            DEFVAL { 4294967295 }
+            ::= { unisIfQoSTricolorCarConfigEntry 7 }
+
+        unisIfQoSTricolorCarGreenActionType OBJECT-TYPE
+            SYNTAX UnisIfCarAction
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Green Action."
+            DEFVAL { pass }
+            ::= { unisIfQoSTricolorCarConfigEntry 8 }
+
+        unisIfQoSTricolorCarGreenActionValue OBJECT-TYPE
+            SYNTAX Integer32 (0..63|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The value is to remark when green action is remarking.
+                 For remark-dscp-continue and remark-dscp-pass, the range is 0 to 63;
+                 For remark-ip-continue and remark-ip-pass and
+                 remark-mplsexp-continue and remark-mplsexp-pass and
+                 remark-dot1p-continue and remark-dot1p-pass, the range is 0 to 7;
+                 For remark-fr-de-continue and remark-fr-de-pass and
+                 remark-atm-clp-continue and remark-atm-clp-pass, the range is 0 and 1.
+                 255 is returned only when getting value from hardware QoS
+                 or when action being pass, continue, discard of software QoS.
+                 255 can't be set.
+                "
+            ::= { unisIfQoSTricolorCarConfigEntry 9 }
+
+        unisIfQoSTricolorCarYellowActionType OBJECT-TYPE
+            SYNTAX UnisIfCarAction
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Yellow Action."
+            DEFVAL { pass }
+            ::= { unisIfQoSTricolorCarConfigEntry 10 }
+
+        unisIfQoSTricolorCarYellowActionValue OBJECT-TYPE
+            SYNTAX Integer32 (0..63|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The value is to remark when yellow action is remarking.
+                 For remark-dscp-continue and remark-dscp-pass, the range is 0 to 63;
+                 For remark-ip-continue and remark-ip-pass and
+                 remark-mplsexp-continue and remark-mplsexp-pass and
+                 remark-dot1p-continue and remark-dot1p-pass, the range is 0 to 7;
+                 For remark-fr-de-continue and remark-fr-de-pass and
+                 remark-atm-clp-continue and remark-atm-clp-pass, the range is 0 and 1.
+                 255 is returned only when getting value from hardware QoS
+                 or when action being pass, continue, discard of software QoS.
+                 255 can't be set.
+                "
+            ::= { unisIfQoSTricolorCarConfigEntry 11 }
+
+        unisIfQoSTricolorCarRedActionType OBJECT-TYPE
+            SYNTAX UnisIfCarAction
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Red Action"
+            DEFVAL { discard }
+            ::= { unisIfQoSTricolorCarConfigEntry 12 }
+
+        unisIfQoSTricolorCarRedActionValue OBJECT-TYPE
+            SYNTAX Integer32 (0..63|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The value is to remark when red action is remarking.
+                 For remark-dscp-continue and remark-dscp-pass, the range is 0 to 63;
+                 For remark-ip-continue and remark-ip-pass and
+                 remark-mplsexp-continue and remark-mplsexp-pass and
+                 remark-dot1p-continue and remark-dot1p-pass, the range is 0 to 7;
+                 For remark-fr-de-continue and remark-fr-de-pass and
+                 remark-atm-clp-continue and remark-atm-clp-pass, the range is 0 and 1.
+                 255 is returned only when getting value from hardware QoS
+                 or when action being pass, continue, discard of software QoS.
+                 255 can't be set.
+                "
+            ::= { unisIfQoSTricolorCarConfigEntry 13 }
+
+        unisIfQoSTricolorCarRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSTricolorCarConfigEntry 14 }
+
+        unisIfQoSTricolorCarUnitType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                unitAbsolute(1),
+                unitPercent(2)
+            }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Unit of token parameters.  If it is unitAbsolute, the token
+                parameters are in kbps and bytes, and if it is unitPercent,
+                the token parameters are in percentage and milliseconds."
+            DEFVAL { unitAbsolute }
+            ::= { unisIfQoSTricolorCarConfigEntry 15 }
+
+
+--
+-- nodes of unisIfQoSTricolorCarRunInfoTable
+--
+        unisIfQoSTricolorCarRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSTricolorCarRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of tricolor car statistic information."
+            ::= { unisIfQoSTricolorCarGroup 2 }
+
+        unisIfQoSTricolorCarRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSTricolorCarRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Tricolor car statistic information entry."
+            INDEX { ifIndex,
+                    unisIfQoSTricolorCarDirection,
+                    unisIfQoSTricolorCarType,
+                    unisIfQoSTricolorCarValue
+                  }
+            ::= { unisIfQoSTricolorCarRunInfoTable 1 }
+
+        UnisIfQoSTricolorCarRunInfoEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSTricolorCarGreenPackets
+                    Counter64,
+                unisIfQoSTricolorCarGreenBytes
+                    Counter64,
+                unisIfQoSTricolorCarYellowPackets
+                    Counter64,
+                unisIfQoSTricolorCarYellowBytes
+                    Counter64,
+                unisIfQoSTricolorCarRedPackets
+                    Counter64,
+                unisIfQoSTricolorCarRedBytes
+                    Counter64
+            }
+
+        unisIfQoSTricolorCarGreenPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of green packets."
+            ::= { unisIfQoSTricolorCarRunInfoEntry 1 }
+
+        unisIfQoSTricolorCarGreenBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of green bytes."
+            ::= { unisIfQoSTricolorCarRunInfoEntry 2 }
+
+        unisIfQoSTricolorCarYellowPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of yellow packets."
+            ::= { unisIfQoSTricolorCarRunInfoEntry 3 }
+
+        unisIfQoSTricolorCarYellowBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of yellow bytes."
+            ::= { unisIfQoSTricolorCarRunInfoEntry 4 }
+
+        unisIfQoSTricolorCarRedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of red packets."
+            ::= { unisIfQoSTricolorCarRunInfoEntry 5 }
+
+        unisIfQoSTricolorCarRedBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of red bytes."
+            ::= { unisIfQoSTricolorCarRunInfoEntry 6 }
+--
+-- nodes of unisIfQoSGTSObject
+--
+        unisIfQoSGTSObjects OBJECT IDENTIFIER ::= { unisIfQos2 5 }
+
+        unisIfQoSGTSConfigTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSGTSConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of generic traffic shaping information."
+            ::= { unisIfQoSGTSObjects 1 }
+
+        unisIfQoSGTSConfigEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSGTSConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Generic traffic shaping information entry."
+            INDEX { ifIndex,
+                    unisIfQoSGTSClassRuleType,
+                    unisIfQoSGTSClassRuleValue
+                  }
+            ::= { unisIfQoSGTSConfigTable 1 }
+
+        UnisIfQoSGTSConfigEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSGTSClassRuleType
+                    INTEGER,
+                unisIfQoSGTSClassRuleValue
+                    Integer32,
+                unisIfQoSGTSCir
+                    Unsigned32,
+                unisIfQoSGTSCbs
+                    Unsigned32,
+                unisIfQoSGTSEbs
+                    Unsigned32,
+                unisIfQoSGTSQueueLength
+                    Integer32,
+                unisIfQoSGTSConfigRowStatus
+                    RowStatus,
+                unisIfQoSGTSPir
+                    Unsigned32,
+                unisIfQoSGTSUnitType
+                    INTEGER
+            }
+
+        unisIfQoSGTSClassRuleType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                any(1),
+                ipv4acl(2),
+                ipv6acl(3),
+                queue(4)
+            }
+
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The index of the table,
+                 which is the matching type for the packets on interface:
+                 ipv4acl, ipv6acl, any, queue.
+                "
+            ::= { unisIfQoSGTSConfigEntry 1 }
+
+        unisIfQoSGTSClassRuleValue OBJECT-TYPE
+            SYNTAX Integer32 (0..2147483647)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Value of type.
+                 ipv4acl : 2000..5999
+                 ipv6acl : 2000..42767
+                 any : 0
+                 queue : 0..7
+                 "
+            ::= { unisIfQoSGTSConfigEntry 2 }
+
+        unisIfQoSGTSCir OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Committed Information Rate.  The unit of this parameter depends
+                on the unisIfQoSGTSUnitType node.
+                +-----------+----------+------------+
+                | Unit type | absolute | percent    |
+                +-----------+----------+------------+
+                | CIR unit  | kbps     | percentage |
+                +-----------+----------+------------+
+                "
+            ::= { unisIfQoSGTSConfigEntry 3 }
+
+        unisIfQoSGTSCbs OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Committed Burst Size.  The unit of this parameter depends
+                on the unisIfQoSGTSUnitType node.
+                +-----------+----------+--------------+
+                | Unit type | absolute | percent      |
+                +-----------+----------+--------------+
+                | CBS unit  | bytes    | milliseconds |
+                +-----------+----------+--------------+
+                "
+            ::= { unisIfQoSGTSConfigEntry 4 }
+
+        unisIfQoSGTSEbs OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Excess Burst Size.  The unit of this parameter depends
+                on the unisIfQoSGTSUnitType node.
+                +-----------+----------+--------------+
+                | Unit type | absolute | percent      |
+                +-----------+----------+--------------+
+                | EBS unit  | bytes    | milliseconds |
+                +-----------+----------+--------------+
+                "
+            ::= { unisIfQoSGTSConfigEntry 5 }
+
+        unisIfQoSGTSQueueLength OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The length of queue."
+            ::= { unisIfQoSGTSConfigEntry 6 }
+
+        unisIfQoSGTSConfigRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSGTSConfigEntry 7 }
+
+        unisIfQoSGTSPir OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Peak information rate.  The unit of this parameter depends
+                on the unisIfQoSGTSUnitType node.
+                +-----------+----------+------------+
+                | Unit type | absolute | percent    |
+                +-----------+----------+------------+
+                | PIR unit  | kbps     | percentage |
+                +-----------+----------+------------+
+                "
+            DEFVAL { 4294967295 }
+            ::= { unisIfQoSGTSConfigEntry 8 }
+
+        unisIfQoSGTSUnitType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                unitAbsolute(1),
+                unitPercent(2)
+            }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Unit of token parameters.  If it is unitAbsolute, the token
+                parameters are in kbps and bytes, and if it is unitPercent,
+                the token parameters are in percentage and milliseconds."
+            DEFVAL { unitAbsolute }
+            ::= { unisIfQoSGTSConfigEntry 9 }
+
+--
+-- nodes of unisIfQoSGTSRunInfoTable
+--
+        unisIfQoSGTSRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSGTSRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of  generic traffic shaping's statistic information."
+            ::= { unisIfQoSGTSObjects 2 }
+
+        unisIfQoSGTSRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSGTSRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Generic traffic shaping's statistic information entry."
+            INDEX { ifIndex,
+                    unisIfQoSGTSClassRuleType,
+                    unisIfQoSGTSClassRuleValue
+                  }
+            ::= { unisIfQoSGTSRunInfoTable 1 }
+
+        UnisIfQoSGTSRunInfoEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSGTSQueueSize
+                    Integer32,
+                unisIfQoSGTSPassedPackets
+                    Counter64,
+                unisIfQoSGTSPassedBytes
+                    Counter64,
+                unisIfQoSGTSDiscardPackets
+                    Counter64,
+                unisIfQoSGTSDiscardBytes
+                    Counter64,
+                unisIfQoSGTSDelayedPackets
+                    Counter64,
+                unisIfQoSGTSDelayedBytes
+                    Counter64
+            }
+
+        unisIfQoSGTSQueueSize OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of packets in the queue."
+            ::= { unisIfQoSGTSRunInfoEntry 1 }
+
+        unisIfQoSGTSPassedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of passed packets."
+            ::= { unisIfQoSGTSRunInfoEntry 2 }
+
+        unisIfQoSGTSPassedBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of passed bytes."
+            ::= { unisIfQoSGTSRunInfoEntry 3 }
+
+        unisIfQoSGTSDiscardPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of discard packets."
+            ::= { unisIfQoSGTSRunInfoEntry 4 }
+
+        unisIfQoSGTSDiscardBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of discard bytes."
+            ::= { unisIfQoSGTSRunInfoEntry 5 }
+
+        unisIfQoSGTSDelayedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of delayed packets."
+            ::= { unisIfQoSGTSRunInfoEntry 6 }
+
+        unisIfQoSGTSDelayedBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of delayed bytes."
+            ::= { unisIfQoSGTSRunInfoEntry 7 }
+--
+-- nodes of unisIfQoSWREDObject
+--
+        unisIfQoSWREDObjects OBJECT IDENTIFIER ::= { unisIfQos2 6 }
+--
+-- nodes of WRED group
+--
+        unisIfQoSWredGroupGroup OBJECT IDENTIFIER ::= { unisIfQoSWREDObjects 1 }
+
+        unisIfQoSWredGroupNextIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object contains an appropriate value to be used for unisIfQoSWredGroupIndex
+                 when creating rows in the unisIfQoSWredGroupTable.
+                 Begin with 0.
+                "
+            ::= { unisIfQoSWredGroupGroup 1 }
+--
+-- nodes of unisIfQoSWredGroupTable
+--
+        unisIfQoSWredGroupTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSWredGroupEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of WRED group information."
+            ::= { unisIfQoSWredGroupGroup 2 }
+
+        unisIfQoSWredGroupEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSWredGroupEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "WRED group information."
+            INDEX { unisIfQoSWredGroupIndex }
+            ::= { unisIfQoSWredGroupTable 1 }
+
+        UnisIfQoSWredGroupEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSWredGroupIndex
+                    Integer32,
+                unisIfQoSWredGroupName
+                    OCTET STRING,
+                unisIfQoSWredGroupType
+                    INTEGER,
+                unisIfQoSWredGroupWeightingConstant
+                    Integer32,
+                unisIfQoSWredGroupRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSWredGroupIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..256)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "WRED group index."
+            ::= { unisIfQoSWredGroupEntry 1 }
+
+        unisIfQoSWredGroupName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE(1..32))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "WRED group name."
+            ::= { unisIfQoSWredGroupEntry 2 }
+
+        unisIfQoSWredGroupType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                userdefined(0),
+                dot1p(1),
+                ippre(2),
+                dscp(3),
+                localpre(4),
+                atmclp(5),
+                frde(6),
+                exp(7),
+                queue(8),
+                dropLevel(9)
+            }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Type of WRED group."
+            ::= { unisIfQoSWredGroupEntry 3 }
+
+        unisIfQoSWredGroupWeightingConstant OBJECT-TYPE
+            SYNTAX Integer32 (1..15)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Exponent for WRED calculates the average length of queue.
+                 If 'unisIfQoSWredGroupType' is 'queue', the object is ineffective.
+                 So, it must use the object, which is 'unisIfQoSWredGroupExponent' of
+                 unisIfQoSWredGroupContentTable, to indicate the exponent of
+                 each queue of the queue WRED group."
+            DEFVAL { 9 }
+            ::= { unisIfQoSWredGroupEntry 4 }
+
+        unisIfQoSWredGroupRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSWredGroupEntry 6 }
+
+--
+-- nodes of unisIfQoSWredGroupContentTable
+--
+        unisIfQoSWredGroupContentTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSWredGroupContentEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of priority WRED information."
+            ::= { unisIfQoSWredGroupGroup 3 }
+
+        unisIfQoSWredGroupContentEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSWredGroupContentEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Priority WRED information entry."
+            INDEX { unisIfQoSWredGroupIndex,
+                    unisIfQoSWredGroupContentIndex,
+                    unisIfQoSWredGroupContentSubIndex  }
+            ::= { unisIfQoSWredGroupContentTable 1 }
+
+        UnisIfQoSWredGroupContentEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSWredGroupContentIndex
+                    Integer32,
+                unisIfQoSWredGroupContentSubIndex
+                    Integer32,
+                unisIfQoSWredLowLimit
+                    Integer32,
+                unisIfQoSWredHighLimit
+                    Integer32,
+                unisIfQoSWredDiscardProb
+                    Integer32,
+                unisIfQoSWredGroupExponent
+                    Integer32,
+                unisIfQoSWredRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSWredGroupContentIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..63)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The priority of a packet.
+                 Different type of packet has different priority.
+                 Type of priority    Range of priority
+                 dot1p              0..7
+                 ippre              0..7
+                 dscp               0..63
+                 atmclp             0..1
+                 frde               0..1
+                 exp                0..7
+                 queue              0..7 ( defined by product )
+                 dropLevel          0..2
+                 "
+            ::= { unisIfQoSWredGroupContentEntry 1 }
+
+        unisIfQoSWredGroupContentSubIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..63)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The sub index.
+                 Different type of packet has different value.
+                 Type of priority    Range of value
+                 queue              0..2
+                 other types : 0
+                 "
+            ::= { unisIfQoSWredGroupContentEntry 2 }
+
+        unisIfQoSWredLowLimit OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Discard low limit."
+            ::= { unisIfQoSWredGroupContentEntry 3 }
+
+        unisIfQoSWredHighLimit OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Discard high limit."
+            ::= { unisIfQoSWredGroupContentEntry 4 }
+
+        unisIfQoSWredDiscardProb OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Discard probability."
+            ::= { unisIfQoSWredGroupContentEntry 5 }
+
+        unisIfQoSWredGroupExponent OBJECT-TYPE
+            SYNTAX Integer32 (0..15)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Exponent for WRED calculates the average length of queue.
+                 Only 'unisIfQoSWredGroupType' is 'queue', the object is effective.
+                 This object is designed to indicate the exponent of
+                 each queue of the queue WRED group.
+                "
+            DEFVAL { 9 }
+            ::= { unisIfQoSWredGroupContentEntry 6 }
+
+        unisIfQoSWredRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSWredGroupContentEntry 7 }
+--
+-- nodes of unisIfQoSWredApplyIfTable
+--
+        unisIfQoSWredGroupApplyIfTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSWredGroupApplyIfEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of WRED group applied interface information."
+            ::= { unisIfQoSWredGroupGroup 4 }
+
+        unisIfQoSWredGroupApplyIfEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSWredGroupApplyIfEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "WRED group applied interface information."
+            INDEX { ifIndex }
+            ::= { unisIfQoSWredGroupApplyIfTable 1 }
+
+        UnisIfQoSWredGroupApplyIfEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSWredGroupApplyIndex
+                    Integer32,
+                unisIfQoSWredGroupApplyName
+                    OCTET STRING,
+                unisIfQoSWredGroupIfRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSWredGroupApplyIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..256)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "WRED group index."
+            ::= { unisIfQoSWredGroupApplyIfEntry 1 }
+
+        unisIfQoSWredGroupApplyName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE(1..32))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "WRED group name."
+            ::= { unisIfQoSWredGroupApplyIfEntry 2 }
+
+        unisIfQoSWredGroupIfRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSWredGroupApplyIfEntry 3 }
+--
+-- nodes of unisIfQoSWredApplyIfStatisticTable
+--
+        unisIfQoSWredApplyIfRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSWredApplyIfRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of WRED statistic information."
+            ::= { unisIfQoSWredGroupGroup 5 }
+
+        unisIfQoSWredApplyIfRunInfoEntry  OBJECT-TYPE
+            SYNTAX UnisIfQoSWredApplyIfRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "WRED statistic information."
+            INDEX { ifIndex,
+                    unisIfQoSWredGroupIndex,
+                    unisIfQoSWredGroupContentIndex,
+                    unisIfQoSWredGroupContentSubIndex
+                  }
+            ::= { unisIfQoSWredApplyIfRunInfoTable 1 }
+
+        UnisIfQoSWredApplyIfRunInfoEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSWredPreRandomDropNum
+                    Counter64,
+                unisIfQoSWredPreTailDropNum
+                    Counter64
+            }
+
+        unisIfQoSWredPreRandomDropNum OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of random drop."
+            ::= { unisIfQoSWredApplyIfRunInfoEntry 1 }
+
+        unisIfQoSWredPreTailDropNum OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of tail drop."
+            ::= { unisIfQoSWredApplyIfRunInfoEntry 2 }
+--
+-- nodes of unisIfQoSPortWREDGroup
+--
+        unisIfQoSPortWredGroup OBJECT IDENTIFIER ::= { unisIfQoSWREDObjects 2 }
+
+        unisIfQoSPortWredWeightConstantTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPortWREDWeightConstantEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of port WRED configuration information."
+            ::= { unisIfQoSPortWredGroup 1 }
+
+        unisIfQoSPortWredWeightConstantEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPortWREDWeightConstantEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Port WRED configuration information entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSPortWredWeightConstantTable 1 }
+
+        UnisIfQoSPortWREDWeightConstantEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSPortWredEnable
+                    TruthValue,
+                unisIfQoSPortWredWeightConstant
+                    Integer32,
+                unisIfQoSPortWredWeightConstantRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSPortWredEnable OBJECT-TYPE
+            SYNTAX TruthValue
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The object is used to enable or disable WRED function of the port.
+                 true: Enable WRED function of a port.
+                 false: Disable WRED function of a port.
+                "
+            ::= { unisIfQoSPortWredWeightConstantEntry 1 }
+
+        unisIfQoSPortWredWeightConstant OBJECT-TYPE
+            SYNTAX Integer32 (1..16)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Weight constant."
+            ::= { unisIfQoSPortWredWeightConstantEntry 2 }
+
+        unisIfQoSPortWredWeightConstantRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSPortWredWeightConstantEntry 3 }
+--
+-- notes of unisIfQoSPortWredPreConfigTable
+--
+        unisIfQoSPortWredPreConfigTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPortWREDPreConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of weighted random early detect precedence configuration information."
+            ::= { unisIfQoSPortWredGroup 2 }
+
+        unisIfQoSPortWredPreConfigEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPortWREDPreConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Weighted random early detect precedence configuration information entry."
+            INDEX { ifIndex, unisIfQoSPortWredPreID }
+            ::= { unisIfQoSPortWredPreConfigTable 1 }
+
+        UnisIfQoSPortWREDPreConfigEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSPortWredPreID
+                    Integer32,
+                unisIfQoSPortWredPreLowLimit
+                    Integer32,
+                unisIfQoSPortWredPreHighLimit
+                    Integer32,
+                unisIfQoSPortWredPreDiscardProbability
+                    Integer32,
+                unisIfQoSPortWredPreRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSPortWredPreID OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "IP precedence, from 0 to 7."
+            ::= { unisIfQoSPortWredPreConfigEntry 1 }
+
+        unisIfQoSPortWredPreLowLimit OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Low Limit(number of packets)"
+            ::= { unisIfQoSPortWredPreConfigEntry 2 }
+
+        unisIfQoSPortWredPreHighLimit OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "High limit(number of packets)"
+            ::= { unisIfQoSPortWredPreConfigEntry 3 }
+
+        unisIfQoSPortWredPreDiscardProbability OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Discard probability denominator"
+            ::= { unisIfQoSPortWredPreConfigEntry 4 }
+
+        unisIfQoSPortWredPreRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSPortWredPreConfigEntry 5 }
+
+--
+-- nodes of unisIfQoSPortWredRunInfoTable
+--
+        unisIfQoSPortWredRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPortWREDRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of WRED statistic information."
+            ::= { unisIfQoSPortWredGroup 3 }
+
+        unisIfQoSPortWredRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPortWREDRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "WRED statistic information entry."
+            INDEX { ifIndex, unisIfQoSPortWredPreID }
+            ::= { unisIfQoSPortWredRunInfoTable 1 }
+
+        UnisIfQoSPortWREDRunInfoEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSWREDTailDropNum
+                    Counter64,
+                unisIfQoSWREDRandomDropNum
+                    Counter64
+            }
+
+        unisIfQoSWREDTailDropNum OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of tail drop."
+            ::= { unisIfQoSPortWredRunInfoEntry 1 }
+
+        unisIfQoSWREDRandomDropNum OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of random drop."
+            ::= { unisIfQoSPortWredRunInfoEntry 2 }
+
+--
+-- nodes of unisIfQoSPortPriorityObject
+--
+
+        unisIfQoSPortPriorityObjects OBJECT IDENTIFIER ::= { unisIfQos2 7 }
+
+        unisIfQoSPortPriorityConfigGroup OBJECT IDENTIFIER ::= { unisIfQoSPortPriorityObjects 1 }
+
+        unisIfQoSPortPriorityTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPortPriorityEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of port priority information."
+            ::= { unisIfQoSPortPriorityConfigGroup 1 }
+
+        unisIfQoSPortPriorityEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPortPriorityEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Port priority information entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSPortPriorityTable 1 }
+
+        UnisIfQoSPortPriorityEntry    ::=
+            SEQUENCE
+            {
+                unisIfQoSPortPriorityValue
+                    Integer32
+            }
+
+        unisIfQoSPortPriorityValue OBJECT-TYPE
+            SYNTAX Integer32 (0..7)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The priority of a port."
+            DEFVAL { 0 }
+            ::= { unisIfQoSPortPriorityEntry 1 }
+--
+-- nodes of unisIfQoSPortPirorityTrustTable
+--
+        unisIfQoSPortPirorityTrustTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPortPirorityTrustEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of each port's trusted priority information."
+            ::= { unisIfQoSPortPriorityConfigGroup 2 }
+
+        unisIfQoSPortPirorityTrustEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPortPirorityTrustEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Per-port trusted priority information entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSPortPirorityTrustTable 1 }
+
+        UnisIfQoSPortPirorityTrustEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSPortPriorityTrustTrustType
+                    INTEGER,
+                unisIfQoSPortPriorityTrustOvercastType
+                    INTEGER
+            }
+
+        unisIfQoSPortPriorityTrustTrustType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                untrust(1),
+                dot1p(2),
+                dscp(3),
+                exp(4),
+                ipPrecedence(5),
+                dot11e(6),
+                auto(7)
+            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Trusted priority type of a port."
+            DEFVAL { untrust }
+            ::= { unisIfQoSPortPirorityTrustEntry 1 }
+
+        unisIfQoSPortPriorityTrustOvercastType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                noOvercast(1),
+                overcastDSCP(2),
+                overcastCOS(3),
+                overcast(4)
+            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The overcast type."
+            DEFVAL { noOvercast }
+            ::= { unisIfQoSPortPirorityTrustEntry 2 }
+--
+-- nodes of map object
+--
+        unisIfQoSMapObjects OBJECT IDENTIFIER ::= { unisIfQos2 9 }
+--
+-- nodes of unisIfQoSMapConfigGroup
+--
+        unisIfQoSPriMapConfigGroup OBJECT IDENTIFIER ::= { unisIfQoSMapObjects 1 }
+
+        unisIfQoSPriMapGroupNextIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object contains an appropriate value to be used for unisIfQoSPriMapGroupIndex
+                 when creating rows in the unisIfQoSPriMapGroupTable.
+                 Begin with 64.
+                "
+            ::= { unisIfQoSPriMapConfigGroup 1 }
+--
+-- nodes of unisIfQoSPriMapConfigTable
+--
+        unisIfQoSPriMapGroupTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPriMapGroupEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of map group information."
+            ::= { unisIfQoSPriMapConfigGroup 2 }
+
+        unisIfQoSPriMapGroupEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPriMapGroupEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Map group information entry."
+            INDEX { unisIfQoSPriMapGroupIndex  }
+            ::= { unisIfQoSPriMapGroupTable 1 }
+
+        UnisIfQoSPriMapGroupEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSPriMapGroupIndex
+                    Integer32,
+                unisIfQoSPriMapGroupType
+                    INTEGER,
+                unisIfQoSPriMapGroupName
+                    OCTET STRING,
+                unisIfQoSPriMapGroupRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSPriMapGroupIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The index of map, which are defined by system and user.
+                 The index of system defined map is 1 to 9.
+                 System defined map-name/map-index pairs like this:
+                 Map-index    Map-name
+                 1            dot1p-dp
+                 2            dot1p-dscp
+                 3            dot1p-lp
+                 4            dscp-dot1p
+                 5            dscp-dp
+                 6            dscp-dscp
+                 7            dscp-lp
+                 8            exp-dp
+                 9            exp-lp
+                "
+            ::= { unisIfQoSPriMapGroupEntry 1 }
+
+        unisIfQoSPriMapGroupType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                userdefined(1),
+                dot1p-dp(2),
+                dot1p-dscp(3),
+                dot1p-lp(4),
+                dscp-dot1p(5),
+                dscp-dp(6),
+                dscp-dscp(7),
+                dscp-lp(8),
+                exp-dp(9),
+                exp-lp(10)
+            }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The type of map group."
+            ::= { unisIfQoSPriMapGroupEntry 2 }
+
+        unisIfQoSPriMapGroupName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE(1..32))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The name of map group."
+            ::= { unisIfQoSPriMapGroupEntry 3 }
+
+        unisIfQoSPriMapGroupRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSPriMapGroupEntry 4 }
+
+--
+-- nodes of unisIfQoSPriMapContentTable
+--
+        unisIfQoSPriMapContentTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPriMapContentEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of priority map configuration information."
+            ::= { unisIfQoSPriMapConfigGroup 3 }
+
+        unisIfQoSPriMapContentEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPriMapContentEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Priority map configuration information entry."
+            INDEX { unisIfQoSPriMapGroupIndex, unisIfQoSPriMapGroupImportValue }
+            ::= { unisIfQoSPriMapContentTable 1 }
+
+        UnisIfQoSPriMapContentEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSPriMapGroupImportValue
+                    Integer32,
+                unisIfQoSPriMapGroupExportValue
+                    Integer32,
+                unisIfQoSPriMapContentRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSPriMapGroupImportValue OBJECT-TYPE
+            SYNTAX Integer32 (0..63)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Priority map table import value list.
+                 Different map has different unisIfQoSPriMapConfigImportValue.
+                 Map-name       Range of unisIfQoSPriMapConfigImportValue
+                 dot1p-dp       (0..7)
+                 dot1p-dscp     (0..7)
+                 dot1p-lp       (0..7)
+                 dscp-dot1p     (0..63)
+                 dscp-dp        (0..63)
+                 dscp-dscp      (0..63)
+                 dscp-lp(7)     (0..63)
+                 exp-dp(8)      (0..7)
+                 exp-lp         (0..7)
+                "
+            ::= { unisIfQoSPriMapContentEntry 1 }
+
+        unisIfQoSPriMapGroupExportValue OBJECT-TYPE
+            SYNTAX Integer32 (0..63)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Priority map table output.
+                 Different map has different unisIfQoSPriMapGroupExportValue.
+                 dot1p-dp:   0..7
+                 dot1p-dscp: 0..63
+                 dot1p-lp:   0..7
+                 dscp-dot1p: 0..7
+                 dscp-dp:    0..7
+                 dscp-dscp:  0..63
+                 dscp-lp:    0..7
+                 exp-dp:     0..7
+                 exp-lp:     0..7
+                "
+            ::= { unisIfQoSPriMapContentEntry 2 }
+
+        unisIfQoSPriMapContentRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus."
+            ::= { unisIfQoSPriMapContentEntry 3 }
+
+--
+-- nodes of unisIfQoSPrePriMapTable
+--
+        unisIfQoSPrePriMapTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPrePriMapEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Pre-defined priority mapping table information."
+            ::= { unisIfQoSPriMapConfigGroup 4 }
+
+        unisIfQoSPrePriMapEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPrePriMapEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Pre-defined priority mapping table entry."
+            INDEX
+            {
+                unisIfQoSPrePriMapTableType,
+                unisIfQoSPrePriMapTableColor,
+                unisIfQoSPrePriMapTableDirection,
+                unisIfQoSPrePriMapTableImportValue
+            }
+            ::= { unisIfQoSPrePriMapTable 1 }
+
+        UnisIfQoSPrePriMapEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSPrePriMapTableType
+                    INTEGER,
+                unisIfQoSPrePriMapTableColor
+                    INTEGER,
+                unisIfQoSPrePriMapTableDirection
+                    INTEGER,
+                unisIfQoSPrePriMapTableImportValue
+                    Integer32,
+                unisIfQoSPrePriMapTableExportValue
+                    Integer32
+            }
+
+        unisIfQoSPrePriMapTableType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                dot1pToLp(1),
+                dot1pToDp(2),
+                expToLp(3),
+                dscpToLp(4),
+                expToDp(5),
+                dscpToDp(6),
+                dscpToDot1p(7),
+                dot1pToDscp(8),
+                dscpToDscp(9),
+                dscpToExp(10),
+                expToDscp(11),
+                expToDot1p(12),
+                expToExp(13),
+                lpToDot1p(14),
+                dot1pToRpr(15),
+                dscpToRpr(16),
+                expToRpr(17),
+                ippreToRpr(18),
+                upToDot1p(19),
+                upToDscp(20),
+                upToExp(21),
+                upToDp(22),
+                upToLp(23),
+                upToRpr(24),
+                upToFc(25),
+                lpTodscp(26),
+                dot11eToLp(27),
+                lpToDot11e(28),
+                lpToLp(29),
+                dot1pToExp(30),
+                lpToExp(31),
+                lpToDp(32),
+                upToUp(33),
+                dot1pToDot1p(34)
+            }
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The type of pre-defined priority mapping table."
+            ::= { unisIfQoSPrePriMapEntry 1 }
+
+        unisIfQoSPrePriMapTableColor OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                noColor(1),
+                green(2),
+                yellow(3),
+                red(4)
+            }
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The color of pre-defined priority mapping table."
+            ::= { unisIfQoSPrePriMapEntry 2 }
+
+        unisIfQoSPrePriMapTableDirection OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                noDirection(1),
+                inbound(2),
+                outbound(3)
+            }
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The direction of pre-defined priority mapping table."
+            ::= { unisIfQoSPrePriMapEntry 3 }
+
+        unisIfQoSPrePriMapTableImportValue OBJECT-TYPE
+            SYNTAX Integer32 (0..63)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Input value of priority mapping table.
+                 Different priority has different unisIfQoSPrePriMapTableImportValue.
+                 Priority-type  Range of unisIfQoSPrePriMapTableImportValue
+                 dot1p          (0..7)
+                 dscp           (0..63)
+                 lp             (0..7)
+                 exp            (0..7)
+                 ipPrecedence   (0..7)
+                 up             (0..7)
+                 dot11e         (0..7)
+                "
+            ::= { unisIfQoSPrePriMapEntry 4 }
+
+        unisIfQoSPrePriMapTableExportValue OBJECT-TYPE
+            SYNTAX Integer32 (0..63)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Output value of priority mapping table.
+                 Different priority has different unisIfQoSPrePriMapTableExportValue.
+                 Priority-type  Range of unisIfQoSPrePriMapTableExportValue
+                 dot1p          (0..7)
+                 dscp           (0..63)
+                 lp             (0..7)
+                 exp            (0..7)
+                 ipPrecedence   (0..7)
+                 up             (0..7)
+                 dp             (0..2)
+                 fc             (0..7)
+                 rpr            (0..2)
+                "
+            ::= { unisIfQoSPrePriMapEntry 5 }
+
+--
+-- nodes of L3 plus object
+--
+        unisIfQoSL3PlusObjects OBJECT IDENTIFIER ::= { unisIfQos2 10 }
+--
+-- nodes of unisIfQoSPortBindingGroup
+--
+        unisIfQoSPortBindingGroup OBJECT IDENTIFIER ::= { unisIfQoSL3PlusObjects 1 }
+
+        unisIfQoSPortBindingTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSPortBindingEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of EACL sub-interface binding information
+                 for L3+ board ."
+            ::= { unisIfQoSPortBindingGroup 1 }
+
+        unisIfQoSPortBindingEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSPortBindingEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Binding information entry."
+            INDEX { ifIndex }
+            ::= { unisIfQoSPortBindingTable 1 }
+
+        UnisIfQoSPortBindingEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSBindingIf
+                    Integer32,
+                unisIfQoSBindingRowStatus
+                    RowStatus
+            }
+
+        unisIfQoSBindingIf OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The binding interface."
+            ::= { unisIfQoSPortBindingEntry 1 }
+
+        unisIfQoSBindingRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "RowStatus"
+            ::= { unisIfQoSPortBindingEntry 2 }
+
+--
+-- node of unisQoSTraStaObjects
+--
+        unisQoSTraStaObjects OBJECT IDENTIFIER ::= { unisIfQos2 11 }
+--
+-- nodes of unisQoSTraStaConfigGroup
+--
+        unisQoSTraStaConfigGroup OBJECT IDENTIFIER ::= { unisQoSTraStaObjects 1 }
+
+        unisQoSIfTraStaConfigInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisQoSIfTraStaConfigInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of traffic statistics configuration information."
+            ::= { unisQoSTraStaConfigGroup 1 }
+
+        unisQoSIfTraStaConfigInfoEntry OBJECT-TYPE
+            SYNTAX UnisQoSIfTraStaConfigInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "An entry of interface traffic statistics configuration information."
+            INDEX { ifIndex, unisQoSIfTraStaConfigDirection }
+            ::= { unisQoSIfTraStaConfigInfoTable 1 }
+
+        UnisQoSIfTraStaConfigInfoEntry ::=
+            SEQUENCE
+            {
+                unisQoSIfTraStaConfigDirection
+                    Direction,
+                unisQoSIfTraStaConfigQueue
+                    OCTET STRING,
+                unisQoSIfTraStaConfigDot1p
+                    OCTET STRING,
+                unisQoSIfTraStaConfigDscp
+                    OCTET STRING,
+                unisQoSIfTraStaConfigVlan
+                    OCTET STRING,
+                unisQoSIfTraStaConfigStatus
+                    RowStatus
+            }
+
+        unisQoSIfTraStaConfigDirection OBJECT-TYPE
+            SYNTAX Direction
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION "The direction of the traffic statistics."
+            ::= { unisQoSIfTraStaConfigInfoEntry 1 }
+
+        unisQoSIfTraStaConfigQueue OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (1))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION "The bitmap of Queue ID.
+                        The octet specifies queues 0 through 7.  If a bit has
+                        a value of '1', the corresponding queue is configured
+                        in the set of Queues; if a bit has a value of '0',
+                        the corresponding queue is not configured."
+            ::= { unisQoSIfTraStaConfigInfoEntry 2 }
+
+        unisQoSIfTraStaConfigDot1p OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (1))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION "The bitmap of Dot1p value.
+                        The octet specifies Dot1p values 0 through 7.  If a bit
+                        has a value of '1', the corresponding Dot1p value is
+                        configured in the set of Dot1p values; if a bit has a
+                        value of '0', the corresponding Dot1p value is not
+                        configured."
+            ::= { unisQoSIfTraStaConfigInfoEntry 3 }
+
+        unisQoSIfTraStaConfigDscp OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (8))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION "The bitmap of Dscp value.
+                        Each octet within this value specifies a set of
+                        eight Dscp values, with the first octet specifying
+                        Dscp values 0 through 7, the second octet specifying
+                        Dscp values 8 through 15, etc.  If a bit has a value
+                        of '1', the corresponding Dscp value is configured
+                        in the set of Dscp values; if a bit has a value of
+                        '0', the corresponding Dscp value is not configured."
+            ::= { unisQoSIfTraStaConfigInfoEntry 4 }
+
+        unisQoSIfTraStaConfigVlan OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (512))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION "The bitmap of VLAN ID.
+                        Each octet within this value specifies a set of
+                        eight VLANs, with the first octet specifying
+                        VLANs 0 through 7, the second octet specifying VLANs
+                        8 through 15, etc.  If a bit has a value of '1', the
+                        corresponding VLAN is configured in the set of VLANs;
+                        if a bit has a value of '0', the corresponding VLAN
+                        is not configured."
+            ::= { unisQoSIfTraStaConfigInfoEntry 5 }
+
+        unisQoSIfTraStaConfigStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION "The row status of this table entry."
+            ::= { unisQoSIfTraStaConfigInfoEntry 6 }
+
+
+--
+-- nodes of unisQoSTraStaRunGroup
+--
+        unisQoSTraStaRunGroup OBJECT IDENTIFIER ::= { unisQoSTraStaObjects 2 }
+
+        unisQoSIfTraStaRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisQoSIfTraStaRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of traffic statistics running information."
+            ::= { unisQoSTraStaRunGroup 1 }
+
+        unisQoSIfTraStaRunInfoEntry OBJECT-TYPE
+            SYNTAX UnisQoSIfTraStaRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "An entry of interface traffic statistics running information."
+            INDEX { ifIndex,
+                    unisQoSIfTraStaRunObjectType,
+                    unisQoSIfTraStaRunObjectValue,
+                    unisQoSIfTraStaRunDirection }
+            ::= { unisQoSIfTraStaRunInfoTable 1 }
+
+        UnisQoSIfTraStaRunInfoEntry ::=
+            SEQUENCE
+            {
+                unisQoSIfTraStaRunObjectType
+                    INTEGER,
+                unisQoSIfTraStaRunObjectValue
+                    Integer32,
+                unisQoSIfTraStaRunDirection
+                    Direction,
+                unisQoSIfTraStaRunPassPackets
+                    Counter64,
+                unisQoSIfTraStaRunDropPackets
+                    Counter64,
+                unisQoSIfTraStaRunPassBytes
+                    Counter64,
+                unisQoSIfTraStaRunDropBytes
+                    Counter64,
+                unisQoSIfTraStaRunPassPPS
+                    Counter64,
+                unisQoSIfTraStaRunPassBPS
+                    Counter64
+            }
+
+        unisQoSIfTraStaRunObjectType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                queue(1),
+                dot1p(2),
+                dscp(3),
+                vlanID(4)
+            }
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Type of statistics object."
+            ::= { unisQoSIfTraStaRunInfoEntry 1 }
+
+        unisQoSIfTraStaRunObjectValue OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Value range for the object type:
+                 for Queue: 0~7
+                 for Dot1p: 0~7
+                 for Dscp: 0~63
+                 for VlanID: 1~4094
+                 "
+            ::= { unisQoSIfTraStaRunInfoEntry 2 }
+
+        unisQoSIfTraStaRunDirection OBJECT-TYPE
+            SYNTAX Direction
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The direction of the traffic statistics."
+            ::= { unisQoSIfTraStaRunInfoEntry 3 }
+
+        unisQoSIfTraStaRunPassPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of passed packets."
+            ::= { unisQoSIfTraStaRunInfoEntry 4 }
+
+        unisQoSIfTraStaRunDropPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of dropped packets."
+            ::= { unisQoSIfTraStaRunInfoEntry 5 }
+
+        unisQoSIfTraStaRunPassBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of passed bytes."
+            ::= { unisQoSIfTraStaRunInfoEntry 6 }
+
+        unisQoSIfTraStaRunDropBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of dropped bytes."
+            ::= { unisQoSIfTraStaRunInfoEntry 7 }
+
+        unisQoSIfTraStaRunPassPPS OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "PPS (packets per second) of passed packets."
+            ::= { unisQoSIfTraStaRunInfoEntry 8 }
+
+        unisQoSIfTraStaRunPassBPS OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "BPS (bytes per second) of passed packets."
+            ::= { unisQoSIfTraStaRunInfoEntry 9 }
+
+--
+-- nodes of unisQoSGlobalPriorityObject
+--
+        unisQoSGlobalPriorityObject OBJECT IDENTIFIER ::= { unisIfQos2 12 }
+
+        unisQoSRemarkTcpPortPriTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisQoSRemarkTcpPortPriEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of remarking TCP port priority information.
+                 The priority field of all packets with the specified
+                 TCP port will be remarked to the configured value.
+                "
+            ::= { unisQoSGlobalPriorityObject 1 }
+
+        unisQoSRemarkTcpPortPriEntry OBJECT-TYPE
+            SYNTAX UnisQoSRemarkTcpPortPriEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Remarking TCP port priority information entry."
+            INDEX { unisQoSRemarkTcpPortStart }
+            ::= { unisQoSRemarkTcpPortPriTable 1 }
+
+        UnisQoSRemarkTcpPortPriEntry ::=
+            SEQUENCE
+            {
+                unisQoSRemarkTcpPortStart
+                    Integer32,
+                unisQoSRemarkTcpPortEnd
+                    Integer32,
+                unisQoSRemarkTcpPortType
+                    INTEGER,
+                unisQoSRemarkTcpPortDot1p
+                    Unsigned32,
+                unisQoSRemarkTcpPortDscp
+                    Unsigned32,
+                unisQoSRemarkTcpPortRowStatus
+                    RowStatus
+            }
+
+        unisQoSRemarkTcpPortStart OBJECT-TYPE
+            SYNTAX Integer32 (0..65535)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Start value of TCP port range."
+            ::= { unisQoSRemarkTcpPortPriEntry 1 }
+
+        unisQoSRemarkTcpPortEnd OBJECT-TYPE
+            SYNTAX Integer32 (0..65535)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "End value of TCP port range.
+                 It cannot be less than start value.
+                "
+            ::= { unisQoSRemarkTcpPortPriEntry 2 }
+
+        unisQoSRemarkTcpPortType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                ipAll(1),
+                ipv4(2),
+                ipv6(3)
+            }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "IPv4 packet, IPv6 packet, or all IP packet."
+            DEFVAL { ipAll }
+            ::= { unisQoSRemarkTcpPortPriEntry 3 }
+
+        unisQoSRemarkTcpPortDot1p OBJECT-TYPE
+            SYNTAX Unsigned32 (0..7|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Dot1p value."
+            ::= { unisQoSRemarkTcpPortPriEntry 4 }
+
+        unisQoSRemarkTcpPortDscp OBJECT-TYPE
+            SYNTAX Unsigned32 (0..63|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "DSCP value."
+            ::= { unisQoSRemarkTcpPortPriEntry 5 }
+
+        unisQoSRemarkTcpPortRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Row status."
+            ::= { unisQoSRemarkTcpPortPriEntry 6 }
+
+--unisQoSRemarkUdpPortPriTable
+
+        unisQoSRemarkUdpPortPriTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisQoSRemarkUdpPortPriEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of remarking UDP port priority information.
+                 The priority field of all packets with the specified
+                 UDP port will be remarked to the configured value.
+                "
+            ::= { unisQoSGlobalPriorityObject 2 }
+
+        unisQoSRemarkUdpPortPriEntry OBJECT-TYPE
+            SYNTAX UnisQoSRemarkUdpPortPriEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Remarking UDP port priority information entry."
+            INDEX { unisQoSRemarkUdpPortStart }
+            ::= { unisQoSRemarkUdpPortPriTable 1 }
+
+        UnisQoSRemarkUdpPortPriEntry ::=
+            SEQUENCE
+            {
+                unisQoSRemarkUdpPortStart
+                    Integer32,
+                unisQoSRemarkUdpPortEnd
+                    Integer32,
+                unisQoSRemarkUdpPortType
+                    INTEGER,
+                unisQoSRemarkUdpPortDot1p
+                    Unsigned32,
+                unisQoSRemarkUdpPortDscp
+                    Unsigned32,
+                unisQoSRemarkUdpPortRowStatus
+                    RowStatus
+            }
+
+        unisQoSRemarkUdpPortStart OBJECT-TYPE
+            SYNTAX Integer32 (0..65535)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Start value of UDP port range."
+            ::= { unisQoSRemarkUdpPortPriEntry 1 }
+
+        unisQoSRemarkUdpPortEnd OBJECT-TYPE
+            SYNTAX Integer32 (0..65535)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "End value of UDP port range.
+                 It cannot be less than start value.
+                "
+            ::= { unisQoSRemarkUdpPortPriEntry 2 }
+
+        unisQoSRemarkUdpPortType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                ipAll(1),
+                ipv4(2),
+                ipv6(3)
+            }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "IPv4 packet, IPv6 packet, or all IP packet."
+            DEFVAL { ipAll }
+            ::= { unisQoSRemarkUdpPortPriEntry 3 }
+
+        unisQoSRemarkUdpPortDot1p OBJECT-TYPE
+            SYNTAX Unsigned32 (0..7|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Dot1p value."
+            ::= { unisQoSRemarkUdpPortPriEntry 4 }
+
+        unisQoSRemarkUdpPortDscp OBJECT-TYPE
+            SYNTAX Unsigned32 (0..63|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "DSCP value."
+            ::= { unisQoSRemarkUdpPortPriEntry 5 }
+
+        unisQoSRemarkUdpPortRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Row status."
+            ::= { unisQoSRemarkUdpPortPriEntry 6 }
+
+--unisQoSRemarkIPv4AddrPriTable
+        unisQoSRemarkIPv4AddrPriTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisQoSRemarkIPv4AddrPriEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of remarking IPv4 address priority information."
+            ::= { unisQoSGlobalPriorityObject 3 }
+
+        unisQoSRemarkIPv4AddrPriEntry OBJECT-TYPE
+            SYNTAX UnisQoSRemarkIPv4AddrPriEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Remarking IPv4 address priority information entry.
+                 The priority field of all IPv4 packets with the specified
+                 IP address will be remarked to the configured value.
+                "
+            INDEX { unisQoSRemarkIPv4AddrValue }
+            ::= { unisQoSRemarkIPv4AddrPriTable 1 }
+
+        UnisQoSRemarkIPv4AddrPriEntry ::=
+            SEQUENCE
+            {
+                unisQoSRemarkIPv4AddrValue
+                    IpAddress,
+                unisQoSRemarkIPv4AddrMask
+                    IpAddress,
+                unisQoSRemarkIPv4AddrMaskLength
+                    Unsigned32,
+                unisQoSRemarkIPv4AddrDot1p
+                    Unsigned32,
+                unisQoSRemarkIPv4AddrDscp
+                    Unsigned32,
+                unisQoSRemarkIPv4AddrRowStatus
+                    RowStatus
+            }
+
+        unisQoSRemarkIPv4AddrValue OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "IPv4 address."
+            ::= { unisQoSRemarkIPv4AddrPriEntry 1 }
+
+        unisQoSRemarkIPv4AddrMask OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Mask of IPv4 address."
+            ::= { unisQoSRemarkIPv4AddrPriEntry 2 }
+
+        unisQoSRemarkIPv4AddrMaskLength OBJECT-TYPE
+            SYNTAX Unsigned32 (1..32 |4294967295)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Mask length of IPv4 address."
+            DEFVAL { 32 }
+            ::= { unisQoSRemarkIPv4AddrPriEntry 3 }
+
+        unisQoSRemarkIPv4AddrDot1p OBJECT-TYPE
+            SYNTAX Unsigned32 (0..7|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Dot1p value."
+            ::= { unisQoSRemarkIPv4AddrPriEntry 4 }
+
+        unisQoSRemarkIPv4AddrDscp OBJECT-TYPE
+            SYNTAX Unsigned32 (0..63|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "DSCP value."
+            ::= { unisQoSRemarkIPv4AddrPriEntry 5 }
+
+        unisQoSRemarkIPv4AddrRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Row status."
+            ::= { unisQoSRemarkIPv4AddrPriEntry 6 }
+
+--unisQoSRemarkIPv6AddrPriTable
+        unisQoSRemarkIPv6AddrPriTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisQoSRemarkIPv6AddrPriEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of remarking IPv6 address priority information.
+                 The priority field of all IPv6 packets with the specified
+                 IP address will be remarked to the configured value.
+                "
+            ::= { unisQoSGlobalPriorityObject 4 }
+
+        unisQoSRemarkIPv6AddrPriEntry OBJECT-TYPE
+            SYNTAX UnisQoSRemarkIPv6AddrPriEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Remarking IPv6 address priority information entry."
+            INDEX { unisQoSRemarkIPv6AddrValue }
+            ::= { unisQoSRemarkIPv6AddrPriTable 1 }
+
+        UnisQoSRemarkIPv6AddrPriEntry ::=
+            SEQUENCE
+            {
+                unisQoSRemarkIPv6AddrValue
+                    InetAddressIPv6,
+                unisQoSRemarkIPv6AddrPrefixLength
+                    InetAddressPrefixLength,
+                unisQoSRemarkIPv6AddrDot1p
+                    Unsigned32,
+                unisQoSRemarkIPv6AddrDscp
+                    Unsigned32,
+                unisQoSRemarkIPv6AddrRowStatus
+                    RowStatus
+            }
+
+        unisQoSRemarkIPv6AddrValue OBJECT-TYPE
+            SYNTAX InetAddressIPv6
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "IPv6 address."
+            ::= { unisQoSRemarkIPv6AddrPriEntry 1 }
+
+        unisQoSRemarkIPv6AddrPrefixLength OBJECT-TYPE
+            SYNTAX InetAddressPrefixLength
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Prefix length of IPv6 address."
+            DEFVAL { 128 }
+            ::= { unisQoSRemarkIPv6AddrPriEntry 2 }
+
+        unisQoSRemarkIPv6AddrDot1p OBJECT-TYPE
+            SYNTAX Unsigned32 (0..7|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Dot1p value."
+            ::= { unisQoSRemarkIPv6AddrPriEntry 3 }
+
+        unisQoSRemarkIPv6AddrDscp OBJECT-TYPE
+            SYNTAX Unsigned32 (0..63|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "DSCP value."
+            ::= { unisQoSRemarkIPv6AddrPriEntry 4 }
+
+        unisQoSRemarkIPv6AddrRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Row status."
+            ::= { unisQoSRemarkIPv6AddrPriEntry 5 }
+
+--unisQoSRemarkProtocolPriTable
+        unisQoSRemarkProtocolPriTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisQoSRemarkProtocolPriEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of remarking layer 3 protocol priority information.
+                 The 802.1p priority field of all packets of the specified
+                 protocol will be remarked to the configured value.
+                "
+            ::= { unisQoSGlobalPriorityObject 5 }
+
+        unisQoSRemarkProtocolPriEntry OBJECT-TYPE
+            SYNTAX UnisQoSRemarkProtocolPriEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Remarking layer 3 protocol priority information entry."
+            INDEX { unisQoSRemarkProtocolValue }
+            ::= { unisQoSRemarkProtocolPriTable 1 }
+
+        UnisQoSRemarkProtocolPriEntry ::=
+            SEQUENCE
+            {
+                unisQoSRemarkProtocolValue
+                    INTEGER,
+                unisQoSRemarkProtocolDot1p
+                    Unsigned32,
+                unisQoSRemarkProtocolRowStatus
+                    RowStatus
+            }
+
+        unisQoSRemarkProtocolValue OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                ip(1),
+                ipx(2),
+                arp(3),
+                appletalk(4),
+                sna(5),
+                netbeui(6)
+            }
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Layer 3 protocol type."
+            ::= { unisQoSRemarkProtocolPriEntry 1 }
+
+        unisQoSRemarkProtocolDot1p OBJECT-TYPE
+            SYNTAX Unsigned32 (0..7|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Dot1p value."
+            ::= { unisQoSRemarkProtocolPriEntry 2 }
+
+        unisQoSRemarkProtocolRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Row status."
+            ::= { unisQoSRemarkProtocolPriEntry 3 }
+
+--unisQoSRemarkVlanPriTable
+
+        unisQoSRemarkVlanPriTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisQoSRemarkVlanPriEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of remarking VLAN priority information.
+                 The priority field of all packets of the specified
+                 VLAN will be remarked to the configured value.
+                "
+            ::= { unisQoSGlobalPriorityObject 6 }
+
+        unisQoSRemarkVlanPriEntry OBJECT-TYPE
+            SYNTAX UnisQoSRemarkVlanPriEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Remarking VLAN priority information entry."
+            INDEX { unisQoSRemarkVlanStart }
+            ::= { unisQoSRemarkVlanPriTable 1 }
+
+        UnisQoSRemarkVlanPriEntry ::=
+            SEQUENCE
+            {
+                unisQoSRemarkVlanStart
+                    Integer32,
+                unisQoSRemarkVlanEnd
+                    Integer32,
+                unisQoSRemarkVlanDot1p
+                    Unsigned32,
+                unisQoSRemarkVlanDscp
+                    Unsigned32,
+                unisQoSRemarkVlanRowStatus
+                    RowStatus
+            }
+
+        unisQoSRemarkVlanStart OBJECT-TYPE
+            SYNTAX Integer32 (1..4094)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Start VLAN ID."
+            ::= { unisQoSRemarkVlanPriEntry 1 }
+
+        unisQoSRemarkVlanEnd OBJECT-TYPE
+            SYNTAX Integer32 (1..4094)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "End VLAN ID.  It cannot be less than start value."
+            ::= { unisQoSRemarkVlanPriEntry 2 }
+
+        unisQoSRemarkVlanDot1p OBJECT-TYPE
+            SYNTAX Unsigned32 (0..7|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Dot1p value."
+            ::= { unisQoSRemarkVlanPriEntry 3 }
+
+        unisQoSRemarkVlanDscp OBJECT-TYPE
+            SYNTAX Unsigned32 (0..63|255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "DSCP value."
+            ::= { unisQoSRemarkVlanPriEntry 4 }
+
+        unisQoSRemarkVlanRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Row status."
+            ::= { unisQoSRemarkVlanPriEntry 5 }
+
+--Type of service node
+        unisQoSTypeOfServiceObjects OBJECT IDENTIFIER
+            ::= { unisQoSGlobalPriorityObject 7 }
+
+        unisQoSTypeOfServiceMode OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                disabled(1),
+                ipPrecedence(2),
+                dscp(3)
+            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Global type of service.
+                 The type of service is disabled by default.
+                 When in ip-precedence mode, device uses ip-precedence value to
+                 determine the 802.1p priority of the packet and its outbound queue.
+                 When in DSCP mode, device uses DSCP value to determine
+                 the 802.1p priority of the packet and its outbound queue.
+                "
+            DEFVAL { disabled }
+            ::= { unisQoSTypeOfServiceObjects 1 }
+
+--
+-- nodes of unisIfQoSProcessingStatusObjects
+--
+        unisIfQoSProcessingStatusObjects OBJECT IDENTIFIER ::= { unisIfQos2 13 }
+
+-- System status when processing
+
+        unisIfQoSProcessingStatus OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                idle(1),
+                busy(2)
+            }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object shows the current running status of the IFQoS module.
+                'busy' means a task is being executed in the IFQoS module.  It is
+                highly recommended not setting or reading IFQoS MIB objects in this state.
+                otherwise, an operation failure might occur.
+                'idle' means no task is being executed in the IFQoS module.  In this
+                state, operations on IFQoS MIB objects will be accepted and executed
+                immediately."
+
+            ::= { unisIfQoSProcessingStatusObjects 1 }
+
+--
+-- nodes of unisIfQoSCoppObjects
+--
+        unisIfQoSCoppObjects OBJECT IDENTIFIER ::= { unisIfQos2 14 }
+
+        unisIfQoSCoppFlowStatTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisIfQoSCoppFlowStatEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of display the copp flow stat."
+            ::= { unisIfQoSCoppObjects 1 }
+
+        unisIfQoSCoppFlowStatEntry OBJECT-TYPE
+            SYNTAX UnisIfQoSCoppFlowStatEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Display the copp flow stat entry."
+            INDEX { unisIfQoSCoppFlowStatChassis, unisIfQoSCoppFlowStatSlot, unisIfQoSCoppFlowStatProType}
+            ::= { unisIfQoSCoppFlowStatTable 1 }
+
+    UnisIfQoSCoppFlowStatEntry ::=
+            SEQUENCE
+            {
+                unisIfQoSCoppFlowStatChassis
+                    Unsigned32,
+                unisIfQoSCoppFlowStatSlot
+                    Unsigned32,
+                unisIfQoSCoppFlowStatProType
+                    Unsigned32,
+                unisIfQoSCoppFlowPassPackets
+                    Counter64,
+                unisIfQoSCoppFlowPassBytes
+                    Counter64,
+                unisIfQoSCoppFlowDropPackets
+                    Counter64,
+                unisIfQoSCoppFlowDropBytes
+                    Counter64
+            }
+
+    unisIfQoSCoppFlowStatChassis OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The Chassis number."
+            ::= { unisIfQoSCoppFlowStatEntry 1 }
+
+    unisIfQoSCoppFlowStatSlot OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The slot number."
+            ::= { unisIfQoSCoppFlowStatEntry 2 }
+
+    unisIfQoSCoppFlowStatProType OBJECT-TYPE
+            SYNTAX Unsigned32 (1..65)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The protocol type."
+            ::= { unisIfQoSCoppFlowStatEntry 3 }
+
+    unisIfQoSCoppFlowPassPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of passed packets."
+            ::= { unisIfQoSCoppFlowStatEntry 4 }
+
+    unisIfQoSCoppFlowPassBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of passed bytes."
+            ::= { unisIfQoSCoppFlowStatEntry 5 }
+
+    unisIfQoSCoppFlowDropPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of dropped packets."
+            ::= { unisIfQoSCoppFlowStatEntry 6 }
+
+    unisIfQoSCoppFlowDropBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of dropped bytes."
+            ::= { unisIfQoSCoppFlowStatEntry 7 }
+
+END

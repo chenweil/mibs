@@ -1,0 +1,1790 @@
+-- =============================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description:
+--   The file defines a MIB to provide 802.11 MAC information such
+--   as station statistic and notification events.
+-- Reference:
+-- Version: V3.0
+-- History:
+--   V1.0 created by shiyang (Richard)
+--     Initial version 2006-05-10
+--   V1.1 2007-04-27 modified by shiyang(Richard)
+--        The data type of object unisDot11StationRxFrameBytes,
+--        unisDot11StationTxFrameBytes and unisDot11StationDropFrameBytes
+--        was changed from counter32 to counter64.
+--   V1.2 2007-06-21 modified by Vikas K
+--        Added 4 new Station Traps and also new objects for the traps.
+--   V1.3 2007-12-21 modified by wanghao (Kumar)
+--        Added unisDot11StationRxSNR, unisDot11StationTxRate,
+--        unisDot11StationRxRate to unisDot11StationAssociateTable.
+--        Added unisDot11StationSessionDuration to unisDot11StationDeAssocTrap
+--        Added unisDot11StationSessionDuration to unisDot11StationTrapVarObjects.
+--        Added unisDot11StationVendorName and unisDot11StationRadioMode to
+--        UnisDot11StationAssociateEntry.
+--   V1.4 2008-02-25 modified by wanghao (Kumar)
+--        Add unisDot11StationRoamingTrap and add unisDot11StationRxNoise to
+--        unisDot11StationAssociateTable.
+--   V1.5 2008-08-01 modified by Wang Lu
+--        Change description of unisDot11StationMAC, unisDot11CurrWlanID and
+--        unisDot11StationAid.
+--        Change SYNTAX of unisDot11StationSessionStartTime
+--        Change OBJECTS of unisDot11StationAuthorFailTrap,
+--        unisDot11StationAssocFailTrap, unisDot11StationDeAssocTrap and
+--        unisDot11StationAuthorSuccTrap
+--   V1.6 2008-11-07 modified by Wang Lu and Li Yugang
+--        Add unisDot11StationRxRetryPkts, unisDot11StationTxRetryPkts,
+--        unisDot11StationRxRetryBytes and unisDot11StationTxRetryBytes
+--        to unisDot11StationStatisTable.
+--        Add new variable bindings unisDot11StationAPName and
+--        unisDot11StationBSSID to unisDot11StationAuthorSuccTrap and
+--        unisDot11StationDeAssocTrap.
+--        Add new notification unisDot11StationDisconnectTrap.
+--        Add unisDot11StationThroughput to unisDot11StationStatisTable.
+--   V1.7 2009-05-07 modified by Wang Shaojie
+--        Add unisDot11StationMACAddress to unisDot11StationAssociateTable
+--   V1.8 2009-04-14 modified by Heziqi
+--        Add new node unisDot11StationSuccessTxCnt, unisDot11StationRxFragCnt
+--        and unisDot11StationSuccessTxDataCnt for unisDot11StationStatisTable.
+--        Add new node unisDot11StationTxSpeed, unisDot11StationRxSpeed
+--        and unisDot11StationWmmMode for unisDot11StationAssociateTable.
+--        Add new node unisDot11StationRxDataFrameCnt,
+--        unisDot11StationTxDataFrameCnt, unisDot11StationRxDataFrameBytes
+--        unisDot11StationTxDataFrameBytes for unisDot11StationAssociateTable.
+--   V1.9 2009-08-07 modified by Wang Shaojie
+--        Modify description of unisDot11StationTxSpeed, unisDot11StationRxSpeed
+--   V2.0 2010-02-23 Add new node unisDot11StaRxErrDataFrameCnt and
+--        unisDot11StaTxRetryDataFrameCnt to unisDot11StationStatisTable.
+--        Add new node unisDot11StationUpTimeTicks, unisDot11StationSecIEStatus
+--        to unisDot11StationAssociateTable.
+--        Add unisDot11StationAuthMode to unisDot11StationTrapVarObjects.
+--        2010-08-07 modified by Wang Shaojie
+--        Add unisDot11StationACIPv6Add to unisDot11StationTrapVarObjects.
+--        2010-09-02 modified by Yin junjie
+--        Modify unisDot11StationDisconnectTrap.
+--   V2.1 2011-08-10 modified by limingjin
+--        Add unisDot11StationRadioMode2 to unisDot11StationAssociateTable
+--   V2.2 2011-09-28 modified by zhanghu
+--        Add unisDot11StaTxDataRatePkts, unisDot11StaRxDataRatePkts,
+--        unisDot11StaTxSignalStrengthPkts to unisDot11StationStatisTable
+--        2012-02-08 modified by d07436
+--        Add unisDot11StationAssTime to  unisDot11StationAssociateEntry
+--        Add unisDot11UserDisconnectTrap to unisDot11StationTraps
+--        Add unisDot11UserName to unisDot11StationTrapVarObjects
+--   V2.3 2012-05-16 modified by lihonghao
+--        Add unisDot11StationUserAuthType to unisDot11StationAssociateTable
+--        2012-08-13 modified by wangminghui
+--        Add new node   unisDot11StationTrapAPMacAddress to unisDot11StationTrapVarObjects
+--        Add new object unisDot11StationTrapAPMacAddress to unisDot11StationAuthorFailTrap
+--        Add new object unisDot11StationTrapAPMacAddress to unisDot11StationAssocFailTrap
+--        modified by niujian
+--        Add unisDot11StationRfPingTest to unisDot11StationAssociateTable.
+--        Add unisDot11StationRfPingTable.
+--   V2.4 2013-04-10 modified by huashuyuan
+--        Add unisDot11StationMaxRate to unisDot11StationAssociateTable
+--   V2.5 2013-08-21 modified by zhangsiyu
+--        Add unisDot11CurrAntennaID to unisDot11StationAPRelationTable
+--   V2.6 2014-02-13 modified by xiaomin
+--        Add unisDot11StationPowerSaveModeCM, unisDot11StationAuthenModeCM,
+--        unisDot11StationAKMModeCM, unisDot11StationSecurityCiphersCM
+--        and unisDot11StationSecIEStatusCM to unisDot11StationAssociateTable
+--   V2.7 2014-05-08 modified by yubo
+--        Add unisDot11StaInternetRxFrameBytes,unisDot11StaInternetTxFrameBytes,
+--        unisDot11StaLocalRxFrameBytes,unisDot11StaLocalTxFrameBytes to
+--        unisDot11StationStatisTable.
+--   V2.8 2014-11-19 modified by yubo
+--        Add unisDot11StationIPv6Address to unisDot11StationAssociateTable
+--   V2.9 2015-04-13 modified by limingjin
+--        Add unisDot11StaAntennaChgTrap to unisDot11StationTraps
+--        Add new node   unisDot11StationTrapOldAntennaID to unisDot11StationTrapVarObjects
+--        Add new node   unisDot11StationTrapNewAntennaID to unisDot11StationTrapVarObjects
+--   V3.0 2016-3-11 modified by xiaomin
+--        Add unisDot11StationAssociateAPMACAddressCM to unisDot11StationAssociateTable
+--        2017-2-24 modified by jiaohaina
+--        Add unisDot11StationAuditTrap to unisDot11StationTraps
+--        Add new node    unisDot11StationTrapAPIPAddress to unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationTrapStartTime to unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationAuditTrapOpType to unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationTrapStaIPAddress to unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationTrapRadioID to unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationTrapRadioMode to unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationTrapWlanID to unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationTrapSSIDName unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationTrapVlan to unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationTrapChannel to unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationTrapRSSI to unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationTrapRxFrameKbit to unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationTrapTxFrameKbit to unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationTrapVlan to unisDot11StationTrapVarObjects
+--        Add new node    unisDot11StationTrapChannel to unisDot11StationTrapVarObjects
+--        2017-10-09 modified by jiaohaina
+--        Add unisDot11StationDeviceType,unisDot11StationTxRateCM,unisDot11StationRxRateCM to
+--        unisDot11StationAssociateTable
+--        Add unisDot11StationBSSID to unisDot11StationAssocFailTrap
+-- =============================================================================
+UNIS-DOT11-STATION-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MacAddress, DateAndTime, TruthValue
+    FROM SNMPv2-TC
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE,
+        Integer32,
+        Unsigned32,
+        Counter32,
+        Counter64,
+        IpAddress,
+        TimeTicks
+    FROM SNMPv2-SMI
+        unisDot11,
+        UnisDot11RadioType,
+        UnisDot11ObjectIDType,
+        UnisDot11ChannelScopeType,
+        UnisDot11SSIDStringType,
+        UnisDot11AuthenType,
+        UnisDot11AKMType,
+        UnisDot11CipherType,
+        UnisDot11RadioScopeType,
+        UnisDot11SSIDEncryptModeType,
+        UnisDot11AssocFailType,
+        UnisDot11AuthorFailType,
+        UnisDot11SecIEStatusType,
+        UnisDot11RadioType2
+    FROM UNIS-DOT11-REF-MIB;
+
+unisDot11STATION MODULE-IDENTITY
+    LAST-UPDATED "201710091800Z"        -- Oct 09, 2017 at 18:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB defines the configuration and statistic information of
+        stations.
+
+        GLOSSARY
+
+        IEEE 802.11
+        Standard to encourage interoperability among
+        wireless networking equipment.
+
+        Access point (AP)
+        Transmitter/receiver (transceiver) device
+        that commonly connects and transports data
+        between a wireless network and a wired network.
+
+        Access control (AC)
+        To control and manage multi-APs, it will bridge
+        wireless and wired network.
+
+        Control And Provisioning of Wireless Access Points Protocol
+        The short name of protocol is CAPWAP.  AC will control
+        and manage AP by CAPWAP tunnel protocol defined by IETF.
+        Also, a data tunnel will be set up between AC and AP.
+
+        BSS
+        IEEE 802.11 Basic Service Set (Radio Cell).  The
+        BSS of an AP comprises of the stations directly
+        associated with the AP.
+
+        station (Client Station)
+        A wireless device in a wireless network
+        associated with an access point.
+
+        MIC
+        Message Integrity Check.  A MIC can, optionally,
+        be added to WEP-encrypted 802.11 frames.
+
+        SSID
+        Radio Service Set ID.  It is used for identification
+        during association.
+
+        STA  (WSTA)
+        A non-AP 802.11 wireless station.
+
+        WEP
+        Wired Equivalent Privacy.  'WEP' is generally used
+        to refer to 802.11 encryption.
+
+        RSSI
+        It is the received signal strength indication.
+        It suggests the quality of received signal.
+
+        RTS
+        Request to Send, it is used to gain control of the medium
+        for the transmission of 'large' frames, in which 'large'
+        is defined by the RTS threshold in the network card driver.
+
+        CTS
+        Clear to Send, it is used to answer RTS frames.
+
+        AKM
+        The authentication and key management method defined by
+        802.11i, and which includes 802.1x and pre-shared key."
+  REVISION "201710091800Z"        -- Oct 09, 2017 at 18:00 GMT
+    DESCRIPTION
+         "Modified to add new nodes."
+  REVISION "201702241800Z"        -- Feb 24, 2017 at 18:00 GMT
+    DESCRIPTION
+        "Add unisDot11StationAuditTrap to unisDot11StationTraps
+         Add new node     unisDot11StationTrapAPIPAddress to unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationTrapStartTime to unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationAuditTrapOpType to unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationTrapStaIPAddress to unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationTrapRadioID to unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationTrapRadioMode to unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationTrapWlanID to unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationTrapSSIDName unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationTrapVlan to unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationTrapChannel to unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationTrapRSSI to unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationTrapRxFrameKbit to unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationTrapTxFrameKbit to unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationTrapVlan to unisDot11StationTrapVarObjects
+         Add new node     unisDot11StationTrapChannel to unisDot11StationTrapVarObjects"
+    REVISION "201603111800Z"        -- Mar 11, 2016 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "201504131800Z"        -- Apr 13, 2015 at 18:00 GMT
+    DESCRIPTION
+        "Add unisDot11StaAntennaChgTrap to unisDot11StationTraps
+         Add new node unisDot11StationTrapOldAntennaID to unisDot11StationTrapVarObjects
+         Add new node unisDot11StationTrapNewAntennaID to unisDot11StationTrapVarObjects"
+    REVISION "201009021800Z"        -- Sep 2, 2010 at 18:00 GMT
+    DESCRIPTION
+        "Modify unisDot11StationDisconnectTrap."
+    REVISION "201002231800Z"        -- Feb 23, 2010 at 18:00 GMT
+    DESCRIPTION
+        "Add new node unisDot11StationUpTimeTicks, unisDot11StationSecIEStatus
+         to unisDot11StationAssociateTable."
+    REVISION "200912011800Z"        -- Aug 07, 2009 at 18:00 GMT
+    DESCRIPTION
+        "Add new node unisDot11StaRxErrDataFrameCnt and unisDot11StaTxRetryDataFrameCnt
+         to unisDot11StationStatisTable"
+    REVISION "200908071800Z"        -- Aug 07, 2009 at 18:00 GMT
+    DESCRIPTION
+        "Modify description of unisDot11StationTxSpeed, unisDot11StationRxSpeed"
+    REVISION "200907291800Z"        -- Jul 29, 2009 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200905072000Z"        -- May 7, 2009 at 20:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200811071730Z"        -- Nov 07, 2008 at 17:30 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200802251800Z"        -- Feb 25, 2008 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new trap and add unisDot11StationRxNoise to unisDot11StationAssociateTable."
+    REVISION "200712211800Z"        -- Dec 21, 2007 at 18:00 GMT
+    DESCRIPTION
+        "Modified to add new nodes."
+    REVISION "200706212000Z"        -- Jun 21, 2007 at 20:00 GMT
+    DESCRIPTION
+        "Changes made for new requirements."
+    REVISION "200704272000Z"        -- Apr 27, 2007 at 20:00 GMT
+    DESCRIPTION
+        "Modified to fix some issue."
+    REVISION "200605101600Z"        -- May 10, 2006 at 19:00 GMT
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { unisDot11 3 }
+
+-- *****************************************************************************
+-- *  Major sections
+-- *****************************************************************************
+--  Station Management Group
+--  DEFINED AS "The group to provide the basic information for station,
+--  for example, associated station, performance data and so on."
+
+unisDot11StationMtGroup OBJECT IDENTIFIER     ::= { unisDot11STATION 1 }
+--  Station Management Group has the following children:
+--  unisDot11StationAssociateTable            ::= { unisDot11APMtGroup 1 }
+--  unisDot11StationAPRelationTable           ::= { unisDot11APMtGroup 2 }
+--  unisDot11StationStatisTable               ::= { unisDot11APMtGroup 3 }
+--  unisDot11StationRfPingTable               ::= { unisDot11APMtGroup 4 }
+
+--  MAC Event Notification
+--  DEFINED AS "The group to provide station notification information"
+unisDot11StationNotifyGroup OBJECT IDENTIFIER ::= { unisDot11STATION 2 }
+
+-- *****************************************************************************
+-- *  unisDot11StaAssociateTable Definition
+-- *****************************************************************************
+unisDot11StationAssociateTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11StationAssociateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains the information of stations which are
+        associating with the wireless network (current AC)."
+    ::= { unisDot11StationMtGroup 1 }
+
+unisDot11StationAssociateEntry OBJECT-TYPE
+    SYNTAX      UnisDot11StationAssociateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains association information of each station."
+    INDEX
+        {
+            unisDot11StationMAC
+        }
+    ::= { unisDot11StationAssociateTable 1 }
+
+UnisDot11StationAssociateEntry ::= SEQUENCE
+    {
+        unisDot11StationMAC                MacAddress,
+        unisDot11StationIPAddress          IpAddress,
+        unisDot11StationUserName           OCTET STRING,
+        unisDot11StationTxRateSet          OCTET STRING,
+        unisDot11StationUpTime             Unsigned32,
+        unisDot11StationSignalStrength     Integer32,
+        unisDot11StationRSSI               Integer32,
+        unisDot11StationChannel            UnisDot11ChannelScopeType,
+        unisDot11StationPowerSaveMode      INTEGER,
+        unisDot11StationAid                Integer32,
+        unisDot11StationVlanId             Integer32,
+        unisDot11StationSSIDName           UnisDot11SSIDStringType,
+        unisDot11StationAuthenMode         UnisDot11AuthenType,
+        unisDot11StationAKMMode            UnisDot11AKMType,
+        unisDot11StationSecurityCiphers    UnisDot11CipherType,
+        unisDot11StationSSIDEncryptMode    UnisDot11SSIDEncryptModeType,
+        unisDot11StationRxSNR              Integer32,
+        unisDot11StationTxRate             Integer32,
+        unisDot11StationRxRate             Integer32,
+        unisDot11StationVendorName         OCTET STRING,
+        unisDot11StationRadioMode          UnisDot11RadioType,
+        unisDot11StationRxNoise            Integer32,
+        unisDot11StationMACAddress         MacAddress,
+        unisDot11StationTxSpeed            Integer32,
+        unisDot11StationRxSpeed            Integer32,
+        unisDot11StationWmmMode            INTEGER,
+        unisDot11StationSecIEStatus        UnisDot11SecIEStatusType,
+        unisDot11StationUpTimeTicks        TimeTicks,
+        unisDot11StationRadioMode2         UnisDot11RadioType2,
+        unisDot11StationAssTime            DateAndTime,
+        unisDot11StationUserAuthType       INTEGER,
+        unisDot11StationRfPingTest         TruthValue,
+        unisDot11StationMaxRate            Integer32,
+        unisDot11StationPowerSaveModeCM    INTEGER,
+        unisDot11StationAuthenModeCM       INTEGER,
+        unisDot11StationAKMModeCM          INTEGER,
+        unisDot11StationSecurityCiphersCM  INTEGER,
+        unisDot11StationSecIEStatusCM      INTEGER,
+        unisDot11StationIPv6Address        OCTET STRING,
+        unisDot11StationAssociateAPMACAddressCM   MacAddress,
+        unisDot11StationDeviceType         OCTET STRING,
+        unisDot11StationTxRateCM           OCTET STRING,
+        unisDot11StationRxRateCM           OCTET STRING
+    }
+
+unisDot11StationMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the unique MAC Address of station."
+    ::= { unisDot11StationAssociateEntry 1 }
+
+unisDot11StationIPAddress OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the IP address of the station."
+    ::= { unisDot11StationAssociateEntry 2 }
+
+unisDot11StationUserName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the user name of the station."
+    ::= { unisDot11StationAssociateEntry 3 }
+
+unisDot11StationTxRateSet OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    UNITS       "Mbps"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the current transmit data rates for this station.
+        Each byte will represent one rate.  If the MSB(Most significant bit)
+        is set, then this rate is a mandantory rate.  Otherwise,
+        it is optional."
+    ::= { unisDot11StationAssociateEntry 4 }
+
+unisDot11StationUpTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The time in seconds, how long this station has been associated
+        with this device."
+    ::= { unisDot11StationAssociateEntry 5 }
+
+unisDot11StationSignalStrength OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents a device-dependent measure of the signal strength
+        of latest packet received from this station."
+    ::= { unisDot11StationAssociateEntry 6 }
+
+unisDot11StationRSSI OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents a device-dependent measure of the RSSI.
+        It is the received signal strength indication.
+        The maximum value is defined by chip set vendors"
+    ::= { unisDot11StationAssociateEntry 7 }
+
+unisDot11StationChannel OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents current radio channel used by station."
+    ::= { unisDot11StationAssociateEntry 8 }
+
+unisDot11StationPowerSaveMode OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            active(1),
+            powersave(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the power management mode of this station.
+        The following values are supported:
+        active    - This station is not in power-save
+        mode and it is actively sending or
+        receiving data.
+        powersave - This station is in power-save mode and
+        it wakes up after sometime to check for
+        buffer data."
+    DEFVAL      { active }
+    ::= { unisDot11StationAssociateEntry 9 }
+
+unisDot11StationAid OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the association identification number of station."
+    ::= { unisDot11StationAssociateEntry 10 }
+
+unisDot11StationVlanId OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents Vlan ID to which the station is associated."
+    ::= { unisDot11StationAssociateEntry 11 }
+
+unisDot11StationSSIDName OBJECT-TYPE
+    SYNTAX      UnisDot11SSIDStringType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the ESS name."
+    ::= { unisDot11StationAssociateEntry 12 }
+
+unisDot11StationAuthenMode OBJECT-TYPE
+    SYNTAX      UnisDot11AuthenType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the Authentication mode defined by 802.11."
+    ::= { unisDot11StationAssociateEntry 13 }
+
+unisDot11StationAKMMode OBJECT-TYPE
+    SYNTAX      UnisDot11AKMType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the key management mode defined by 802.11i."
+    ::= { unisDot11StationAssociateEntry 14 }
+
+unisDot11StationSecurityCiphers OBJECT-TYPE
+    SYNTAX      UnisDot11CipherType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the frame encryption cipher type used by
+        station."
+    ::= { unisDot11StationAssociateEntry 15 }
+
+unisDot11StationSSIDEncryptMode OBJECT-TYPE
+    SYNTAX      UnisDot11SSIDEncryptModeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the encryption mode for this ESS."
+    DEFVAL      { cipher }
+    ::= { unisDot11StationAssociateEntry 16 }
+
+unisDot11StationRxSNR OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "One Percent"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the signal and noise strength ratio of frame reception."
+    ::= { unisDot11StationAssociateEntry 17 }
+
+unisDot11StationTxRate OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Mbps"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the transmission rate of frame."
+    ::= { unisDot11StationAssociateEntry 18 }
+
+unisDot11StationRxRate OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Mbps"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the reception rate of frame."
+    ::= { unisDot11StationAssociateEntry 19 }
+
+unisDot11StationVendorName OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..127))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the vendor name of the station."
+    ::= { unisDot11StationAssociateEntry 20 }
+
+unisDot11StationRadioMode OBJECT-TYPE
+    SYNTAX      UnisDot11RadioType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents which radio type supported by the station.
+        The WLAN system support the following possible radio types.
+        dot11a(1),
+        dot11b(2),
+        dot11g(4),
+        dot11n(8),
+        dot11gn(16),
+        dot11an(32),
+        dot11ac(64),
+        dot11gac(128)
+        For a station,it could support only one radio type at
+        the same time."
+    ::= { unisDot11StationAssociateEntry 21 }
+
+unisDot11StationRxNoise OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the received noise of the station."
+    ::= { unisDot11StationAssociateEntry 22 }
+
+
+unisDot11StationMACAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents MAC Address of station."
+    ::= { unisDot11StationAssociateEntry 23 }
+
+unisDot11StationTxSpeed OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "byte/s"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the bytes of transmitted data frames to the
+        station per second in sample interval."
+    ::= { unisDot11StationAssociateEntry 24 }
+
+unisDot11StationRxSpeed OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "byte/s"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the bytes of received data frames from the
+        station per second in sample interval."
+    ::= { unisDot11StationAssociateEntry 25 }
+
+unisDot11StationWmmMode  OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            wmm(1),
+            nonwmm(2)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the QoS mode of station.
+        The following values are supported:
+        wmm    - This QoS function is supported by this station.
+        nonwmm - This QoS function is not supported by this station."
+    ::= { unisDot11StationAssociateEntry 26 }
+
+unisDot11StationSecIEStatus OBJECT-TYPE
+    SYNTAX      UnisDot11SecIEStatusType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the security Information element for this station."
+    ::= { unisDot11StationAssociateEntry 27 }
+
+unisDot11StationUpTimeTicks OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents how long this station has been associated
+         with this device."
+    ::= { unisDot11StationAssociateEntry 28 }
+
+unisDot11StationRadioMode2 OBJECT-TYPE
+    SYNTAX      UnisDot11RadioType2
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents which radio type supported by the station.
+        The WLAN system support the following possible radio types.
+        dot11a(1),
+        dot11b(2),
+        dot11g(4),
+        dot11an(8),
+        dot11gn(16),
+        dot11ac(32),
+        dot11gac(64)
+        For a station,it could support only one radio type at
+        the same time."
+    ::= { unisDot11StationAssociateEntry 29 }
+
+unisDot11StationAssTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the time at which the station connected."
+    ::= { unisDot11StationAssociateEntry 30 }
+
+unisDot11StationUserAuthType OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            portalAuth(1),
+            authFree(2),
+            associateAuth(3),
+            macAuth(4)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the type of user authentication with this station.
+        portalAuth    - The authentication lunched by portal pop-up program
+        which is need input username and passward,exclude MAC authentication.
+        authFree      - There is no need others authentiaction,user will
+        surf internet after association.
+        associateAuth - Include WEP PSK 802.1X authentication.
+        macAuth       - MAC Authentication apply with access device,
+        a Remote Authentication Dial-In User Service (RADIUS) server or
+        message netgate to realize fast authentication."
+    ::= { unisDot11StationAssociateEntry 31 }
+
+unisDot11StationRfPingTest OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to start rfping test of the station.
+         It will return false for get operation."
+    ::= { unisDot11StationAssociateEntry 32 }
+
+unisDot11StationMaxRate OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "Mbps"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the max negotiation rate of the station."
+    ::= { unisDot11StationAssociateEntry 33 }
+
+unisDot11StationPowerSaveModeCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            active(0),
+            powersave(1)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the power management mode of the client.
+        The following values are supported:
+        active    - This client is not in power-save
+        mode and it is actively sending or receiving data.
+        powersave - This client is in power-save mode and
+        it wakes up after some time to check for buffer data."
+    DEFVAL      { active }
+    ::= { unisDot11StationAssociateEntry 34 }
+
+unisDot11StationAuthenModeCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            opensystem(0),
+            sharedkey(1)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the authentication mode defined by 802.11.
+        The following values are supported:
+        opensystem   - Do not authenticate.
+        sharedkey    - System will use challenge message to
+        authenticate the client."
+    ::= { unisDot11StationAssociateEntry 35 }
+
+unisDot11StationAKMModeCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            none(0),
+            psk(1),
+            radius(2),
+            wlanex(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the key management mode defined by 802.11i.
+        The following values are supported:
+        none         - no key management mode configured,
+        psk          - pre-shared key authentication,
+        radius       - 802.1x authentication,
+        wlanex       - wlanex."
+    ::= { unisDot11StationAssociateEntry 36 }
+
+unisDot11StationSecurityCiphersCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            none(0),
+            wep40(1),
+            wep104(2),
+            tkip(3),
+            aesccmp(4),
+            wpisms4(5)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the frame encryption cipher type used by
+        station.
+        The following values are supported:
+        none     - clear text or no cipher method is configure,
+        wep40    - 40-bit WEP key,
+        wep104   - 104-bit WEP key,
+        tkip     - WPA Temporal Key encryption,
+        aesccmp  - WPA AES CCMP encryption,
+        wpisms4  - ext encryption."
+    ::= { unisDot11StationAssociateEntry 37 }
+
+unisDot11StationSecIEStatusCM OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            none(0),
+            wpa(1),
+            wpa2(2),
+            wlanex(3)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the security Information element for this station.
+        The following values are supported:
+        none    - both wpa and wpa2 are disabled,
+        wpa     - only enable wpa,
+        wpa2    - only enable wpa2,
+        wlanex  - only enable wlanex."
+    ::= { unisDot11StationAssociateEntry 38 }
+
+unisDot11StationIPv6Address OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the IPv6 address of the station."
+    ::= { unisDot11StationAssociateEntry 39 }
+
+unisDot11StationAssociateAPMACAddressCM OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents MAC address of the AP to be associated."
+    ::= { unisDot11StationAssociateEntry 40 }
+
+unisDot11StationDeviceType OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the device type of stations to be associated."
+    ::= { unisDot11StationAssociateEntry 41 }
+
+unisDot11StationTxRateCM OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the transmit rate of frames."
+    ::= { unisDot11StationAssociateEntry 42 }
+
+unisDot11StationRxRateCM OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the receive rate of frames."
+    ::= { unisDot11StationAssociateEntry 43 }
+
+-- *****************************************************************************
+-- *  End of unisDot11StaAssociateTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11StationAPRelationTable Definition
+-- *****************************************************************************
+unisDot11StationAPRelationTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11StationAPRelationEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains relation-ship between station, AP, Radio
+        and WLANID, and the detailed information of station is kept in
+        the unisDot11StaAssociateTable table."
+    ::= { unisDot11StationMtGroup 2 }
+
+unisDot11StationAPRelationEntry OBJECT-TYPE
+    SYNTAX      UnisDot11StationAPRelationEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains relation-ship information
+        with AP, Radio and WLANID of each station."
+    INDEX
+        {
+            unisDot11StationMAC
+        }
+    ::= { unisDot11StationAPRelationTable 1 }
+
+UnisDot11StationAPRelationEntry ::= SEQUENCE
+    {
+        unisDot11CurrAPID       UnisDot11ObjectIDType,
+        unisDot11CurrRadioID    UnisDot11RadioScopeType,
+        unisDot11CurrWlanID     Integer32,
+        unisDot11CurrAntennaID  Integer32
+    }
+
+unisDot11CurrAPID OBJECT-TYPE
+    SYNTAX      UnisDot11ObjectIDType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "To uniquely identify each AP, and relation-ship
+        between unisDot11CurrAPID and AP device will be static."
+    ::= { unisDot11StationAPRelationEntry 1 }
+
+unisDot11CurrRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents each radio."
+    ::= { unisDot11StationAPRelationEntry 2 }
+
+unisDot11CurrWlanID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents WLAN ID of the BSS the station associated to."
+    ::= { unisDot11StationAPRelationEntry 3 }
+
+unisDot11CurrAntennaID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents Antenna ID of the station associated to."
+    ::= { unisDot11StationAPRelationEntry 4 }
+-- *****************************************************************************
+-- *  End of unisDot11StationAPRelationTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11StationStatisTable Definition
+-- *****************************************************************************
+unisDot11StationStatisTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11StationStatisEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains statistics and status of all
+        stations in the unisDot11StaAssociateTable."
+    ::= { unisDot11StationMtGroup 3 }
+
+unisDot11StationStatisEntry OBJECT-TYPE
+    SYNTAX      UnisDot11StationStatisEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This entry contains statistics and status for each station."
+    INDEX
+        {
+            unisDot11StationMAC
+        }
+    ::= { unisDot11StationStatisTable 1 }
+
+UnisDot11StationStatisEntry ::= SEQUENCE
+    {
+        unisDot11StationRxFrameCnt        Counter32,
+        unisDot11StationTxFrameCnt        Counter32,
+        unisDot11StationDropFrameCnt      Counter32,
+        unisDot11StationRxFrameBytes      Counter64,
+        unisDot11StationTxFrameBytes      Counter64,
+        unisDot11StationDropFrameBytes    Counter64,
+        unisDot11StationRxRetryPkts       Counter32,
+        unisDot11StationTxRetryPkts       Counter32,
+        unisDot11StationRxRetryBytes      Counter64,
+        unisDot11StationTxRetryBytes      Counter64,
+        unisDot11StationThroughput        Counter64,
+        unisDot11StationSuccessTxCnt      Counter32,
+        unisDot11StationSuccessTxDataCnt  Counter32,
+        unisDot11StationRxDataFrameCnt    Counter32,
+        unisDot11StationTxDataFrameCnt    Counter32,
+        unisDot11StationRxDataFrameBytes  Counter64,
+        unisDot11StationTxDataFrameBytes  Counter64,
+        unisDot11StationRxFragCnt         Counter32,
+        unisDot11StaRxErrDataFrameCnt     Counter64,
+        unisDot11StaTxRetryDataFrameCnt   Counter64,
+        unisDot11StaTxDataRatePkts        OCTET STRING,
+        unisDot11StaRxDataRatePkts        OCTET STRING,
+        unisDot11StaTxSignalStrengthPkts  OCTET STRING,
+        unisDot11StaInternetRxFrameBytes  Counter64,
+        unisDot11StaInternetTxFrameBytes  Counter64,
+        unisDot11StaLocalRxFrameBytes     Counter64,
+        unisDot11StaLocalTxFrameBytes     Counter64
+    }
+
+unisDot11StationRxFrameCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the count of frames that are received by AP from station."
+    ::= { unisDot11StationStatisEntry 1 }
+
+unisDot11StationTxFrameCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the count of frames that are sent to station from AP."
+    ::= { unisDot11StationStatisEntry 2 }
+
+unisDot11StationDropFrameCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the count of frames that are dropped."
+    ::= { unisDot11StationStatisEntry 3 }
+
+unisDot11StationRxFrameBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "bytes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the count of bytes that are received by AP from station."
+    ::= { unisDot11StationStatisEntry 4 }
+
+unisDot11StationTxFrameBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "bytes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the count of bytes that are sent to station from AP."
+    ::= { unisDot11StationStatisEntry 5 }
+
+unisDot11StationDropFrameBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "bytes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents how many bytes are dropped."
+    ::= { unisDot11StationStatisEntry 6 }
+
+unisDot11StationRxRetryPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the count of frames that are retransmitted to AP from station."
+    ::= { unisDot11StationStatisEntry 7 }
+
+unisDot11StationTxRetryPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the count of frames that are retransmitted to station from AP."
+    ::= { unisDot11StationStatisEntry 8 }
+
+unisDot11StationRxRetryBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the count of bytes that are retransmitted to AP from station."
+    ::= { unisDot11StationStatisEntry 9 }
+
+unisDot11StationTxRetryBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the count of bytes that are retransmitted to station from AP."
+    ::= { unisDot11StationStatisEntry 10 }
+
+unisDot11StationThroughput OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "bytes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents how many payload bytes of data frame are sent and received
+         by station."
+    ::= { unisDot11StationStatisEntry 11 }
+
+unisDot11StationSuccessTxCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents how many frames have been successfully sent to station."
+    ::= { unisDot11StationStatisEntry 12 }
+
+unisDot11StationSuccessTxDataCnt  OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents how many data frames have been successfully sent to
+        station."
+    ::= { unisDot11StationStatisEntry 13 }
+
+unisDot11StationRxDataFrameCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents how many data frames have been received from station."
+    ::= { unisDot11StationStatisEntry 14 }
+
+unisDot11StationTxDataFrameCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents how many data frames have been sent to station."
+    ::= { unisDot11StationStatisEntry 15 }
+
+unisDot11StationRxDataFrameBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents how many bytes of data frames have been received
+        from station."
+    ::= { unisDot11StationStatisEntry 16 }
+
+unisDot11StationTxDataFrameBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents how many bytes of data frames have been sent to
+        station."
+    ::= { unisDot11StationStatisEntry 17 }
+
+unisDot11StationRxFragCnt  OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of fragmented data frames that received
+         from station."
+    ::= { unisDot11StationStatisEntry 18 }
+
+unisDot11StaRxErrDataFrameCnt  OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Represents the count of error data frames that are received by AP
+                 from station."
+    ::= { unisDot11StationStatisEntry 19 }
+
+unisDot11StaTxRetryDataFrameCnt  OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Represents the count of data frames that are retransmitted to station
+                 from AP."
+    ::= { unisDot11StationStatisEntry 20 }
+unisDot11StaTxDataRatePkts  OBJECT-TYPE
+        SYNTAX      OCTET STRING
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Represents how many data frames of each rate have been received
+                from station."
+    ::= { unisDot11StationStatisEntry 21 }
+
+unisDot11StaRxDataRatePkts  OBJECT-TYPE
+        SYNTAX      OCTET STRING
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Represents how many data frames of each rate have been sent to
+                station."
+    ::= { unisDot11StationStatisEntry 22 }
+
+unisDot11StaTxSignalStrengthPkts  OBJECT-TYPE
+        SYNTAX      OCTET STRING
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Represents how many data frames of different signal strength have been
+                 received from station."
+    ::= { unisDot11StationStatisEntry 23 }
+
+unisDot11StaInternetRxFrameBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Internet traffic bytes received from station."
+    ::= { unisDot11StationStatisEntry 24 }
+
+unisDot11StaInternetTxFrameBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Internet traffic bytes sent to station."
+    ::= { unisDot11StationStatisEntry 25 }
+
+unisDot11StaLocalRxFrameBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Local traffic bytes received from station."
+    ::= { unisDot11StationStatisEntry 26 }
+
+unisDot11StaLocalTxFrameBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Local traffic bytes sent to station."
+    ::= { unisDot11StationStatisEntry 27 }
+-- *****************************************************************************
+-- *  End of unisDot11StationStatisTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *  unisDot11StationRfPingTable Definition
+-- *****************************************************************************
+unisDot11StationRfPingTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDot11StationRfPingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains statistics of all
+        stations in the unisDot11StationRfPingTable."
+    ::= { unisDot11StationMtGroup 4 }
+
+unisDot11StationRfPingEntry OBJECT-TYPE
+    SYNTAX      UnisDot11StationRfPingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This entry contains statistics for each station's RfPing results."
+    INDEX
+        {
+            unisDot11StationMAC,
+            unisDot11StationRfPingIndex
+        }
+    ::= { unisDot11StationRfPingTable 1 }
+UnisDot11StationRfPingEntry ::= SEQUENCE
+    {
+        unisDot11StationRfPingIndex       Integer32,
+        unisDot11StationRfPingRate        OCTET STRING,
+        unisDot11StationRfPingTxCnt       Integer32,
+        unisDot11StationRfPingRxCnt       Integer32,
+        unisDot11StationRfPingRssi        Integer32,
+        unisDot11StationRfPingRetries     Integer32,
+        unisDot11StationRfPingRtt         Integer32
+    }
+
+unisDot11StationRfPingIndex OBJECT-TYPE
+    SYNTAX      Integer32(0..214783647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the rate index for the station."
+    ::= { unisDot11StationRfPingEntry 1 }
+
+unisDot11StationRfPingRate OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    UNITS       "Mbps"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the rate at which the radio interface sends wireless ping frames."
+    ::= { unisDot11StationRfPingEntry 2 }
+
+unisDot11StationRfPingTxCnt OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of wireless ping frames that the radio interface sent."
+    ::= { unisDot11StationRfPingEntry 3 }
+
+unisDot11StationRfPingRxCnt OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of wireless ping frames that
+         the radio interface received from the client."
+    ::= { unisDot11StationRfPingEntry 4 }
+
+unisDot11StationRfPingRssi OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the client signal strength detected by the AP."
+    ::= { unisDot11StationRfPingEntry 5 }
+
+unisDot11StationRfPingRetries OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the total number of retransmitted ping frames."
+    ::= { unisDot11StationRfPingEntry 6 }
+
+unisDot11StationRfPingRtt OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "ms"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Round-trip time (RTT) from the time when the radio interface send a
+         ping packet to the time when it receives a response from the client."
+    ::= { unisDot11StationRfPingEntry 7 }
+-- *****************************************************************************
+-- *  End of unisDot11StationRfPingTable Definition
+-- *****************************************************************************
+
+-- *****************************************************************************
+-- *     Notifications OF unisDot11StationNotifyGroup
+-- *****************************************************************************
+-- 802.11 MAC Notification
+
+unisDot11StationTraps OBJECT IDENTIFIER    ::= { unisDot11StationNotifyGroup 0 }
+
+unisDot11StationMICErrorTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11CurrAPID,
+            unisDot11CurrRadioID,
+            unisDot11StationTrapBSSID,
+            unisDot11StationSSIDName,
+            unisDot11StationTrapStaMAC
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is to indicate the occurrence of a MIC
+        failure in a certain station."
+    ::= { unisDot11StationTraps 1 }
+
+unisDot11StationAuthenErrorTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11CurrAPID,
+            unisDot11CurrRadioID,
+            unisDot11StationTrapBSSID,
+            unisDot11StationSSIDName,
+            unisDot11StationTrapStaMAC,
+            unisDot11StationAuthenMode,
+            unisDot11StationAKMMode
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is to indicate which station happened
+        authentication failure."
+    ::= { unisDot11StationTraps 2 }
+
+unisDot11StationAuthorFailTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11StationUserName,
+            unisDot11StationTrapStaMAC,
+            unisDot11CurrRadioID,
+            unisDot11StationSSIDName,
+            unisDot11StationAuthorFailCause,
+            unisDot11StationFailCauseDesc,
+            unisDot11CurrAPID,
+            unisDot11StationBSSID,
+            unisDot11StationAuthMode,
+            unisDot11StationTrapAPMacAddress
+        }
+    STATUS      current
+    DESCRIPTION
+        "This trap is sent if a station authorization fails."
+    ::= { unisDot11StationTraps 3 }
+
+unisDot11StationAssocFailTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11StationTrapStaMAC,
+            unisDot11CurrRadioID,
+            unisDot11StationSSIDName,
+            unisDot11StationAssocFailCause,
+            unisDot11StationFailCauseDesc,
+            unisDot11CurrAPID,
+            unisDot11StationTrapAPMacAddress,
+            unisDot11StationBSSID
+        }
+    STATUS      current
+    DESCRIPTION
+        "This trap is sent if a station association fails."
+    ::= { unisDot11StationTraps 4 }
+
+unisDot11StationDeAssocTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11StationUserName,
+            unisDot11StationTrapStaMAC,
+            unisDot11StationVlanId,
+            unisDot11CurrRadioID,
+            unisDot11StationSSIDName,
+            unisDot11StationSessionDuration,
+            unisDot11CurrAPID,
+            unisDot11StationAPName,
+            unisDot11StationBSSID
+        }
+    STATUS      current
+    DESCRIPTION
+        "This trap is sent if a station de-association occurred."
+    ::= { unisDot11StationTraps 5 }
+
+unisDot11StationAuthorSuccTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11StationUserName,
+            unisDot11StationTrapStaMAC,
+            unisDot11StationVlanId,
+            unisDot11StationSessionStartTime,
+            unisDot11CurrRadioID,
+            unisDot11StationSSIDName,
+            unisDot11CurrAPID,
+            unisDot11StationAPName,
+            unisDot11StationBSSID
+        }
+    STATUS      current
+    DESCRIPTION
+        "This trap is sent when a station is authorized successfully."
+    ::= { unisDot11StationTraps 6 }
+
+unisDot11StationRoamingTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11CurrAPID,
+            unisDot11StationUserName,
+            unisDot11StationTrapStaMAC,
+            unisDot11StationVlanId,
+            unisDot11StationRoamingTime,
+            unisDot11CurrRadioID,
+            unisDot11StationSSIDName,
+            unisDot11StationACIPAddress,
+            unisDot11StationACIPv6Add
+        }
+    STATUS      current
+    DESCRIPTION
+        "This trap is sent when a station roamed successfully."
+    ::= { unisDot11StationTraps 7 }
+
+unisDot11StationDisconnectTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11StationAPName,
+            unisDot11StationBSSID,
+            unisDot11StationSSIDName,
+            unisDot11StationSessionDuration,
+            unisDot11StationVlanId,
+            unisDot11CurrAPID,
+            unisDot11CurrRadioID,
+            unisDot11StaDisconnectReason,
+            unisDot11StationTrapStaMAC
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent when station disconnects with AP."
+    ::= { unisDot11StationTraps 8 }
+
+unisDot11UserDisconnectTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11StationAPName,
+            unisDot11StationTrapStaMAC,
+            unisDot11UserName
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent when user disconnects with AP."
+    ::= { unisDot11StationTraps 9 }
+
+unisDot11StaAntennaChgTrap NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisDot11CurrAPID,
+            unisDot11CurrRadioID,
+            unisDot11StationTrapBSSID,
+            unisDot11StationSSIDName,
+            unisDot11StationTrapStaMAC,
+            unisDot11StationTrapOldAntennaID,
+            unisDot11StationTrapNewAntennaID
+        }
+    STATUS      current
+    DESCRIPTION
+        "This notification is to indicate the station has connected to a new antenna."
+    ::= { unisDot11StationTraps 10 }
+
+unisDot11StationAuditTrap NOTIFICATION-TYPE
+    OBJECTS
+      {
+          unisDot11StationAuditTrapOpType,
+          unisDot11StationTrapStaMAC,
+          unisDot11StationTrapStaIPAddress,
+          unisDot11StationTrapAPMacAddress,
+          unisDot11StationTrapAPIPAddress,
+          unisDot11StationTrapRadioID,
+          unisDot11StationTrapRadioMode,
+          unisDot11StationTrapWlanID,
+          unisDot11StationTrapSSIDName,
+          unisDot11StationTrapVlan,
+          unisDot11StationTrapChannel,
+          unisDot11StationTrapRSSI,
+          unisDot11StationTrapStartTime,
+          unisDot11StationSessionDuration,
+          unisDot11StationTrapRxFrameKbit,
+          unisDot11StationTrapTxFrameKbit
+      }
+    STATUS      current
+    DESCRIPTION
+      "This notification is to indicate the station event."
+  ::= { unisDot11StationTraps 11 }
+
+-- 802.11 station Notify variable object
+
+        unisDot11StationTrapVarObjects OBJECT IDENTIFIER
+    ::= { unisDot11StationNotifyGroup 1 }
+
+unisDot11StationTrapBSSID OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents on which BSSID of AP the event happened."
+    ::= { unisDot11StationTrapVarObjects 1 }
+
+unisDot11StationTrapStaMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address of station which happened message
+        integrity check (MIC) errors."
+    ::= { unisDot11StationTrapVarObjects 2 }
+
+unisDot11StationSessionStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the time at which the station connected."
+    ::= { unisDot11StationTrapVarObjects 3 }
+
+unisDot11StationAssocFailCause OBJECT-TYPE
+    SYNTAX      UnisDot11AssocFailType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the cause of the station association failure."
+    ::= { unisDot11StationTrapVarObjects 4 }
+
+unisDot11StationAuthorFailCause OBJECT-TYPE
+    SYNTAX      UnisDot11AuthorFailType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the cause of the station authorization failure."
+    ::= { unisDot11StationTrapVarObjects 5 }
+
+unisDot11StationFailCauseDesc OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the failure description of the station."
+    ::= { unisDot11StationTrapVarObjects 6 }
+
+unisDot11StationSessionDuration OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the duration of the station sesssion."
+    ::= { unisDot11StationTrapVarObjects 7 }
+
+unisDot11StationRoamingTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the time at which the station roamed."
+    ::= { unisDot11StationTrapVarObjects 8 }
+
+unisDot11StationACIPAddress OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "For roam-in station, it represents the ip address of home AC.
+         For roam-out station, it represents the ip address of foreign AC."
+    ::= { unisDot11StationTrapVarObjects 9 }
+
+unisDot11StationAPName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Name of the AP which the station connects to."
+    ::= { unisDot11StationTrapVarObjects 10 }
+
+unisDot11StationBSSID OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "BSSID which the station connects to."
+    ::= { unisDot11StationTrapVarObjects 11 }
+
+unisDot11StaDisconnectReason OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Reason why the station disconnects with the AP."
+    ::= { unisDot11StationTrapVarObjects 12 }
+
+unisDot11StationAuthMode OBJECT-TYPE
+    SYNTAX      INTEGER
+    {
+        opensystem(1),
+        sharedkey(2)
+    }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents station's authentication mode."
+    ::= { unisDot11StationTrapVarObjects 13 }
+
+unisDot11StationACIPv6Add OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "For roam-in station, it represents the IPv6 address of home AC.
+         For roam-out station, it represents the IPv6 address of foreign AC."
+    ::= { unisDot11StationTrapVarObjects 14 }
+
+unisDot11UserName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the user name."
+    ::= { unisDot11StationTrapVarObjects 15 }
+
+unisDot11StationTrapAPMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address of an AP."
+    ::= { unisDot11StationTrapVarObjects 16 }
+
+unisDot11StationTrapOldAntennaID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the ID of the old antenna to which the station is associated."
+    ::= { unisDot11StationTrapVarObjects 17 }
+
+unisDot11StationTrapNewAntennaID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the ID of the new antenna to which the station is associated."
+    ::= { unisDot11StationTrapVarObjects 18 }
+
+unisDot11StationTrapAPIPAddress OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the IP address of an AP."
+    ::= { unisDot11StationTrapVarObjects 19 }
+
+unisDot11StationTrapStartTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "second"
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the time at which the device started to connect to a station."
+    ::= { unisDot11StationTrapVarObjects 20 }
+
+unisDot11StationAuditTrapOpType OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the station operation type."
+    ::= { unisDot11StationTrapVarObjects 21 }
+
+unisDot11StationTrapStaIPAddress  OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the IP address of the station."
+    ::= { unisDot11StationTrapVarObjects 22 }
+
+unisDot11StationTrapRadioID OBJECT-TYPE
+    SYNTAX      UnisDot11RadioScopeType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents each radio."
+    ::= { unisDot11StationTrapVarObjects 23 }
+
+unisDot11StationTrapRadioMode OBJECT-TYPE
+    SYNTAX      UnisDot11RadioType2
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the radio type supported by the station."
+    ::= { unisDot11StationTrapVarObjects 24 }
+
+unisDot11StationTrapWlanID OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the WLAN ID of the BSS to which the station is associated."
+    ::= { unisDot11StationTrapVarObjects 25 }
+
+unisDot11StationTrapSSIDName OBJECT-TYPE
+    SYNTAX      UnisDot11SSIDStringType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the ESS name."
+    ::= { unisDot11StationTrapVarObjects 26 }
+
+unisDot11StationTrapVlan OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the VLAN ID with which the station is associated."
+    ::= { unisDot11StationTrapVarObjects 27 }
+
+unisDot11StationTrapChannel OBJECT-TYPE
+    SYNTAX      UnisDot11ChannelScopeType
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the current radio channel used by the station."
+    ::= { unisDot11StationTrapVarObjects 28 }
+
+unisDot11StationTrapRSSI OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents a device-dependent measure of the RSSI.
+        It is the received signal strength indication.
+        The maximum value is defined by chip set vendors"
+    ::= { unisDot11StationTrapVarObjects 29 }
+
+unisDot11StationTrapRxFrameKbit OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "kbit"
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents how many bits of data frames have been received
+        from the station."
+    ::= { unisDot11StationTrapVarObjects 30 }
+
+unisDot11StationTrapTxFrameKbit OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "kbit"
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents how many bits of data frames have been sent to
+        the station."
+    ::= { unisDot11StationTrapVarObjects 31 }
+-- *****************************************************************************
+-- *     End OF NotifyGroup
+-- *****************************************************************************
+END

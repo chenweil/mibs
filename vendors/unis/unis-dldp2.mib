@@ -1,0 +1,318 @@
+-- =====================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Device Link Detection Protocol (DLDP) MIB.
+-- Reference:
+-- Version: V1.1
+-- History:
+-- V1.0 2011-12-26 created by Gu Ce
+-- V1.1 2016-03-18 updated by LiYuGang
+--      Modify unisDldp2UniShutdown
+-- =====================================================================
+UNIS-DLDP2-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    TruthValue, MacAddress
+        FROM SNMPv2-TC
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    ifIndex, ifDescr
+        FROM IF-MIB
+    unisCommon
+        FROM UNIS-OID-MIB;
+
+unisDldp2 MODULE-IDENTITY
+    LAST-UPDATED
+        "201603181530Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Device Link Detection Protocol (DLDP) MIB.
+        Device Link Detection Protocol is a private Layer 2 protocol,
+        which can be used to detect and shut down unidirectional links (fiber or
+        copper links) to avoid network problems."
+    REVISION
+        "201603181530Z"
+    DESCRIPTION
+        "Modify unisDldp2UniShutdown."
+    REVISION
+        "201112261530Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { unisCommon 117 }
+
+unisDldp2ScalarGroup        OBJECT IDENTIFIER ::= { unisDldp2 1 }
+
+unisDldp2GlobalEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable(true) or disable(false) DLDP on the device."
+    ::= { unisDldp2ScalarGroup 1 }
+
+unisDldp2Interval OBJECT-TYPE
+    SYNTAX      Integer32(1..100)
+    UNITS       "second"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Indicates the advertisement packet sending interval."
+    DEFVAL      { 5 }
+    ::= { unisDldp2ScalarGroup 2 }
+
+unisDldp2AuthMode OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                    unknown(1),
+                    none(2),
+                    simple(3),
+                    md5(4)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Indicates the authentication mode.
+        unknown:    cannot be determined for some reason.
+        none:       not authenticated.
+        simple:     authenticated by a clear text password.
+        md5:        authenticated by MD5 digest."
+    DEFVAL      { none }
+    ::= { unisDldp2ScalarGroup 3 }
+
+unisDldp2AuthPassword OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(0..16))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Indicates the authentication password.
+        Setting the password to a zero-length octet string means
+        deleting the password.
+        When read, it always returns a zero-length octet string."
+    ::= { unisDldp2ScalarGroup 4 }
+
+unisDldp2UniShutdown OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                    unknown(1),
+                    auto(2),
+                    manual(3),
+                    hybrid(4)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Indicates the shutdown mode when a unidirectional
+        link has been detected.
+        unknown:    cannot be determined for some reason.
+        auto:       the port will be shut down automatically.
+        manual:     the port must be shut down manually.
+        hybrid:     the port will be shut down automatically,
+                    but it must be brought up manually."
+    DEFVAL  { auto }
+    ::= { unisDldp2ScalarGroup 5 }
+
+unisDldp2TableGroup         OBJECT IDENTIFIER ::= { unisDldp2 2 }
+
+unisDldp2PortConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDldp2PortConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains all ports that support DLDP."
+    ::= { unisDldp2TableGroup 1 }
+
+unisDldp2PortConfigEntry OBJECT-TYPE
+    SYNTAX      UnisDldp2PortConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This entry describes a port that supports DLDP."
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisDldp2PortConfigTable 1 }
+
+UnisDldp2PortConfigEntry ::= SEQUENCE
+    {
+        unisDldp2PortEnable     TruthValue
+    }
+
+unisDldp2PortEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable(true) or disable(false) DLDP on a port."
+    ::= { unisDldp2PortConfigEntry 1 }
+
+unisDldp2PortStatusTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDldp2PortStatusEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains all ports enabled with DLDP."
+    ::= { unisDldp2TableGroup 2 }
+
+unisDldp2PortStatusEntry OBJECT-TYPE
+    SYNTAX      UnisDldp2PortStatusEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This entry describes a port enabled with DLDP."
+    INDEX
+        {
+            ifIndex
+        }
+    ::= { unisDldp2PortStatusTable 1 }
+
+UnisDldp2PortStatusEntry ::= SEQUENCE
+    {
+        unisDldp2PortOperStatus     INTEGER,
+        unisDldp2PortLinkStatus     INTEGER
+    }
+
+unisDldp2PortOperStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                    unknown(1),
+                    initial(2),
+                    inactive(3),
+                    unidirectional(4),
+                    bidirectional(5)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Indicates the DLDP operating status on the port.
+        unknown:        cannot be determined for some reason.
+        initial:        DLDP is not globally enabled.
+        inactive:       physical status of the port is down.
+        unidirectional: all neighbors of the port are in 'unconfirmed' status.
+        bidirectional:  more than one neighbor of the port is in 'confirmed'
+                        status."
+    ::= { unisDldp2PortStatusEntry 1 }
+
+unisDldp2PortLinkStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                    unknown(1),
+                    down(2),
+                    up(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Indicates the DLDP link status of the port.
+        unknown:    cannot be determined for some reason.
+        down:       the DLDP link status of the port is down.
+        up:         the DLDP link status of the port is up.
+        If the port operating status is not 'inactive',
+        'unidirectional', or 'bidirectional', it always returns 'unknown'."
+    ::= { unisDldp2PortStatusEntry 2 }
+
+unisDldp2NeighborTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisDldp2NeighborEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains all port's neighbors."
+    ::= { unisDldp2TableGroup 3 }
+
+unisDldp2NeighborEntry OBJECT-TYPE
+    SYNTAX      UnisDldp2NeighborEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This entry describes a port's neighbors."
+    INDEX
+        {
+            ifIndex,
+            unisDldp2NeighborBridgeMac,
+            unisDldp2NeighborPortIndex
+        }
+    ::= { unisDldp2NeighborTable 1 }
+
+UnisDldp2NeighborEntry ::= SEQUENCE
+    {
+        unisDldp2NeighborBridgeMac      MacAddress,
+        unisDldp2NeighborPortIndex      Integer32,
+        unisDldp2NeighborStatus         INTEGER,
+        unisDldp2NeighborAgingTime      Integer32
+    }
+
+unisDldp2NeighborBridgeMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Indicates the bridge MAC address of a neighbor."
+    ::= { unisDldp2NeighborEntry 1 }
+
+unisDldp2NeighborPortIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Indicates the port index of a neighbor."
+    ::= { unisDldp2NeighborEntry 2 }
+
+unisDldp2NeighborStatus OBJECT-TYPE
+    SYNTAX      INTEGER
+                {
+                    unknown(1),
+                    unconfirmed(2),
+                    confirmed(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Indicates the status of a neighbor.
+        unknown:        cannot be determined for some reason.
+        unconfirmed:    unidirectional communication between the port and
+                        its neighbor.
+        confirmed:      bidirectional communication between the port and
+                        its neighbor."
+    ::= { unisDldp2NeighborEntry 3 }
+
+unisDldp2NeighborAgingTime OBJECT-TYPE
+    SYNTAX      Integer32
+    UNITS       "second"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Indicates the aging time of a neighbor.
+        If the neighbor status is not 'confirmed', it always returns 0."
+    ::= { unisDldp2NeighborEntry 4 }
+
+unisDldp2TrapBindObjects    OBJECT IDENTIFIER ::= { unisDldp2 3 }
+
+unisDldp2Trap               OBJECT IDENTIFIER ::= { unisDldp2 4 }
+unisDldp2TrapPrefix         OBJECT IDENTIFIER ::= { unisDldp2Trap 0 }
+unisDldp2TrapUniLink NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when DLDP detects a unidirectional link,
+        ifIndex and ifDescr identify the port."
+    ::= { unisDldp2TrapPrefix 1 }
+
+unisDldp2TrapBidLink NOTIFICATION-TYPE
+    OBJECTS
+        {
+            ifIndex,
+            ifDescr
+        }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when DLDP detects a bidirectional link,
+        ifIndex and ifDescr identify the port."
+    ::= { unisDldp2TrapPrefix 2 }
+
+END

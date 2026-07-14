@@ -1,0 +1,625 @@
+-- ============================================================================
+-- Copyright (c) 2023 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The purpose of this MIB file is to provide the definition of
+--              the Neighbor Discovery general configuration.
+-- Reference:
+-- Version: V1.2
+-- History:
+-- V1.0 2022-01-06
+--   Initial version, created by qiankangkang
+-- V1.1 2022-06-01
+--   Added unisNDTrapRatelimitOverspeed by shaojunjun
+-- V1.2 2023-04-20
+--   Added unisNDTrapPktQueThresholdAlarm, unisNDTrapPktQueThresholdResume and
+--   unisNDTrapPktQueueObjects by yuanyuchen
+-- ============================================================================
+
+UNIS-ND-TRAP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI
+        DisplayString
+    FROM SNMPv2-TC;
+
+-- Node definitions
+unisNDTrap MODULE-IDENTITY
+    LAST-UPDATED "202304201730Z"        -- ARP 20, 2023 at 17:30 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Added unisNDTrapRatelimitOverspeed."
+    REVISION "202304201730Z"        -- ARP 20, 2023 at 17:30 GMT
+    DESCRIPTION
+        "Add unisNDTrapPktQueThresholdAlarm, unisNDTrapPktQueThresholdResume
+         and unisNDTrapPktQueueObjects."
+    REVISION "202206011700Z"        -- JUN 01, 2022 at 17:00 GMT
+    DESCRIPTION
+        "This MIB file defines the ND warning feature only."
+    REVISION "202201061800Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisCommon 218}
+
+
+unisNDTrapEntry OBJECT IDENTIFIER ::= { unisNDTrap 1 }
+
+unisNDTrapEntrys OBJECT IDENTIFIER  ::= { unisNDTrapEntry 0 }
+
+-- unisNDTrapEntrys
+unisNDTrapAllThresholdExceed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapEntryThreshold,
+            unisNDTrapEntryDynamicNum,
+            unisNDTrapEntryStaticNum,
+            unisNDTrapEntryOtherNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of ND entries exceeded the threshold."
+    ::= { unisNDTrapEntrys 1 }
+
+unisNDTrapAllThresholdResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapEntryThreshold,
+            unisNDTrapEntryDynamicNum,
+            unisNDTrapEntryStaticNum,
+            unisNDTrapEntryOtherNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of ND entries was restored to the threshold."
+    ::= { unisNDTrapEntrys 2 }
+
+unisNDTrapSlotThresholdExceed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapEntryChassis,
+            unisNDTrapEntrySlot,
+            unisNDTrapEntryThreshold,
+            unisNDTrapEntryDynamicNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of ND entries exceeded the threshold of slot."
+    ::= { unisNDTrapEntrys 3 }
+
+unisNDTrapSlotThresholdResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapEntryChassis,
+            unisNDTrapEntrySlot,
+            unisNDTrapEntryThreshold,
+            unisNDTrapEntryDynamicNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of ND entries was restored to the threshold of slot."
+    ::= { unisNDTrapEntrys 4 }
+
+unisNDTrapIfThresholdExceed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapEntryIfName,
+            unisNDTrapEntryThreshold,
+            unisNDTrapEntryDynamicNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of ND entries exceeded the threshold of interface."
+    ::= { unisNDTrapEntrys 5 }
+
+unisNDTrapIfThresholdResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapEntryIfName,
+            unisNDTrapEntryThreshold,
+            unisNDTrapEntryDynamicNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of ND entries was restored to the threshold of interface."
+    ::= { unisNDTrapEntrys 6 }
+
+unisNDTrapSuppThresholdExceed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapEntryThreshold,
+            unisNDTrapEntrySuppNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of ND suppression entries exceeded the threshold."
+    ::= { unisNDTrapEntrys 7 }
+
+unisNDTrapSuppThresholdResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapEntryThreshold,
+            unisNDTrapEntrySuppNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "The number of ND suppression entries was restored to the threshold."
+    ::= { unisNDTrapEntrys 8 }
+
+unisNDTrapEntryObjects OBJECT IDENTIFIER  ::= { unisNDTrapEntry 1 }
+
+-- unisNDTrapEntryObjects
+unisNDTrapEntryChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of chassis. If the value is 65535, the device is not
+        a stacked device."
+    ::= { unisNDTrapEntryObjects 1 }
+
+unisNDTrapEntrySlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of slot."
+    ::= { unisNDTrapEntryObjects 2 }
+
+unisNDTrapEntryIfName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE (0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The name of interface."
+    ::= { unisNDTrapEntryObjects 3 }
+
+unisNDTrapEntryThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of ND entries threshold."
+    ::= { unisNDTrapEntryObjects 4 }
+
+unisNDTrapEntryDynamicNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of dynamic ND entries."
+    ::= { unisNDTrapEntryObjects 5 }
+
+unisNDTrapEntryStaticNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of static ND entries."
+    ::= { unisNDTrapEntryObjects 6 }
+
+unisNDTrapEntryOtherNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of other ND entries."
+    ::= { unisNDTrapEntryObjects 7 }
+
+unisNDTrapEntrySuppNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of ND suppression entries."
+    ::= { unisNDTrapEntryObjects 8 }
+
+unisNDTrapPkt OBJECT IDENTIFIER  ::= { unisNDTrap 2 }
+
+-- unisNDTrapPkt
+unisNDTrapPkts OBJECT IDENTIFIER ::= { unisNDTrapPkt 0 }
+
+-- unisNDTrapPkts
+unisNDTrapPktSpeedAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapPktSpeedChassis,
+            unisNDTrapPktSpeedSlot,
+            unisNDTrapPktSpeedSupValue,
+            unisNDTrapPktSpeedCurValue,
+            unisNDTrapPktSpeedSupType
+        }
+    STATUS      current
+    DESCRIPTION
+        "Send ND packets speed exceeds the limit."
+    ::= { unisNDTrapPkts 1 }
+
+unisNDTrapPktSpeedAlarmResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapPktSpeedChassis,
+            unisNDTrapPktSpeedSlot,
+            unisNDTrapPktSpeedSupValue,
+            unisNDTrapPktSpeedCurValue,
+            unisNDTrapPktSpeedSupType
+        }
+    STATUS      current
+    DESCRIPTION
+        "The speed of sending nd packets is restored to the limit."
+    ::= { unisNDTrapPkts 2 }
+
+unisNDTrapHostIPConflict NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapHostIPCftLocalIPv6,
+            unisNDTrapHostIPCftLocalMAC,
+            unisNDTrapHostIPCftLocalIf,
+            unisNDTrapHostIPCftLocalPevid,
+            unisNDTrapHostIPCftLocalCevid,
+            unisNDTrapHostIPCftRemoteIPv6,
+            unisNDTrapHostIPCftRemoteMAC,
+            unisNDTrapHostIPCftRemotePevid,
+            unisNDTrapHostIPCftRemoteCevid
+        }
+    STATUS      current
+    DESCRIPTION
+        "ND packets Host IPv6 address conflict."
+    ::= { unisNDTrapPkts 3 }
+
+unisNDTrapHostIPConflictResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapHostIPCftLocalIPv6,
+            unisNDTrapHostIPCftLocalMAC,
+            unisNDTrapHostIPCftLocalIf,
+            unisNDTrapHostIPCftLocalPevid,
+            unisNDTrapHostIPCftLocalCevid,
+            unisNDTrapHostIPCftRemoteIPv6,
+            unisNDTrapHostIPCftRemoteMAC,
+            unisNDTrapHostIPCftRemotePevid,
+            unisNDTrapHostIPCftRemoteCevid
+        }
+    STATUS      current
+    DESCRIPTION
+        "ND packets host IPv6 address conflict resolution."
+    ::= { unisNDTrapPkts 4 }
+
+unisNDTrapDuplicateIPv6 NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapDupIPv6NewMac,
+            unisNDTrapDupIPv6NewSevid,
+            unisNDTrapDupIPv6NewCevid,
+            unisNDTrapDupIPv6NewIFName,
+            unisNDTrapDupIPv6OldMac,
+            unisNDTrapDupIPv6OldSevid,
+            unisNDTrapDupIPv6OldCevid,
+            unisNDTrapDupIPv6OldIFName,
+            unisNDTrapDupIPv6DupAddr
+        }
+    STATUS      current
+    DESCRIPTION
+        "Received a conflict packet with a duplicate ipv6 address."
+    ::= { unisNDTrapPkts 5 }
+
+-- unisNDTrapPktSpeedObjects
+unisNDTrapPktSpeedObjects OBJECT IDENTIFIER ::= { unisNDTrapPkt 1 }
+
+unisNDTrapPktSpeedChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The chassis id of nd packets. If the value is 65535, the device is not
+        a stacked device."
+    ::= { unisNDTrapPktSpeedObjects 1 }
+
+unisNDTrapPktSpeedSlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The slot id of nd packets."
+    ::= { unisNDTrapPktSpeedObjects 2 }
+
+unisNDTrapPktSpeedSupValue OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The limit speed of nd packets."
+    ::= { unisNDTrapPktSpeedObjects 3 }
+
+unisNDTrapPktSpeedCurValue OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The current speed of nd packets."
+    ::= { unisNDTrapPktSpeedObjects 4 }
+
+unisNDTrapPktSpeedSupType OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..48))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The speed limit type of nd packets."
+    ::= { unisNDTrapPktSpeedObjects 5 }
+
+-- unisNDTrapHostIPConflictObjs
+unisNDTrapHostIPConflictObjs OBJECT IDENTIFIER ::= { unisNDTrapPkt 2 }
+
+unisNDTrapHostIPCftLocalIPv6 OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..48))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The ipv6 address of local device."
+    ::= { unisNDTrapHostIPConflictObjs 1 }
+
+unisNDTrapHostIPCftLocalMAC OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..48))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The mac address of local device."
+    ::= { unisNDTrapHostIPConflictObjs 2 }
+
+unisNDTrapHostIPCftLocalIf OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE (0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The interface name of local device."
+    ::= { unisNDTrapHostIPConflictObjs 3 }
+
+unisNDTrapHostIPCftLocalPevid OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The interface outer layer vlan id of local device."
+    ::= { unisNDTrapHostIPConflictObjs 4 }
+
+unisNDTrapHostIPCftLocalCevid OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The interface inner layer vlan id of local device."
+    ::= { unisNDTrapHostIPConflictObjs 5 }
+
+unisNDTrapHostIPCftRemoteIPv6 OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..48))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The ipv6 address of remote device."
+    ::= { unisNDTrapHostIPConflictObjs 6 }
+
+unisNDTrapHostIPCftRemoteMAC OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..48))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The mac address of remote device."
+    ::= { unisNDTrapHostIPConflictObjs 7 }
+
+unisNDTrapHostIPCftRemotePevid OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The interface outer layer vlan id of remote device."
+    ::= { unisNDTrapHostIPConflictObjs 8 }
+
+unisNDTrapHostIPCftRemoteCevid OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The interface inner layer vlan id of remote device."
+    ::= { unisNDTrapHostIPConflictObjs 9 }
+
+
+-- unisNDTrapDuplicateIPv6Objs
+unisNDTrapDuplicateIPv6Objs OBJECT IDENTIFIER ::= { unisNDTrapPkt 3 }
+
+unisNDTrapDupIPv6NewMac OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..48))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The mac address of new user."
+    ::= { unisNDTrapDuplicateIPv6Objs 1 }
+
+unisNDTrapDupIPv6NewSevid OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..48))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The outer layer vlan id of new user."
+    ::= { unisNDTrapDuplicateIPv6Objs 2 }
+
+unisNDTrapDupIPv6NewCevid OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..48))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The inner layer vlan id of new user."
+    ::= { unisNDTrapDuplicateIPv6Objs 3 }
+
+unisNDTrapDupIPv6NewIFName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE (0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The interface name of new user."
+    ::= { unisNDTrapDuplicateIPv6Objs 4 }
+
+unisNDTrapDupIPv6OldMac OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..48))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The mac address of old user."
+    ::= { unisNDTrapDuplicateIPv6Objs 5 }
+
+unisNDTrapDupIPv6OldSevid OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..48))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The outer layer vlan id of old user."
+    ::= { unisNDTrapDuplicateIPv6Objs 6 }
+
+unisNDTrapDupIPv6OldCevid OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..48))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The inner layer vlan id of old user."
+    ::= { unisNDTrapDuplicateIPv6Objs 7 }
+
+unisNDTrapDupIPv6OldIFName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE (0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The interface name of old user."
+    ::= { unisNDTrapDuplicateIPv6Objs 8 }
+
+unisNDTrapDupIPv6DupAddr OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..48))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The duplicate ipv6 address."
+    ::= { unisNDTrapDuplicateIPv6Objs 9 }
+
+-- unisNDTrapRatelimitOverspeed
+unisNDTrapRatelimitOverspeed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapRatelimitVer,
+            unisNDTrapRatelimitCount,
+            unisNDTrapRatelimitMsg
+        }
+    STATUS      current
+    DESCRIPTION
+        "If the rate of ND packets delivered to the CPU on a device
+        exceeds the threshold, a trap message is generated and sent
+        to the remote monitoring device."
+    ::= { unisNDTrapPkts 6 }
+
+-- unisNDTrapRatelimitObjects
+unisNDTrapRatelimitObjects OBJECT IDENTIFIER ::= { unisNDTrapPkt 4 }
+
+unisNDTrapRatelimitVer OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The version of trap information."
+    ::= { unisNDTrapRatelimitObjects 1 }
+
+unisNDTrapRatelimitCount OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Number of cells in the trap message.  A trap message may contain
+        multiple cells, each of which indicates that the rate information of
+        ND packets exceeds the threshold."
+    ::= { unisNDTrapRatelimitObjects 2 }
+
+unisNDTrapRatelimitMsg OBJECT-TYPE
+    SYNTAX      OCTET STRING(SIZE(1..254))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object is the cell section in a trap message sent from a
+        monitored device.  This object can contain multiple cells.
+        This object is in the format of '<cell1><cell2>...'.  Each cell
+        consists of 17 octets in the format of
+        '<TrapOrigin><IfIndex><OverSpeedValue><Threshold><Interval>'.
+
+        <TrapOrigin> indicates the source of the trap message and has
+        size of 1 octet.  It only supports the following values.
+        1 - Global.
+        2 - Interface.
+
+        <IfIndex> is the index of the interface where the rate of ND packet
+        exceeds the threshold and has size of 4 octets.  It is 0xFFFFFFFF
+        when <TrapOrigin> is 1(Global).
+
+        <OverSpeedValue> indicates the rate that ND packets are actually
+        delivered and has size of 4 octets.
+
+        <Threshold> indicates the threshold that ND packets can be delivered
+        to CPU and has size of 4 octets.
+
+        <Interval> indicates the interval that a trap message is sent out
+        and has size of 4 octets."
+
+    ::= { unisNDTrapRatelimitObjects 3 }
+
+-- unisNDTrapPktQueThreshold
+unisNDTrapPktQueThresholdAlarm NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapPktQueChassis,
+            unisNDTrapPktQueSlot,
+            unisNDTrapPktQueNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "The current size of the ND_PKT queue exceeds the threshold."
+    ::= { unisNDTrapPkts 7 }
+
+unisNDTrapPktQueThresholdResume NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisNDTrapPktQueChassis,
+            unisNDTrapPktQueSlot,
+            unisNDTrapPktQueNum
+        }
+    STATUS      current
+    DESCRIPTION
+        "The current size of the ND_PKT queue drops below the threshold."
+    ::= { unisNDTrapPkts 8 }
+
+-- unisNDTrapPktQueueObjects
+unisNDTrapPktQueueObjects OBJECT IDENTIFIER ::= { unisNDTrapPkt 5 }
+
+unisNDTrapPktQueChassis OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of chassis ID. If the value is 65535, the device is
+         not a stacked device."
+    ::= { unisNDTrapPktQueueObjects 1 }
+
+unisNDTrapPktQueSlot OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The information of slot."
+    ::= { unisNDTrapPktQueueObjects 2 }
+
+unisNDTrapPktQueNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The number of packets in the ND_PKT queue."
+    ::= { unisNDTrapPktQueueObjects 3 }
+
+END
+

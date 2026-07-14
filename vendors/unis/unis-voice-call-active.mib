@@ -1,0 +1,281 @@
+-- ==========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: The purpose of this MIB file is to provide the definition of
+--              voice call record.
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2008-02-17 Initial version, created by Tian Xiaoqiang, Qu Jin
+-- ==========================================================================
+UNIS-VOICE-CALL-ACTIVE-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+        OBJECT-TYPE, MODULE-IDENTITY, Integer32, Gauge32
+    FROM SNMPv2-SMI
+        InetAddressType, InetAddress
+    FROM INET-ADDRESS-MIB
+        UnisCodecType
+    FROM UNIS-VOICE-DIAL-CONTROL-MIB
+        callActiveSetupTime, callActiveIndex
+    FROM DIAL-CONTROL-MIB
+        TEXTUAL-CONVENTION
+    FROM SNMPv2-TC
+        unisVoice
+    FROM UNIS-OID-MIB;
+
+unisVoCallActive MODULE-IDENTITY
+    LAST-UPDATED "200802170000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB file is to provide the definition of voice call
+         active record information."
+    REVISION "200802170000Z"
+    DESCRIPTION
+        "The initial version of this MIB file."
+    ::= { unisVoice 15 }
+
+-- ======================================
+--          Type declaration
+-- ======================================
+
+UnisGUid ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "Represents a global call identifier. The global call identifier is
+         used as an unique identifier for an end-to-end call. A zero length
+         UnisGUid indicates no value for the global call identifier."
+    SYNTAX       OCTET STRING(SIZE(0..16))
+
+
+unisVoiceCallActiveObjects OBJECT IDENTIFIER ::= { unisVoCallActive 1 }
+
+-- ===========================================================================
+--                        unisVoiceCallActiveTable
+-- ===========================================================================
+unisVoiceCallActiveTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisVoiceCallActiveEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table is the voice extension to the call active table
+         of DIAL-CONTROL-MIB. It contains voice encapsulation call
+         leg information that is derived from the statistics
+         of lower layer telephony interface."
+    ::= { unisVoiceCallActiveObjects 1 }
+
+unisVoiceCallActiveEntry OBJECT-TYPE
+    SYNTAX UnisVoiceCallActiveEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The information regarding a single voice encapsulation
+         call leg.
+         The call leg entry is identified by using the same index
+         objects that are used by call active table of
+         DIAL-CONTROL-MIB to identify the call.
+         An entry of this table is created when its associated call
+         active entry in the DIAL-CONTROL-MIB is created and
+         call active entry contains the call establishment to a
+         voice over telephony network peer.
+         The entry is deleted when its associated call active entry
+         in the DIAL-CONTROL-MIB is deleted."
+    INDEX { callActiveSetupTime, callActiveIndex }
+    ::= { unisVoiceCallActiveTable 1 }
+
+UnisVoiceCallActiveEntry ::= SEQUENCE {
+        unisVoCallActiveConnectionId UnisGUid,
+        unisVoCallActiveTxDuration Gauge32,
+        unisVoCallActiveVoiceTxDuration Gauge32,
+        unisVoCallActiveFaxTxDuration Gauge32,
+        unisVoCallActiveCoderType UnisCodecType,
+        unisVoCallActiveImgPageCount Gauge32
+    }
+
+unisVoCallActiveConnectionId OBJECT-TYPE
+    SYNTAX UnisGUid
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The global call identifier for the gateway call."
+    ::= { unisVoiceCallActiveEntry 1 }
+
+unisVoCallActiveTxDuration OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Duration of transmit path open from this peer to the
+         voice gateway for the call. The units is milliseconds."
+    ::= { unisVoiceCallActiveEntry 2 }
+
+unisVoCallActiveVoiceTxDuration OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Duration of voice transmitted from this peer to voice
+         gateway for this call. The voice utilization rate can be
+         obtained by dividing this by unisVoCallActiveTXDuration object.
+         The units is milliseconds."
+    ::= { unisVoiceCallActiveEntry 3 }
+
+unisVoCallActiveFaxTxDuration OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Duration of fax transmitted from this peer to voice gateway
+         for this call. The fax utilization rate can be obtained by
+         dividing this by unisVoCallActiveTXDuration object. The units
+         is milliseconds."
+    ::= { unisVoiceCallActiveEntry 4 }
+
+unisVoCallActiveCoderType OBJECT-TYPE
+    SYNTAX UnisCodecType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The negotiated coder type. It specifies the encode type to
+         the PSTN leg of a call."
+    ::= { unisVoiceCallActiveEntry 5 }
+
+unisVoCallActiveImgPageCount OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of fax related image pages are received or
+         transmitted via the peer for the call. The units is pages."
+    ::= { unisVoiceCallActiveEntry 6 }
+
+
+-- ===========================================================================
+--                        unisVoiceVoIPCallActiveTable
+-- ===========================================================================
+unisVoiceVoIPCallActiveTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisVoiceVoIPCallActiveEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table is the VoIP extension to the call active table of
+         DIAL-CONTROL-MIB. It contains VoIP call leg
+         information about specific VoIP call destination."
+    ::= { unisVoiceCallActiveObjects 2 }
+
+unisVoiceVoIPCallActiveEntry OBJECT-TYPE
+    SYNTAX UnisVoiceVoIPCallActiveEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The information regarding a single VoIP call leg.
+         The call leg entry is identified by using the same index
+         objects that are used by call active table of DIAL-CONTROL-MIB
+         to identify the call.
+         An entry of this table is created when its associated call
+         active entry in the DIAL-CONTROL-MIB is created and the
+         call active entry contains information for the call
+         establishment to the peer on the IP backbone via a voice
+         over IP peer.
+         The entry is deleted when its associated call active entry
+         in the DIAL-CONTROL-MIB is deleted."
+    INDEX { callActiveSetupTime, callActiveIndex }
+    ::= { unisVoiceVoIPCallActiveTable 1 }
+
+UnisVoiceVoIPCallActiveEntry ::= SEQUENCE {
+    unisVoVoIPCallActiveConnectionId UnisGUid,
+    unisVoVoIPCallActiveRemSigIPType InetAddressType,
+    unisVoVoIPCallActiveRemSigIPAddr InetAddress,
+    unisVoVoIPCallActiveRemSigPort Integer32,
+    unisVoVoIPCallActiveRemMedIPType InetAddressType,
+    unisVoVoIPCallActiveRemMedIPAddr InetAddress,
+    unisVoVoIPCallActiveRemMedPort Integer32,
+    unisVoVoIPCallActiveSessProtocol INTEGER,
+    unisVoVoIPCallActiveCoderType UnisCodecType
+    }
+
+unisVoVoIPCallActiveConnectionId OBJECT-TYPE
+    SYNTAX UnisGUid
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The global call identifier for the gateway call."
+    ::= { unisVoiceVoIPCallActiveEntry 1 }
+
+unisVoVoIPCallActiveRemSigIPType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The type of remote system signalling IP address for the VoIP call."
+    ::= { unisVoiceVoIPCallActiveEntry 2 }
+
+unisVoVoIPCallActiveRemSigIPAddr OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Remote system signalling IP address for the VoIP call."
+    ::= { unisVoiceVoIPCallActiveEntry 3 }
+
+unisVoVoIPCallActiveRemSigPort OBJECT-TYPE
+    SYNTAX Integer32(0..65535)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Remote system UDP listener signalling port to which to transmit voice
+         packets."
+    ::= { unisVoiceVoIPCallActiveEntry 4 }
+
+unisVoVoIPCallActiveRemMedIPType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The type of remote system media IP address for the VoIP call."
+    ::= { unisVoiceVoIPCallActiveEntry 5 }
+
+unisVoVoIPCallActiveRemMedIPAddr OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Remote system media IP address for the VoIP call."
+    ::= { unisVoiceVoIPCallActiveEntry 6 }
+
+unisVoVoIPCallActiveRemMedPort OBJECT-TYPE
+    SYNTAX Integer32(0..65535)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Remote system UDP listener media port to which to transmit voice
+         packets."
+    ::= { unisVoiceVoIPCallActiveEntry 7 }
+
+unisVoVoIPCallActiveSessProtocol OBJECT-TYPE
+    SYNTAX INTEGER {
+        unknown(1),
+        h323(2),
+        sip(3)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The object specifies the session protocol to be used
+         for internet call between local and remote router via
+         IP backbone."
+    ::= { unisVoiceVoIPCallActiveEntry 8 }
+
+unisVoVoIPCallActiveCoderType OBJECT-TYPE
+    SYNTAX UnisCodecType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The negotiated coder type. It specifies the encode type to
+         the VoIP leg of a call."
+    ::= { unisVoiceVoIPCallActiveEntry 9 }
+
+
+END

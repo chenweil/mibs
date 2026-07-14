@@ -1,0 +1,50 @@
+-- =================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Multi-active Detection mib
+-- Reference:
+-- Version: V1.0
+-- History:
+--   V1.0 Created by chenjie
+--     Initial version 2022-09-08
+-- =================================================================
+UNIS-MAD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+    FROM UNIS-OID-MIB
+        MODULE-IDENTITY, NOTIFICATION-TYPE
+    FROM SNMPv2-SMI;
+
+unisMad MODULE-IDENTITY
+    LAST-UPDATED "202209080000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "An IRF link failure causes an IRF fabric to split in multiple IRF fabrics operating with the same Layer 3 settings,
+         including the same IP address. To avoid IP address collision and network issues, IRF uses multi-active detection
+         (MAD) mechanisms to detect the presence of multiple identical IRF fabrics, handle collisions, and recover from faults.
+        "
+    REVISION "202209080000Z"
+    DESCRIPTION
+        "Initial version of this MIB module, including unisMadTrapPrex."
+    ::= { unisCommon 253 }
+
+unisMadTrap OBJECT IDENTIFIER ::= { unisMad 1 }
+unisMadTrapPrex OBJECT IDENTIFIER ::= { unisMadTrap 0 }
+
+unisMadConflictDetect NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the detect conflict."
+    ::= { unisMadTrapPrex 1 }
+
+unisMadConflictResume NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+        "The notification is generated when the detect conflict resume."
+    ::= { unisMadTrapPrex 2 }
+
+END

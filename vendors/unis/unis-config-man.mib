@@ -1,0 +1,1232 @@
+-- =================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: Configuration management mib
+-- Reference:
+-- Version: V2.7
+-- History:
+--     Initial version 2002-12-20
+--     V1.1 24th Feb 2004
+--     Imported module from UNIS-OID-MIB,the root MIB.
+--     V1.2 14th May 2004
+--     Changed MIB object name from unisXXX to unis, etc.
+--     V1.3 18th Aug 2004
+--     Modified DESCRIPTION of 'unisCfgLogFile' by jinyi.
+--     V1.4 16th Sept 2004
+--     Modified DESCRIPTION of 'unisCfgLogTerminalType' and 'unisCfgLogTerminalNum' by wangyingxia
+--     V1.5 9th Oct 2004
+--     Modified DESCRIPTION of 'unisCfgRunModifiedLast' and 'unisCfgManEventlog' by wangrui
+--     V1.6 30th Nov 2004
+--     Modified DESCRIPTION of 'unisCfgOperateCompletion' by wangrui
+--     V1.7 11th Jan 2005
+--     Modified DESCRIPTION by gaolong and weixinzhe
+--     V1.8 26th Apr 2005
+--     Added unisCfgExecuteOperate and added ConfigOperationStateType by wangrui
+--     Modified DESCRIPTION of 'unisCfgLogSrcData', 'unisCfgLogDesData' and 'unisCfgLogTerminalType' by fuzhenyu
+--     V1.9 6th Jun 2005
+--     Added enum value in SYNTAX of unisCfgOperateProtocol by jinyongfeng.
+--     V2.0 27th sept 2005
+--     Modified DESCRIPTION of 'unisCfgLogSrcCmd', 'unisCfgRunModifiedLast' and 'unisCfgLogDesData' by lisongfeng and wangrui
+--     V2.1 2009-05-05 Added unisCfgOperateServerPort, unisCfgInvalidConfigFile by jinyi
+--     V2.2 2009-12-20 Added unisCfgOperFailReason, unisCfgReset by shuaixiaojuan
+--     V2.3 2010-10-30 Deprecated unisCfgOperateServerAddress, unisCfgLogCmdSrcAddress
+--                     and unisCfgLogServerAddress,
+--                     added enum in ConfigOperationStateType,
+--                     added unisCfgOperateSrvAddrType, unisCfgOperateSrvAddrRev and
+--                     unisCfgOperateSrvVPNName, unisCfgLogCmdSrcAddrType,
+--                     unisCfgLogCmdSrcAddrRev, unisCfgLogCmdSrcAddrVPNName,
+--                     unisCfgLogServerAddrType,unisCfgLogServerAddrRev, unisCfgLogServerAddrVPNName by songhao.
+--     V2.4 2011-11-26 Added unisCfgFirstTrapTime by duyanbing 04404.
+--     V2.5 2013-09-13 Added unisCfgReset2 by duyanbing 04404.
+--          2014-01-17 Modified description of unisCfgLogCmdSrcAddress, unisCfgLogServerAddress
+--                     and unisCfgOperateServerAddress.
+--     V2.6 2014-08-11 Added running2File(7), file2Running(8) to ConfigOperationType,
+--                     modified description of unisCfgOperateFileName by SongHao.
+--          2014-11-13 Modified description of ConfigOperationType for defining 'startup' by g09715.
+--     V2.7 2018-03-06 Added unisCfgOperateFailCmd unisCfgOperateFailCmdView unisCfgOperateFailCmdReason by wangweihui.
+-- =================================================================
+UNIS-CONFIG-MAN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-GROUP, MODULE-COMPLIANCE, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+    TimeTicks, IpAddress, Integer32, Counter32,
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB
+    DisplayString, TruthValue, RowStatus, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC;
+
+
+unisConfig MODULE-IDENTITY
+    LAST-UPDATED "201803060000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB contains objects for managing the system configuration.  It contains the
+        model used to represent configuration data that exists elsewhere in the system and
+        in peripheral devices.
+        There are no constraints on this MIB."
+    REVISION "201803060000Z"
+    DESCRIPTION
+        "Added unisCfgOperateFailCmd unisCfgOperateFailCmdView unisCfgOperateFailCmdReason."
+    REVISION "201411140700Z"
+    DESCRIPTION
+        "Modified description of ConfigOperationType for defining 'startup'."
+    REVISION "201408110904Z"
+    DESCRIPTION
+        "Added running2File(7), file2Running(8) to ConfigOperationType,
+        modified description of unisCfgOperateFileName."
+    REVISION "201401170000Z"
+    DESCRIPTION
+        "Modified description of unisCfgLogCmdSrcAddress, unisCfgLogServerAddress
+        and unisCfgOperateServerAddress."
+    REVISION "201309130000Z"
+    DESCRIPTION
+        "Added unisCfgReset2."
+    REVISION "201111260000Z"
+    DESCRIPTION
+        "Added unisCfgFirstTrapTime."
+    REVISION "201010300000Z"
+    DESCRIPTION
+        "Deprecated unisCfgOperateServerAddress, unisCfgLogCmdSrcAddress
+        and unisCfgLogServerAddress, added enum in ConfigOperationStateType,
+        added unisCfgOperateSrvAddrType, unisCfgOperateSrvAddrRev and
+        unisCfgOperateSrvVPNName, unisCfgLogCmdSrcAddrType,
+        unisCfgLogCmdSrcAddrRev, unisCfgLogCmdSrcAddrVPNName,
+        unisCfgLogServerAddrType,unisCfgLogServerAddrRev, unisCfgLogServerAddrVPNName."
+    REVISION "200912200000Z"
+    DESCRIPTION
+        "Added unisCfgOperFailReason, unisCfgReset."
+    REVISION "200905050000Z"
+    DESCRIPTION
+        "Added unisCfgOperateServerPort, unisCfgInvalidConfigFile."
+    REVISION "200509270000Z"
+    DESCRIPTION
+        "Modified DESCRIPTION of 'unisCfgLogSrcCmd', 'unisCfgRunModifiedLast' and
+        'unisCfgLogDesData'."
+    REVISION "200506060000Z"
+    DESCRIPTION
+        "Added enum value in SYNTAX of unisCfgOperateProtocol."
+    REVISION "200504260000Z"
+    DESCRIPTION
+        "Added unisCfgExecuteOperate and added ConfigOperationStateType.
+        Modified DESCRIPTION of 'unisCfgLogSrcData', 'unisCfgLogDesData' and
+        'unisCfgLogTerminalType'."
+    REVISION "200501110000Z"
+    DESCRIPTION
+        "Modified DESCRIPTION."
+    REVISION "200411300000Z"
+    DESCRIPTION
+        "Modified DESCRIPTION of 'unisCfgOperateCompletion'."
+    REVISION "200410090000Z"
+    DESCRIPTION
+        "Modified DESCRIPTION of 'unisCfgRunModifiedLast' and 'unisCfgManEventlog'."
+    REVISION "200409160000Z"
+    DESCRIPTION
+        "Modified DESCRIPTION of 'unisCfgLogTerminalType' and 'unisCfgLogTerminalNum'."
+    REVISION "200408180000Z"
+    DESCRIPTION
+        "Modified DESCRIPTION of 'unisCfgLogFile'."
+    REVISION "200405140000Z"
+    DESCRIPTION
+        "Changed MIB object name from unisXXX to unis, etc."
+    REVISION "200402240000Z"
+    DESCRIPTION
+        "Imported module from UNIS-OID-MIB, the root MIB."
+    REVISION "200212200000Z"
+    DESCRIPTION
+        "Initial version. "
+    ::= { unisCommon 4 }
+
+
+--
+-- Textual conventions
+--
+
+ConfigOperationType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Specify operation types on configuration.
+        Currently, the following types of operations are provided:
+
+        running2Startup(1):
+            Update the next-startup configuration file
+            with the current configuration running in the system.  This
+            operation is equivalent to the 'save' command from command line.
+            If  no next-startup configuration file exists, then the default
+            startup configuration file is created to save the data and this
+            becomes the next-startup configuration file.
+
+        startup2Running(2):
+            Update the current configuration running in the system
+            with the current startup configuration file.  The
+            commands in the file are executed as if they had been entered via
+            the command line.  If the current startup configuration file does not
+            exist, the operation will fail with error opFileOpenError(13).
+
+        running2Net(3):
+            Send the current configuration running in the system to the network
+            by using the specified file transfer protocol.
+
+        net2Running(4):
+            Update the current configuration running in the system with a remote
+            file from the network by using the specified file transfer protocol.
+            The commands in the file are executed as if they had been entered via
+            the command line.
+
+        net2Startup(5):
+            Download a remote file to the local system by using the specified file
+            transfer protocol and replace the next-startup configuration file.
+            If the next-startup configuration file does not exist,
+            the default startup configuration file is created to save the data and
+            this becomes the next-startup configuration file.
+
+        startup2Net(6):
+            Send the next-startup configuration file  to the network by using
+            the specified file transfer protocol.  If the next-startup configuration
+            file does not exist, the operation will fail with error opFileOpenError(13).
+
+        running2File(7):
+            Write current configuration running in the system into a file that is
+            specified by unisCfgOperateFileName.
+            After this operation, the next-startup configuration file will not be changed.
+
+        file2Running(8):
+            Update the current configuration running in the system with a file that is
+            specified by unisCfgOperateFileName.
+            The commands in the file are executed as if they had been entered via
+            the command line."
+    SYNTAX INTEGER
+        {
+            running2Startup(1),
+            startup2Running(2),
+            running2Net(3),
+            net2Running(4),
+            net2Startup(5),
+            startup2Net(6),
+            running2File(7),
+            file2Running(8)
+        }
+
+ConfigOperationStateType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "The status of the specified operation.
+
+        opInProgress : Specified operation is active.
+        opOperationSuccess : Specified operation is supported and
+                             completed successfully.
+        opInvalidOperation : Command invalid or command/protocol/device
+                             combination unsupported.
+        opInvalidProtocol : Invalid protocol specified.
+        opInvalidSourceName : Invalid source file name specified.
+        opInvalidDestName : Invalid target name  specified.
+        opInvalidServerAddress : Invalid server address specified.
+        opDeviceBusy : Specified device is in use and locked by another process.
+        opDeviceOpenError : Invalid device name.
+        opDeviceError : Device read, write or erase error.
+        opDeviceNotProgrammable : Device is read-only but a write or erase
+                                  operation was specified.
+        opDeviceFull : Device is filled to capacity.
+        opFileOpenError : Invalid file name; file not found in partition.
+        opFileTransferError : File transfer was unsuccessful; network failure.
+        opFileChecksumError : File checksum in Flash failed.
+        opNoMemory : System running low on memory.
+        opAuthFail: Invalid user name or password.
+        opTimeOut : File transfer was timeout.
+        opUnknownFailure : Failure unknown.
+        opInvalidConfigFile: Invalid configuration file.
+        opSlaveFull : Operation failed for a standby MPU or subordinate device because of insufficient space.
+        opCopyToSlaveFailure : Failed to copy the file to a standby MPU or subordinate device.
+        "
+    SYNTAX INTEGER
+        {
+            opInProgress(1),
+            opSuccess(2),
+            opInvalidOperation(3),
+            opInvalidProtocol(4),
+            opInvalidSourceName(5),
+            opInvalidDestName(6),
+            opInvalidServerAddress(7),
+            opDeviceBusy(8),
+            opDeviceOpenError(9),
+            opDeviceError(10),
+            opDeviceNotProgrammable(11),
+            opDeviceFull(12),
+            opFileOpenError(13),
+            opFileTransferError(14),
+            opFileChecksumError(15),
+            opNoMemory(16),
+            opAuthFail(17),
+            opTimeOut(18),
+            opUnknownFailure(19),
+            opInvalidConfigFile(20),
+            opSlaveFull(21),
+            opCopyToSlaveFailure(22)
+        }
+
+--
+-- Node definitions
+--
+
+unisConfigManObjects OBJECT IDENTIFIER ::= { unisConfig 1 }
+
+
+unisCfgLog OBJECT IDENTIFIER ::= { unisConfigManObjects 1 }
+
+
+unisCfgRunModifiedLast OBJECT-TYPE
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The object records the value of sysUpTime when the current configuration
+         running in the system was last modified.
+
+         The value will be changed immediately after the system detects that the current
+         configuration has been changed."
+    ::= { unisCfgLog 1 }
+
+
+unisCfgRunSavedLast OBJECT-TYPE
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The object records the value of sysUpTime when the current configuration
+         running in the system was last saved.
+
+         If the value of the object is smaller than
+         unisCfgRunModifiedLast, the current configuration has been
+         modified but not saved."
+    ::= { unisCfgLog 2 }
+
+
+unisCfgStartModifiedLast OBJECT-TYPE
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The object records the value of sysUpTime when the next-startup configuration
+         used currently was last modified.  It may have been modified by a save operation of the
+         current configuration running in the system or other methods such as copy."
+    ::= { unisCfgLog 3 }
+
+
+unisCfgLogLimitedEntries OBJECT-TYPE
+    SYNTAX Integer32 (0..2147483647)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The object shows the maximum number of rows in
+        unisCfgLogTable.  The value supported by the system is 10.
+        "
+    ::= { unisCfgLog 4 }
+
+
+unisCfgLogDeletedEntries OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of rows deleted from unisCfgLogTable."
+    ::= { unisCfgLog 5 }
+
+
+unisCfgLogWantBackup OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Decide whether to back up the values of objects for unisCfgLog."
+    DEFVAL { true }
+    ::= { unisCfgLog 6 }
+
+-- If the value is true, the data of configuration log on the master will send to
+-- slave.  Otherwise the data of log will be lost when master switches to
+-- slave.
+
+
+unisCfgLogTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisCfgLogEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Table for logging configuration operations on device ."
+    ::= { unisCfgLog 7 }
+
+unisCfgLogEntry OBJECT-TYPE
+    SYNTAX UnisCfgLogEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Information of the entry."
+    INDEX { unisCfgLogIndex }
+    ::= { unisCfgLogTable 1 }
+
+UnisCfgLogEntry ::=
+    SEQUENCE
+        {
+            unisCfgLogIndex                  Integer32,
+            unisCfgLogTime                   TimeTicks,
+            unisCfgLogSrcCmd                 INTEGER,
+            unisCfgLogSrcData                INTEGER,
+            unisCfgLogDesData                INTEGER,
+            unisCfgLogTerminalType           INTEGER,
+            unisCfgLogTerminalUser           DisplayString,
+            unisCfgLogTerminalNum            Integer32,
+            unisCfgLogTerminalLocation       DisplayString,
+            unisCfgLogCmdSrcAddress          IpAddress,
+            unisCfgLogVirHost                DisplayString,
+            unisCfgLogUserName               DisplayString,
+            unisCfgLogServerAddress          IpAddress,
+            unisCfgLogFile                   DisplayString,
+            unisCfgLogCmdSrcAddrType         InetAddressType,
+            unisCfgLogCmdSrcAddrRev          InetAddress,
+            unisCfgLogCmdSrcAddrVPNName      DisplayString,
+            unisCfgLogServerAddrType         InetAddressType,
+            unisCfgLogServerAddrRev          InetAddress,
+            unisCfgLogServerAddrVPNName      DisplayString
+        }
+
+unisCfgLogIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Index of the table beginning from 1."
+    ::= { unisCfgLogEntry 1 }
+
+unisCfgLogTime OBJECT-TYPE
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Specify the sysUpTime when the configuration log was generated."
+    ::= { unisCfgLogEntry 2 }
+
+unisCfgLogSrcCmd OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            cmdLine(1),
+            snmp(2),
+            other(3)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Specify the source command which brought the log.
+        Currently, we provide the following types of sources:
+        1.cmdLine(1):configure log instigated by command line.
+        2.snmp(2):configure log instigated by SNMPS.
+        3.other(3):configure log instigated by other source unknown."
+    ::= { unisCfgLogEntry 3 }
+
+unisCfgLogSrcData OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            erase(1),
+            runningData(2),
+            commandSource(3),
+            startupData(4),
+            local(5),
+            netFtp(6),
+            hotPlugging(7)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The source of the configuration data event.
+        erase           erasing destination
+        runningData     operational data alive
+        commandSource   the command source itself
+        startupData     what the system will use next reboot
+        local           local NVRAM or flash
+        netFtp          FTP network transfer
+        hotPlugging     board is inserted or pulled out on line
+        "
+    ::= { unisCfgLogEntry 4 }
+
+unisCfgLogDesData OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            unknown(1),
+            runningData(2),
+            commandSource(3),
+            startupData(4),
+            local(5),
+            netFtp(6),
+            hotPlugging(7)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The destination for the configuration data event.
+        unknown          unknown
+        runningData     operational data alive
+        commandSource   the command source itself
+        startupData     what the system will use next reboot
+        local           local NVRAM or flash
+        netFtp          FTP network transfer
+        hotPlugging     board is inserted or pulled out on line"
+    ::= { unisCfgLogEntry 5 }
+
+unisCfgLogTerminalType OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            notApplicable(1),
+            unknown(2),
+            console(3),
+            terminal(4),
+            virtual(5),
+            auxiliary(6)
+        }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Specifies the terminal type.
+        If unisCfgLogSrcCmd is not 'cmdLine', use 'notApplicable'.
+
+        The value list:
+        notApplicable(1): no meaning at this time.
+        unknown(2): unknown terminal type.
+        console(3): console interface.
+        terminal(4): generic terminal.
+        virtual(5): virtual terminal such as Telnet.
+        auxiliary(6): auxiliary interface."
+    ::= { unisCfgLogEntry 6 }
+
+unisCfgLogTerminalUser OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..64))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The name of logging user which is available when unisCfgLogSrcCmd
+        is 'cmdLine'.
+        Other, a zero length string."
+    ::= { unisCfgLogEntry 7 }
+
+unisCfgLogTerminalNum OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Specifies the terminal number.
+        If unisCfgLogSrcCmd is not 'cmdLine', use '-1'"
+    ::= { unisCfgLogEntry 8 }
+
+unisCfgLogTerminalLocation OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..64))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The location of logging user which is available when unisCfgLogSrcCmd
+        is 'cmdLine'.
+        Other, a zero length string."
+    ::= { unisCfgLogEntry 9 }
+
+unisCfgLogCmdSrcAddress OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS deprecated
+    DESCRIPTION
+        "The address from which a request comes when the value of unisCfgLogSrcCmd is 'snmp(2)'.
+
+        The ip address of the remote system connected when the value of unisCfgLogTerminalType
+        is 'virtual'.
+
+        Other, the value of 0.0.0.0.
+
+        This object is replaced by unisCfgLogCmdSrcAddrRev for it only support IPv4."
+    ::= { unisCfgLogEntry 10 }
+
+unisCfgLogVirHost OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..64))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The host name of remote system connected if
+        unisCfgLogTerminalType has the value of 'virtual'.
+        Other, a zero length string."
+    ::= { unisCfgLogEntry 11 }
+
+unisCfgLogUserName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..64))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The user name used when unisCfgLogSrcData or unisCfgLogDesData has
+        the value of 'netFtp'.
+        Other, a zero length string."
+    ::= { unisCfgLogEntry 12 }
+
+unisCfgLogServerAddress OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS deprecated
+    DESCRIPTION
+        "The remote server address when unisCfgLogSrcData or unisCfgLogDesData
+        has the value of 'netFtp'.
+        Other, a value of 0.0.0.0.
+
+        This object is replaced by unisCfgLogServerAddrRev for it only support IPv4."
+    ::= { unisCfgLogEntry 13 }
+
+unisCfgLogFile OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..64))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The current configuration file name when unisCfgLogSrcData has
+         the value of 'netFtp', and unisCfgLogDesData has the value of 'startupData'.
+         Other, a zero length string."
+    ::= { unisCfgLogEntry 14 }
+
+unisCfgLogCmdSrcAddrType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The type of IP address for the unisCfgLogCmdSrcAddrRev."
+    ::= { unisCfgLogEntry 15 }
+
+unisCfgLogCmdSrcAddrRev OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The address from which a request comes when the value of unisCfgLogSrcCmd is 'snmp(2)'.
+
+        The ip address of the remote system connected when the value of unisCfgLogTerminalType
+        is 'virtual'.
+
+        Other, the value of 0.0.0.0."
+    ::= { unisCfgLogEntry 16 }
+
+unisCfgLogCmdSrcAddrVPNName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The VPN instance of this operation uses."
+    ::= { unisCfgLogEntry 17 }
+
+unisCfgLogServerAddrType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The type of IP address for the unisCfgLogServerAddrRev."
+    ::= { unisCfgLogEntry 18 }
+
+unisCfgLogServerAddrRev OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The remote server address when unisCfgLogSrcData or unisCfgLogDesData
+        has the value of 'netFtp'.
+        Other, a value of 0.0.0.0."
+    ::= { unisCfgLogEntry 19 }
+
+unisCfgLogServerAddrVPNName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The VPN instance of this operation uses."
+    ::= { unisCfgLogEntry 20 }
+
+unisCfgFirstTrapTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Time when the first trap is sent."
+    ::= { unisCfgLog 8 }
+
+unisCfgOperate OBJECT IDENTIFIER ::= { unisConfigManObjects 2 }
+
+
+unisCfgOperateGlobalEntryLimit OBJECT-TYPE
+    SYNTAX Integer32 (1..10)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The maximum number of copy entries that may be held
+        in unisCfgOperateTable.  A particular setting does not guarantee
+        that much data can be held."
+    DEFVAL { 5 }
+    ::= { unisCfgOperate 1 }
+
+
+unisCfgOperateEntryAgeOutTime OBJECT-TYPE
+    SYNTAX Integer32 (1..60)
+    UNITS "minute"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The number of minutes an unactive unisCfgOperateEntry SHOULD be kept in the
+        unisCfgOperateTable before it is active.  The object is a factor taken account
+        of when it needs delete some rows make room in unisCfgOperateTable. "
+    DEFVAL { 5 }
+    ::= { unisCfgOperate 2 }
+
+unisCfgOperateResultGlobalEntryLimit OBJECT-TYPE
+    SYNTAX Integer32(1..50)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The maximum number of copy entries that may be held
+        in unisCfgOperateResultTable.  A particular setting does not guarantee
+        that much data can be held."
+    DEFVAL { 5 }
+    ::= { unisCfgOperate 3 }
+
+
+unisCfgOperateTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisCfgOperateEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table of config-operation requests."
+    ::= { unisCfgOperate 4 }
+
+
+unisCfgOperateEntry OBJECT-TYPE
+    SYNTAX UnisCfgOperateEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An operate request entry."
+    INDEX { unisCfgOperateIndex }
+    ::= { unisCfgOperateTable 1 }
+
+
+UnisCfgOperateEntry ::=
+    SEQUENCE
+        {
+            unisCfgOperateIndex                      Integer32,
+            unisCfgOperateType                       ConfigOperationType,
+            unisCfgOperateProtocol                   INTEGER,
+            unisCfgOperateFileName                   DisplayString,
+            unisCfgOperateServerAddress              IpAddress,
+            unisCfgOperateUserName                   DisplayString,
+            unisCfgOperateUserPassword               DisplayString,
+            unisCfgOperateEndNotificationSwitch      TruthValue,
+            unisCfgOperateRowStatus                  RowStatus,
+            unisCfgOperateServerPort                 Integer32,
+            unisCfgOperateSrvAddrType                InetAddressType,
+            unisCfgOperateSrvAddrRev                 InetAddress,
+            unisCfgOperateSrvVPNName                 DisplayString
+        }
+
+unisCfgOperateIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The unique index value of a row in this table."
+    ::= { unisCfgOperateEntry 1 }
+
+unisCfgOperateType OBJECT-TYPE
+    SYNTAX ConfigOperationType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Specify the type of operation on configuration."
+    ::= { unisCfgOperateEntry 2 }
+
+unisCfgOperateProtocol OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            ftp(1),
+            tftp(2),
+            clusterftp(3),
+            clustertftp(4)
+        }
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "If the value of unisCfgOperateType is running2Net,net2Running,net2Startup
+         or startup2net,  this node specify the protocol to be
+        used for file transfer .
+        The default protocol is ftp if no protocol is specified.
+        And for other value of unisCfgOperateType , this object may
+        be ignored by the implementation.
+
+        when clusterftp or clustertftp is selected,
+        the unisCfgOperateServerAddress needn't be set,
+        the server address can be acquired automatically, the value of unisCfgOperateServerAddress
+        is uncertain during operation.
+        both member switch and commander switch can use them if they support HGMP v2.
+        "
+    ::= { unisCfgOperateEntry 3 }
+
+unisCfgOperateFileName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..128))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "When the object of unisCfgOperateType has the value of net2Startup, net2running,
+        running2Net, running2File or file2Running, the value must be specified.
+
+        The file name may include the path if applicable.
+
+        If the value of unisCfgOperateType is net2Startup or net2running, this node specify the
+        source file name of transfers.
+
+        If the value of unisCfgOperateType is running2Net,
+        this node specify the destination file name of transfers.
+
+        When unisCfgOperateType has the value of startup2net, the object may not be
+        created instead of using the file name of startup configuration file.
+
+        If the value of unisCfgOperateType is running2File or file2Running,
+        this node specifies the file name to be written or loaded."
+    ::= { unisCfgOperateEntry 4 }
+
+unisCfgOperateServerAddress OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-create
+    STATUS deprecated
+    DESCRIPTION
+        "When the operation type is running2Net,net2Running,net2Startup
+         or startup2net , the ip address of the ftp/tftp server from/to
+        which to download/upload must be specified.
+        Values of 0.0.0.0 or FF.FF.FF.FF are not permitted.
+
+        This object is replaced by unisCfgOperateSrvAddrRev for it only support IPv4."
+    ::= { unisCfgOperateEntry 5 }
+
+unisCfgOperateUserName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..40))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "When the operation type is running2Net,net2Running,net2Startup
+         or startup2net, the user
+        name for the ftp server from/to which to download/upload
+        should be specified.  The object must be created if unisCfgOperateProtocol
+        has the value of ftp."
+    ::= { unisCfgOperateEntry 6 }
+
+unisCfgOperateUserPassword OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..40))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "When the operation type is running2Net,net2Running,net2Startup
+         or startup2net, the user
+        password for the ftp server from/to which to download/upload
+        should be specified.  The object must be created if unisCfgOperateProtocol
+        has the value of ftp."
+    ::= { unisCfgOperateEntry 7 }
+
+unisCfgOperateEndNotificationSwitch OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Specifies whether or not a notification should be
+        issued on the completion of the operation."
+    DEFVAL { false }
+    ::= { unisCfgOperateEntry 8 }
+
+unisCfgOperateRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this table entry.
+        When the status is active all the
+        object's value in the entry is not
+        allowed to be modified."
+    ::= { unisCfgOperateEntry 9 }
+
+unisCfgOperateServerPort OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "When the operation type is running2Net, net2Running, net2Startup or startup2Net,
+         this node is used for specifying the remote port number.  If the value is 0 or not
+         specified, the known port number will be used."
+    ::= { unisCfgOperateEntry 10 }
+
+unisCfgOperateSrvAddrType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The type of IP address for unisCfgOperateSrvAddrRev."
+    ::= { unisCfgOperateEntry 11 }
+
+unisCfgOperateSrvAddrRev OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "When the operation type is running2Net,net2Running,net2Startup
+        or startup2net , the ip address of the ftp/tftp server from/to
+        which to download/upload must be specified."
+    ::= { unisCfgOperateEntry 12 }
+
+unisCfgOperateSrvVPNName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The VPN instance of this operation uses."
+    ::= { unisCfgOperateEntry 13 }
+
+unisCfgOperateResultTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisCfgOperateResultEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table of config-operation requests result."
+    ::= { unisCfgOperate 5 }
+
+unisCfgOperateResultEntry OBJECT-TYPE
+    SYNTAX UnisCfgOperateResultEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The result entries of configuration operation requests."
+    INDEX { unisCfgOperateResultIndex }
+    ::= { unisCfgOperateResultTable 1 }
+
+
+UnisCfgOperateResultEntry ::=
+    SEQUENCE
+        {
+            unisCfgOperateResultIndex            Integer32,
+            unisCfgOperateResultOptIndex         Integer32,
+            unisCfgOperateResultOpType           ConfigOperationType,
+            unisCfgOperateState                  ConfigOperationStateType,
+            unisCfgOperateTime                   TimeTicks,
+            unisCfgOperateEndTime                TimeTicks,
+            unisCfgOperFailReason                DisplayString,
+            unisCfgOperateFailCmd                DisplayString,
+            unisCfgOperateFailCmdView            DisplayString,
+            unisCfgOperateFailCmdReason          DisplayString
+        }
+
+unisCfgOperateResultIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of Table, which is an incremental integer.
+        The maximum value of the node is 2147483647.  The agent should wrap the
+        value to 1 and flush all the existing entries when the maximum value
+        is reached."
+    ::= { unisCfgOperateResultEntry 1 }
+
+
+unisCfgOperateResultOptIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The operation index in the unisCfgOperateTable."
+    ::= { unisCfgOperateResultEntry 2 }
+
+unisCfgOperateResultOpType OBJECT-TYPE
+    SYNTAX ConfigOperationType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The operation type in the unisCfgOperateTable."
+    ::= { unisCfgOperateResultEntry 3 }
+
+unisCfgOperateState OBJECT-TYPE
+    SYNTAX ConfigOperationStateType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The operation state type in the unisCfgOperateTable."
+    ::= { unisCfgOperateResultEntry 4 }
+
+unisCfgOperateTime OBJECT-TYPE
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Record the time taken for the operation.  This object will
+        be like a stopwatch, starting when the operation
+        starts, and stopping when the operation completes."
+    ::= { unisCfgOperateResultEntry 5 }
+
+unisCfgOperateEndTime OBJECT-TYPE
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The value of sysUpTime when the configuration operation is finished."
+    ::= { unisCfgOperateResultEntry 6 }
+
+unisCfgOperFailReason OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The failure reasons of configuration operation."
+    ::= { unisCfgOperateResultEntry 7 }
+
+unisCfgOperateFailCmd OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..512))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The failure cmd of configuration operation."
+    ::= { unisCfgOperateResultEntry 8 }
+
+unisCfgOperateFailCmdView OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..264))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The failure cmd view of configuration operation."
+    ::= { unisCfgOperateResultEntry 9 }
+
+unisCfgOperateFailCmdReason OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The failure cmd reasons of configuration operation.
+        The failed reason is :
+        'Failed to execute command.'
+        'Failed to parse command.'
+        "
+    ::= { unisCfgOperateResultEntry 10 }
+
+unisCfgExecuteOperate OBJECT IDENTIFIER ::= { unisCfgOperate 6 }
+
+unisCfgExecuteOperateResultEntryLimit OBJECT-TYPE
+    SYNTAX Integer32(5..20)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The maximum number of ConfigOperationType entries that may be held
+        in unisCfgExecuteResultTable.  A particular setting does not guarantee
+        that much data can be held."
+    DEFVAL { 5 }
+    ::= { unisCfgExecuteOperate 1 }
+
+unisCfgExecuteResultTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UnisCfgExecuteResultEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table of configuration execute result."
+    ::= { unisCfgExecuteOperate 2 }
+
+
+unisCfgExecuteResultEntry OBJECT-TYPE
+    SYNTAX UnisCfgExecuteResultEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The result entries of configuration execute operation."
+    INDEX { unisCfgExecuteResultIndex }
+    ::= { unisCfgExecuteResultTable 1 }
+
+UnisCfgExecuteResultEntry ::=
+    SEQUENCE
+        {
+            unisCfgExecuteResultIndex            Integer32,
+            unisCfgExecuteResultOptIndex         Integer32,
+            unisCfgExecuteResultOpType           ConfigOperationType,
+            unisCfgExecuteState                  ConfigOperationStateType,
+            unisCfgExecuteTime                   TimeTicks,
+            unisCfgExecuteEndTime                TimeTicks
+        }
+
+unisCfgExecuteResultIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The index of Table, which is an incremental integer.
+        The maximum value of the node is 2147483647.  The agent should wrap the
+        value to 1 and flush all the existing entries when the maximum value
+        is reached."
+    ::= { unisCfgExecuteResultEntry 1 }
+
+
+unisCfgExecuteResultOptIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The configuration execute operation index in the unisCfgExecuteResultTable."
+    ::= { unisCfgExecuteResultEntry 2 }
+
+unisCfgExecuteResultOpType OBJECT-TYPE
+    SYNTAX ConfigOperationType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The operation type in the unisCfgExecuteResultTable."
+    ::= { unisCfgExecuteResultEntry 3 }
+
+
+unisCfgExecuteState OBJECT-TYPE
+    SYNTAX ConfigOperationStateType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Record the status of the specified operation."
+    ::= { unisCfgExecuteResultEntry 4 }
+
+
+unisCfgExecuteTime OBJECT-TYPE
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Record the time of the execution starts."
+    ::= { unisCfgExecuteResultEntry 5 }
+
+unisCfgExecuteEndTime OBJECT-TYPE
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Record the time of the execution is finished."
+    ::= { unisCfgExecuteResultEntry 6 }
+
+unisCfgReset OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            normal(1),
+            reset(2)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Reboot the device with the default configuration."
+    ::= { unisCfgOperate 7 }
+
+unisCfgReset2 OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+            normal(0),
+            reset(1)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "normal:do nothing.
+        reset  :reboot the device with the default configuration.
+        'normal' will be returned when getting.
+        This node differs from unisCfgReset in value."
+    ::= { unisCfgOperate 8 }
+
+unisConfigManNotifications OBJECT IDENTIFIER ::= { unisConfig 2 }
+
+
+unisCfgManEventlog NOTIFICATION-TYPE
+    OBJECTS { unisCfgLogSrcCmd, unisCfgLogSrcData, unisCfgLogDesData }
+    STATUS current
+    DESCRIPTION
+        "The object calculates the checksum on the current config per 10 minutes and
+        even if it is different from the saved config but if a trap has been sent
+        with the same checksum then don't send again until the checksum is different."
+    ::= { unisConfigManNotifications 1 }
+
+
+unisCfgOperateCompletion NOTIFICATION-TYPE
+    OBJECTS { unisCfgOperateType, unisCfgOperateTime, unisCfgOperateState, unisCfgOperateEndTime, unisCfgOperFailReason }
+    STATUS current
+    DESCRIPTION
+        "When create unisCfgOperateTable successfully, a
+        notification may be generated."
+    ::= { unisConfigManNotifications 2 }
+
+unisCfgInvalidConfigFile NOTIFICATION-TYPE
+    OBJECTS
+        {
+            unisCfgOperateType,
+            unisCfgOperateFileName,
+            unisCfgFirstTrapTime
+        }
+    STATUS current
+    DESCRIPTION
+        "When the configuration file is invalid, this
+         notification will be generated."
+    ::= { unisConfigManNotifications 3 }
+
+unisConfigManConformance OBJECT IDENTIFIER ::= { unisConfig 3 }
+
+
+unisConfigManCompliances OBJECT IDENTIFIER ::= { unisConfigManConformance 1 }
+
+
+unisConfigManCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+        "The statement of compliance for those implementing
+        the configuration management MIB."
+    MODULE -- this module
+    MANDATORY-GROUPS { unisCfgManLogGroup, unisCfgOperateGroup, unisCfgManNotificationGroup }
+    OBJECT unisCfgOperateType
+    SYNTAX ConfigOperationType
+    WRITE-SYNTAX INTEGER
+        {
+            running2Startup(1),
+            startup2Running(2),
+            running2Net(3),
+            net2Running(4),
+            net2Startup(5),
+            startup2Net(6)
+        }
+    DESCRIPTION
+        " "
+    ::= { unisConfigManCompliances 1 }
+
+
+unisConfigManGroups OBJECT IDENTIFIER ::= { unisConfigManConformance 2 }
+
+
+unisCfgManLogGroup OBJECT-GROUP
+    OBJECTS
+        { unisCfgRunModifiedLast, unisCfgRunSavedLast, unisCfgStartModifiedLast, unisCfgLogLimitedEntries, unisCfgLogDeletedEntries,
+        unisCfgLogTime, unisCfgLogSrcCmd, unisCfgLogTerminalType, unisCfgLogTerminalNum, unisCfgLogTerminalUser,
+        unisCfgLogTerminalLocation, unisCfgLogCmdSrcAddress, unisCfgLogVirHost, unisCfgLogServerAddress, unisCfgLogFile,
+        unisCfgLogUserName, unisCfgLogWantBackup, unisCfgLogSrcData, unisCfgLogDesData }
+    STATUS current
+    DESCRIPTION
+        "A collection of objects configuration log group."
+    ::= { unisConfigManGroups 1 }
+
+
+unisCfgOperateGroup OBJECT-GROUP
+    OBJECTS
+        { unisCfgOperateGlobalEntryLimit, unisCfgOperateEntryAgeOutTime, unisCfgOperateType, unisCfgOperateProtocol, unisCfgOperateFileName,
+        unisCfgOperateServerAddress, unisCfgOperateUserName, unisCfgOperateUserPassword, unisCfgOperateTime,  unisCfgOperateEndNotificationSwitch,
+        unisCfgOperateResultGlobalEntryLimit, unisCfgOperateState, unisCfgOperateRowStatus, unisCfgOperateResultOptIndex,
+        unisCfgOperateResultOpType, unisCfgOperateEndTime, unisCfgOperFailReason, unisCfgOperateServerPort }
+    STATUS current
+    DESCRIPTION
+        "A group of configuration operation."
+    ::= { unisConfigManGroups 2 }
+
+
+unisCfgManNotificationGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { unisCfgManEventlog, unisCfgOperateCompletion, unisCfgInvalidConfigFile }
+    STATUS current
+    DESCRIPTION
+        "Collection of notification objects."
+    ::= { unisConfigManGroups 3 }
+
+END

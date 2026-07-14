@@ -1,0 +1,74 @@
+-- =================================================================
+-- Copyright (c) 2022 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: This MIB file is used for inquiring for HDLC(High-level
+--              Data Link Control) information.
+-- Reference:
+-- Version:     V1.0
+-- History:
+--   V1.0 Initial version by wangzhenjun
+-- =================================================================
+UNIS-HDLC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM SNMPv2-TC;
+
+
+
+unisHDLC MODULE-IDENTITY
+    LAST-UPDATED "202206140000Z"            -- June 14th, 2022 at 00:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "Supporting the loop detection trap for HDLC on an interface."
+    REVISION    "202206140000Z"
+    DESCRIPTION
+        "Initial version"
+    ::= { unisCommon 232 }
+
+--
+-- Node definitions
+--
+
+unisHDLCLoopbackDetectTrapOid OBJECT IDENTIFIER ::= { unisHDLC 1 }
+
+unisHDLCLoopbackDetectIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..47))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The involved interface name of trap information."
+    ::= { unisHDLCLoopbackDetectTrapOid 1 }
+
+unisHDLCLoopbackDetectTrap OBJECT IDENTIFIER  ::= { unisHDLC 2 }
+
+unisHDLCLoopbackDetectTrapPrefix OBJECT IDENTIFIER  ::= { unisHDLCLoopbackDetectTrap 0 }
+
+unisHDLCLoopbackDetect NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisHDLCLoopbackDetectIfName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when a loop is detected."
+    ::= { unisHDLCLoopbackDetectTrapPrefix 1 }
+
+unisHDLCLoopbackDetectResume NOTIFICATION-TYPE
+    OBJECTS
+    {
+        unisHDLCLoopbackDetectIfName
+    }
+    STATUS      current
+    DESCRIPTION
+        "This trap is generated when the loopback is removed."
+    ::= { unisHDLCLoopbackDetectTrapPrefix 2 }
+
+END

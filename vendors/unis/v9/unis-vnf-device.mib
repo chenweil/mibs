@@ -1,0 +1,482 @@
+-- =================================================================
+-- Copyright (c) 2021 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: vnf-device mib
+-- Reference:
+-- Version: V1.2
+-- History:
+--  V1.0 Created by zhoufan
+--      2020-11-18 updated by xuyuanqiang
+--      Add unisVnfDeviceTraps
+--          unisVmInfoTraps
+--          unisVmChannelHealthTraps
+--          unisVnfTrapObjects
+--  V1.1 Updated by dongzhijian
+--      Update unisVmInconsist
+--          unisVmInconsistResume
+--  V1.2 Updated by zhangfeng
+--      Add mpuvm and lpuvm to unisVmType
+--  Initial version 2020-11-18
+-- =================================================================
+UNIS-VNF-DEVICE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    unisCommon
+        FROM UNIS-OID-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Unsigned32
+        FROM SNMPv2-SMI
+    DisplayString, MacAddress
+        FROM SNMPv2-TC
+    InetAddressType,InetAddress
+        FROM INET-ADDRESS-MIB;
+
+unisVnfDevice MODULE-IDENTITY
+    LAST-UPDATED "202107190000Z"
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "The MIB module is used for VM(virtual machine) management."
+    REVISION "202107190000Z"
+    DESCRIPTION
+        "Add mpuvm and lpuvm to unisVmType"
+    REVISION "202102040000Z"
+    DESCRIPTION
+        "Update unisVmInconsist unisVmInconsistResume"
+    REVISION "202011180000Z"
+    DESCRIPTION
+        "Add unisVmAttr unisVmGroup unisVnfTrapObjects
+             unisVnfDeviceTraps unisVmInfoTraps unisVmChannelHealthTraps"
+    REVISION    "202010100000Z"
+    DESCRIPTION    "The initial version."
+    ::= { unisCommon 196 }
+
+unisVnfDeviceTable OBJECT IDENTIFIER ::= { unisVnfDevice 1 }
+
+unisVmInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UnisVmInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "VM information table."
+    ::= { unisVnfDeviceTable 1 }
+
+unisVmInfoEntry OBJECT-TYPE
+    SYNTAX      UnisVmInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry of the unisVmInfoTable."
+    INDEX    { unisVmSlot }
+    ::= { unisVmInfoTable 1 }
+
+UnisVmInfoEntry ::= SEQUENCE
+    {
+        unisVmSlot                 Integer32,
+        unisVmName                 DisplayString,
+        unisVmType                 INTEGER,
+        unisVmState                INTEGER,
+        unisVmRole                 INTEGER,
+        unisVmRegisterStatus       INTEGER,
+        unisVmAttr                 INTEGER,
+        unisVmGroup                Integer32
+    }
+
+unisVmSlot  OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "VM slot."
+    ::= { unisVmInfoEntry 1 }
+
+unisVmName  OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "VM name."
+    ::= { unisVmInfoEntry 2 }
+
+unisVmType   OBJECT-TYPE
+    SYNTAX   INTEGER
+    {
+        other   (1),
+        ctrlvm  (2),
+        brasvm  (3),
+        fwdvm   (4),
+        mpuvm   (5),
+        lpuvm   (6)
+    }
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "VM type."
+    ::= { unisVmInfoEntry 3 }
+
+unisVmState  OBJECT-TYPE
+    SYNTAX   INTEGER
+    {
+        absent (1),
+        normal (2),
+        fault  (3),
+        other  (4)
+    }
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "VM state."
+    ::= { unisVmInfoEntry 4 }
+
+unisVmRole  OBJECT-TYPE
+    SYNTAX  INTEGER
+    {
+        master  (1),
+        standby (2),
+        other   (3)
+    }
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "VM role."
+    ::= { unisVmInfoEntry 5 }
+
+unisVmRegisterStatus    OBJECT-TYPE
+    SYNTAX              INTEGER
+    {
+        registered               (1),
+        unregistered             (2),
+        unregisteredDestroying   (3),
+        registering              (4),
+        maddown                  (5),
+        unregisteredMaddown      (6),
+        other                    (7)
+    }
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "VM registration state."
+    ::= { unisVmInfoEntry 6 }
+
+unisVmAttr    OBJECT-TYPE
+    SYNTAX              INTEGER
+    {
+        initDeploy               (1),
+        manu                     (2),
+        auto                     (3),
+        autoAccept               (4)
+    }
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "VM attribute."
+    ::= { unisVmInfoEntry 7 }
+
+unisVmGroup   OBJECT-TYPE
+    SYNTAX       Integer32(1..65535)
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "VM belong to group.
+        the Default is a invalid value 65535."
+    ::= { unisVmInfoEntry 8 }
+-- ==================================================================
+--
+-- VM trap object
+--
+-- ==================================================================
+unisVnfDeviceTraps OBJECT IDENTIFIER ::= { unisVnfDevice 2 }
+unisVnfmTrapPrefix OBJECT IDENTIFIER ::= { unisVnfDeviceTraps 0 }
+
+unisVnfmConnectionFault NOTIFICATION-TYPE
+    OBJECTS { unisVnfmIPType, unisVnfmIP, unisVnfmPort }
+    STATUS  current
+    DESCRIPTION
+        "Cp and so communication failure."
+    ::= { unisVnfmTrapPrefix 1 }
+
+unisVnfmConnectionFaultResume NOTIFICATION-TYPE
+    OBJECTS { unisVnfmIPType, unisVnfmIP, unisVnfmPort }
+    STATUS  current
+    DESCRIPTION
+        "Cp and so communication recovery."
+    ::= { unisVnfmTrapPrefix 2 }
+
+unisVnvmAuthenFault NOTIFICATION-TYPE
+    OBJECTS { unisVnfmIPType, unisVnfmIP, unisVnfmPort }
+    STATUS  current
+    DESCRIPTION
+        "Cp and so authentication failed."
+    ::= { unisVnfmTrapPrefix 3 }
+
+unisVmInfoTraps OBJECT IDENTIFIER ::= { unisVnfDevice 3 }
+unisVmInfoTrapPrefix OBJECT IDENTIFIER ::= { unisVmInfoTraps 0 }
+
+unisVmCreate NOTIFICATION-TYPE
+    OBJECTS { unisVmSlot, unisVmType, unisVmAttr, unisVmGroup }
+    STATUS  current
+    DESCRIPTION
+        "The event of create VM."
+    ::= { unisVmInfoTrapPrefix 1 }
+
+unisVmDelete NOTIFICATION-TYPE
+    OBJECTS { unisVmSlot, unisVmType, unisVmAttr, unisVmGroup }
+    STATUS  current
+    DESCRIPTION
+        "The event of delete VM."
+    ::= { unisVmInfoTrapPrefix 2 }
+
+unisVmCreateSuccess NOTIFICATION-TYPE
+    OBJECTS { unisVmSlot, unisVmType, unisVmAttr, unisVmGroup, unisVmRetryTimes }
+    STATUS  current
+    DESCRIPTION
+        "Success to create VM."
+    ::= { unisVmInfoTrapPrefix 3 }
+
+unisVmCreateFail NOTIFICATION-TYPE
+    OBJECTS { unisVmSlot, unisVmType, unisVmAttr, unisVmGroup, unisVmRetryTimes, unisVmCreateFailReason }
+    STATUS  current
+    DESCRIPTION
+        "Failed to create VM."
+    ::= { unisVmInfoTrapPrefix 4 }
+
+unisVmDeleteSuccess NOTIFICATION-TYPE
+    OBJECTS { unisVmSlot, unisVmType, unisVmAttr, unisVmGroup, unisVmRetryTimes }
+    STATUS  current
+    DESCRIPTION
+        "Success to delete VM."
+    ::= { unisVmInfoTrapPrefix 5 }
+
+unisVmDeleteFail NOTIFICATION-TYPE
+    OBJECTS { unisVmSlot, unisVmType, unisVmAttr, unisVmGroup, unisVmRetryTimes, unisVmDeleteFailReason }
+    STATUS  current
+    DESCRIPTION
+        "Failed to delete VM."
+    ::= { unisVmInfoTrapPrefix 6 }
+
+unisVmInconsist NOTIFICATION-TYPE
+    OBJECTS { unisVmSlot, unisVmName, unisVmStatusOnVnfm, unisVmInconsistFaultReason }
+    STATUS  current
+    DESCRIPTION
+        "The local virtual machine resources are inconsistent with the resources on vnf."
+    ::= { unisVmInfoTrapPrefix 7 }
+
+unisVmInconsistResume NOTIFICATION-TYPE
+    OBJECTS { unisVmSlot, unisVmName, unisVmStatusOnVnfm, unisVmInconsistFaultReason }
+    STATUS  current
+    DESCRIPTION
+        "The local virtual machine resources are the same as those on vnf."
+    ::= { unisVmInfoTrapPrefix 8 }
+
+unisVmAcceptInconsistVm NOTIFICATION-TYPE
+    OBJECTS { unisVmSlot, unisVmName, unisVmType, unisVmGroup }
+    STATUS  current
+    DESCRIPTION
+        "Unconfigured VM claimed on vbras-cp."
+    ::= { unisVmInfoTrapPrefix 9 }
+
+unisVmReset NOTIFICATION-TYPE
+    OBJECTS { unisVmSlot, unisVmType, unisVmGroup, unisVmResetResult }
+    STATUS  current
+    DESCRIPTION
+        "VM restarts via VNFM."
+    ::= { unisVmInfoTrapPrefix 10 }
+
+unisVmUnregisterLongtime NOTIFICATION-TYPE
+    OBJECTS { unisVmSlot, unisVmName, unisVmType, unisVmGroup }
+    STATUS  current
+    DESCRIPTION
+        "VNFM has been allocated but will not be online for a long time."
+    ::= { unisVmInfoTrapPrefix 11 }
+
+unisVmIsolate NOTIFICATION-TYPE
+    OBJECTS { unisVmSlot, unisVmType, unisVmGroup }
+    STATUS  current
+    DESCRIPTION
+        "During the shrinking operation, it does not communicate with VNFM, VNFM isolates VM."
+    ::= { unisVmInfoTrapPrefix 12 }
+
+unisVmChannelHealthTraps OBJECT IDENTIFIER ::= { unisVnfDevice 4 }
+unisVmChannelHealthTrapPrefix OBJECT IDENTIFIER ::= { unisVmChannelHealthTraps 0 }
+
+unisVmChannelHealthNormal NOTIFICATION-TYPE
+    OBJECTS { unisVmSelfSlot, unisVmPeerSlot, unisVmChannelType, unisVmChannelVlan }
+    STATUS  current
+    DESCRIPTION
+        "The health check result of the control channel or data channel on the specified VM is normal."
+    ::= { unisVmChannelHealthTrapPrefix 1 }
+
+unisVmChannelHealthMinor NOTIFICATION-TYPE
+    OBJECTS { unisVmSelfSlot, unisVmPeerSlot, unisVmChannelType, unisVmChannelVlan }
+    STATUS  current
+    DESCRIPTION
+        "The control channel or data channel on the specified VM is in the minor sub-health state."
+    ::= { unisVmChannelHealthTrapPrefix 2 }
+
+unisVmChannelHealthSevere NOTIFICATION-TYPE
+    OBJECTS { unisVmSelfSlot, unisVmPeerSlot, unisVmChannelType, unisVmChannelVlan }
+    STATUS  current
+    DESCRIPTION
+        "The control channel or data channel on the specified VM is in the severe sub-health state."
+    ::= { unisVmChannelHealthTrapPrefix 3 }
+
+unisVmChannelLinkSwitch NOTIFICATION-TYPE
+    OBJECTS { unisVmSelfSlot, unisVmChannelType, unisVmChannelVlan, unisVmChannelLinkMacAddress }
+    STATUS  current
+    DESCRIPTION
+        "Link switching event."
+    ::= { unisVmChannelHealthTrapPrefix 4 }
+-- ==================================================================
+--
+-- VM trap Bind variable
+--
+-- ==================================================================
+unisVnfTrapObjects OBJECT IDENTIFIER ::= { unisVnfDevice 5 }
+unisVnfmTrapObjects OBJECT IDENTIFIER ::= { unisVnfTrapObjects 1 }
+
+unisVnfmIPType   OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "VNFM ip address."
+    ::= { unisVnfmTrapObjects 1 }
+
+unisVnfmIP   OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "VNFM ip address."
+    ::= { unisVnfmTrapObjects 2 }
+
+unisVnfmPort   OBJECT-TYPE
+    SYNTAX     Unsigned32 (0..65535)
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "VNFM port number."
+    ::= { unisVnfmTrapObjects 3 }
+
+unisVmInfoTrapObjects OBJECT IDENTIFIER ::= { unisVnfTrapObjects 2 }
+
+unisVmRetryTimes   OBJECT-TYPE
+    SYNTAX     Unsigned32 (0..65535)
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "Number of retries."
+    ::= { unisVmInfoTrapObjects 1 }
+
+unisVmCreateAttr   OBJECT-TYPE
+    SYNTAX              INTEGER
+    {
+        initDeploy               (1),
+        manu                     (2),
+        auto                     (3),
+        autoAccept               (4)
+    }
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "The VM creation properties."
+    ::= { unisVmInfoTrapObjects 2 }
+
+unisVmCreateFailReason   OBJECT-TYPE
+    SYNTAX         OCTET STRING (SIZE(0..128))
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "The VM create failed reason."
+    ::= { unisVmInfoTrapObjects 3 }
+
+unisVmDeleteFailReason   OBJECT-TYPE
+    SYNTAX         OCTET STRING (SIZE(0..128))
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "The VM delete failed reason."
+    ::= { unisVmInfoTrapObjects 4 }
+
+unisVmInconsistFaultReason   OBJECT-TYPE
+    SYNTAX              INTEGER
+    {
+        exisitOnLocal               (1),
+        existOnVnfm                 (2)
+    }
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "Reasons for VM inconsistency."
+    ::= { unisVmInfoTrapObjects 5 }
+
+unisVmResetResult   OBJECT-TYPE
+    SYNTAX         OCTET STRING (SIZE(0..128))
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "Reasons for the failure to restart the virtual machine."
+    ::= { unisVmInfoTrapObjects 6 }
+
+unisVmStatusOnVnfm   OBJECT-TYPE
+    SYNTAX              INTEGER
+    {
+        building               (1),
+        active                 (2),
+        error                  (3),
+        unknown                (4)
+    }
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "The status of the virtual machine on VNFM(virtualized network function managers)."
+    ::= { unisVmInfoTrapObjects 7 }
+
+unisVmChannelHealthTrapObjects OBJECT IDENTIFIER ::= { unisVnfTrapObjects 3 }
+
+unisVmSelfSlot   OBJECT-TYPE
+    SYNTAX     Unsigned32 (0..65535)
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "VM local slot number."
+    ::= { unisVmChannelHealthTrapObjects 1 }
+
+unisVmPeerSlot    OBJECT-TYPE
+    SYNTAX     Unsigned32 (0..65535)
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "VM opposite slot number."
+    ::= { unisVmChannelHealthTrapObjects 2 }
+
+unisVmChannelType   OBJECT-TYPE
+    SYNTAX              INTEGER
+    {
+        controlchannel               (1),
+        datachannel                  (2)
+    }
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "VM channel type."
+    ::= { unisVmChannelHealthTrapObjects 3 }
+
+unisVmChannelVlan   OBJECT-TYPE
+    SYNTAX     Unsigned32 (1..4094)
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "VM channel vlan."
+    ::= { unisVmChannelHealthTrapObjects 4 }
+
+unisVmChannelLinkMacAddress   OBJECT-TYPE
+    SYNTAX     MacAddress
+    MAX-ACCESS     accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+        "The mac address of the fault port."
+    ::= { unisVmChannelHealthTrapObjects 5 }
+
+END

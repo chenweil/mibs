@@ -1,0 +1,319 @@
+-- =========================================================================
+-- Copyright (c) 2020 Unisyue Technologies Co., Ltd.  All rights reserved.
+--
+-- Description: RSA MIB
+-- Reference:
+-- Version: V1.1
+-- History:
+--  V1.0 2004-09-17 created by Yang Yang 02227
+--    Initial Version
+--  V1.1 2005-05-31 updated by gaolong
+--    Change module of this MIB
+-- =========================================================================
+UNIS-RSA-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        unisCommon
+            FROM UNIS-OID-MIB
+        IpAddress,Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+            FROM SNMPv2-SMI
+        DisplayString, RowStatus, DateAndTime, TEXTUAL-CONVENTION
+            FROM SNMPv2-TC;
+
+
+        unisRSA MODULE-IDENTITY
+            LAST-UPDATED "200410100000Z"
+            ORGANIZATION
+                "Unisyue Technologies Co., Ltd."
+            CONTACT-INFO
+                ""
+            DESCRIPTION
+                "The UNIS-RSA-MIB contains objects to Manage
+                RSA configuration."
+            REVISION "200410100000Z"
+            DESCRIPTION
+                "The initial revision of RSA module."
+            ::= { unisCommon 23 }
+
+
+        RSAKeyErrorCode ::= TEXTUAL-CONVENTION
+                 STATUS current
+                 DESCRIPTION
+                         "Indicates the reason that SSH peer public key fails to config
+                         or that SSH local key pair fails to create/refresh/destroy."
+                 SYNTAX INTEGER
+                         {
+                        rsaSuccess(1),
+                        rsaFailure(2),
+                        rsaErrNoMemory(3),
+                        rsaErrKeyNotReplaced(4),
+                        rsaErrKeyBackup(5),
+                        rsaErrKeySaved(6),
+                        rsaErrKeyGenerate(7),
+                        rsaErrKeyDestroy(8),
+                        rsaErrHostEncKeyBackup(9),
+                        rsaErrHostEncKeySave(10),
+                        rsaErrHostEncKeyGenerate(11),
+                        rsaErrHostEncKeyDestroy(12),
+                        rsaErrHostSigKeyBackup(13),
+                        rsaErrHostSigKeySave(14),
+                        rsaErrHostSigKeyGenerate(15),
+                        rsaErrHostSigKeyDestroy(16),
+                        rsaErrServerKeyBackup(17),
+                        rsaErrServerKeySave(18),
+                        rsaErrServerKeyGenerate(19),
+                        rsaErrServerKeyDestroy(20),
+                        rsaErrPeerKeyNotReplaced(21),
+                        rsaErrPeerKeyNumArriveMax(22),
+                        rsaErrPeerKeyNotRemoved(23),
+                        rsaErrPeerKeyNotExist(24),
+                        rsaStatusKeyExist(25),
+                        rsaStatusKeyNotExist(26),
+                        rsaStatusKeyInvalid(27),
+                        rsaStatusHostEncKeyExist(28),
+                        rsaStatusHostEncKeyNotExist(29),
+                        rsaStatusHostEncKeyInvalid(30),
+                        rsaStatusHostSigKeyExist(31),
+                        rsaStatusHostSigKeyNotExist(32),
+                        rsaStatusHostSigKeyInvalid(33),
+                        rsaStatusServerKeyExist(34),
+                        rsaStatusServerKeyNotExist(35),
+                        rsaStatusServerKeyInvalid(36)
+                        }
+
+        unisRSAMIBObjects OBJECT IDENTIFIER ::= { unisRSA 1 }
+        unisRSAPeerPublicKeyTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisRSAPeerPublicKeyEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The (conceptual) RSA Peer Public Key Table"
+            ::= { unisRSAMIBObjects 1 }
+
+
+        unisRSAPeerPublicKeyEntry OBJECT-TYPE
+            SYNTAX UnisRSAPeerPublicKeyEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "An entry (conceptual row) in the RSA Peer Public Key Table."
+            INDEX { unisRSAPeerPublicKeyName }
+            ::= { unisRSAPeerPublicKeyTable 1 }
+
+
+        UnisRSAPeerPublicKeyEntry ::=
+            SEQUENCE {
+                unisRSAPeerPublicKeyName
+                    OCTET STRING,
+                unisRSAPeerIpAddress
+                    IpAddress,
+                unisRSAPeerFQDN
+                    DisplayString,
+                unisRSAPeerPublicKeyCode
+                    OCTET STRING,
+                unisRSAPeerPublicKeyStatus
+                    RowStatus
+             }
+
+        unisRSAPeerPublicKeyName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (1..64))
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The RSA peer public key name."
+            ::= { unisRSAPeerPublicKeyEntry 1 }
+
+        unisRSAPeerIpAddress OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Indicates the IP Address of RSA Peer machine."
+            ::= { unisRSAPeerPublicKeyEntry 2 }
+
+        unisRSAPeerFQDN OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Full Qualified Domain Name of RSA Peer Machine"
+            ::= { unisRSAPeerPublicKeyEntry 3 }
+
+
+        unisRSAPeerPublicKeyCode OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (1..1024))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The code of RSA peer public key."
+            ::= { unisRSAPeerPublicKeyEntry 4 }
+
+
+        unisRSAPeerPublicKeyStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The status of this RSA peer public key entry.
+                Support Active Status and CreateAndGo and Destroy Operation "
+            ::= { unisRSAPeerPublicKeyEntry 5 }
+
+        unisRSALocalKeyPairTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF UnisRSALocalKeyPairEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The (conceptual)RSA local Key Pair Table."
+            ::= { unisRSAMIBObjects 2 }
+
+
+        unisRSALocalKeyPairEntry OBJECT-TYPE
+            SYNTAX UnisRSALocalKeyPairEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "An entry (conceptual row) in the RSA local Key Pair Table."
+            INDEX { unisRSALocalKeyIndex }
+            ::= { unisRSALocalKeyPairTable 1 }
+
+
+        UnisRSALocalKeyPairEntry ::=
+            SEQUENCE {
+                unisRSALocalKeyIndex
+                    INTEGER,
+                unisRSALocalHostKeyName
+                    DisplayString,
+                unisRSALocalHostKeyCode
+                    OCTET STRING,
+                unisRSALocalHostKeyCreatedTime
+                    DateAndTime,
+                unisRSALocalServerKeyName
+                    DisplayString,
+                unisRSALocalServerKeyCode
+                    OCTET STRING,
+                unisRSALocalServerKeyCreatedTime
+                    DateAndTime,
+                unisRSALocalKeyPairBits
+                    Integer32,
+                unisRSALocalKeyStatus
+                    RowStatus
+             }
+
+        unisRSALocalKeyIndex  OBJECT-TYPE
+            SYNTAX INTEGER (1..1)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The unisRSALocalKeyPairTable Table can only exist one entry at most."
+            ::= { unisRSALocalKeyPairEntry 1 }
+
+        unisRSALocalHostKeyName OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates RSA Host local public key name.Its value is composed of systemname, a
+                underscore and the string of 'Host'"
+            ::= { unisRSALocalKeyPairEntry 2 }
+
+        unisRSALocalHostKeyCode OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (512..1024))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the code of RSA Host local pkey  that the length is
+                between 512 and 2048 bits."
+            ::= { unisRSALocalKeyPairEntry 3 }
+
+        unisRSALocalHostKeyCreatedTime OBJECT-TYPE
+            SYNTAX DateAndTime
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the created time of RSA local Host key."
+            ::= { unisRSALocalKeyPairEntry 4 }
+
+        unisRSALocalServerKeyName OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates RSA Host local public key name.Its value is composed of systemname, a
+                underscore and the string of 'Server'"
+            ::= { unisRSALocalKeyPairEntry 5 }
+
+        unisRSALocalServerKeyCode OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (512..1024))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the code of RSA Host local pkey  that the length is
+                between 512 and 2048 bits."
+            ::= { unisRSALocalKeyPairEntry 6 }
+
+        unisRSALocalServerKeyCreatedTime OBJECT-TYPE
+            SYNTAX DateAndTime
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the created time of RSA local Host key."
+            ::= { unisRSALocalKeyPairEntry 7 }
+
+
+        unisRSALocalKeyPairBits OBJECT-TYPE
+            SYNTAX Integer32 (512..2048)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The bits of RSA local key pair, ranging between 512 and 2048.
+                 By default, the value is 512."
+            DEFVAL { 512 }
+            ::= { unisRSALocalKeyPairEntry 8 }
+
+
+        unisRSALocalKeyStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The status column used for creating, deleting instances of
+                the columnar objects in the unisRSALocalKeyPairTable table."
+            ::= { unisRSALocalKeyPairEntry 9 }
+
+
+        unisRSAPeerKeyConfigFailReason OBJECT-TYPE
+            SYNTAX RSAKeyErrorCode
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The reason that RSA peer public key fails to config."
+            ::= { unisRSAMIBObjects 3 }
+
+
+        unisRSALocalKeyFailReason OBJECT-TYPE
+            SYNTAX RSAKeyErrorCode
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The reason that RSA local key pair fails to create, refresh
+                and destroy."
+            ::= { unisRSAMIBObjects 4 }
+
+        unisRSANotifications OBJECT IDENTIFIER ::= { unisRSA 2 }
+
+        unisRSALocalKeyPairOpeFail NOTIFICATION-TYPE
+            OBJECTS { unisRSALocalKeyFailReason }
+            STATUS current
+            DESCRIPTION
+                "The trap is generated while the RSA local key pair fails to
+                create, refresh and destory."
+            ::= { unisRSANotifications 1 }
+
+        unisRSAPeerKeyConfigFail NOTIFICATION-TYPE
+            OBJECTS { unisRSAPeerKeyConfigFailReason }
+            STATUS current
+            DESCRIPTION
+                "The trap is generated while the RSA peer public key fails to
+                configure."
+            ::= { unisRSANotifications 2 }
+    END

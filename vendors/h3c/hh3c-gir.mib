@@ -1,0 +1,116 @@
+-- =====================================================================
+-- Copyright (c) 2004-2023 New H3C Tech.  Co., Ltd.  All rights reserved.
+--
+-- Description: GIR MIB
+-- Reference:
+-- Version: V1.1
+-- History:
+--   V1.0 Initial version, created by wangmeng
+--   V1.1 Add hh3cGirMainSysmodeChangeFailed trap by zhengjun, 2023-06-01.
+-- =====================================================================
+HH3C-GIR-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    hh3cCommon
+        FROM HH3C-OID-MIB
+    Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString
+            FROM SNMPv2-TC;
+
+hh3cGir MODULE-IDENTITY
+    LAST-UPDATED "202306011035Z"    -- June 01, 2023 at 10:35 GMT
+    ORGANIZATION
+        "New H3C Technologies Co., Ltd."
+    CONTACT-INFO
+        "
+        Platform Team New H3C Tech.  Co., Ltd.
+        Hai-Dian District Beijing P.R.  China
+        http://www.h3c.com
+        Zip:100085
+        "
+    DESCRIPTION
+        "
+        Graceful insertion and removal (GIR) enables you to gracefully isolate
+        the device from the network for device maintenance or upgrade.
+        "
+    REVISION "202306011035Z"
+    DESCRIPTION
+        "Add trap for maintenance system mode change failed."
+    REVISION "202107011126Z"
+    DESCRIPTION
+        "The initial revision of this MIB module."
+    ::= { hh3cCommon 205 }
+
+--
+-- Node definitions
+--
+
+hh3cGirObjects OBJECT IDENTIFIER ::= { hh3cGir 1 }
+
+
+hh3cGirSystemGroup OBJECT IDENTIFIER ::= { hh3cGirObjects 1 }
+
+
+hh3cGirSystemMode OBJECT-TYPE
+    SYNTAX INTEGER
+        {
+        normal(1),
+        isolation(2),
+        shutdown(3)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "
+        Change system mode.
+        normal-Normal mode(Default).
+        isolation-Maintenance mode by isolation.
+        shutdown-Maintenance mode by shutdown.
+        "
+    ::= { hh3cGirSystemGroup 1 }
+
+hh3cGirRevertDelayTime OBJECT-TYPE
+    SYNTAX Integer32 (0 | 5..65535)
+    UNITS "minutes"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "
+        Auto change to normal mode after the specified amount of time in
+        minutes.  If 0 is set, no switchback will be performed.
+        "
+    DEFVAL { 0 }
+    ::= { hh3cGirSystemGroup 2 }
+
+-- trap --
+hh3cGirTrap OBJECT IDENTIFIER ::= { hh3cGir 2 }
+
+
+hh3cGirTrapPrex OBJECT IDENTIFIER ::= { hh3cGirTrap 0 }
+
+hh3cGirMainSysmodeChangeFailed NOTIFICATION-TYPE
+    OBJECTS
+        {
+            hh3cGirSystemMode,
+            hh3cGirCmd
+        }
+    STATUS       current
+    DESCRIPTION
+        "This trap indicates that the system change mode failed
+        due to a specific command line."
+    ::= { hh3cGirTrapPrex 1 }
+
+-- All objects used for trap only are defined here.
+hh3cGirTrapObjects OBJECT IDENTIFIER ::= { hh3cGirTrap 1 }
+
+
+hh3cGirCmd OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(0..512))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "This value is the gir command line info."
+    ::= { hh3cGirTrapObjects 1 }
+
+END

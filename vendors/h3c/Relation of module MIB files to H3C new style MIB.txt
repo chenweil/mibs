@@ -1,0 +1,3499 @@
+
+CSG-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+SNMP-USER-BASED-SM-3DES-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+
+
+GB15629dot11-WAPI-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module RFC1213-MIB
+
+
+HH3C-3GMODEM-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-8021PAE-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IEEE8021-PAE-MIB
+
+
+HH3C-8021X-EXT2-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IEEE8021-PAE-MIB
+ Import module IF-MIB
+
+
+HH3C-AAA-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-AAA-NASID-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-AAL5-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module RFC1213-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-ACFP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IPV6-TC
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-ACL-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-TC
+
+
+HH3C-AFC-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-AFT-MIB
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-ALARM-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMP-TARGET-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-ARP-ENTRY-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-ARP-RATELIMIT-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+
+
+HH3C-ARP-SOURCE-SUPPRESSION-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-ARP-SUPPRESSION-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-ARP-TRAP-MIB
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+
+
+HH3C-ATM-DXI-MIB
+ Import module HH3C-OID-MIB
+ Import module RFC1213-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-TC
+
+
+HH3C-BFD-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-BGP4V2-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-BGP-EVPN-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-BGP-VPN-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-BIER-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMP-FRAMEWORK-MIB
+
+
+HH3C-BLG-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-BPA-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-BRAS-ACCESS-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+ Import module HCNUM-TC
+
+
+HH3C-CATV-TRANSCEIVER-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-CBQOS2-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-TC
+
+
+HH3C-CCLUSTER-MIB
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+ Import module ENTITY-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-CFCARD-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+
+
+HH3C-CFD-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-CLUSTER-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-COMMON-SYSTEM-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-CONFIG-MAN-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-TC
+
+
+HH3C-CONTEXT-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-CPDR-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-CUPM-CP-MIB
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-CUPM-UP-MIB
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-CUSP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-DAC-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-DAR-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+
+
+HH3C-DHCP4-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-DHCP4-CLIENT-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-DHCP6-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-DHCP6-SERVER-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-DHCPR-MIB
+ Import module HH3C-OID-MIB
+ Import module RFC1213-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-DHCPRELAY-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module RFC1213-MIB
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-DHCPS-MIB
+ Import module HH3C-OID-MIB
+ Import module RFC1213-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-DHCP-SERVER-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-DHCPSNOOP-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module HH3C-LswVLAN-MIB
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-TC
+
+
+HH3C-DHCP-SNOOP2-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-DIM-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-DISK-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-STORAGE-REF-MIB
+
+
+HH3C-DLDP-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-DLDP2-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-DNS-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-DOMAIN-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module IPV6-TC
+ Import module SNMPv2-TC
+
+
+HH3C-DOT11-ACMT-MIB
+ Import module SNMPv2-SMI
+ Import module IANAifType-MIB
+ Import module HH3C-DOT11-REF-MIB
+ Import module SNMPv2-TC
+
+
+HH3C-DOT11-APMT-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-DOT11-CFG-MIB
+ Import module SNMPv2-TC
+ Import module RFC1213-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-DOT11-CFGEXT-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-DOT11-LIC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-DOT11-PROBE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-DOT11-QOS-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-DOT11-REF-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-DOT11-ROAM-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-DOT11-RRM-MIB
+ Import module HH3C-DOT11-REF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-DOT11-SA-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-DOT11-SAVI-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-DOT11S-MESH-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-DOT11-STATION-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-DOT11-WIDS-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-DOT11-WIPS-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-DOT11-WLANEXT-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-DOT11-WM2U-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-DOT3-EFM-EPON-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module SNMPv2-CONF
+
+
+HH3C-DSP-MIB
+ Import module HH3C-OID-MIB
+ Import module ENTITY-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-DVPN-MIB
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+
+
+HH3C-E1-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module RFC1213-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-E1T1VI-MIB
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-EFM-COMMON-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HCNUM-TC
+ Import module IF-MIB
+ Import module SNMPv2-CONF
+
+
+HH3C-EMDI-MIB
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-ENTITY-EXT-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module ENTITY-MIB
+ Import module HCNUM-TC
+
+
+HH3C-ENTITY-VENDORTYPE-OID-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-ENTRELATION-MIB
+ Import module ENTITY-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-EOC-COMMON-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module IANAifType-MIB
+ Import module SNMPv2-TC
+ Import module HH3C-HPEOC-MIB
+
+
+HH3C-EPON-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module HH3C-LSW-DEV-ADM-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-EPON-DEVICE-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module SNMPv2-CONF
+ Import module SNMP-FRAMEWORK-MIB
+
+
+HH3C-EPON-FB-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-EPON-UNI-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-ERPS-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+
+
+HH3C-ESMC-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-ETHOAM-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module DOT3-OAM-MIB
+ Import module IF-MIB
+
+
+HH3C-ETH-TRAP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-EVB-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module IEEE8021-TC-MIB
+ Import module Q-BRIDGE-MIB
+ Import module IF-MIB
+
+
+HH3C-EVC-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-EVI-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module Q-BRIDGE-MIB
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+ Import module ISIS-MIB
+
+
+HH3C-EVPN-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+
+
+HH3C-FAILOVER-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-FC-FLOGIN-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-FC-TC-MIB
+ Import module HH3C-VSAN-MIB
+ Import module IF-MIB
+ Import module SNMPv2-CONF
+
+
+HH3C-FC-NAME-SERVER-MIB
+ Import module HH3C-VSAN-MIB
+ Import module HH3C-FC-TC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-FCOE-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module IF-MIB
+ Import module Q-BRIDGE-MIB
+ Import module T11-TC-MIB
+ Import module FC-MGMT-MIB
+ Import module HH3C-FC-TC-MIB
+
+
+HH3C-FCOE-MODE-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-FC-PING-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-FC-TC-MIB
+ Import module HH3C-VSAN-MIB
+
+
+HH3C-FC-PSM-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module HH3C-VSAN-MIB
+ Import module HH3C-FC-TC-MIB
+
+
+HH3C-FC-TC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-FC-TRACE-ROUTE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-FC-TC-MIB
+ Import module HH3C-VSAN-MIB
+
+
+HH3C-FC-ZONE-SERVER-MIB
+ Import module HH3C-FC-TC-MIB
+ Import module HH3C-VSAN-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module T11-FC-ZONE-SERVER-MIB
+
+
+HH3C-FDMI-MIB
+ Import module HH3C-VSAN-MIB
+ Import module SNMPv2-SMI
+ Import module SNMP-FRAMEWORK-MIB
+ Import module FC-MGMT-MIB
+ Import module T11-TC-MIB
+ Import module FC-MGMT-MIB
+
+
+HH3C-FIB-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-FIREWALL-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-FLASH-MAN-MIB
+ Import module ENTITY-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-TC
+ Import module HCNUM-TC
+
+
+HH3C-FLEXE-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-FLOWTEMPLATE-MIB
+ Import module HH3C-OID-MIB
+ Import module RFC1213-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-FR-QOS-MIB
+ Import module HH3C-OID-MIB
+ Import module RFC1213-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-FTM-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+
+
+HH3C-FTPS-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-GIR-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-GOLD-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-GRE-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+
+
+HH3C-GRPC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-HDLC-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-HGMP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-HPEOC-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-HTTP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-IDS-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-IECMRP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-IF-EXT-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module HCNUM-TC
+ Import module SNMPv2-TC
+
+
+HH3C-IFQOS2-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-TC
+
+
+HH3C-IKE-MONITOR-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-CONF
+ Import module HH3C-OID-MIB
+
+
+HH3C-INFOCENTER-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+
+
+HH3C-INQA-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module HCNUM-TC
+
+
+HH3C-IPA-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-IP-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+
+
+HH3C-IP-BROADCAST-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-IPFW-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+
+
+HH3C-IPMCAST-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-IPRAN-DCN-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-TC
+
+
+HH3C-IPSEC-MONITOR-MIB
+ Import module RFC1213-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module HH3C-OID-MIB
+
+
+HH3C-IPSEC-MONITOR-V2-MIB
+ Import module RFC1213-MIB
+ Import module IF-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-CONF
+ Import module HH3C-OID-MIB
+ Import module HCNUM-TC
+
+
+HH3C-IPSG-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-IPSGT-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-IPV6-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-IPX-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-ISDN-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-ISIS-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module ISIS-MIB
+ Import module DIFFSERV-MIB
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-ISSU-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-KPI-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-L2ISOLATE-MIB
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-L2TP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+
+
+HH3C-L2VPN-MIB
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-L2VPN-PWE3-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-L3VPN-MIB
+ Import module SNMPv2-SMI
+ Import module HCNUM-TC
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-L4RDT-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-LAG-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module Q-BRIDGE-MIB
+
+
+HH3C-LB-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-LBV2-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module HCNUM-TC
+
+
+HH3C-LI-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+ Import module SNMP-FRAMEWORK-MIB
+
+
+HH3C-LICENSE-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module ENTITY-MIB
+
+
+HH3C-LLDP-EXT-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module IANA-ADDRESS-FAMILY-NUMBERS-MIB
+ Import module LLDP-MIB
+
+
+HH3C-LOCAL-AAA-SERVER-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-LOGIC-VOLUME-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module ENTITY-MIB
+ Import module HH3C-STORAGE-REF-MIB
+
+
+HH3C-LPBKDT-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module Q-BRIDGE-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+
+
+HH3C-LSW-DEV-ADM-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+ Import module HCNUM-TC
+ Import module SNMP-FRAMEWORK-MIB
+
+
+HH3C-LTE-MEC-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-MAC-INFORMATION-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+
+
+HH3C-MACSEC-MIB
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-MAC-TRAP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-MAD-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-MCDR-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+ Import module Q-BRIDGE-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-MDC-MIB
+ Import module ENTITY-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-MGMD-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+
+
+HH3C-MICROSEGMENT-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-MINM-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module RFC1213-MIB
+ Import module HH3C-OID-MIB
+ Import module HH3C-VSI-MIB
+
+
+HH3C-MIRRORGROUP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+
+
+HH3C-MLAG-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module Q-BRIDGE-MIB
+ Import module IF-MIB
+
+
+HH3C-MP-MIB
+ Import module RFC1213-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-MPLSBFD-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-MPLSEXT-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-MPLS-LDP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-MPLSLSPV-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-MPLS-LSR-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+ Import module IANA-ADDRESS-FAMILY-NUMBERS-MIB
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-MPLSOAM-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-MPLSOAM-PS-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-MPLSPCE-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-MPLSRSVP-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-MPLSSCRLSP-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-MPLSSLSP-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-MPLSTE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-MPLS-BGP-VPN-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module SNMP-FRAMEWORK-MIB
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-MPLS-VPN-BGP-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-MPM-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+
+
+HH3C-MP-V2-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-MS-MAN-MIB
+ Import module SNMPv2-SMI
+ Import module ENTITY-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-MULTICAST-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-MULTICAST-SNOOPING-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+
+
+HH3C-MULTICAST-VLAN-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-NAT-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-NCM-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-NDEC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-ND-ENTRY-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-ND-TRAP-MIB
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-NETCONF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-NET-MAN-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-NETSTREAM4-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-NETSTREAM6-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-NPV-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module HH3C-FC-TC-MIB
+ Import module HH3C-VSAN-MIB
+
+
+HH3C-NQA-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+ Import module DISMAN-PING-MIB
+ Import module SNMP-FRAMEWORK-MIB
+
+
+HH3C-NS-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-NTP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-NVGRE-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-OBJECT-INFO-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module HH3C-OID-MIB
+
+
+HH3C-OBJP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-OFP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-OID-MIB
+ Import module RFC1155-SMI
+
+
+HH3C-OSPF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-OSPFV3-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-PASSWORD-CONTROL-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-PBR-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-PEX-MIB
+ Import module HH3C-OID-MIB
+ Import module ENTITY-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-PIM-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+
+
+HH3C-PKI-MONITOR-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module HH3C-OID-MIB
+
+
+HH3C-PORTAL-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-PORTATK-TRAP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+
+
+HH3C-PORT-SECURITY-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IEEE8021-PAE-MIB
+ Import module IPV6-TC
+
+
+HH3C-POS-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-POSA-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+
+
+HH3C-REDUNDANCY-POWER-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-POWER-ETH-EXT-MIB
+ Import module HH3C-OID-MIB
+ Import module POWER-ETHERNET-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-PPP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-PPPOE-SERVER-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-PPP-OVER-SONET-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-PRODUCT-ID-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-PROTOCOL-VLAN-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-PROT-PRIORITY-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-PTP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HCNUM-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-PU-MAN-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-PVST-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-QINQ-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module RFC1213-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-QINQV2-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+
+
+HH3C-QOS-CAPABILITY-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-QOS-PROFILE-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-RADIUS-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module IPV6-TC
+ Import module RADIUS-AUTH-CLIENT-MIB
+ Import module RADIUS-ACC-CLIENT-MIB
+
+
+HH3C-RAID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module ENTITY-MIB
+ Import module HH3C-STORAGE-REF-MIB
+
+
+HH3C-RBAC-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-RBM-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-RCP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+
+
+HH3C-RCR-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-RDDC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-RES-MON-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-RIB-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-RMON-EXT-MIB
+ Import module RFC1213-MIB
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module RMON2-MIB
+ Import module RMON-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-RMON-EXT2-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module RMON-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-RPR-MIB
+ Import module HH3C-OID-MIB
+ Import module IEEE-802DOT17-RPR-MIB
+ Import module IF-MIB
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-RRPP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-RS485-MIB
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-TC
+
+
+HH3C-RSA-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-SAN-AGG-MIB
+ Import module HH3C-VSAN-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+
+
+HH3C-SAVA-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module IPV6-TC
+
+
+HH3C-SAVAP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module IPV6-TC
+
+
+HH3C-SDWAN-TRAP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-SECDIAG-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-SECHIGH-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-SECP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-SECP-V9-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module HCNUM-TC
+
+
+HH3C-SESSION-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-SIB-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-SLBG-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-SMLK-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+
+
+HH3C-SNA-DLSW-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module RFC1213-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-SNA-DLSW-EXT-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module RFC1213-MIB
+ Import module INET-ADDRESS-MIB
+ Import module DLSW-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-SNMP-EXT-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module SNMP-FRAMEWORK-MIB
+ Import module HH3C-OID-MIB
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-SPB-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module Q-BRIDGE-MIB
+ Import module HH3C-OID-MIB
+ Import module IEEE8021-SPB-MIB
+
+
+HH3C-LswARP-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-LswDEVM-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+ Import module HH3C-LSW-DEV-ADM-MIB
+
+
+HH3C-LswDHCP-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-LswIGSP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+ Import module IF-MIB
+
+
+HH3C-LswINF-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-LswMAM-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+ Import module HH3C-LswVLAN-MIB
+
+
+HH3C-LswMix-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-LSW-DEV-ADM-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-LswMSTP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module BRIDGE-MIB
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-LswQos-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-LswRSTP-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module BRIDGE-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-LswSMON-MIB
+ Import module RFC-1212
+ Import module HH3C-OID-MIB
+
+
+HH3C-LswTRAP-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+ Import module HCNUM-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module HH3C-LswDEVM-MIB
+ Import module HH3C-LSW-DEV-ADM-MIB
+ Import module SNMPv2-TC
+
+
+HH3C-LswVLAN-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module SNMP-FRAMEWORK-MIB
+ Import module HH3C-OID-MIB
+ Import module RFC1213-MIB
+ Import module HH3C-LswINF-MIB
+
+
+HH3C-SRPOLICY-MIB
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-SRV6-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-SRV6POLICY-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-SSH-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-TC
+
+
+HH3C-SSLVPN-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-STACK-MIB
+ Import module HH3C-OID-MIB
+ Import module ENTITY-MIB
+ Import module IF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-STORAGE-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module ENTITY-MIB
+ Import module HH3C-STORAGE-REF-MIB
+ Import module SNMP-FRAMEWORK-MIB
+ Import module HH3C-ENTITY-EXT-MIB
+ Import module HH3C-RAID-MIB
+ Import module HH3C-DISK-MIB
+
+
+HH3C-STORAGE-REF-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-STORAGE-SNAP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module ENTITY-MIB
+ Import module HH3C-STORAGE-REF-MIB
+
+
+HH3C-STORM-CONSTRAIN-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-STRUNK-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-SUBNET-VLAN-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-TC
+
+
+HH3C-SYSLOG-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-SYS-MAN-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-TARGET-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-T1-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module RFC1213-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-TACACS-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-TCP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+
+
+HH3C-TELNET-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-TE-TUNNEL-MIB
+ Import module HH3C-OID-MIB
+ Import module MPLS-TC-STD-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-TRAFFIC-STAT-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module HCNUM-TC
+
+
+HH3C-TRANSCEIVER-INFO-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-TRAP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMP-FRAMEWORK-MIB
+ Import module IF-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-TRNG-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-TRNG2-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-TUNNEL-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module IPV6-FLOW-LABEL-MIB
+ Import module IF-MIB
+
+
+HH3C-TUNNEL-TRAP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-TWAMP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-UI-MAN-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+
+
+HH3C-UNICAST-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-UPBACKUP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-UPS-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module ENTITY-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-USER-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-USERLOG-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+
+
+HH3C-VBR-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-VLANGROUP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-VLANTERM-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-VMAP-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-VM-MAN-MIB
+ Import module ENTITY-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-VNF-DEVICE-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+
+
+HH3C-VOICE-CALL-ACTIVE-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-VOICE-DIAL-CONTROL-MIB
+ Import module DIAL-CONTROL-MIB
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-VOICE-CALL-HISTORY-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+ Import module DIAL-CONTROL-MIB
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-VOICE-DIAL-CONTROL-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module DIAL-CONTROL-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-VOICE-IF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-VOICEV2-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+HH3C-VOICE-VLAN-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+
+
+HH3C-VPN-PEER-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+
+
+HH3C-VRRP-EXT-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module VRRP-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-VSAN-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module HH3C-FC-TC-MIB
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-VSI-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-VSRP-MIB
+ Import module HH3C-OID-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-VXLAN-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-WAPI-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module HH3C-OID-MIB
+
+
+HH3C-WEB-AUTHENTICATION-MIB
+ Import module HH3C-OID-MIB
+ Import module RFC1213-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+HH3C-WIPS-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HH3C-OID-MIB
+
+
+HH3C-WLAN-FLEXAPP-CFG-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module HH3C-DOT11-REF-MIB
+
+
+HH3C-WLANMT-MIB
+ Import module SNMPv2-SMI
+ Import module HH3C-OID-MIB
+
+
+IANA-ADDRESS-FAMILY-NUMBERS-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+IANA-RTPROTO-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+IEEE-802DOT17-RPR-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module SNMP-FRAMEWORK-MIB
+ Import module INET-ADDRESS-MIB
+ Import module HC-PerfHist-TC-MIB
+
+
+IEEE8021-BRIDGE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module IEEE8021-TC-MIB
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-MIB
+
+
+IEEE8021-CFM-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module LLDP-MIB
+ Import module Q-BRIDGE-MIB
+ Import module IEEE8021-TC-MIB
+
+
+IEEE8021-CFM-V2-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module IEEE8021-TC-MIB
+ Import module IEEE8021-CFM-MIB
+
+
+IEEE8021-CN-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module IEEE8021-TC-MIB
+ Import module LLDP-V2-TC-MIB
+ Import module SNMPv2-MIB
+
+
+IEEE8021-EVB-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IEEE8021-TC-MIB
+ Import module Q-BRIDGE-MIB
+ Import module IF-MIB
+ Import module IEEE8021-BRIDGE-MIB
+ Import module SNMPv2-CONF
+
+
+IEEE8021-SECY-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+
+
+IEEE8021-SPB-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IEEE8021-TC-MIB
+ Import module Q-BRIDGE-MIB
+ Import module IF-MIB
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-CONF
+
+
+IEEE8021-TC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+IEEE8021-PAE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SNMP-FRAMEWORK-MIB
+ Import module IF-MIB
+
+
+IEEE8021X-PAE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SNMP-FRAMEWORK-MIB
+ Import module IF-MIB
+ Import module IEEE8021-SECY-MIB
+
+
+IEEE8023-LAG-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+
+
+IEEE802dot11-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module RFC1213-MIB
+
+
+IPSEC-IKEACTION-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SNMP-FRAMEWORK-MIB
+ Import module INET-ADDRESS-MIB
+ Import module IPSEC-SPD-MIB
+
+
+IPSEC-IPSECACTION-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SNMP-FRAMEWORK-MIB
+ Import module INET-ADDRESS-MIB
+ Import module IPSEC-SPD-MIB
+ Import module DIFFSERV-MIB
+
+
+LLDP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-CONF
+ Import module RMON2-MIB
+ Import module IANA-ADDRESS-FAMILY-NUMBERS-MIB
+
+
+LLDP-EXT-DOT1-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-CONF
+ Import module LLDP-MIB
+ Import module Q-BRIDGE-MIB
+
+
+LLDP-EXT-DOT1-EVB-EXTENSIONS-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module LLDP-V2-MIB
+ Import module LLDP-EXT-DOT1-V2-MIB
+
+
+LLDP-EXT-DOT1-V2-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module LLDP-V2-MIB
+ Import module Q-BRIDGE-MIB
+ Import module LLDP-V2-TC-MIB
+ Import module IEEE8021-TC-MIB
+
+
+LLDP-EXT-DOT3-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module LLDP-MIB
+
+
+LLDP-EXT-DOT3-V2-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module LLDP-V2-MIB
+ Import module LLDP-V2-TC-MIB
+
+
+LLDP-EXT-MED-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module LLDP-MIB
+ Import module DIFFSERV-DSCP-TC
+ Import module SNMP-FRAMEWORK-MIB
+
+
+LLDP-V2-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-CONF
+ Import module RMON2-MIB
+ Import module IANA-ADDRESS-FAMILY-NUMBERS-MIB
+ Import module IF-MIB
+ Import module LLDP-V2-TC-MIB
+
+
+LLDP-V2-TC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+RFC1158-MIB
+ Import module RFC1155-SMI
+
+
+RFC1213-MIB
+ Import module RFC1155-SMI
+ Import module RFC-1212
+
+
+RFC1229-MIB
+ Import module RFC1155-SMI
+ Import module RFC1213-MIB
+ Import module RFC-1212
+
+
+RFC1271-MIB
+ Import module RFC1155-SMI
+ Import module RFC1158-MIB
+ Import module RFC1213-MIB
+ Import module RFC-1212
+
+
+RFC1315-MIB
+ Import module RFC-1212
+ Import module RFC1213-MIB
+ Import module RFC1155-SMI
+ Import module RFC-1215
+
+
+RFC1381-MIB
+ Import module RFC1155-SMI
+ Import module RFC1213-MIB
+ Import module RFC-1212
+
+
+RFC1382-MIB
+ Import module RFC1155-SMI
+ Import module RFC-1212
+ Import module RFC-1215
+
+
+PPP-LCP-MIB
+ Import module RFC1155-SMI
+ Import module RFC1213-MIB
+ Import module RFC-1212
+
+
+PPP-IP-NCP-MIB
+ Import module RFC1155-SMI
+ Import module RFC1213-MIB
+ Import module RFC-1212
+ Import module PPP-LCP-MIB
+
+
+BRIDGE-MIB
+ Import module RFC1155-SMI
+ Import module RFC1213-MIB
+ Import module RFC-1212
+ Import module RFC-1215
+
+
+TOKEN-RING-RMON-MIB
+ Import module RFC1155-SMI
+ Import module RFC-1212
+ Import module RFC1271-MIB
+
+
+IANAifType-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+RIPv2-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module RFC1213-MIB
+
+
+SNA-SDLC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module RFC1213-MIB
+
+
+DLSW-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module SNA-SDLC-MIB
+
+
+FRAME-RELAY-DTE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module RFC1213-MIB
+ Import module IF-MIB
+
+
+ISDN-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module IANAifType-MIB
+ Import module RFC1213-MIB
+
+
+DIAL-CONTROL-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IANAifType-MIB
+ Import module IF-MIB
+ Import module RFC1213-MIB
+
+
+INTEGRATED-SERVICES-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+
+
+SYSAPPL-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+
+
+IPV6-TCP-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module IPV6-TC
+
+
+IPV6-UDP-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module IPV6-TC
+
+
+IPV6-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IPV6-TC
+
+
+IPV6-TC
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+IPV6-ICMP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module IPV6-MIB
+
+
+ATM-TC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+ATM-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module ATM-TC-MIB
+
+
+SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+
+
+SNMP-MPD-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+
+
+SNMP-TARGET-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-CONF
+
+
+SMON-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module RFC1213-MIB
+ Import module RMON-MIB
+ Import module SNMPv2-CONF
+
+
+RADIUS-AUTH-CLIENT-MIB
+ Import module SNMPv2-SMI
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-CONF
+
+
+RADIUS-ACC-CLIENT-MIB
+ Import module SNMPv2-SMI
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-CONF
+
+
+ADSL-LINE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module PerfHist-TC-MIB
+ Import module SNMP-FRAMEWORK-MIB
+ Import module ADSL-TC-MIB
+
+
+ADSL-TC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+VRRP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+
+
+NETWORK-SERVICES-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SNMP-FRAMEWORK-MIB
+
+
+HOST-RESOURCES-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+
+
+RMON-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+
+
+HCNUM-TC
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+IF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SNMPv2-MIB
+ Import module IANAifType-MIB
+
+
+DISMAN-PING-MIB
+ Import module RFC1155-SMI
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module SNMP-FRAMEWORK-MIB
+
+
+IGMP-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+
+
+DISMAN-EVENT-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SNMPv2-MIB
+ Import module SNMP-TARGET-MIB
+ Import module SNMP-FRAMEWORK-MIB
+
+
+IPV6-MLD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+ Import module SNMPv2-CONF
+
+
+HC-RMON-MIB
+ Import module RFC1213-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+DIFFSERV-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module INTEGRATED-SERVICES-MIB
+ Import module DIFFSERV-DSCP-TC
+
+
+DIFFSERV-DSCP-TC
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+SNMP-NOTIFICATION-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMP-TARGET-MIB
+ Import module SNMPv2-CONF
+
+
+SNMP-USER-BASED-SM-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SNMP-FRAMEWORK-MIB
+
+
+SNMP-VIEW-BASED-ACM-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+
+
+SNMPv2-TM
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+SNMPv2-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+
+
+TRANSPORT-ADDRESS-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+SNMP-COMMUNITY-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMP-TARGET-MIB
+ Import module SNMPv2-CONF
+
+
+PerfHist-TC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+IPV6-FLOW-LABEL-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+POWER-ETHERNET-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SNMP-FRAMEWORK-MIB
+
+
+EtherLike-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+
+
+HC-PerfHist-TC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+MPLS-TC-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+MPLS-TE-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module MPLS-TC-STD-MIB
+ Import module SNMP-FRAMEWORK-MIB
+ Import module DIFFSERV-MIB
+ Import module INET-ADDRESS-MIB
+
+
+MPLS-LSR-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module MPLS-TC-STD-MIB
+ Import module IANA-ADDRESS-FAMILY-NUMBERS-MIB
+ Import module INET-ADDRESS-MIB
+
+
+MPLS-FTN-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module SNMP-FRAMEWORK-MIB
+ Import module DIFFSERV-DSCP-TC
+ Import module INET-ADDRESS-MIB
+ Import module MPLS-TC-STD-MIB
+
+
+MPLS-LDP-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module INET-ADDRESS-MIB
+ Import module DIFFSERV-MIB
+ Import module MPLS-TC-STD-MIB
+ Import module MPLS-LSR-STD-MIB
+
+
+SNMP-USM-AES-MIB
+ Import module SNMPv2-SMI
+ Import module SNMP-FRAMEWORK-MIB
+
+
+TE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-CONF
+ Import module MPLS-TC-STD-MIB
+
+
+INET-ADDRESS-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+TCP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module INET-ADDRESS-MIB
+
+
+FC-MGMT-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module SNMP-FRAMEWORK-MIB
+
+
+TUNNEL-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module INET-ADDRESS-MIB
+ Import module IPV6-FLOW-LABEL-MIB
+ Import module IF-MIB
+ Import module IANAifType-MIB
+
+
+UDP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module INET-ADDRESS-MIB
+
+
+ENTITY-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SNMP-FRAMEWORK-MIB
+
+
+VPN-TC-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+BGP4-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+
+
+IP-FORWARD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module IP-MIB
+ Import module IANA-RTPROTO-MIB
+ Import module INET-ADDRESS-MIB
+
+
+IP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module INET-ADDRESS-MIB
+ Import module IF-MIB
+
+
+P-BRIDGE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module BRIDGE-MIB
+
+
+Q-BRIDGE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-CONF
+ Import module BRIDGE-MIB
+ Import module P-BRIDGE-MIB
+ Import module RMON2-MIB
+
+
+MPLS-L3VPN-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module VPN-TC-STD-MIB
+ Import module SNMP-FRAMEWORK-MIB
+ Import module IANA-RTPROTO-MIB
+ Import module INET-ADDRESS-MIB
+ Import module MPLS-TC-STD-MIB
+ Import module MPLS-LSR-STD-MIB
+
+
+T11-FC-NAME-SERVER-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-TC
+ Import module FC-MGMT-MIB
+ Import module T11-TC-MIB
+ Import module T11-FC-FABRIC-ADDR-MGR-MIB
+
+
+T11-FC-FABRIC-ADDR-MGR-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module FC-MGMT-MIB
+ Import module T11-TC-MIB
+
+
+T11-TC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+ISIS-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMP-FRAMEWORK-MIB
+ Import module DIFFSERV-MIB
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+
+
+RMON2-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module RMON-MIB
+ Import module TOKEN-RING-RMON-MIB
+
+
+DISMAN-TRACEROUTE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SNMP-FRAMEWORK-MIB
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module DISMAN-PING-MIB
+
+
+MSDP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+
+
+T11-FC-ROUTE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module FC-MGMT-MIB
+ Import module T11-TC-MIB
+
+
+T11-FC-VIRTUAL-FABRIC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module FC-MGMT-MIB
+ Import module T11-TC-MIB
+
+
+OSPF-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+
+
+OSPF-TRAP-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module OSPF-MIB
+
+
+SIP-TC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+SIP-UA-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module NETWORK-SERVICES-MIB
+ Import module INET-ADDRESS-MIB
+ Import module SIP-TC-MIB
+
+
+IPSEC-SPD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module DIFFSERV-MIB
+ Import module INET-ADDRESS-MIB
+ Import module SNMP-FRAMEWORK-MIB
+
+
+IANA-MAU-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+MAU-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module IANA-MAU-MIB
+
+
+DOT3-OAM-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module HCNUM-TC
+ Import module IF-MIB
+ Import module SNMPv2-CONF
+
+
+T11-FC-FABRIC-CONFIG-SERVER-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module NETWORK-SERVICES-MIB
+ Import module FC-MGMT-MIB
+ Import module T11-FC-NAME-SERVER-MIB
+ Import module T11-TC-MIB
+ Import module T11-FC-FABRIC-ADDR-MGR-MIB
+
+
+T11-FC-ZONE-SERVER-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module IF-MIB
+ Import module FC-MGMT-MIB
+ Import module T11-FC-NAME-SERVER-MIB
+ Import module T11-TC-MIB
+ Import module T11-FC-FABRIC-ADDR-MGR-MIB
+
+
+PIM-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module IANA-RTPROTO-MIB
+
+
+LANGTAG-TC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+IPMCAST-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module HCNUM-TC
+ Import module IF-MIB
+ Import module IANA-RTPROTO-MIB
+ Import module SNMP-FRAMEWORK-MIB
+ Import module INET-ADDRESS-MIB
+ Import module LANGTAG-TC-MIB
+
+
+PIM-BSR-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module INET-ADDRESS-MIB
+
+
+SYSLOG-TC-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+MGMD-STD-MIB
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+
+
+PW-TC-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+IANA-PWE3-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+
+
+PW-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module PerfHist-TC-MIB
+ Import module HC-PerfHist-TC-MIB
+ Import module PW-TC-STD-MIB
+ Import module IANA-PWE3-MIB
+
+
+PW-MPLS-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module MPLS-TC-STD-MIB
+ Import module MPLS-LSR-STD-MIB
+ Import module PW-TC-STD-MIB
+ Import module PW-STD-MIB
+
+
+PW-ENET-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module RMON2-MIB
+ Import module PW-STD-MIB
+ Import module Q-BRIDGE-MIB
+
+
+OSPFV3-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module OSPF-MIB
+
+
+SYSLOG-MSG-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SYSLOG-TC-MIB
+
+
+CAPWAP-BASE-MIB
+ Import module SNMPv2-TC
+ Import module SYSAPPL-MIB
+ Import module IF-MIB
+ Import module ENTITY-MIB
+ Import module SNMP-FRAMEWORK-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module INET-ADDRESS-MIB
+
+
+CAPWAP-DOT11-MIB
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module IF-MIB
+ Import module CAPWAP-BASE-MIB
+
+
+MPLS-FRR-FACILITY-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module MPLS-TC-STD-MIB
+ Import module MPLS-FRR-GENERAL-STD-MIB
+
+
+MPLS-FRR-GENERAL-STD-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-CONF
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module MPLS-TC-STD-MIB
+ Import module MPLS-TE-STD-MIB
+
+
+VRRPV3-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+
+
+RBRIDGE-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMPv2-CONF
+ Import module Q-BRIDGE-MIB
+ Import module INET-ADDRESS-MIB
+ Import module BRIDGE-MIB
+ Import module IF-MIB
+
+
+SNMP-USM-HMAC-SHA2-MIB
+ Import module SNMPv2-SMI
+ Import module SNMP-FRAMEWORK-MIB
+
+
+SAVI-MIB
+ Import module SNMPv2-CONF
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module IF-MIB
+ Import module INET-ADDRESS-MIB
+ Import module IP-MIB
+
+
+SFLOW-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC
+ Import module SNMP-FRAMEWORK-MIB
+ Import module RMON-MIB
+ Import module INET-ADDRESS-MIB
+ Import module SNMPv2-CONF
+
+
+StationSW-MIB
+ Import module SNMPv2-SMI
+ Import module SNMPv2-TC

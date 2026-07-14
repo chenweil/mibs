@@ -1,0 +1,359 @@
+-- ============================================================================
+-- Copyright (c) 2024 Unisyue Technologies Co., Ltd.  All rights reserved.
+-- Description:  This MIB file is used for configuration of AFT.
+--                include :1.AFT Log Trap
+-- Reference:
+-- Version: V1.1
+-- History:
+--  V1.0 2024-3-9 Initial version, create by liumengfei
+--  V1.1 2024-4-22 Modify by liumengfei
+--       Add unisAftPortBlockUsageTrap, unisAftPortBlockUsageRecovTrap
+--       Modify unisAftAddrGrpUsageTrap, unisAftAddrGrpUsageRecovTrap, unisAftPortUsageTrap, unisAftPortUsageRecovTrap
+--       unisAftPortExhaustTrap, unisAftPortExhaustRecovTrap
+-- ============================================================================
+UNIS-AFT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        unisCommon
+                FROM UNIS-OID-MIB
+        InetAddress, InetAddressType
+                FROM INET-ADDRESS-MIB
+        Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+                FROM SNMPv2-SMI;
+
+unisAft MODULE-IDENTITY
+    LAST-UPDATED "202404221500Z"            -- Match 9, 2024 at 12:00 GMT
+    ORGANIZATION
+        "Unisyue Technologies Co., Ltd."
+    CONTACT-INFO
+        ""
+    DESCRIPTION
+        "This MIB contains objects that manage the configuration and information
+         of AFT module."
+
+    REVISION "202404221500Z"                -- April 22, 2024 at 15:00 GMT
+    DESCRIPTION
+            "Add unisAftPortBlockUsageTrap, unisAftPortBlockUsageRecovTrap
+             Modify unisAftAddrGrpUsageTrap, unisAftAddrGrpUsageRecovTrap
+             unisAftPortUsageTrap, unisAftPortUsageRecovTrap
+             unisAftPortExhaustTrap, unisAftPortExhaustRecovTrap"
+
+    REVISION "202403091200Z"        -- Match 9, 2024 at 12:00 GMT
+    DESCRIPTION
+        "The initial version."
+
+    ::= { unisCommon 268 }
+
+unisAftMibTrap OBJECT IDENTIFIER ::= { unisAft 1 }
+
+-- ----------------------------------------------------------------------
+-- unisAftTraps Table
+-- ----------------------------------------------------------------------
+unisAftTraps      OBJECT IDENTIFIER ::= { unisAftMibTrap 1 }
+unisAftTrapsPrefix      OBJECT IDENTIFIER ::= { unisAftTraps 0 }
+
+unisAftAddrGrpExhaustTrap NOTIFICATION-TYPE
+    OBJECTS { unisAftTrapAddrGrpChassis,
+              unisAftTrapAddrGrpSlot,
+              unisAftTrapAddrGrpCpu,
+              unisAftTrapAddrGrpIndex }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the address-group resources exhausted"
+    ::= { unisAftTrapsPrefix 1 }
+
+unisAftAddrGrpExhaustRecovTrap NOTIFICATION-TYPE
+    OBJECTS { unisAftTrapAddrGrpChassis,
+              unisAftTrapAddrGrpSlot,
+              unisAftTrapAddrGrpCpu,
+              unisAftTrapAddrGrpIndex }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the address-group resources drop below 87.5 percent."
+    ::= { unisAftTrapsPrefix 2}
+
+unisAftAddrGrpUsageTrap NOTIFICATION-TYPE
+    OBJECTS{ unisAftTrapAddrGrpChassis,
+             unisAftTrapAddrGrpSlot,
+             unisAftTrapAddrGrpCpu,
+             unisAftTrapAddrGrpIndex,
+             unisAftTrapAddrGrpUsgThreshold,
+             unisAftTrapPortAllocMode,
+             unisAftTrapPortAllocProtocol }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the address-group resources usage increase to above threshold."
+    ::= { unisAftTrapsPrefix 3}
+
+unisAftAddrGrpUsageRecovTrap NOTIFICATION-TYPE
+    OBJECTS { unisAftTrapAddrGrpChassis,
+              unisAftTrapAddrGrpSlot,
+              unisAftTrapAddrGrpCpu,
+              unisAftTrapAddrGrpIndex,
+              unisAftTrapAddrGrpUsgThreshold,
+              unisAftTrapPortAllocMode,
+              unisAftTrapPortAllocProtocol }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the address-group resources usage drop below 87.5 percent of the usage threshold."
+    ::= { unisAftTrapsPrefix 4}
+
+unisAftPortExhaustTrap NOTIFICATION-TYPE
+    OBJECTS{ unisAftTrapAddrGrpChassis,
+             unisAftTrapAddrGrpSlot,
+             unisAftTrapAddrGrpCpu,
+             unisAftTrapAddrGrpIndex,
+             unisAftTrapUserIPType,
+             unisAftTrapUserIP,
+             unisAftTrapUserVpn,
+             unisAftTrapAddrGrpMemberIPType,
+             unisAftTrapAddrGrpMemberIP,
+             unisAftTrapAddrGrpMemberVpn,
+             unisAftTrapMemberIPPortNums,
+             unisAftTrapPortAllocMode,
+             unisAftTrapPortAllocProtocol }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the port resources exhausted."
+    ::= { unisAftTrapsPrefix 5}
+
+unisAftPortExhaustRecovTrap NOTIFICATION-TYPE
+    OBJECTS{ unisAftTrapAddrGrpChassis,
+             unisAftTrapAddrGrpSlot,
+             unisAftTrapAddrGrpCpu,
+             unisAftTrapAddrGrpIndex,
+             unisAftTrapUserIPType,
+             unisAftTrapUserIP,
+             unisAftTrapUserVpn,
+             unisAftTrapAddrGrpMemberIPType,
+             unisAftTrapAddrGrpMemberIP,
+             unisAftTrapAddrGrpMemberVpn,
+             unisAftTrapMemberIPPortNums,
+             unisAftTrapPortAllocMode,
+             unisAftTrapPortAllocProtocol }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the port resources drop below 87.5 percent."
+    ::= { unisAftTrapsPrefix 6}
+
+unisAftPortUsageTrap NOTIFICATION-TYPE
+    OBJECTS{ unisAftTrapAddrGrpChassis,
+             unisAftTrapAddrGrpSlot,
+             unisAftTrapAddrGrpCpu,
+             unisAftTrapAddrGrpIndex,
+             unisAftTrapUserIPType,
+             unisAftTrapUserIP,
+             unisAftTrapUserVpn,
+             unisAftTrapAddrGrpMemberIPType,
+             unisAftTrapAddrGrpMemberIP,
+             unisAftTrapAddrGrpMemberVpn,
+             unisAftTrapMemberIPPortNums,
+             unisAftTrapPortUsageThreshold,
+             unisAftTrapPortAllocMode,
+             unisAftTrapPortAllocProtocol }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the port resources usage increase to above threshold."
+    ::= { unisAftTrapsPrefix 7}
+
+unisAftPortUsageRecovTrap NOTIFICATION-TYPE
+    OBJECTS{ unisAftTrapAddrGrpChassis,
+             unisAftTrapAddrGrpSlot,
+             unisAftTrapAddrGrpCpu,
+             unisAftTrapAddrGrpIndex,
+             unisAftTrapUserIPType,
+             unisAftTrapUserIP,
+             unisAftTrapUserVpn,
+             unisAftTrapAddrGrpMemberIPType,
+             unisAftTrapAddrGrpMemberIP,
+             unisAftTrapAddrGrpMemberVpn,
+             unisAftTrapMemberIPPortNums,
+             unisAftTrapPortUsageThreshold,
+             unisAftTrapPortAllocMode,
+             unisAftTrapPortAllocProtocol }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the port resources usage drop below 87.5 percent of the usage threshold."
+    ::= { unisAftTrapsPrefix 8}
+
+unisAftPortBlockUsageTrap NOTIFICATION-TYPE
+    OBJECTS{ unisAftTrapAddrGrpChassis,
+             unisAftTrapAddrGrpSlot,
+             unisAftTrapAddrGrpCpu,
+             unisAftTrapAddrGrpIndex,
+             unisAftTrapPortBlockCount,
+             unisAftTrapPortBlockUsedCount,
+             unisAftTrapPortBlockUsage }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the address group port block resource usage exceeds the threshold."
+    ::= { unisAftTrapsPrefix 9}
+
+unisAftPortBlockUsageRecovTrap NOTIFICATION-TYPE
+    OBJECTS { unisAftTrapAddrGrpChassis,
+              unisAftTrapAddrGrpSlot,
+              unisAftTrapAddrGrpCpu,
+              unisAftTrapAddrGrpIndex,
+              unisAftTrapPortBlockCount,
+              unisAftTrapPortBlockUsedCount,
+              unisAftTrapPortBlockUsage }
+    STATUS current
+    DESCRIPTION
+        "This notification is generated when the address group port block resource usage drops below 87.5 percent of the usage threshold."
+    ::= { unisAftTrapsPrefix 10}
+
+-- ----------------------------------------------------------------------
+-- unisAftMibTrapOid Table
+-- ----------------------------------------------------------------------
+unisAftMibTrapOid OBJECT IDENTIFIER ::= { unisAftMibTrap 2 }
+unisAftTrapsBindingVariables OBJECT IDENTIFIER ::= { unisAftMibTrapOid 1 }
+
+unisAftTrapAddrGrpChassis OBJECT-TYPE
+    SYNTAX Integer32 (1..65534)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The chassis number of the AFT address-group current location."
+    ::= { unisAftTrapsBindingVariables 1 }
+
+unisAftTrapAddrGrpSlot OBJECT-TYPE
+    SYNTAX Integer32 (1..65534)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The slot number of the AFT address-group current location."
+    ::= { unisAftTrapsBindingVariables 2 }
+
+unisAftTrapAddrGrpCpu OBJECT-TYPE
+    SYNTAX Integer32 (0..7)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The cpu number of the AFT address-group current location."
+    ::= { unisAftTrapsBindingVariables 3 }
+
+unisAftTrapAddrGrpIndex OBJECT-TYPE
+    SYNTAX Integer32 (1..65536)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The number of AFT address-group index."
+    ::= { unisAftTrapsBindingVariables 4 }
+
+unisAftTrapAddrGrpUsgThreshold OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The address resources usage threshold of the AFT address-group."
+    ::= { unisAftTrapsBindingVariables 5 }
+
+unisAftTrapUserIPType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The IP type of the user traffic."
+    ::= { unisAftTrapsBindingVariables 6 }
+
+unisAftTrapUserIP OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The IP address of the user traffic."
+    ::= { unisAftTrapsBindingVariables 7 }
+
+unisAftTrapUserVpn OBJECT-TYPE
+    SYNTAX OCTET STRING(SIZE(0..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The vpn-instance of the user traffic."
+    ::= { unisAftTrapsBindingVariables 8 }
+
+unisAftTrapAddrGrpMemberIPType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The IP type of the AddrGrpMember."
+    ::= { unisAftTrapsBindingVariables 9 }
+
+unisAftTrapAddrGrpMemberIP OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The IP of the AddrGrpMember."
+    ::= { unisAftTrapsBindingVariables 10 }
+
+unisAftTrapAddrGrpMemberVpn OBJECT-TYPE
+    SYNTAX OCTET STRING(SIZE(0..31))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The vpn-instance of the AddrGrpMember."
+    ::= { unisAftTrapsBindingVariables 11 }
+
+unisAftTrapMemberIPPortNums OBJECT-TYPE
+    SYNTAX Integer32 (0..65536)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The number of the AFT address-group IP port."
+    ::= { unisAftTrapsBindingVariables 12 }
+
+unisAftTrapPortUsageThreshold OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The port resources usage threshold of the AFT port-block."
+    ::= { unisAftTrapsBindingVariables 13 }
+
+unisAftTrapPortAllocMode OBJECT-TYPE
+    SYNTAX INTEGER
+                {
+                    cdm(1),
+                    eim(2)
+                }
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Port allocation mode."
+    ::= { unisAftTrapsBindingVariables 14 }
+
+unisAftTrapPortAllocProtocol OBJECT-TYPE
+    SYNTAX OCTET STRING(SIZE (1..32))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The protocol name of ports."
+    ::= { unisAftTrapsBindingVariables 15 }
+
+unisAftTrapPortBlockCount OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The number of port blocks of the address group."
+    ::= { unisAftTrapsBindingVariables 16 }
+
+unisAftTrapPortBlockUsedCount OBJECT-TYPE
+    SYNTAX Integer32 (1..65535)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The number of used port blocks of the address group."
+    ::= { unisAftTrapsBindingVariables 17 }
+
+unisAftTrapPortBlockUsage OBJECT-TYPE
+    SYNTAX Integer32 (0..100)
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The port block usage of the address group."
+    ::= { unisAftTrapsBindingVariables 18 }
+
+END
